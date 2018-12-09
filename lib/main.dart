@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:qr_flutter/qr_flutter.dart';
+import 'package:qr_reader/qr_reader.dart';
 
 void main() => runApp(MyApp());
 
@@ -7,7 +9,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Paytaca',
+      title: 'pitaka',
       theme: ThemeData(
         // This is the theme of your application.
         //
@@ -20,7 +22,7 @@ class MyApp extends StatelessWidget {
         // is not restarted.
         primarySwatch: Colors.red,
       ),
-      home: MyHomePage(title: 'Paytaca'),
+      home: MyHomePage(title: 'pitaka'),
     );
   }
 }
@@ -45,6 +47,7 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   int _counter = 0;
+  Future<String> _barcodeString;
 
   void _incrementCounter() {
     setState(() {
@@ -130,6 +133,27 @@ class _MyHomePageState extends State<MyHomePage> {
               '$_counter',
               style: Theme.of(context).textTheme.display1,
             ),
+            new QrImage(
+              data: '$_counter',
+              size: 200.0,
+            ),
+            new RaisedButton(
+              child: const Text('Scan'),
+              onPressed: () {
+                setState(() {
+                  _barcodeString = new QRCodeReader()
+                  .setTorchEnabled(true)
+                  .setHandlePermissions(true)
+                  .setExecuteAfterPermissionGranted(true)
+                  .scan();
+                });
+              },
+            ),
+            new FutureBuilder<String>(
+              future: _barcodeString,
+              builder: (BuildContext context, AsyncSnapshot<String> snapshot) {
+                return new Text(snapshot.data != null ? snapshot.data : '');
+            }),
           ],
         ),
       ),
