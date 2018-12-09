@@ -1,6 +1,9 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:qr_reader/qr_reader.dart';
+import 'package:local_auth/local_auth.dart';
 
 void main() => runApp(MyApp());
 
@@ -47,7 +50,13 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   int _counter = 0;
+
   Future<String> _barcodeString;
+
+  final LocalAuthentication auth = LocalAuthentication();
+  bool _canCheckBiometrics;
+  List<BiometricType> _availableBiometrics;
+  String _authorized = 'Not Authorized';
 
   void _incrementCounter() {
     setState(() {
@@ -57,6 +66,51 @@ class _MyHomePageState extends State<MyHomePage> {
       // _counter without calling setState(), then the build method would not be
       // called again, and so nothing would appear to happen.
       _counter++;
+    });
+  }
+
+  Future<Null> _checkBiometrics() async {
+    bool canCheckBiometrics;
+    try {
+      canCheckBiometrics = await auth.canCheckBiometrics;
+    } on PlatformException catch (e) {
+      print(e);
+    }
+    if (!mounted) return;
+
+    setState(() {
+      _canCheckBiometrics = canCheckBiometrics;
+    });
+  }
+
+  Future<Null> _getAvailableBiometrics() async {
+    List<BiometricType> availableBiometrics;
+    try {
+      availableBiometrics = await auth.getAvailableBiometrics();
+    } on PlatformException catch (e) {
+      print(e);
+    }
+    if (!mounted) return;
+
+    setState(() {
+      _availableBiometrics = availableBiometrics;
+    });
+  }
+
+  Future<Null> _authenticate() async {
+    bool authenticated = false;
+    try {
+      authenticated = await auth.authenticateWithBiometrics(
+          localizedReason: 'Scan your fingerprint to authenticate',
+          useErrorDialogs: true,
+          stickyAuth: false);
+    } on PlatformException catch (e) {
+      print(e);
+    }
+    if (!mounted) return;
+
+    setState(() {
+      _authorized = authenticated ? 'Authorized' : 'Not Authorized';
     });
   }
 
@@ -154,6 +208,21 @@ class _MyHomePageState extends State<MyHomePage> {
               builder: (BuildContext context, AsyncSnapshot<String> snapshot) {
                 return new Text(snapshot.data != null ? snapshot.data : '');
             }),
+            Text('Can check biometrics: $_canCheckBiometrics\n'),
+            RaisedButton(
+              child: const Text('Check biometrics'),
+              onPressed: _checkBiometrics,
+            ),
+            Text('Available biometrics: $_availableBiometrics\n'),
+            RaisedButton(
+              child: const Text('Get available biometrics'),
+              onPressed: _getAvailableBiometrics,
+            ),
+            Text('Current State: $_authorized\n'),
+            RaisedButton(
+              child: const Text('Authenticate'),
+              onPressed: _authenticate,
+            )
           ],
         ),
       ),
