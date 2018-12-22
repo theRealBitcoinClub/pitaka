@@ -6,6 +6,7 @@ import 'package:qr_flutter/qr_flutter.dart';
 import 'package:qr_reader/qr_reader.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:flutter_sodium/flutter_sodium.dart';
+import 'package:flutter_keychain/flutter_keychain.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'dart:typed_data';
@@ -39,19 +40,32 @@ class _MyHomePageState extends State<MyHomePage> {
 
   Future<String> _barcodeString;
 
-  final LocalAuthentication auth = LocalAuthentication();
-  bool _canCheckBiometrics;
-  List<BiometricType> _availableBiometrics;
-  String _authorized = 'Not Authorized';
+  String publicKey;
+  String privateKey;
+  String userXID;
 
-  String publicKey = '';
-  String privateKey = '';
+  void retrieveStoredValues() async {
+    publicKey = await FlutterKeychain.get(key: "publicKey");
+    privateKey = await FlutterKeychain.get(key: "privateKey");
+    userXID = await FlutterKeychain.get(key: "userXID");
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    retrieveStoredValues();
+  }
 
   void _incrementCounter() {
     setState(() {
       _counter++;
     });
   }
+
+  final LocalAuthentication auth = LocalAuthentication();
+  bool _canCheckBiometrics;
+  List<BiometricType> _availableBiometrics;
+  String _authorized = 'Not Authorized';
 
   Future<Null> _checkBiometrics() async {
     bool canCheckBiometrics;
@@ -110,14 +124,15 @@ class _MyHomePageState extends State<MyHomePage> {
       publicKey = HEX.encode(keyPair.publicKey);
       privateKey = HEX.encode(keyPair.secretKey);
     });
+
+    await FlutterKeychain.put(key: "publicKey", value: publicKey);
+    await FlutterKeychain.put(key: "privateKey", value: privateKey);
   }
 
   Future<String> signTransaction(String txnHash) async {
     final signature = await CryptoSign.sign(txnHash, privateKeyBytes);
     return HEX.encode(signature);
   }
-
-  String userXID = '';
 
   Future<Null> createUser() async {
     var url = "http://af056012.ngrok.io/api/users/create";
@@ -140,6 +155,8 @@ class _MyHomePageState extends State<MyHomePage> {
       setState(() {
         userXID = responseJson['xid'];
       });
+
+      await FlutterKeychain.put(key: "userXID", value: userXID);
     }
   }
 
