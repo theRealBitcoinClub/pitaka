@@ -20,6 +20,7 @@ dependencies:
   http: ^0.12.0
   hex: ^0.1.2
   flutter_keychain: ^0.0.8
+  fluro: ^1.4.0
   flutter:
     sdk: flutter
 
