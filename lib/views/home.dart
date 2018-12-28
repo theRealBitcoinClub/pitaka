@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../components/drawer.dart';
 import '../components/bottomNavigation.dart';
+import '../components/homeTabs.dart';
 
 class HomeComponent extends StatefulWidget {
   @override
@@ -11,22 +12,27 @@ class HomeComponentState extends State<HomeComponent> {
   String path = "/home";
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-        appBar: AppBar(
-          title: Text('Paytaca'),
-          centerTitle: true,
-        ),
-        drawer: buildDrawer(context),
-        body: Center(
-            child: new Container(
-                child: new SingleChildScrollView(
-                    child: new ConstrainedBox(
-          constraints: new BoxConstraints(),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget>[Text("Home")],
+    return DefaultTabController(
+        length: 2,
+        child: Scaffold(
+          appBar: AppBar(
+            title: Text('Paytaca'),
+            bottom: TabBar(tabs: [
+              Tab(
+                text: "Balance",
+              ),
+              Tab(text: "Transactions"),
+            ]),
+            centerTitle: true,
           ),
-        )))),
-        bottomNavigationBar: buildBottomNavigation(context, path));
+          drawer: buildDrawer(context),
+          body: TabBarView(
+            children: [
+              balanceTab,
+              transactionsTab,
+            ],
+          ),
+          bottomNavigationBar: buildBottomNavigation(context, path),
+        ));
   }
 }
