@@ -22,6 +22,7 @@ dependencies:
   flutter_keychain: ^0.0.8
   fluro: ^1.4.0
   after_layout: ^1.0.7
+  intl: ^0.15.7
   flutter:
     sdk: flutter
 

@@ -36,6 +36,12 @@ Drawer buildDrawer(BuildContext context) {
             trailing: Icon(Icons.inbox),
             onTap: () {
               Application.router.navigateTo(context, "/receive");
+            }),
+        ListTile(
+            title: Text('Register'),
+            trailing: Icon(Icons.person_outline),
+            onTap: () {
+              Application.router.navigateTo(context, "/register");
             })
       ],
     ),
