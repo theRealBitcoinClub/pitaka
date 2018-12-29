@@ -78,13 +78,15 @@ class RegisterComponentState extends State<RegisterComponent> {
   }
 
   String validateBirthdate(String value) {
-    if (value.length == 0)
+    var formattedBirthDate = convertToDate(_birthDateController.text);
+    if (formattedBirthDate == null)
       return 'Birthdate is required';
     else
       return null;
   }
 
-  final TextEditingController _controller = new TextEditingController();
+  final TextEditingController _birthDateController =
+      new TextEditingController();
   Future _chooseDate(BuildContext context, String initialDateString) async {
     var now = new DateTime.now();
     var initialDate = convertToDate(initialDateString) ?? now;
@@ -101,7 +103,7 @@ class RegisterComponentState extends State<RegisterComponent> {
     if (result == null) return;
 
     setState(() {
-      _controller.text = new DateFormat.yMd().format(result);
+      _birthDateController.text = new DateFormat.yMd().format(result);
     });
   }
 
@@ -114,6 +116,10 @@ class RegisterComponentState extends State<RegisterComponent> {
     }
   }
 
+  BuildContext _scaffoldContext;
+  FocusNode focusNode = FocusNode();
+  bool _termsChecked = false;
+
   bool _autoValidate = false;
   bool _submitting = false;
 
@@ -122,24 +128,29 @@ class RegisterComponentState extends State<RegisterComponent> {
       // Close the on-screen keyboard by removing focus from the form's inputs
       FocusScope.of(context).requestFocus(new FocusNode());
 
-      // If all data are correct then save data to out variables
-      _formKey.currentState.save();
-      await generateKeyPair(context);
+      if (_termsChecked) {
+        // If all data are correct then save data to out variables
+        _formKey.currentState.save();
+        await generateKeyPair(context);
 
-      if (authenticated == true) {
-        setState(() {
-          _submitting = true;
-        });
-
-        //Simulate a service call
-        new Future.delayed(new Duration(seconds: 3), () {
+        if (authenticated == true) {
           setState(() {
-            _submitting = false;
+            _submitting = true;
           });
-          Application.router.navigateTo(context, "/home");
-        });
+
+          //Simulate a service call
+          new Future.delayed(new Duration(seconds: 3), () {
+            setState(() {
+              _submitting = false;
+            });
+            Application.router.navigateTo(context, "/home");
+          });
+        }
+      } else {
+        _showSnackBar("Please agree to our Terms and Conditions");
       }
     } else {
+      _showSnackBar("Please correct errors in the form");
       // If all data are not valid then start auto validation.
       setState(() {
         _autoValidate = true;
@@ -147,95 +158,119 @@ class RegisterComponentState extends State<RegisterComponent> {
     }
   }
 
-  bool _birthdateTapped = false;
+  void _showSnackBar(String message) {
+    final snackBar =
+        new SnackBar(content: new Text(message), backgroundColor: Colors.red);
+    Scaffold.of(_scaffoldContext).showSnackBar(snackBar);
+  }
 
   List<Widget> _buildRegistrationForm(BuildContext context) {
     Form form = new Form(
         key: _formKey,
         autovalidate: _autoValidate,
-        child: new Padding(
-            padding: EdgeInsets.all(8.0),
-            child: new ListView(
-                padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                children: <Widget>[
-                  new TextFormField(
-                    keyboardType: TextInputType.text,
-                    validator: validateName,
-                    onSaved: (value) {
-                      newUser.firstName = value;
-                    },
-                    decoration: const InputDecoration(
-                      icon: const Icon(Icons.person_outline),
-                      hintText: 'Enter your first name',
-                      labelText: 'First Name',
+        child: new ListView(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+            children: <Widget>[
+              new SizedBox(
+                height: 30.0,
+              ),
+              new Center(
+                  child: new Text("Sign up to create your wallet",
+                      style: TextStyle(
+                        fontSize: 20.0,
+                      ))),
+              new SizedBox(
+                height: 10.0,
+              ),
+              new TextFormField(
+                keyboardType: TextInputType.text,
+                validator: validateName,
+                onSaved: (value) {
+                  newUser.firstName = value;
+                },
+                decoration: const InputDecoration(
+                  icon: const Icon(Icons.person_outline),
+                  hintText: 'Enter your first name',
+                  labelText: 'First Name',
+                ),
+              ),
+              new TextFormField(
+                keyboardType: TextInputType.text,
+                validator: validateName,
+                onSaved: (value) {
+                  newUser.lastName = value;
+                },
+                decoration: const InputDecoration(
+                  icon: const Icon(Icons.person),
+                  hintText: 'Enter your last name',
+                  labelText: 'Last Name',
+                ),
+              ),
+              new TextFormField(
+                keyboardType: TextInputType.emailAddress,
+                validator: validateEmail,
+                onSaved: (value) {
+                  newUser.emailAddress = value;
+                },
+                decoration: const InputDecoration(
+                  icon: const Icon(Icons.email),
+                  hintText: 'Enter your email address',
+                  labelText: 'Email address',
+                ),
+              ),
+              new TextFormField(
+                keyboardType: TextInputType.phone,
+                validator: validateMobile,
+                onSaved: (value) {
+                  newUser.mobileNumber = value;
+                },
+                decoration: const InputDecoration(
+                  icon: const Icon(Icons.phone),
+                  hintText: 'Enter your mobile number',
+                  labelText: 'Mobile Number',
+                ),
+              ),
+              new GestureDetector(
+                  onTap: () {
+                    _chooseDate(context, _birthDateController.text);
+                  },
+                  behavior: HitTestBehavior.translucent,
+                  child: new Container(
+                    child: new IgnorePointer(
+                      child: new TextFormField(
+                          controller: _birthDateController,
+                          focusNode: focusNode,
+                          keyboardType: TextInputType.text,
+                          validator: validateBirthdate,
+                          onSaved: (value) {
+                            newUser.birthDate =
+                                convertToDate(_birthDateController.text);
+                          },
+                          decoration: const InputDecoration(
+                            icon: const Icon(Icons.calendar_today),
+                            hintText: 'Enter your birthdate',
+                            labelText: 'Birthdate',
+                          )),
                     ),
-                  ),
-                  new TextFormField(
-                    keyboardType: TextInputType.text,
-                    validator: validateName,
-                    onSaved: (value) {
-                      newUser.lastName = value;
-                    },
-                    decoration: const InputDecoration(
-                      icon: const Icon(Icons.person),
-                      hintText: 'Enter your last name',
-                      labelText: 'Last Name',
-                    ),
-                  ),
-                  new TextFormField(
-                    keyboardType: TextInputType.emailAddress,
-                    validator: validateEmail,
-                    onSaved: (value) {
-                      newUser.emailAddress = value;
-                    },
-                    decoration: const InputDecoration(
-                      icon: const Icon(Icons.email),
-                      hintText: 'Enter your email address',
-                      labelText: 'Email address',
-                    ),
-                  ),
-                  new TextFormField(
-                    keyboardType: TextInputType.phone,
-                    validator: validateMobile,
-                    onSaved: (value) {
-                      newUser.mobileNumber = value;
-                    },
-                    decoration: const InputDecoration(
-                      icon: const Icon(Icons.phone),
-                      hintText: 'Enter your mobile number',
-                      labelText: 'Mobile Number',
-                    ),
-                  ),
-                  new GestureDetector(
-                    onTap: () {
-                      _chooseDate(context, _controller.text);
-                      _birthdateTapped = true;
-                    },
-                    behavior: HitTestBehavior.translucent,
-                    child: new TextFormField(
-                      keyboardType: TextInputType.datetime,
-                      validator: validateBirthdate,
-                      onSaved: (value) {
-                        newUser.birthDate = convertToDate(value);
-                      },
-                      enabled: _birthdateTapped,
-                      decoration: const InputDecoration(
-                        icon: const Icon(Icons.calendar_today),
-                        hintText: 'Enter your birthdate',
-                        labelText: 'Birthdate',
-                      ),
-                    ),
-                  ),
-                  new SizedBox(
-                    height: 20.0,
-                  ),
-                  new RaisedButton(
-                    onPressed: () {
-                      _validateInputs(context);
-                    },
-                    child: new Text('Register'),
-                  )
-                ])));
+                  )),
+              new SizedBox(
+                height: 20.0,
+              ),
+              new CheckboxListTile(
+                  title: new Text('You agree to our Terms and Conditions'),
+                  value: _termsChecked,
+                  onChanged: (bool value) =>
+                      setState(() => _termsChecked = value)),
+              new SizedBox(
+                height: 15.0,
+              ),
+              new RaisedButton(
+                onPressed: () {
+                  _validateInputs(context);
+                },
+                child: new Text('Submit'),
+              )
+            ]));
 
     var l = new List<Widget>();
     l.add(form);
@@ -262,10 +297,13 @@ class RegisterComponentState extends State<RegisterComponent> {
   Widget build(BuildContext context) {
     return new Scaffold(
         appBar: new AppBar(
-          title: new Text("Welcome to Paytaca!"),
+          title: new Text("Welcome to Paytaca"),
           automaticallyImplyLeading: false,
           centerTitle: true,
         ),
-        body: new Stack(children: _buildRegistrationForm(context)));
+        body: new Builder(builder: (BuildContext context) {
+          _scaffoldContext = context;
+          return new Stack(children: _buildRegistrationForm(context));
+        }));
   }
 }
