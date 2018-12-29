@@ -42,6 +42,12 @@ Drawer buildDrawer(BuildContext context) {
             trailing: Icon(Icons.person_outline),
             onTap: () {
               Application.router.navigateTo(context, "/register");
+            }),
+        ListTile(
+            title: Text('Terms and Conditions'),
+            trailing: Icon(Icons.person_outline),
+            onTap: () {
+              Application.router.navigateTo(context, "/terms");
             })
       ],
     ),

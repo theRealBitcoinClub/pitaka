@@ -257,7 +257,27 @@ class RegisterComponentState extends State<RegisterComponent> {
                 height: 20.0,
               ),
               new CheckboxListTile(
-                  title: new Text('You agree to our Terms and Conditions'),
+                  title: new GestureDetector(
+                      onTap: () {
+                        Application.router.navigateTo(context, "/terms");
+                      },
+                      child: new RichText(
+                          text: new TextSpan(children: <TextSpan>[
+                        new TextSpan(
+                          text: 'Check the box to agree to our ',
+                          style: new TextStyle(
+                            color: Colors.black,
+                            fontSize: 16.0,
+                          ),
+                        ),
+                        new TextSpan(
+                          text: 'Terms and Conditions',
+                          style: new TextStyle(
+                            color: Colors.blue,
+                            fontSize: 16.0,
+                          ),
+                        )
+                      ]))),
                   value: _termsChecked,
                   onChanged: (bool value) =>
                       setState(() => _termsChecked = value)),
@@ -272,8 +292,8 @@ class RegisterComponentState extends State<RegisterComponent> {
               )
             ]));
 
-    var l = new List<Widget>();
-    l.add(form);
+    var ws = new List<Widget>();
+    ws.add(form);
 
     if (_submitting) {
       var modal = new Stack(
@@ -287,10 +307,10 @@ class RegisterComponentState extends State<RegisterComponent> {
           ),
         ],
       );
-      l.add(modal);
+      ws.add(modal);
     }
 
-    return l;
+    return ws;
   }
 
   @override
