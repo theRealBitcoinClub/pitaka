@@ -1,8 +1,37 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_keychain/flutter_keychain.dart';
 
-var balanceTab = Center(
-    child: Text("PHP 2,000.000",
-        style: TextStyle(fontSize: 22.0, fontWeight: FontWeight.bold)));
+Future<String> userId;
+Future<String> accountId;
+
+void getUserId() async {
+  userId = FlutterKeychain.get(key: "userId");
+}
+
+void getAccountId() async {
+  userId = FlutterKeychain.get(key: "accountId");
+}
+
+var balanceTab = new Builder(builder: (BuildContext context) {
+  getUserId();
+  getAccountId();
+  return Column(children: <Widget>[
+    Text("PHP 2,000.000",
+        style: TextStyle(fontSize: 22.0, fontWeight: FontWeight.bold)),
+    new FutureBuilder<String>(
+        future: userId,
+        builder: (BuildContext context, AsyncSnapshot<String> snapshot) {
+          return new Text(
+              snapshot.data != null ? 'User ID: ' + snapshot.data : '');
+        }),
+    new FutureBuilder<String>(
+        future: accountId,
+        builder: (BuildContext context, AsyncSnapshot<String> snapshot) {
+          return new Text(
+              snapshot.data != null ? 'Account ID: ' + snapshot.data : '');
+        }),
+  ]);
+});
 
 List<String> transactions = [
   "450.50",

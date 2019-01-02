@@ -7,6 +7,7 @@ import "package:hex/hex.dart";
 import 'package:intl/intl.dart';
 import 'dart:typed_data';
 import '../views/app.dart';
+import '../api/endpoints.dart';
 
 class User {
   String firstName;
@@ -138,13 +139,21 @@ class RegisterComponentState extends State<RegisterComponent> {
             _submitting = true;
           });
 
-          //Simulate a service call
-          new Future.delayed(new Duration(seconds: 3), () {
-            setState(() {
-              _submitting = false;
-            });
-            Application.router.navigateTo(context, "/home");
-          });
+          var userPayload = {
+            "firstname": "Bernardo",
+            "lastname": "Carpio",
+            "birthday": "2006-01-02",
+            "email": "joemar.ct+108@gmail.com",
+            "public_key":
+                "d3dc2b6911ce8ac8d94017524eaf3b7b939e397305667705dbc7800795ffbebe",
+            "txn_hash": "helloworld",
+            "signature":
+                "c040bf3e934622713cdf9ca87fb5f58b40621b198b6455dcb7e3758527e9bed255783d087a7958aa97b3f1449d89bcad16e3ee8fdd4ec18865ec4fe1e0f31a09"
+          };
+          var user = await createUser(userPayload);
+          await FlutterKeychain.put(key: "userId", value: user.xid);
+
+          Application.router.navigateTo(context, "/home");
         }
       } else {
         _showSnackBar("Please agree to our Terms and Conditions");
