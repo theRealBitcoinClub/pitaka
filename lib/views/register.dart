@@ -153,7 +153,7 @@ class RegisterComponentState extends State<RegisterComponent> {
           var user = await createUser(userPayload);
           await FlutterKeychain.put(key: "userId", value: user.xid);
 
-          Application.router.navigateTo(context, "/home");
+          Application.router.navigateTo(context, "/account");
         }
       } else {
         _showSnackBar("Please agree to our Terms and Conditions");
