@@ -48,6 +48,12 @@ Drawer buildDrawer(BuildContext context) {
             trailing: Icon(Icons.person_outline),
             onTap: () {
               Application.router.navigateTo(context, "/terms");
+            }),
+        ListTile(
+            title: Text('Create Account'),
+            trailing: Icon(Icons.person_outline),
+            onTap: () {
+              Application.router.navigateTo(context, "/account");
             })
       ],
     ),

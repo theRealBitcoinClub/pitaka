@@ -140,10 +140,10 @@ class RegisterComponentState extends State<RegisterComponent> {
           });
 
           var userPayload = {
-            "firstname": "Bernardo",
-            "lastname": "Carpio",
+            "firstname": newUser.firstName,
+            "lastname": newUser.lastName,
             "birthday": "2006-01-02",
-            "email": "joemar.ct+108@gmail.com",
+            "email": newUser.emailAddress,
             "public_key":
                 "d3dc2b6911ce8ac8d94017524eaf3b7b939e397305667705dbc7800795ffbebe",
             "txn_hash": "helloworld",

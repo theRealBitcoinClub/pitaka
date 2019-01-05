@@ -5,6 +5,7 @@ import './handlers.dart';
 class Routes {
   static String root = "/";
   static String register = "/register";
+  static String account = "/account";
   static String terms = "/terms";
   static String home = "/home";
   static String send = "/send";
@@ -19,6 +20,8 @@ class Routes {
         handler: rootHandler, transitionType: TransitionType.fadeIn);
     router.define(register,
         handler: registerHandler, transitionType: TransitionType.fadeIn);
+    router.define(account,
+        handler: accountHandler, transitionType: TransitionType.fadeIn);
     router.define(terms,
         handler: termsHandler, transitionType: TransitionType.fadeIn);
     router.define(home,
