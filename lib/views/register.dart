@@ -8,6 +8,7 @@ import 'package:intl/intl.dart';
 import 'dart:typed_data';
 import '../views/app.dart';
 import '../api/endpoints.dart';
+import '../helpers.dart';
 
 class User {
   String firstName;
@@ -38,13 +39,16 @@ class RegisterComponentState extends State<RegisterComponent> {
     if (!mounted) return;
   }
 
+  String publicKey;
+  String privateKey;
+
   Future<Null> generateKeyPair(BuildContext context) async {
     final keyPair = await CryptoSign.generateKeyPair();
 
     Uint8List publicKeyBytes = keyPair.publicKey;
     Uint8List privateKeyBytes = keyPair.secretKey;
-    String publicKey = HEX.encode(publicKeyBytes);
-    String privateKey = HEX.encode(privateKeyBytes);
+    publicKey = HEX.encode(publicKeyBytes);
+    privateKey = HEX.encode(privateKeyBytes);
 
     await _authenticate();
     await FlutterKeychain.put(key: "publicKey", value: publicKey);
@@ -139,18 +143,18 @@ class RegisterComponentState extends State<RegisterComponent> {
             _submitting = true;
           });
 
+          String signature = await signTransaction("helloworld", privateKey);
           var userPayload = {
             "firstname": newUser.firstName,
             "lastname": newUser.lastName,
             "birthday": "2006-01-02",
             "email": newUser.emailAddress,
-            "public_key":
-                "d3dc2b6911ce8ac8d94017524eaf3b7b939e397305667705dbc7800795ffbebe",
+            "public_key": publicKey,
             "txn_hash": "helloworld",
-            "signature":
-                "c040bf3e934622713cdf9ca87fb5f58b40621b198b6455dcb7e3758527e9bed255783d087a7958aa97b3f1449d89bcad16e3ee8fdd4ec18865ec4fe1e0f31a09"
+            "signature": signature
           };
           var user = await createUser(userPayload);
+          print(userPayload);
           await FlutterKeychain.put(key: "userId", value: user.xid);
 
           Application.router.navigateTo(context, "/account");
@@ -160,7 +164,7 @@ class RegisterComponentState extends State<RegisterComponent> {
       }
     } else {
       _showSnackBar("Please correct errors in the form");
-      // If all data are not valid then start auto validation.
+      // If any data are not valid then start auto validation.
       setState(() {
         _autoValidate = true;
       });
