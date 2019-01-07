@@ -1,13 +1,54 @@
+import 'package:dio/dio.dart';
+
 class GenericCreateResponse {
   final bool success;
   final String xid;
 
   GenericCreateResponse({this.success, this.xid});
 
-  factory GenericCreateResponse.fromJson(Map<String, dynamic> json) {
+  factory GenericCreateResponse.fromResponse(Response response) {
     return GenericCreateResponse(
-      success: json['success'],
-      xid: json['xid'],
+      success: response.data['success'],
+      xid: response.data['xid'],
+    );
+  }
+}
+
+class PlainSuccessResponse {
+  final bool success;
+
+  PlainSuccessResponse({this.success});
+
+  factory PlainSuccessResponse.fromResponse(Response response) {
+    return PlainSuccessResponse(
+      success: response.data['success']
+    );
+  }
+}
+
+class Balance {
+  String account;
+  int balance;
+}
+
+class BalancesResponse {
+  final bool success;
+  final List<Balance> balances;
+
+  BalancesResponse({this.success, this.balances});
+
+  factory BalancesResponse.fromResponse(Response response) {
+    var _balances = [];
+    for (final bal in response.data.balances) {
+      var balanceObj = new Balance();
+      balanceObj.account = bal['account'];
+      balanceObj.balance = bal['balance'];
+      _balances.add(balanceObj);
+    }
+    print(_balances);
+    return BalancesResponse(
+      success: response.data['success'],
+      balances: _balances
     );
   }
 }

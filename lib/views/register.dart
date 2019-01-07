@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_sodium/flutter_sodium.dart';
 import 'package:flutter_keychain/flutter_keychain.dart';
+import 'package:back_button_interceptor/back_button_interceptor.dart';
 import 'package:flutter/services.dart';
 import 'package:local_auth/local_auth.dart';
 import "package:hex/hex.dart";
@@ -24,6 +25,24 @@ class RegisterComponent extends StatefulWidget {
 }
 
 class RegisterComponentState extends State<RegisterComponent> {
+
+  @override
+  void initState() {
+    super.initState();
+    BackButtonInterceptor.add(interceptBackButton);
+  }
+
+  @override
+  void dispose() {
+    BackButtonInterceptor.remove(interceptBackButton);
+    super.dispose();
+  }
+
+  bool interceptBackButton(bool stopDefaultButtonEvent) {
+   print("Back navigation blocked!");
+   return true;
+  }
+
   final LocalAuthentication auth = LocalAuthentication();
   bool authenticated = false;
 

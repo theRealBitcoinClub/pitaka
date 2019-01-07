@@ -9,7 +9,9 @@ class HomeComponent extends StatefulWidget {
 }
 
 class HomeComponentState extends State<HomeComponent> {
+
   String path = "/home";
+
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_keychain/flutter_keychain.dart';
+import '../api/endpoints.dart';
+import '../api/responses.dart';
 
 Future<String> userId;
 Future<String> accountId;
@@ -12,11 +14,20 @@ void getAccountId() async {
   userId = FlutterKeychain.get(key: "accountId");
 }
 
+List<Balance> balances;
+
+void fetchBalances() async {
+  var balancesPayload = {};
+  var response = await getBalances(balancesPayload);
+  balances = response.balances;
+}
+
 var balanceTab = new Builder(builder: (BuildContext context) {
   getUserId();
   getAccountId();
+  fetchBalances();
   return Column(children: <Widget>[
-    Text("PHP 2,000.000",
+    Text("PHP 3,000.000 | $balances[0].account | $balances[0].balance",
         style: TextStyle(fontSize: 22.0, fontWeight: FontWeight.bold)),
     new FutureBuilder<String>(
         future: userId,

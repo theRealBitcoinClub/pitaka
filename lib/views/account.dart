@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_keychain/flutter_keychain.dart';
+import 'package:back_button_interceptor/back_button_interceptor.dart';
 import '../api/endpoints.dart';
 import '../views/app.dart';
 import '../helpers.dart';
@@ -14,6 +15,24 @@ class AccountComponent extends StatefulWidget {
 }
 
 class AccountComponentState extends State<AccountComponent> {
+
+  @override
+  void initState() {
+    super.initState();
+    BackButtonInterceptor.add(interceptBackButton);
+  }
+
+  @override
+  void dispose() {
+    BackButtonInterceptor.remove(interceptBackButton);
+    super.dispose();
+  }
+
+  bool interceptBackButton(bool stopDefaultButtonEvent) {
+   print("Back navigation blocked!");
+   return true;
+  }
+
   final _formKey = GlobalKey<FormState>();
   Account newAccount = new Account();
   bool _autoValidate = false;

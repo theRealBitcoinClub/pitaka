@@ -4,6 +4,8 @@ import 'package:after_layout/after_layout.dart';
 import 'package:flutter/services.dart';
 import 'package:local_auth/local_auth.dart';
 import '../views/app.dart';
+import '../api/endpoints.dart';
+import '../helpers.dart';
 
 class LandingComponent extends StatefulWidget {
   @override
@@ -76,6 +78,16 @@ class LandingComponentState extends State<LandingComponent>
       Application.router.navigateTo(context, "/register");
     } else {
       await _authenticate();
+      // Login
+      String publicKey = await FlutterKeychain.get(key: "publicKey");
+      String privateKey = await FlutterKeychain.get(key: "privateKey");
+      String signature = await signTransaction("hello world", privateKey);
+      var loginPayload = {
+        "public_key": publicKey,
+        "session_key": "hello world",
+        "signature": signature,
+      };
+      await loginUser(loginPayload);
       if (authenticated == true) {
         Application.router.navigateTo(context, "/home");
       }

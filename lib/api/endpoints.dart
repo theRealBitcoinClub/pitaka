@@ -1,12 +1,17 @@
-import 'package:http/http.dart' as http;
+import 'package:dio/dio.dart';
+import 'package:cookie_jar/cookie_jar.dart';
+import 'package:path_provider/path_provider.dart';
 import 'dart:convert';
+import 'dart:io';
 import 'config.dart';
 import 'responses.dart';
 
 Future<dynamic> _sendPostRequest(url, payload) async {
-  var headers = {'Content-Type': 'application/json'};
-  final response =
-      await http.post(url, body: json.encode(payload), headers: headers);
+  Dio dio = new Dio();
+  Directory tempDir = await getTemporaryDirectory();
+  String tempPath = tempDir.path;
+  dio.cookieJar = new PersistCookieJar(tempPath);
+  final response = await dio.post(url, data: json.encode(payload));
   return response;
 }
 
@@ -15,7 +20,7 @@ Future<GenericCreateResponse> createUser(payload) async {
   final response = await _sendPostRequest(url, payload);
 
   if (response.statusCode == 200) {
-    return GenericCreateResponse.fromJson(json.decode(response.body));
+    return GenericCreateResponse.fromResponse(response);
   } else {
     throw Exception('Failed to create user');
   }
@@ -26,8 +31,31 @@ Future<GenericCreateResponse> createAccount(payload) async {
   final response = await _sendPostRequest(url, payload);
 
   if (response.statusCode == 200) {
-    return GenericCreateResponse.fromJson(json.decode(response.body));
+    return GenericCreateResponse.fromResponse(response);
   } else {
     throw Exception('Failed to create account');
+  }
+}
+
+Future<PlainSuccessResponse> loginUser(payload) async {
+  final String url = baseUrl + '/api/auth/login';
+  final response = await _sendPostRequest(url, payload);
+
+  if (response.statusCode == 200) {
+    return PlainSuccessResponse.fromResponse(response);
+  } else {
+    throw Exception('Failed to login user');
+  }
+}
+
+Future<BalancesResponse> getBalances(payload) async {
+  final String url = baseUrl + '/api/wallet/balance';
+  final response = await _sendPostRequest(url, payload);
+
+  if (response.statusCode == 200) {
+    print(response.data);
+    return BalancesResponse.fromResponse(response);
+  } else {
+    throw Exception('Failed to get balances');
   }
 }
