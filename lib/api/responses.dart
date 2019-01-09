@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'dart:convert';
 
 class GenericCreateResponse {
   final bool success;
@@ -38,14 +39,13 @@ class BalancesResponse {
   BalancesResponse({this.success, this.balances});
 
   factory BalancesResponse.fromResponse(Response response) {
-    var _balances = [];
-    for (final bal in response.data.balances) {
+    List<Balance> _balances = [];
+    for (final bal in response.data['balances']) {
       var balanceObj = new Balance();
       balanceObj.account = bal['account'];
       balanceObj.balance = bal['balance'];
       _balances.add(balanceObj);
     }
-    print(_balances);
     return BalancesResponse(
       success: response.data['success'],
       balances: _balances

@@ -3,15 +3,10 @@ import 'package:flutter_keychain/flutter_keychain.dart';
 import '../api/endpoints.dart';
 import '../api/responses.dart';
 
-Future<String> userId;
-Future<String> accountId;
+String userId;
 
 void getUserId() async {
-  userId = FlutterKeychain.get(key: "userId");
-}
-
-void getAccountId() async {
-  userId = FlutterKeychain.get(key: "accountId");
+  userId = await FlutterKeychain.get(key: "userId");
 }
 
 List<Balance> balances;
@@ -24,23 +19,10 @@ void fetchBalances() async {
 
 var balanceTab = new Builder(builder: (BuildContext context) {
   getUserId();
-  getAccountId();
   fetchBalances();
   return Column(children: <Widget>[
-    Text("PHP 3,000.000 | $balances[0].account | $balances[0].balance",
+    Text("PHP 3,000.000",
         style: TextStyle(fontSize: 22.0, fontWeight: FontWeight.bold)),
-    new FutureBuilder<String>(
-        future: userId,
-        builder: (BuildContext context, AsyncSnapshot<String> snapshot) {
-          return new Text(
-              snapshot.data != null ? 'User ID: ' + snapshot.data : '');
-        }),
-    new FutureBuilder<String>(
-        future: accountId,
-        builder: (BuildContext context, AsyncSnapshot<String> snapshot) {
-          return new Text(
-              snapshot.data != null ? 'Account ID: ' + snapshot.data : '');
-        }),
   ]);
 });
 
