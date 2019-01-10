@@ -15,7 +15,6 @@ class AccountComponent extends StatefulWidget {
 }
 
 class AccountComponentState extends State<AccountComponent> {
-
   @override
   void initState() {
     super.initState();
@@ -29,8 +28,8 @@ class AccountComponentState extends State<AccountComponent> {
   }
 
   bool interceptBackButton(bool stopDefaultButtonEvent) {
-   print("Back navigation blocked!");
-   return true;
+    print("Back navigation blocked!");
+    return true;
   }
 
   final _formKey = GlobalKey<FormState>();
@@ -62,7 +61,6 @@ class AccountComponentState extends State<AccountComponent> {
         "txn_hash": "helloworld",
         "signature": signature
       };
-      print(accountPayload);
       await createAccount(accountPayload);
       Application.router.navigateTo(context, "/home");
     }

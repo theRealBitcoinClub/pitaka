@@ -53,7 +53,6 @@ Future<BalancesResponse> getBalances(payload) async {
   final response = await _sendPostRequest(url, payload);
 
   if (response.statusCode == 200) {
-    print(response.data);
     return BalancesResponse.fromResponse(response);
   } else {
     throw Exception('Failed to get balances');

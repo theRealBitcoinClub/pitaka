@@ -73,7 +73,6 @@ class LandingComponentState extends State<LandingComponent>
 
   void determinePath(BuildContext context) async {
     String publicKey = await FlutterKeychain.get(key: "publicKey");
-    print("Public key: $publicKey");
     if (publicKey == null) {
       Application.router.navigateTo(context, "/register");
     } else {

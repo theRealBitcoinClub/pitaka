@@ -21,9 +21,7 @@ class PlainSuccessResponse {
   PlainSuccessResponse({this.success});
 
   factory PlainSuccessResponse.fromResponse(Response response) {
-    return PlainSuccessResponse(
-      success: response.data['success']
-    );
+    return PlainSuccessResponse(success: response.data['success']);
   }
 }
 
@@ -42,13 +40,11 @@ class BalancesResponse {
     List<Balance> _balances = [];
     for (final bal in response.data['balances']) {
       var balanceObj = new Balance();
-      balanceObj.account = bal['account'];
-      balanceObj.balance = bal['balance'];
+      balanceObj.account = bal['Account'];
+      balanceObj.balance = bal['Balance'];
       _balances.add(balanceObj);
     }
     return BalancesResponse(
-      success: response.data['success'],
-      balances: _balances
-    );
+        success: response.data['success'], balances: _balances);
   }
 }

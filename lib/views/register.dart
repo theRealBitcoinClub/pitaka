@@ -25,7 +25,6 @@ class RegisterComponent extends StatefulWidget {
 }
 
 class RegisterComponentState extends State<RegisterComponent> {
-
   @override
   void initState() {
     super.initState();
@@ -39,8 +38,8 @@ class RegisterComponentState extends State<RegisterComponent> {
   }
 
   bool interceptBackButton(bool stopDefaultButtonEvent) {
-   print("Back navigation blocked!");
-   return true;
+    print("Back navigation blocked!");
+    return true;
   }
 
   final LocalAuthentication auth = LocalAuthentication();
@@ -173,7 +172,6 @@ class RegisterComponentState extends State<RegisterComponent> {
             "signature": signature
           };
           var user = await createUser(userPayload);
-          print(userPayload);
           await FlutterKeychain.put(key: "userId", value: user.xid);
 
           Application.router.navigateTo(context, "/account");
