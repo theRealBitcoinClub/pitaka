@@ -16,45 +16,40 @@ class LandingComponentState extends State<LandingComponent>
     with AfterLayoutMixin<LandingComponent> {
   @override
   Widget build(BuildContext context) {
-    return new Scaffold(body: new Container(color: Colors.red));
+    return new Container(
+      decoration: new BoxDecoration(
+        color: Colors.red,
+        image: new DecorationImage(
+          image: new AssetImage("assets/images/background1.png"),
+          fit: BoxFit.cover,
+        ),
+      ),
+      child: new Center(
+          child: new Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: <Widget>[
+          new Container(
+              width: 160.0,
+              height: 160.0,
+              child: new CircularProgressIndicator(
+        valueColor: new AlwaysStoppedAnimation(Colors.red),
+        strokeWidth: 4.0),
+              decoration: new BoxDecoration(
+                  color: Colors.red,
+                  shape: BoxShape.circle,
+                  image: new DecorationImage(
+                      fit: BoxFit.fill,
+                      image: new AssetImage("assets/icon/icon.png"))))
+        ],
+      )),
+    );
   }
 
   @override
   void afterFirstLayout(BuildContext context) {
     determinePath(context);
   }
-
-  // bool _canCheckBiometrics;
-  // List<BiometricType> _availableBiometrics;
-  // String _authorized = 'Not Authorized';
-
-  // Future<Null> _checkBiometrics() async {
-  //   bool canCheckBiometrics;
-  //   try {
-  //     canCheckBiometrics = await auth.canCheckBiometrics;
-  //   } on PlatformException catch (e) {
-  //     print(e);
-  //   }
-  //   if (!mounted) return;
-
-  //   setState(() {
-  //     _canCheckBiometrics = canCheckBiometrics;
-  //   });
-  // }
-
-  // Future<Null> _getAvailableBiometrics() async {
-  //   List<BiometricType> availableBiometrics;
-  //   try {
-  //     availableBiometrics = await auth.getAvailableBiometrics();
-  //   } on PlatformException catch (e) {
-  //     print(e);
-  //   }
-  //   if (!mounted) return;
-
-  //   setState(() {
-  //     _availableBiometrics = availableBiometrics;
-  //   });
-  // }
 
   final LocalAuthentication auth = LocalAuthentication();
   bool authenticated = false;

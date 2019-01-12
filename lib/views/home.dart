@@ -9,19 +9,19 @@ class HomeComponent extends StatefulWidget {
 }
 
 class HomeComponentState extends State<HomeComponent> {
-
   String path = "/home";
 
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
         length: 2,
+        initialIndex: 0,
         child: Scaffold(
           appBar: AppBar(
             title: Text('Paytaca'),
             bottom: TabBar(tabs: [
               Tab(
-                text: "Balance",
+                text: "Accounts",
               ),
               Tab(text: "Transactions"),
             ]),
@@ -30,7 +30,7 @@ class HomeComponentState extends State<HomeComponent> {
           drawer: buildDrawer(context),
           body: TabBarView(
             children: [
-              balanceTab,
+              accountsTab,
               transactionsTab,
             ],
           ),
