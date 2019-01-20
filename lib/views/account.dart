@@ -61,7 +61,8 @@ class AccountComponentState extends State<AccountComponent> {
         "txn_hash": "helloworld",
         "signature": signature
       };
-      await createAccount(accountPayload);
+      var response = await createAccount(accountPayload);
+      await FlutterKeychain.put(key: "defaultAccount", value: response.id);
       Application.router.navigateTo(context, "/home");
     }
   }

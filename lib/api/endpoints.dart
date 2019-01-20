@@ -68,13 +68,22 @@ Future<BalancesResponse> getBalances() async {
   }
 }
 
-Future<TransactionsResponse> getTransactions(account) async {
-  final String url = baseUrl + '/api/wallet/transactions/?account=' + account;
+Future<TransactionsResponse> getTransactions() async {
+  final String url = baseUrl + '/api/wallet/transactions';
   final response = await _sendGetRequest(url);
-
   if (response.statusCode == 200) {
     return TransactionsResponse.fromResponse(response);
   } else {
     throw Exception('Failed to get transactions');
+  }
+}
+
+Future<PlainSuccessResponse> transferAsset(payload) async {
+  final String url = baseUrl + '/api/assets/transfer';
+  final response = await _sendPostRequest(url, payload);
+  if (response.statusCode == 200) {
+    return PlainSuccessResponse.fromResponse(response);
+  } else {
+    throw Exception('Failed to transfer asset');
   }
 }

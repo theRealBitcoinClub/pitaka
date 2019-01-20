@@ -40,7 +40,7 @@ class BalancesResponse {
     for (final bal in response.data['balances']) {
       var balanceObj = new Balance();
       balanceObj.account = bal['Account'];
-      balanceObj.balance = bal['Balance'];
+      balanceObj.balance = bal['Balance'].toDouble();
       _balances.add(balanceObj);
     }
     return BalancesResponse(
@@ -64,7 +64,7 @@ class TransactionsResponse {
     for (final bal in response.data['transactions']) {
       var transObj = new Transaction();
       transObj.mode = bal['Mode'];
-      transObj.amount = bal['Amount'];
+      transObj.amount = bal['Amount'].toDouble();
       _transactions.add(transObj);
     }
     return TransactionsResponse(

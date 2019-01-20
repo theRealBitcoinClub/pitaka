@@ -4,8 +4,6 @@ import 'package:after_layout/after_layout.dart';
 import 'package:flutter/services.dart';
 import 'package:local_auth/local_auth.dart';
 import '../views/app.dart';
-import '../api/endpoints.dart';
-import '../helpers.dart';
 
 class LandingComponent extends StatefulWidget {
   @override
