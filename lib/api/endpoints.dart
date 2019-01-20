@@ -15,6 +15,15 @@ Future<dynamic> _sendPostRequest(url, payload) async {
   return response;
 }
 
+Future<dynamic> _sendGetRequest(url) async {
+  Dio dio = new Dio();
+  Directory tempDir = await getTemporaryDirectory();
+  String tempPath = tempDir.path;
+  dio.cookieJar = new PersistCookieJar(tempPath);
+  final response = await dio.get(url);
+  return response;
+}
+
 Future<GenericCreateResponse> createUser(payload) async {
   final String url = baseUrl + '/api/users/create';
   final response = await _sendPostRequest(url, payload);
@@ -48,13 +57,24 @@ Future<PlainSuccessResponse> loginUser(payload) async {
   }
 }
 
-Future<BalancesResponse> getBalances(payload) async {
+Future<BalancesResponse> getBalances() async {
   final String url = baseUrl + '/api/wallet/balance';
-  final response = await _sendPostRequest(url, payload);
+  final response = await _sendGetRequest(url);
 
   if (response.statusCode == 200) {
     return BalancesResponse.fromResponse(response);
   } else {
     throw Exception('Failed to get balances');
+  }
+}
+
+Future<TransactionsResponse> getTransactions(account) async {
+  final String url = baseUrl + '/api/wallet/transactions/?account=' + account;
+  final response = await _sendGetRequest(url);
+
+  if (response.statusCode == 200) {
+    return TransactionsResponse.fromResponse(response);
+  } else {
+    throw Exception('Failed to get transactions');
   }
 }

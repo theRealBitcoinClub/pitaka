@@ -172,7 +172,16 @@ class RegisterComponentState extends State<RegisterComponent> {
             "signature": signature
           };
           var user = await createUser(userPayload);
-          await FlutterKeychain.put(key: "userId", value: user.xid);
+          await FlutterKeychain.put(key: "userId", value: user.id);
+
+          // Login
+          String loginSignature = await signTransaction("hello world", privateKey);
+          var loginPayload = {
+            "public_key": publicKey,
+            "session_key": "hello world",
+            "signature": loginSignature,
+          };
+          await loginUser(loginPayload);
 
           Application.router.navigateTo(context, "/account");
         }

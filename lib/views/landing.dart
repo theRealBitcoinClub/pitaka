@@ -72,16 +72,16 @@ class LandingComponentState extends State<LandingComponent>
       Application.router.navigateTo(context, "/register");
     } else {
       await _authenticate();
-      // Login
-      String publicKey = await FlutterKeychain.get(key: "publicKey");
-      String privateKey = await FlutterKeychain.get(key: "privateKey");
-      String signature = await signTransaction("hello world", privateKey);
-      var loginPayload = {
-        "public_key": publicKey,
-        "session_key": "hello world",
-        "signature": signature,
-      };
-      await loginUser(loginPayload);
+      // // Login
+      // String publicKey = await FlutterKeychain.get(key: "publicKey");
+      // String privateKey = await FlutterKeychain.get(key: "privateKey");
+      // String signature = await signTransaction("hello world", privateKey);
+      // var loginPayload = {
+      //   "public_key": publicKey,
+      //   "session_key": "hello world",
+      //   "signature": signature,
+      // };
+      // await loginUser(loginPayload);
       if (authenticated == true) {
         Application.router.navigateTo(context, "/home");
       }
