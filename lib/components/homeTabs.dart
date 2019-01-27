@@ -1,12 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../api/endpoints.dart';
-import '../api/responses.dart';
-
-Future<List<Balance>> fetchBalances() async {
-  var response = await getBalances();
-  return response.balances;
-}
 
 final formatCurrency = new NumberFormat.currency(symbol: 'PHP ');
 
@@ -30,7 +24,7 @@ ListView _buildBalancesList(balances) {
                           padding:
                               const EdgeInsets.fromLTRB(8.0, 8.0, 8.0, 6.0),
                           child: Text(
-                            "${balances[index].account}",
+                            "${balances[index].accountName}",
                             style: TextStyle(
                                 fontSize: 18.0, fontWeight: FontWeight.bold),
                           ),
@@ -60,24 +54,21 @@ var accountsTab = new Builder(builder: (BuildContext context) {
   return new Container(
       alignment: Alignment.center,
       child: new FutureBuilder(
-          future: fetchBalances(),
+          future: getBalances(),
           builder: (BuildContext context, AsyncSnapshot snapshot) {
             if (snapshot.hasData) {
               if (snapshot.data != null) {
-                return _buildBalancesList(snapshot.data);
-              } else {
-                return new CircularProgressIndicator();
+                if (snapshot.data.balances.length > 0) {
+                  return _buildBalancesList(snapshot.data.balances);
+                } else {
+                  return new CircularProgressIndicator();
+                }
               }
             } else {
               return new CircularProgressIndicator();
             }
           }));
 });
-
-Future<List<Transaction>> fetchTransactions() async {
-  var response = await getTransactions();
-  return response.transactions;
-}
 
 String _formatMode(String mode) {
   String formattedMode;
@@ -171,11 +162,15 @@ var transactionsTab = new Builder(builder: (BuildContext context) {
   return new Container(
       alignment: Alignment.center,
       child: new FutureBuilder(
-          future: fetchTransactions(),
+          future: getTransactions(),
           builder: (BuildContext context, AsyncSnapshot snapshot) {
             if (snapshot.hasData) {
               if (snapshot.data != null) {
-                return _buildTransactionsList(snapshot.data);
+                if (snapshot.data.transactions.length > 0) {
+                  return _buildTransactionsList(snapshot.data.transactions);
+                } else {
+                  return Text('No transactions to display');
+                }
               } else {
                 return new CircularProgressIndicator();
               }

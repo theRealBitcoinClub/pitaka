@@ -6,6 +6,7 @@ import 'dart:io';
 import 'config.dart';
 import 'responses.dart';
 
+
 Future<dynamic> _sendPostRequest(url, payload) async {
   Dio dio = new Dio();
   Directory tempDir = await getTemporaryDirectory();
@@ -60,7 +61,6 @@ Future<PlainSuccessResponse> loginUser(payload) async {
 Future<BalancesResponse> getBalances() async {
   final String url = baseUrl + '/api/wallet/balance';
   final response = await _sendGetRequest(url);
-
   if (response.statusCode == 200) {
     return BalancesResponse.fromResponse(response);
   } else {
