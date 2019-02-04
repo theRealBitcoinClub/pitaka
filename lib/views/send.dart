@@ -119,8 +119,9 @@ class SendComponentState extends State<SendComponent> {
                                 });
                               },
                               swipeConfiguration: SwipeConfiguration(
-                                verticalSwipeMinVelocity: 100.0,
-                              ),
+                                  horizontalSwipeMaxHeightThreshold: 50.0,
+                                  horizontalSwipeMinDisplacement: 50.0,
+                                  horizontalSwipeMinVelocity: 200.0),
                               child: new Container(
                                   padding: const EdgeInsets.only(
                                       top: 50.0, bottom: 50.00),
