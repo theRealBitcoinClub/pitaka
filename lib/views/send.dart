@@ -29,12 +29,13 @@ class SendComponentState extends State<SendComponent> {
   Future<bool> sendFunds(String toAccount, int amount) async {
     String publicKey = await FlutterKeychain.get(key: "publicKey");
     String privateKey = await FlutterKeychain.get(key: "privateKey");
+    String accounts = await FlutterKeychain.get(key: "accounts");
     final String txnhash = _randomString(20);
     String signature = await signTransaction(txnhash, privateKey);
     var payload = {
-      'from_account': "ED7E75AE-C9DD-4E72-A94F-9559C4ED2BB5",
+      'from_account': accounts.split(',')[0].split('|')[1],
       'to_account': toAccount,
-      'asset': '865AF790-9B65-4DD0-AE65-39F677FCFB0D',
+      'asset': 'BABE6CFE-A5C7-445C-9225-B072B98EBEA6',
       'amount': amount,
       'public_key': publicKey,
       "txn_hash": txnhash,
