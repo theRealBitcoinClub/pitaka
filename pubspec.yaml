@@ -27,6 +27,7 @@ dependencies:
   dio: ^1.0.13
   cookie_jar: ^0.0.7
   path_provider: ^0.4.1
+  swipedetector: ^1.2.0
   flutter:
     sdk: flutter
 
