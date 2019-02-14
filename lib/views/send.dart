@@ -9,6 +9,7 @@ import '../api/endpoints.dart';
 import '../views/app.dart';
 import '../helpers.dart';
 import '../api/responses.dart';
+import '../api/config.dart';
 
 class SendComponent extends StatefulWidget {
   @override
@@ -53,7 +54,7 @@ class SendComponentState extends State<SendComponent> {
     var payload = {
       'from_account': accounts[accountIndex].accountId,
       'to_account': toAccount,
-      'asset': 'BABE6CFE-A5C7-445C-9225-B072B98EBEA6',
+      'asset': phpAssetId,
       'amount': amount,
       'public_key': publicKey,
       "txn_hash": txnhash,
