@@ -1,4 +1,5 @@
 import 'dart:math';
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:qr_reader/qr_reader.dart';
 import 'package:flutter_keychain/flutter_keychain.dart';

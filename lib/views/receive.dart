@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:flutter_keychain/flutter_keychain.dart';
 import 'package:swipedetector/swipedetector.dart';
+import 'dart:async';
 import '../components/drawer.dart';
 import '../components/bottomNavigation.dart';
 import '../api/responses.dart';

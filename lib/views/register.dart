@@ -7,6 +7,7 @@ import 'package:local_auth/local_auth.dart';
 import "package:hex/hex.dart";
 import 'package:intl/intl.dart';
 import 'dart:typed_data';
+import 'dart:async';
 import '../views/app.dart';
 import '../api/endpoints.dart';
 import '../helpers.dart';
@@ -175,7 +176,8 @@ class RegisterComponentState extends State<RegisterComponent> {
           await FlutterKeychain.put(key: "userId", value: user.id);
 
           // Login
-          String loginSignature = await signTransaction("hello world", privateKey);
+          String loginSignature =
+              await signTransaction("hello world", privateKey);
           var loginPayload = {
             "public_key": publicKey,
             "session_key": "hello world",

@@ -1,29 +1,21 @@
 import 'package:dio/dio.dart';
 import 'package:cookie_jar/cookie_jar.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:flutter_keychain/flutter_keychain.dart';
 import 'dart:convert';
-import 'dart:io';
 import 'dart:async';
 import 'config.dart';
 import 'responses.dart';
 
 Future<dynamic> _sendPostRequest(url, payload) async {
-  Dio dio = new Dio();
-  Directory tempDir = await getTemporaryDirectory();
-  String tempPath = tempDir.path;
-  CookieJar cj = new PersistCookieJar(dir: tempPath);
-  dio.interceptors.add(CookieManager(cj));
+  var dio = new Dio();
+  dio.interceptors.add(CookieManager(CookieJar()));
   final response = await dio.post(url, data: json.encode(payload));
   return response;
 }
 
 Future<dynamic> _sendGetRequest(url) async {
-  Dio dio = new Dio();
-  Directory tempDir = await getTemporaryDirectory();
-  String tempPath = tempDir.path;
-  CookieJar cj = new PersistCookieJar(dir: tempPath);
-  dio.interceptors.add(CookieManager(cj));
+  var dio = new Dio();
+  dio.interceptors.add(CookieManager(CookieJar()));
   final response = await dio.get(url);
   return response;
 }

@@ -3,6 +3,7 @@ import 'package:flutter_keychain/flutter_keychain.dart';
 import 'package:after_layout/after_layout.dart';
 import 'package:flutter/services.dart';
 import 'package:local_auth/local_auth.dart';
+import 'dart:async';
 import '../views/app.dart';
 
 class LandingComponent extends StatefulWidget {
