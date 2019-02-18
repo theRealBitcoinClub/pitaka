@@ -4,6 +4,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:flutter_keychain/flutter_keychain.dart';
 import 'dart:convert';
 import 'dart:io';
+import 'dart:async';
 import 'config.dart';
 import 'responses.dart';
 
@@ -11,7 +12,8 @@ Future<dynamic> _sendPostRequest(url, payload) async {
   Dio dio = new Dio();
   Directory tempDir = await getTemporaryDirectory();
   String tempPath = tempDir.path;
-  dio.cookieJar = new PersistCookieJar(tempPath);
+  CookieJar cj = new PersistCookieJar(dir: tempPath);
+  dio.interceptors.add(CookieManager(cj));
   final response = await dio.post(url, data: json.encode(payload));
   return response;
 }
@@ -20,7 +22,8 @@ Future<dynamic> _sendGetRequest(url) async {
   Dio dio = new Dio();
   Directory tempDir = await getTemporaryDirectory();
   String tempPath = tempDir.path;
-  dio.cookieJar = new PersistCookieJar(tempPath);
+  CookieJar cj = new PersistCookieJar(dir: tempPath);
+  dio.interceptors.add(CookieManager(cj));
   final response = await dio.get(url);
   return response;
 }

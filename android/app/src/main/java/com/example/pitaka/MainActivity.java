@@ -1,4 +1,4 @@
-package com.example.pitaka;
+package com.paytaca.app;
 
 import android.os.Bundle;
 import io.flutter.app.FlutterActivity;

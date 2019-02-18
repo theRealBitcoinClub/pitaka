@@ -31,8 +31,8 @@ class LandingComponentState extends State<LandingComponent>
               width: 160.0,
               height: 160.0,
               child: new CircularProgressIndicator(
-        valueColor: new AlwaysStoppedAnimation(Colors.red),
-        strokeWidth: 4.0),
+                  valueColor: new AlwaysStoppedAnimation(Colors.red),
+                  strokeWidth: 4.0),
               decoration: new BoxDecoration(
                   color: Colors.red,
                   shape: BoxShape.circle,

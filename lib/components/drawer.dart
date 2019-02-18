@@ -7,8 +7,8 @@ Drawer buildDrawer(BuildContext context) {
       padding: EdgeInsets.zero,
       children: <Widget>[
         UserAccountsDrawerHeader(
-          accountName: Text("Joemar Taganna"),
-          accountEmail: Text("joemar@paytaca.com"),
+          accountName: Text("Name"),
+          accountEmail: Text("email"),
           currentAccountPicture: CircleAvatar(
             backgroundColor: Theme.of(context).platform == TargetPlatform.iOS
                 ? Colors.blue
@@ -36,18 +36,6 @@ Drawer buildDrawer(BuildContext context) {
             trailing: Icon(Icons.inbox),
             onTap: () {
               Application.router.navigateTo(context, "/receive");
-            }),
-        ListTile(
-            title: Text('Register'),
-            trailing: Icon(Icons.person_outline),
-            onTap: () {
-              Application.router.navigateTo(context, "/register");
-            }),
-        ListTile(
-            title: Text('Terms and Conditions'),
-            trailing: Icon(Icons.person_outline),
-            onTap: () {
-              Application.router.navigateTo(context, "/terms");
             }),
         ListTile(
             title: Text('Create Account'),
