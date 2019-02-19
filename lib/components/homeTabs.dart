@@ -63,6 +63,8 @@ var accountsTab = new Builder(builder: (BuildContext context) {
                 } else {
                   return new CircularProgressIndicator();
                 }
+              } else {
+                return new CircularProgressIndicator();
               }
             } else {
               return new CircularProgressIndicator();

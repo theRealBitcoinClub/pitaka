@@ -10,7 +10,7 @@ description: Paytaca mobile wallet app
 version: 1.0.0+1
 
 environment:
-  sdk: '>=2.1.0 <3.0.0'
+  sdk: ">=2.1.0 <3.0.0"
 
 dependencies:
   qr_flutter:
@@ -29,9 +29,9 @@ dependencies:
   back_button_interceptor: ^2.0.0
   dio: ^2.0.7
   dio_flutter_transformer: ^2.0.6
-  path_provider: ^0.4.1
+  path_provider: ^0.5.0+1
+  shared_preferences: ^0.5.1+1
   swipedetector: ^1.2.0
-  http: ^0.12.0+1
   flutter:
     sdk: flutter
 
@@ -40,14 +40,14 @@ dependencies:
   cupertino_icons: ^0.1.2
 
 dev_dependencies:
-  flutter_launcher_icons: '^0.7.0'
+  flutter_launcher_icons: "^0.7.0"
   flutter_test:
     sdk: flutter
 
 flutter_icons:
-  android: 'launcher_icon'
+  android: "launcher_icon"
   ios: true
-  image_path: 'assets/icon/icon.png'
+  image_path: "assets/icon/icon.png"
 
 # For information on the generic Dart part of this file, see the
 # following page: https://www.dartlang.org/tools/pub/pubspec

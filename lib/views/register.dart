@@ -168,6 +168,7 @@ class RegisterComponentState extends State<RegisterComponent> {
             "lastname": newUser.lastName,
             "birthday": "2006-01-02",
             "email": newUser.emailAddress,
+            "mobilenumber": newUser.mobileNumber,
             "public_key": publicKey,
             "txn_hash": "helloworld",
             "signature": signature
