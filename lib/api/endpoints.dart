@@ -1,19 +1,20 @@
 import 'package:dio/dio.dart';
 import 'package:cookie_jar/cookie_jar.dart';
 import 'package:flutter_keychain/flutter_keychain.dart';
-import 'dart:convert';
+import 'package:dio_flutter_transformer/dio_flutter_transformer.dart';
 import 'dart:async';
 import 'config.dart';
 import 'responses.dart';
 
-Future<dynamic> _sendPostRequest(url, payload) async {
+Future<dynamic> sendPostRequest(url, payload) async {
   var dio = new Dio();
+  dio.transformer = new FlutterTransformer();
   dio.interceptors.add(CookieManager(CookieJar()));
-  final response = await dio.post(url, data: json.encode(payload));
+  final response = await dio.post(url, data: payload);
   return response;
 }
 
-Future<dynamic> _sendGetRequest(url) async {
+Future<dynamic> sendGetRequest(url) async {
   var dio = new Dio();
   dio.interceptors.add(CookieManager(CookieJar()));
   final response = await dio.get(url);
@@ -22,7 +23,7 @@ Future<dynamic> _sendGetRequest(url) async {
 
 Future<GenericCreateResponse> createUser(payload) async {
   final String url = baseUrl + '/api/users/create';
-  final response = await _sendPostRequest(url, payload);
+  final response = await sendPostRequest(url, payload);
 
   if (response.statusCode == 200) {
     return GenericCreateResponse.fromResponse(response);
@@ -33,7 +34,7 @@ Future<GenericCreateResponse> createUser(payload) async {
 
 Future<GenericCreateResponse> createAccount(payload) async {
   final String url = baseUrl + '/api/accounts/create';
-  final response = await _sendPostRequest(url, payload);
+  final response = await sendPostRequest(url, payload);
 
   if (response.statusCode == 200) {
     return GenericCreateResponse.fromResponse(response);
@@ -44,7 +45,7 @@ Future<GenericCreateResponse> createAccount(payload) async {
 
 Future<PlainSuccessResponse> loginUser(payload) async {
   final String url = baseUrl + '/api/auth/login';
-  final response = await _sendPostRequest(url, payload);
+  final response = await sendPostRequest(url, payload);
 
   if (response.statusCode == 200) {
     return PlainSuccessResponse.fromResponse(response);
@@ -55,7 +56,7 @@ Future<PlainSuccessResponse> loginUser(payload) async {
 
 Future<BalancesResponse> getBalances() async {
   final String url = baseUrl + '/api/wallet/balance';
-  final response = await _sendGetRequest(url);
+  final response = await sendGetRequest(url);
   if (response.statusCode == 200) {
     // Store account details in keychain
     List<String> _accounts = [];
@@ -73,7 +74,7 @@ Future<BalancesResponse> getBalances() async {
 
 Future<TransactionsResponse> getTransactions() async {
   final String url = baseUrl + '/api/wallet/transactions';
-  final response = await _sendGetRequest(url);
+  final response = await sendGetRequest(url);
   if (response.statusCode == 200) {
     return TransactionsResponse.fromResponse(response);
   } else {
@@ -83,7 +84,7 @@ Future<TransactionsResponse> getTransactions() async {
 
 Future<AccountsResponse> getAccounts() async {
   final String url = baseUrl + '/api/accounts/list';
-  final response = await _sendGetRequest(url);
+  final response = await sendGetRequest(url);
   if (response.statusCode == 200) {
     return AccountsResponse.fromResponse(response);
   } else {
@@ -93,7 +94,7 @@ Future<AccountsResponse> getAccounts() async {
 
 Future<PlainSuccessResponse> transferAsset(payload) async {
   final String url = baseUrl + '/api/assets/transfer';
-  final response = await _sendPostRequest(url, payload);
+  final response = await sendPostRequest(url, payload);
   if (response.statusCode == 200) {
     return PlainSuccessResponse.fromResponse(response);
   } else {

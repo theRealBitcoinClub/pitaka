@@ -10,7 +10,7 @@ description: Paytaca mobile wallet app
 version: 1.0.0+1
 
 environment:
-  sdk: '>=2.0.0-dev.68.0 <3.0.0'
+  sdk: '>=2.1.0 <3.0.0'
 
 dependencies:
   qr_flutter:
@@ -28,8 +28,10 @@ dependencies:
   flutter_markdown: ^0.2.0
   back_button_interceptor: ^2.0.0
   dio: ^2.0.7
+  dio_flutter_transformer: ^2.0.6
   path_provider: ^0.4.1
   swipedetector: ^1.2.0
+  http: ^0.12.0+1
   flutter:
     sdk: flutter
 

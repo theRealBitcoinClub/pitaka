@@ -3,7 +3,9 @@ import 'package:flutter_keychain/flutter_keychain.dart';
 import 'package:after_layout/after_layout.dart';
 import 'package:flutter/services.dart';
 import 'package:local_auth/local_auth.dart';
+import 'package:http/http.dart' as http;
 import 'dart:async';
+import '../api/endpoints.dart';
 import '../views/app.dart';
 
 class LandingComponent extends StatefulWidget {
@@ -66,6 +68,8 @@ class LandingComponentState extends State<LandingComponent>
   }
 
   void determinePath(BuildContext context) async {
+    http.get('http://lantaka-dev.paytaca.com/test/0000');
+    sendGetRequest('http://lantaka-dev.paytaca.com/test/1234');
     String publicKey = await FlutterKeychain.get(key: "publicKey");
     if (publicKey == null) {
       Application.router.navigateTo(context, "/register");
