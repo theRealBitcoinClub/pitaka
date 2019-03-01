@@ -7,6 +7,7 @@ import 'package:path_provider/path_provider.dart';
 import 'dart:async';
 import 'config.dart';
 import 'responses.dart';
+import '../helpers.dart';
 
 Future<dynamic> sendPostRequest(url, payload) async {
   var dio = new Dio();
@@ -53,9 +54,9 @@ Future<GenericCreateResponse> createAccount(payload) async {
 
 Future<PlainSuccessResponse> loginUser(payload) async {
   final String url = baseUrl + '/api/auth/login';
-  final response = await sendPostRequest(url, payload);
-
-  if (response.statusCode == 200) {
+  try {
+    Response response;
+    response = await sendPostRequest(url, payload);
     // Save user details in shared preferences
     SharedPreferences prefs = await SharedPreferences.getInstance();
     var user = response.data['user'];
@@ -63,15 +64,28 @@ Future<PlainSuccessResponse> loginUser(payload) async {
     await prefs.setString('lastName', user['LastName']);
     await prefs.setString('email', user['Email']);
     return PlainSuccessResponse.fromResponse(response);
-  } else {
-    throw Exception('Failed to login user');
+  } catch (e) {
+    throw Exception(e);
   }
+}
+
+Future<void> sendLoginRequest() async {
+  String publicKey = await FlutterKeychain.get(key: "publicKey");
+  String privateKey = await FlutterKeychain.get(key: "privateKey");
+  String loginSignature = await signTransaction("hello world", privateKey);
+  var loginPayload = {
+    "public_key": publicKey,
+    "session_key": "hello world",
+    "signature": loginSignature,
+  };
+  await loginUser(loginPayload);
 }
 
 Future<BalancesResponse> getBalances() async {
   final String url = baseUrl + '/api/wallet/balance';
-  final response = await sendGetRequest(url);
-  if (response.statusCode == 200) {
+  Response response;
+  try {
+    response = await sendGetRequest(url);
     // Store account details in keychain
     List<String> _accounts = [];
     for (final bal in response.data['balances']) {
@@ -81,18 +95,23 @@ Future<BalancesResponse> getBalances() async {
     await FlutterKeychain.put(key: "accounts", value: _accounts.join(','));
     // Parse response into BalanceResponse
     return BalancesResponse.fromResponse(response);
-  } else {
-    throw Exception('Failed to get balances');
+  } catch (e) {
+    // Login before resending the request again
+    await sendLoginRequest();
+    return await getBalances();
   }
 }
 
 Future<TransactionsResponse> getTransactions() async {
   final String url = baseUrl + '/api/wallet/transactions';
-  final response = await sendGetRequest(url);
-  if (response.statusCode == 200) {
+  Response response;
+  try {
+    response = await sendGetRequest(url);
     return TransactionsResponse.fromResponse(response);
-  } else {
-    throw Exception('Failed to get transactions');
+  } catch (e) {
+    // Login before resending the request again
+    await sendLoginRequest();
+    return await getTransactions();
   }
 }
 

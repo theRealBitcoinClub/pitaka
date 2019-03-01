@@ -58,8 +58,9 @@ var accountsTab = new Builder(builder: (BuildContext context) {
           builder: (BuildContext context, AsyncSnapshot snapshot) {
             if (snapshot.hasData) {
               if (snapshot.data != null) {
-                if (snapshot.data.balances.length > 0) {
-                  return _buildBalancesList(snapshot.data.balances);
+                if (snapshot.data.success) {
+                  var balances = snapshot.data.balances;
+                  return _buildBalancesList(balances);
                 } else {
                   return new CircularProgressIndicator();
                 }
