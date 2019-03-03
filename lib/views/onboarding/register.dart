@@ -16,11 +16,12 @@ class User {
   String firstName;
   String lastName;
   String emailAddress;
-  String mobileNumber;
   DateTime birthDate;
 }
 
 class RegisterComponent extends StatefulWidget {
+  final String mobileNumber;
+  RegisterComponent({Key key, this.mobileNumber}) : super(key: key);
   @override
   RegisterComponentState createState() => new RegisterComponentState();
 }
@@ -94,13 +95,6 @@ class RegisterComponentState extends State<RegisterComponent> {
       return null;
   }
 
-  String validateMobile(String value) {
-    if (value.length != 11)
-      return 'Mobile Number must be of 11 digits';
-    else
-      return null;
-  }
-
   String validateBirthdate(String value) {
     var formattedBirthDate = convertToDate(_birthDateController.text);
     if (formattedBirthDate == null)
@@ -162,13 +156,14 @@ class RegisterComponentState extends State<RegisterComponent> {
             _submitting = true;
           });
 
+          // TODO: Replace the dummy data here with real ones
           String signature = await signTransaction("helloworld", privateKey);
           var userPayload = {
             "firstname": newUser.firstName,
             "lastname": newUser.lastName,
             "birthday": "2006-01-02",
             "email": newUser.emailAddress,
-            "mobilenumber": newUser.mobileNumber,
+            "mobile_number": "${widget.mobileNumber}",
             "public_key": publicKey,
             "txn_hash": "helloworld",
             "signature": signature
@@ -258,18 +253,6 @@ class RegisterComponentState extends State<RegisterComponent> {
                   icon: const Icon(Icons.email),
                   hintText: 'Enter your email address',
                   labelText: 'Email address',
-                ),
-              ),
-              new TextFormField(
-                keyboardType: TextInputType.phone,
-                validator: validateMobile,
-                onSaved: (value) {
-                  newUser.mobileNumber = value;
-                },
-                decoration: const InputDecoration(
-                  icon: const Icon(Icons.phone),
-                  hintText: 'Enter your mobile number',
-                  labelText: 'Mobile Number',
                 ),
               ),
               new GestureDetector(

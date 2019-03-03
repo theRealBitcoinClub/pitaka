@@ -4,19 +4,16 @@ import 'package:flutter/services.dart';
 import '../../api/endpoints.dart';
 import '../app.dart';
 
-class Code {
-  String value;
+class Mobile {
+  String number;
 }
 
-class VerifyComponent extends StatefulWidget {
-  final String mobileNumber;
-  VerifyComponent({Key key, this.mobileNumber}) : super(key: key);
-
+class RequestComponent extends StatefulWidget {
   @override
-  VerifyComponentState createState() => new VerifyComponentState();
+  RequestComponentState createState() => new RequestComponentState();
 }
 
-class VerifyComponentState extends State<VerifyComponent> {
+class RequestComponentState extends State<RequestComponent> {
   @override
   void initState() {
     super.initState();
@@ -35,11 +32,11 @@ class VerifyComponentState extends State<VerifyComponent> {
   }
 
   final _formKey = GlobalKey<FormState>();
-  Code newCode = new Code();
+  Mobile newMobile = new Mobile();
 
-  String validateCode(String value) {
-    if (value.length != 6)
-      return 'OTP code must not be exactly 6 digits';
+  String validateMobile(String value) {
+    if (value.length != 12)
+      return 'Mobile Number must be of 11 digits';
     else
       return null;
   }
@@ -59,19 +56,12 @@ class VerifyComponentState extends State<VerifyComponent> {
         _submitting = true;
       });
 
-      var codePayload = {
-        "mobile_number": "${widget.mobileNumber}",
-        "code": newCode.value
-      };
-      var resp = await verifyOtpCode(codePayload);
+      var numberPayload = {"mobile_number": newMobile.number};
+      var resp = await requestOtpCode(numberPayload);
 
-      if (resp.verified) {
+      if (resp.success) {
         Application.router
-            .navigateTo(context, "/onboarding/register/${widget.mobileNumber}");
-      } else {
-        setState(() {
-          _submitting = false;
-        });
+            .navigateTo(context, "/onboarding/verify/${newMobile.number}");
       }
     } else {
       _showSnackBar("Please correct errors in the form");
@@ -89,7 +79,7 @@ class VerifyComponentState extends State<VerifyComponent> {
     Scaffold.of(_scaffoldContext).showSnackBar(snackBar);
   }
 
-  List<Widget> _buildOtpCodeForm(BuildContext context) {
+  List<Widget> _buildMobileNumberForm(BuildContext context) {
     Form form = new Form(
         key: _formKey,
         autovalidate: _autoValidate,
@@ -100,7 +90,7 @@ class VerifyComponentState extends State<VerifyComponent> {
                 height: 30.0,
               ),
               new Center(
-                  child: new Text("Please the verification code",
+                  child: new Text("Please enter your mobile number",
                       style: TextStyle(
                         fontSize: 20.0,
                       ))),
@@ -108,15 +98,15 @@ class VerifyComponentState extends State<VerifyComponent> {
                 height: 10.0,
               ),
               new TextFormField(
-                keyboardType: TextInputType.number,
-                validator: validateCode,
+                keyboardType: TextInputType.phone,
+                validator: validateMobile,
                 onSaved: (value) {
-                  newCode.value = value;
+                  newMobile.number = value;
                 },
                 decoration: const InputDecoration(
                   icon: const Icon(Icons.phone),
-                  hintText: 'Enter verification code',
-                  labelText: 'OTP Code',
+                  hintText: 'Enter your mobile number',
+                  labelText: 'Mobile Number',
                 ),
               ),
               new SizedBox(
@@ -161,7 +151,7 @@ class VerifyComponentState extends State<VerifyComponent> {
         ),
         body: new Builder(builder: (BuildContext context) {
           _scaffoldContext = context;
-          return new Stack(children: _buildOtpCodeForm(context));
+          return new Stack(children: _buildMobileNumberForm(context));
         }));
   }
 }

@@ -24,6 +24,17 @@ class PlainSuccessResponse {
   }
 }
 
+class OtpVerificationResponse {
+  final bool success;
+  final bool verified;
+
+  OtpVerificationResponse({this.success, this.verified});
+
+  factory OtpVerificationResponse.fromResponse(Response response) {
+    return OtpVerificationResponse(success: response.data['success'], verified: response.data['verified']);
+  }
+}
+
 class Balance {
   String accountName;
   String accountId;

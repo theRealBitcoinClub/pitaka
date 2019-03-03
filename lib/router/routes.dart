@@ -4,8 +4,9 @@ import './handlers.dart';
 
 class Routes {
   static String root = "/";
-  static String onboardingVerify = "/onboarding-verify";
-  static String onboardingRegister = "/onboarding-register";
+  static String onboardingRequest = "/onboarding/request";
+  static String onboardingVerify = "/onboarding/verify/:mobilenumber";
+  static String onboardingRegister = "/onboarding/register/:mobilenumber";
   static String account = "/account";
   static String terms = "/terms";
   static String home = "/home";
@@ -14,15 +15,20 @@ class Routes {
 
   static void configureRoutes(Router router) {
     router.notFoundHandler = new Handler(
-        handlerFunc: (BuildContext context, Map<String, List<String>> params) {
-      print("ROUTE WAS NOT FOUND !!!");
+        handlerFunc: (BuildContext context, Map<String, dynamic> params) {
+      print("ROUTE WAS NOT FOUND!");
     });
     router.define(root,
         handler: rootHandler, transitionType: TransitionType.fadeIn);
-    // router.define(onboardingVerify,
-    //     handler: onboardingVerifyHandler, transitionType: TransitionType.fadeIn);
+    router.define(onboardingRequest,
+        handler: onboardingRequestHandler,
+        transitionType: TransitionType.fadeIn);
+    router.define(onboardingVerify,
+        handler: onboardingVerifyHandler,
+        transitionType: TransitionType.fadeIn);
     router.define(onboardingRegister,
-        handler: onboardingRegisterHandler, transitionType: TransitionType.fadeIn);
+        handler: onboardingRegisterHandler,
+        transitionType: TransitionType.fadeIn);
     router.define(account,
         handler: accountHandler, transitionType: TransitionType.fadeIn);
     router.define(terms,
