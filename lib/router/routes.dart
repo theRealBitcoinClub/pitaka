@@ -4,7 +4,8 @@ import './handlers.dart';
 
 class Routes {
   static String root = "/";
-  static String register = "/register";
+  static String onboardingVerify = "/onboarding-verify";
+  static String onboardingRegister = "/onboarding-register";
   static String account = "/account";
   static String terms = "/terms";
   static String home = "/home";
@@ -18,8 +19,10 @@ class Routes {
     });
     router.define(root,
         handler: rootHandler, transitionType: TransitionType.fadeIn);
-    router.define(register,
-        handler: registerHandler, transitionType: TransitionType.fadeIn);
+    // router.define(onboardingVerify,
+    //     handler: onboardingVerifyHandler, transitionType: TransitionType.fadeIn);
+    router.define(onboardingRegister,
+        handler: onboardingRegisterHandler, transitionType: TransitionType.fadeIn);
     router.define(account,
         handler: accountHandler, transitionType: TransitionType.fadeIn);
     router.define(terms,

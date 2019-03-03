@@ -8,9 +8,9 @@ import "package:hex/hex.dart";
 import 'package:intl/intl.dart';
 import 'dart:typed_data';
 import 'dart:async';
-import '../views/app.dart';
-import '../api/endpoints.dart';
-import '../helpers.dart';
+import '../app.dart';
+import '../../api/endpoints.dart';
+import '../../helpers.dart';
 
 class User {
   String firstName;

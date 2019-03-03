@@ -1,7 +1,8 @@
 import 'package:fluro/fluro.dart';
 import 'package:flutter/material.dart';
 import '../views/landing.dart';
-import '../views/register.dart';
+import '../views/onboarding/verify.dart';
+import '../views/onboarding/register.dart';
 import '../views/account.dart';
 import '../views/terms.dart';
 import '../views/home.dart';
@@ -13,7 +14,12 @@ var rootHandler = new Handler(
   return new LandingComponent();
 });
 
-var registerHandler = new Handler(
+var onboardingVerifyHandler = new Handler(
+  handlerFunc: (BuildContext context, Map<String, List<String>> params) {
+    return new VerifyComponent();
+  });
+
+var onboardingRegisterHandler = new Handler(
     handlerFunc: (BuildContext context, Map<String, List<String>> params) {
   return new RegisterComponent();
 });
