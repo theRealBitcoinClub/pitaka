@@ -42,8 +42,8 @@ android {
         applicationId "com.paytaca.app"
         minSdkVersion 16
         targetSdkVersion 28
-        versionCode 8 // flutterVersionCode.toInteger()
-        versionName "pre-alpha-0.0.8" // flutterVersionName
+        versionCode 9 // flutterVersionCode.toInteger()
+        versionName "pre-alpha-0.0.9" // flutterVersionName
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
 
