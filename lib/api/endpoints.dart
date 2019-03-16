@@ -134,3 +134,25 @@ Future<PlainSuccessResponse> transferAsset(payload) async {
     throw Exception('Failed to transfer asset');
   }
 }
+
+Future<PlainSuccessResponse> requestOtpCode(payload) async {
+  final String url = baseUrl + '/api/otp/request';
+  Response response;
+  try {
+    response = await sendPostRequest(url, payload);
+    return PlainSuccessResponse.fromResponse(response);
+  } catch(e) {
+    throw Exception('Failed to generate OTP code');
+  }
+}
+
+Future<OtpVerificationResponse> verifyOtpCode(payload) async {
+  final String url = baseUrl + '/api/otp/verify';
+  Response response;
+  try {
+    response = await sendPostRequest(url, payload);
+    return OtpVerificationResponse.fromResponse(response);
+  } catch(e) {
+    throw Exception('Failed to verify OTP code');
+  }
+}

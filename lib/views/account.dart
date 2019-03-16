@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_keychain/flutter_keychain.dart';
-import 'package:back_button_interceptor/back_button_interceptor.dart';
 import '../api/endpoints.dart';
 import '../views/app.dart';
 import '../helpers.dart';
@@ -15,23 +14,6 @@ class AccountComponent extends StatefulWidget {
 }
 
 class AccountComponentState extends State<AccountComponent> {
-  @override
-  void initState() {
-    super.initState();
-    BackButtonInterceptor.add(interceptBackButton);
-  }
-
-  @override
-  void dispose() {
-    BackButtonInterceptor.remove(interceptBackButton);
-    super.dispose();
-  }
-
-  bool interceptBackButton(bool stopDefaultButtonEvent) {
-    print("Back navigation blocked!");
-    return true;
-  }
-
   final _formKey = GlobalKey<FormState>();
   Account newAccount = new Account();
   bool _autoValidate = false;
@@ -74,32 +56,6 @@ class AccountComponentState extends State<AccountComponent> {
         child: new ListView(
           padding: const EdgeInsets.symmetric(horizontal: 16.0),
           children: <Widget>[
-            new SizedBox(
-              height: 30.0,
-            ),
-            new Center(
-                child: new Text("One more step before you can use your wallet!",
-                    style: TextStyle(
-                      fontSize: 26.0,
-                    ))),
-            new SizedBox(
-              height: 15.0,
-            ),
-            new Center(
-                child: new Text(
-                    "Paytaca supports multiple accounts per user -- each with separate address, balance, transaction history, and ownership mode.",
-                    style: TextStyle(
-                      fontSize: 18.0,
-                    ))),
-            new SizedBox(
-              height: 15.0,
-            ),
-            new Center(
-                child: new Text(
-                    "Assign a name to your first account and hit the 'Create' button.",
-                    style: TextStyle(
-                      fontSize: 18.0,
-                    ))),
             new SizedBox(
               height: 30.0,
             ),

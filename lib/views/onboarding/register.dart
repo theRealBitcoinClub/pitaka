@@ -8,19 +8,20 @@ import "package:hex/hex.dart";
 import 'package:intl/intl.dart';
 import 'dart:typed_data';
 import 'dart:async';
-import '../views/app.dart';
-import '../api/endpoints.dart';
-import '../helpers.dart';
+import '../app.dart';
+import '../../api/endpoints.dart';
+import '../../helpers.dart';
 
 class User {
   String firstName;
   String lastName;
   String emailAddress;
-  String mobileNumber;
   DateTime birthDate;
 }
 
 class RegisterComponent extends StatefulWidget {
+  final String mobileNumber;
+  RegisterComponent({Key key, this.mobileNumber}) : super(key: key);
   @override
   RegisterComponentState createState() => new RegisterComponentState();
 }
@@ -78,8 +79,8 @@ class RegisterComponentState extends State<RegisterComponent> {
   User newUser = new User();
 
   String validateName(String value) {
-    if (value.length < 3)
-      return 'Name must be more than 2 charater';
+    if (value.length < 2)
+      return 'Name must be at least 2 characters';
     else
       return null;
   }
@@ -90,13 +91,6 @@ class RegisterComponentState extends State<RegisterComponent> {
     RegExp regex = new RegExp(pattern);
     if (!regex.hasMatch(value))
       return 'Enter Valid Email';
-    else
-      return null;
-  }
-
-  String validateMobile(String value) {
-    if (value.length != 11)
-      return 'Mobile Number must be of 11 digits';
     else
       return null;
   }
@@ -162,17 +156,20 @@ class RegisterComponentState extends State<RegisterComponent> {
             _submitting = true;
           });
 
-          String signature = await signTransaction("helloworld", privateKey);
           var userPayload = {
             "firstname": newUser.firstName,
             "lastname": newUser.lastName,
             "birthday": "2006-01-02",
             "email": newUser.emailAddress,
-            "mobilenumber": newUser.mobileNumber,
-            "public_key": publicKey,
-            "txn_hash": "helloworld",
-            "signature": signature
+            "mobile_number": "${widget.mobileNumber}"
           };
+          String txnHash = generateTransactionHash(userPayload);
+          print(txnHash);
+          String signature = await signTransaction(txnHash, privateKey);
+
+          userPayload["public_key"] = publicKey;
+          userPayload["txn_hash"] = txnHash;
+          userPayload["signature"] = signature;
           var user = await createUser(userPayload);
           await FlutterKeychain.put(key: "userId", value: user.id);
 
@@ -258,18 +255,6 @@ class RegisterComponentState extends State<RegisterComponent> {
                   icon: const Icon(Icons.email),
                   hintText: 'Enter your email address',
                   labelText: 'Email address',
-                ),
-              ),
-              new TextFormField(
-                keyboardType: TextInputType.phone,
-                validator: validateMobile,
-                onSaved: (value) {
-                  newUser.mobileNumber = value;
-                },
-                decoration: const InputDecoration(
-                  icon: const Icon(Icons.phone),
-                  hintText: 'Enter your mobile number',
-                  labelText: 'Mobile Number',
                 ),
               ),
               new GestureDetector(
