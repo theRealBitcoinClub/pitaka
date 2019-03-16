@@ -35,8 +35,8 @@ class RequestComponentState extends State<RequestComponent> {
   Mobile newMobile = new Mobile();
 
   String validateMobile(String value) {
-    if (value.length != 12)
-      return 'Mobile Number must be of 11 digits';
+    if (value.length != 10)
+      return 'Number must be 10 digits';
     else
       return null;
   }
@@ -101,7 +101,7 @@ class RequestComponentState extends State<RequestComponent> {
                 keyboardType: TextInputType.phone,
                 validator: validateMobile,
                 onSaved: (value) {
-                  newMobile.number = value;
+                  newMobile.number = '+63' + value;
                 },
                 decoration: const InputDecoration(
                   icon: const Icon(Icons.phone),

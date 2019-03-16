@@ -79,8 +79,8 @@ class RegisterComponentState extends State<RegisterComponent> {
   User newUser = new User();
 
   String validateName(String value) {
-    if (value.length < 3)
-      return 'Name must be more than 2 charater';
+    if (value.length < 2)
+      return 'Name must be at least 2 characters';
     else
       return null;
   }
@@ -156,18 +156,20 @@ class RegisterComponentState extends State<RegisterComponent> {
             _submitting = true;
           });
 
-          // TODO: Replace the dummy data here with real ones
-          String signature = await signTransaction("helloworld", privateKey);
           var userPayload = {
             "firstname": newUser.firstName,
             "lastname": newUser.lastName,
             "birthday": "2006-01-02",
             "email": newUser.emailAddress,
-            "mobile_number": "${widget.mobileNumber}",
-            "public_key": publicKey,
-            "txn_hash": "helloworld",
-            "signature": signature
+            "mobile_number": "${widget.mobileNumber}"
           };
+          String txnHash = generateTransactionHash(userPayload);
+          print(txnHash);
+          String signature = await signTransaction(txnHash, privateKey);
+
+          userPayload["public_key"] = publicKey;
+          userPayload["txn_hash"] = txnHash;
+          userPayload["signature"] = signature;
           var user = await createUser(userPayload);
           await FlutterKeychain.put(key: "userId", value: user.id);
 

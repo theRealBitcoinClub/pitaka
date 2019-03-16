@@ -100,7 +100,7 @@ class VerifyComponentState extends State<VerifyComponent> {
                 height: 30.0,
               ),
               new Center(
-                  child: new Text("Please the verification code",
+                  child: new Text("Please enter the verification code",
                       style: TextStyle(
                         fontSize: 20.0,
                       ))),
