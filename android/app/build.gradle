@@ -40,7 +40,7 @@ android {
     defaultConfig {
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
         applicationId "com.paytaca.app"
-        minSdkVersion 16
+        minSdkVersion 18
         targetSdkVersion 28
         versionCode 9 // flutterVersionCode.toInteger()
         versionName "pre-alpha-0.0.9" // flutterVersionName
