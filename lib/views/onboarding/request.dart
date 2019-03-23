@@ -36,10 +36,11 @@ class RequestComponentState extends State<RequestComponent> {
   Mobile newMobile = new Mobile();
 
   String validateMobile(String value) {
-    if (value.length != 10)
-      return 'Number must be 10 digits';
-    else
+    if (value.startsWith('09')){
       return null;
+    } else {
+      return 'Invalid phone number';
+    }
   }
 
   BuildContext _scaffoldContext;
@@ -84,46 +85,54 @@ class RequestComponentState extends State<RequestComponent> {
     Form form = new Form(
         key: _formKey,
         autovalidate: _autoValidate,
-        child: new ListView(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0),
-            children: <Widget>[
-              new SizedBox(
-                height: 30.0,
-              ),
-              new Center(
-                  child: new Text("Phone verification",
-                      style: TextStyle(
-                        fontSize: 20.0,
-                      ))),
-              new SizedBox(
-                height: 10.0,
-              ),
-              new TextFormField(
-                keyboardType: TextInputType.phone,
-                validator: validateMobile,
-                onSaved: (value) {
-                  newMobile.number = '+63' + value;
-                },
-                
-                decoration: const InputDecoration(
-                  icon: const Icon(Icons.phone),
-                  hintText: 'Enter 10-digit number',
-                  labelText: 'Mobile Number',
-                ),
-                controller: new MaskedTextController(
-                  mask: '+630000000000'
+        child: Center(
+            child: Container(
+              alignment: Alignment.center,
+              margin:EdgeInsets.all(50.0),
+              child:new ListView(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                children: <Widget>[
+                  new SizedBox(
+                    height: 30.0,
                   ),
-              ),
-              new SizedBox(
-                height: 15.0,
-              ),
-              new RaisedButton(
-                onPressed: () {
-                  _validateInputs(context);
-                },
-                child: new Text('Submit'),
+                  new Center(
+                      child: new Text("Phone Verification",
+                          style: TextStyle(
+                            fontSize: 20.0,
+                          ))),
+                  new SizedBox(
+                    height: 10.0,
+                  ),
+                  new TextFormField(
+                    keyboardType: TextInputType.phone,
+                    validator: validateMobile,
+                    onSaved: (value) {
+                      newMobile.number = value;
+                    },
+                    
+                    decoration: const InputDecoration(
+                      icon: const Icon(Icons.phone),
+                      hintText: 'e.g 09##-####-###',
+                      labelText: 'Mobile Number',
+                    ),
+                    controller: new MaskedTextController(
+                      mask: '0000-0000-000'
+                      ),
+                  ),
+                  new SizedBox(
+                    height: 15.0,
+                  ),
+                  new RaisedButton(
+                    onPressed: () {
+                      _validateInputs(context);
+                    },
+                    child: new Text('Submit'),
+                  )
+                ]
               )
-            ]));
+            )
+          )
+        );
 
     var ws = new List<Widget>();
     ws.add(form);
