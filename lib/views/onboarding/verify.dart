@@ -94,13 +94,13 @@ class VerifyComponentState extends State<VerifyComponent> {
         key: _formKey,
         autovalidate: _autoValidate,
         child: new ListView(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+            padding: const EdgeInsets.symmetric(horizontal: 30.0),
             children: <Widget>[
               new SizedBox(
-                height: 30.0,
+                height: 60.0,
               ),
               new Center(
-                  child: new Text("Please enter the verification code",
+                  child: new Text("Enter the verification code",
                       style: TextStyle(
                         fontSize: 20.0,
                       ))),
@@ -108,15 +108,17 @@ class VerifyComponentState extends State<VerifyComponent> {
                 height: 10.0,
               ),
               new TextFormField(
+                textAlign: TextAlign.center,
                 keyboardType: TextInputType.number,
                 validator: validateCode,
                 onSaved: (value) {
                   newCode.value = value;
                 },
+                style: TextStyle(
+                  fontSize: 24.0,
+                ),
                 decoration: const InputDecoration(
-                  icon: const Icon(Icons.phone),
-                  hintText: 'Enter verification code',
-                  labelText: 'OTP Code',
+                  hintText: 'XXXXXX',
                 ),
               ),
               new SizedBox(
@@ -127,6 +129,22 @@ class VerifyComponentState extends State<VerifyComponent> {
                   _validateInputs(context);
                 },
                 child: new Text('Submit'),
+              ),
+              new SizedBox(
+                height: 30.0,
+              ),
+              new GestureDetector(
+                onTap: () {
+                  print("Resend code...");
+                },
+                child: new Text(
+                  'Did not receive it? Resend Code.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 16.0,
+                    color: Colors.blue,
+                  )
+                )
               )
             ]));
 

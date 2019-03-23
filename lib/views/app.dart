@@ -26,7 +26,7 @@ class AppComponentState extends State<AppComponent> {
       title: 'Paytaca',
       debugShowCheckedModeBanner: false,
       theme: new ThemeData(
-        primarySwatch: Colors.blue,
+        primarySwatch: Colors.red,
       ),
       onGenerateRoute: Application.router.generator,
     );

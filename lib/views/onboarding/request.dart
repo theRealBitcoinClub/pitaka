@@ -58,6 +58,7 @@ class RequestComponentState extends State<RequestComponent> {
         _submitting = true;
       });
 
+      newMobile.number = "+63" + newMobile.number.substring(1).replaceAll("-", "");
       var numberPayload = {"mobile_number": newMobile.number};
       var resp = await requestOtpCode(numberPayload);
 
@@ -88,15 +89,14 @@ class RequestComponentState extends State<RequestComponent> {
         child: Center(
             child: Container(
               alignment: Alignment.center,
-              margin:EdgeInsets.all(50.0),
               child:new ListView(
-                padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                padding: const EdgeInsets.symmetric(horizontal: 30.0),
                 children: <Widget>[
                   new SizedBox(
-                    height: 30.0,
+                    height: 60.0,
                   ),
                   new Center(
-                      child: new Text("Phone Verification",
+                      child: new Text("Mobile Number Verification",
                           style: TextStyle(
                             fontSize: 20.0,
                           ))),
@@ -104,19 +104,20 @@ class RequestComponentState extends State<RequestComponent> {
                     height: 10.0,
                   ),
                   new TextFormField(
+                    textAlign: TextAlign.center,
                     keyboardType: TextInputType.phone,
                     validator: validateMobile,
                     onSaved: (value) {
                       newMobile.number = value;
                     },
-                    
+                    style: TextStyle(
+                      fontSize: 24.0,
+                    ),
                     decoration: const InputDecoration(
-                      icon: const Icon(Icons.phone),
-                      hintText: 'e.g 09##-####-###',
-                      labelText: 'Mobile Number',
+                      hintText: '09XX-XXX-XXXX',
                     ),
                     controller: new MaskedTextController(
-                      mask: '0000-0000-000'
+                      mask: '0000-000-0000'
                       ),
                   ),
                   new SizedBox(
