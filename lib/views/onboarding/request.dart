@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:back_button_interceptor/back_button_interceptor.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_masked_text/flutter_masked_text.dart';
 import '../../api/endpoints.dart';
 import '../app.dart';
 
@@ -90,7 +91,7 @@ class RequestComponentState extends State<RequestComponent> {
                 height: 30.0,
               ),
               new Center(
-                  child: new Text("Please enter your mobile number",
+                  child: new Text("Phone verification",
                       style: TextStyle(
                         fontSize: 20.0,
                       ))),
@@ -103,11 +104,15 @@ class RequestComponentState extends State<RequestComponent> {
                 onSaved: (value) {
                   newMobile.number = '+63' + value;
                 },
+                
                 decoration: const InputDecoration(
                   icon: const Icon(Icons.phone),
-                  hintText: 'Enter your mobile number',
+                  hintText: 'Enter 10-digit number',
                   labelText: 'Mobile Number',
                 ),
+                controller: new MaskedTextController(
+                  mask: '+630000000000'
+                  ),
               ),
               new SizedBox(
                 height: 15.0,
