@@ -90,16 +90,17 @@ class RequestComponentState extends State<RequestComponent> {
             child: Container(
               alignment: Alignment.center,
               child:new ListView(
-                padding: const EdgeInsets.symmetric(horizontal: 30.0),
+                shrinkWrap: true,
+                padding: const EdgeInsets.all(20.0),
                 children: <Widget>[
-                  new SizedBox(
-                    height: 60.0,
-                  ),
                   new Center(
-                      child: new Text("Mobile Number Verification",
-                          style: TextStyle(
-                            fontSize: 20.0,
-                          ))),
+                    child: new Text(
+                      "Mobile Number Verification",
+                      style: TextStyle(
+                      fontSize: 20.0,
+                      )
+                    )
+                  ),
                   new SizedBox(
                     height: 10.0,
                   ),
@@ -111,23 +112,26 @@ class RequestComponentState extends State<RequestComponent> {
                       newMobile.number = value;
                     },
                     style: TextStyle(
-                      fontSize: 24.0,
+                      fontSize: 24.0
                     ),
                     decoration: const InputDecoration(
-                      hintText: '09XX-XXX-XXXX',
+                      hintText: '09** - *** - ****',
                     ),
                     controller: new MaskedTextController(
-                      mask: '0000-000-0000'
+                      mask: '0000 - 000 - 0000'
                       ),
                   ),
                   new SizedBox(
-                    height: 15.0,
+                    height: 30.0,
                   ),
                   new RaisedButton(
                     onPressed: () {
                       _validateInputs(context);
                     },
                     child: new Text('Submit'),
+                  ),
+                  new SizedBox(
+                    height: 97.0,
                   )
                 ]
               )
@@ -167,6 +171,8 @@ class RequestComponentState extends State<RequestComponent> {
         body: new Builder(builder: (BuildContext context) {
           _scaffoldContext = context;
           return new Stack(children: _buildMobileNumberForm(context));
-        }));
+        }
+      )
+    );
   }
 }
