@@ -26,6 +26,7 @@ dependencies:
   after_layout: ^1.0.7
   intl: ^0.15.7
   flutter_markdown: ^0.2.0
+  flutter_masked_text: ^0.8.0
   back_button_interceptor: ^2.0.0
   dio: ^2.0.7
   dio_flutter_transformer: ^2.0.6

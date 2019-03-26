@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:back_button_interceptor/back_button_interceptor.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_masked_text/flutter_masked_text.dart';
 import '../../api/endpoints.dart';
 import '../app.dart';
 
@@ -91,44 +92,75 @@ class VerifyComponentState extends State<VerifyComponent> {
 
   List<Widget> _buildOtpCodeForm(BuildContext context) {
     Form form = new Form(
-        key: _formKey,
-        autovalidate: _autoValidate,
-        child: new ListView(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0),
-            children: <Widget>[
-              new SizedBox(
-                height: 30.0,
-              ),
-              new Center(
-                  child: new Text("Please enter the verification code",
+      key: _formKey,
+      autovalidate: _autoValidate,
+      child: Center(
+          child: Container(
+            alignment: Alignment.center,
+            child: new ListView(
+              shrinkWrap: true,
+              padding: const EdgeInsets.symmetric(horizontal: 30.0),
+              children: <Widget>[
+                new Center(
+                  child: new Text("Enter the Verification Code",
                       style: TextStyle(
                         fontSize: 20.0,
-                      ))),
-              new SizedBox(
-                height: 10.0,
-              ),
-              new TextFormField(
-                keyboardType: TextInputType.number,
-                validator: validateCode,
-                onSaved: (value) {
-                  newCode.value = value;
-                },
-                decoration: const InputDecoration(
-                  icon: const Icon(Icons.phone),
-                  hintText: 'Enter verification code',
-                  labelText: 'OTP Code',
+                      )
+                    )
+                  ),
+                new SizedBox(
+                  height: 10.0,
                 ),
-              ),
-              new SizedBox(
-                height: 15.0,
-              ),
-              new RaisedButton(
-                onPressed: () {
-                  _validateInputs(context);
-                },
-                child: new Text('Submit'),
-              )
-            ]));
+                new TextFormField(
+                  textAlign: TextAlign.center,
+                  keyboardType: TextInputType.number,
+                  validator: validateCode,
+                  onSaved: (value) {
+                    newCode.value = value;
+                  },
+                  style: TextStyle(
+                    fontSize: 24.0,
+                  ),
+                  decoration: const InputDecoration(
+                    hintText: '******',
+                  ),
+                  controller: new MaskedTextController(
+                    mask: '000000'
+                  ),
+                ),
+                new SizedBox(
+                  height: 30.0,
+                ),
+                new RaisedButton(
+                  onPressed: () {
+                    _validateInputs(context);
+                  },
+                  child: new Text('Submit'),
+                ),
+                new SizedBox(
+                  height: 30.0,
+                ),
+                new GestureDetector(
+                  onTap: () {
+                    print("Resend code...");
+                  },
+                  child: new Text(
+                    'Did not receive it? Resend Code.',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 16.0,
+                      color: Colors.blue,
+                    )
+                  )
+                ),
+                new SizedBox(
+                  height: 50.0,
+                )
+              ]
+            )
+          )
+        )
+      );
 
     var ws = new List<Widget>();
     ws.add(form);
@@ -156,12 +188,21 @@ class VerifyComponentState extends State<VerifyComponent> {
     return new Scaffold(
         appBar: new AppBar(
           title: new Text("Welcome to Paytaca"),
-          automaticallyImplyLeading: false,
+          automaticallyImplyLeading: true,
           centerTitle: true,
+          leading: new IconButton(
+            icon: new Icon(Icons.arrow_back, color: Colors.white),
+            onPressed: () {
+              Application.router
+                .navigateTo(context, "/onboarding/request");
+            }
+          ), 
         ),
         body: new Builder(builder: (BuildContext context) {
           _scaffoldContext = context;
           return new Stack(children: _buildOtpCodeForm(context));
-        }));
+        }
+      )
+      );
   }
 }

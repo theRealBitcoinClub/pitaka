@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:back_button_interceptor/back_button_interceptor.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_masked_text/flutter_masked_text.dart';
 import '../../api/endpoints.dart';
 import '../app.dart';
 
@@ -35,10 +36,11 @@ class RequestComponentState extends State<RequestComponent> {
   Mobile newMobile = new Mobile();
 
   String validateMobile(String value) {
-    if (value.length != 10)
-      return 'Number must be 10 digits';
-    else
+    if (value.startsWith('09')){
       return null;
+    } else {
+      return 'Invalid phone number';
+    }
   }
 
   BuildContext _scaffoldContext;
@@ -56,6 +58,7 @@ class RequestComponentState extends State<RequestComponent> {
         _submitting = true;
       });
 
+      newMobile.number = "+63" + newMobile.number.substring(1).replaceAll("-", "");
       var numberPayload = {"mobile_number": newMobile.number};
       var resp = await requestOtpCode(numberPayload);
 
@@ -83,42 +86,58 @@ class RequestComponentState extends State<RequestComponent> {
     Form form = new Form(
         key: _formKey,
         autovalidate: _autoValidate,
-        child: new ListView(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0),
-            children: <Widget>[
-              new SizedBox(
-                height: 30.0,
-              ),
-              new Center(
-                  child: new Text("Please enter your mobile number",
+        child: Center(
+            child: Container(
+              alignment: Alignment.center,
+              child:new ListView(
+                shrinkWrap: true,
+                padding: const EdgeInsets.all(20.0),
+                children: <Widget>[
+                  new Center(
+                    child: new Text(
+                      "Mobile Number Verification",
                       style: TextStyle(
-                        fontSize: 20.0,
-                      ))),
-              new SizedBox(
-                height: 10.0,
-              ),
-              new TextFormField(
-                keyboardType: TextInputType.phone,
-                validator: validateMobile,
-                onSaved: (value) {
-                  newMobile.number = '+63' + value;
-                },
-                decoration: const InputDecoration(
-                  icon: const Icon(Icons.phone),
-                  hintText: 'Enter your mobile number',
-                  labelText: 'Mobile Number',
-                ),
-              ),
-              new SizedBox(
-                height: 15.0,
-              ),
-              new RaisedButton(
-                onPressed: () {
-                  _validateInputs(context);
-                },
-                child: new Text('Submit'),
+                      fontSize: 20.0,
+                      )
+                    )
+                  ),
+                  new SizedBox(
+                    height: 10.0,
+                  ),
+                  new TextFormField(
+                    textAlign: TextAlign.center,
+                    keyboardType: TextInputType.phone,
+                    validator: validateMobile,
+                    onSaved: (value) {
+                      newMobile.number = value;
+                    },
+                    style: TextStyle(
+                      fontSize: 24.0
+                    ),
+                    decoration: const InputDecoration(
+                      hintText: '09** - *** - ****',
+                    ),
+                    controller: new MaskedTextController(
+                      mask: '0000 - 000 - 0000'
+                      ),
+                  ),
+                  new SizedBox(
+                    height: 30.0,
+                  ),
+                  new RaisedButton(
+                    onPressed: () {
+                      _validateInputs(context);
+                    },
+                    child: new Text('Submit'),
+                  ),
+                  new SizedBox(
+                    height: 97.0,
+                  )
+                ]
               )
-            ]));
+            )
+          )
+        );
 
     var ws = new List<Widget>();
     ws.add(form);
@@ -152,6 +171,8 @@ class RequestComponentState extends State<RequestComponent> {
         body: new Builder(builder: (BuildContext context) {
           _scaffoldContext = context;
           return new Stack(children: _buildMobileNumberForm(context));
-        }));
+        }
+      )
+    );
   }
 }
