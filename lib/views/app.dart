@@ -14,6 +14,8 @@ class Application {
 }
 
 class AppComponentState extends State<AppComponent> {
+  static bool debugMode = false;
+
   AppComponentState() {
     final router = new Router();
     Routes.configureRoutes(router);
@@ -24,7 +26,7 @@ class AppComponentState extends State<AppComponent> {
   Widget build(BuildContext context) {
     final app = new MaterialApp(
       title: 'Paytaca',
-      debugShowCheckedModeBanner: false,
+      debugShowCheckedModeBanner: debugMode,
       theme: new ThemeData(
         primarySwatch: Colors.red,
       ),
