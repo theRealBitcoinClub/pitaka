@@ -66,6 +66,12 @@ class LandingComponentState extends State<LandingComponent>
   }
 
   void determinePath(BuildContext context) async {
+    if (AppComponentState.debugMode) {
+      print('The program is in debug mode...');
+      await FlutterKeychain.remove(key: "publicKey"); 
+    } else {
+      print('The program is live...');
+    }
     String publicKey = await FlutterKeychain.get(key: "publicKey");
     if (publicKey == null) {
       Application.router.navigateTo(context, "/onboarding/request");
