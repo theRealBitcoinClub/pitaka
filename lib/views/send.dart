@@ -1,7 +1,7 @@
 import 'dart:math';
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:qr_reader/qr_reader.dart';
+import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
 import 'package:flutter_keychain/flutter_keychain.dart';
 import 'package:swipedetector/swipedetector.dart';
 import '../components/bottomNavigation.dart';
@@ -27,7 +27,7 @@ String _randomString(int length) {
 }
 
 class SendComponentState extends State<SendComponent> {
-  Future<String> _barcodeString;
+  String _barcodeString;
   String path = '/send';
 
   int accountIndex = 0;
@@ -77,6 +77,15 @@ class SendComponentState extends State<SendComponent> {
               ],
             ));
     return response.success;
+  }
+
+  void scanBarcode() async {
+    String barcode = await FlutterBarcodeScanner.scanBarcode("#ff6666");
+    setState(() => _barcodeString = barcode);
+  }
+
+  Future<String> getBarcode() async {
+    return _barcodeString;
   }
 
   int sendAmount;
@@ -141,18 +150,10 @@ class SendComponentState extends State<SendComponent> {
                   margin: const EdgeInsets.only(top: 5.0),
                   child: new RaisedButton(
                     child: const Text('Scan QR Code'),
-                    onPressed: () {
-                      setState(() {
-                        _barcodeString = new QRCodeReader()
-                            .setTorchEnabled(true)
-                            .setHandlePermissions(true)
-                            .setExecuteAfterPermissionGranted(true)
-                            .scan();
-                      });
-                    },
+                    onPressed: scanBarcode,
                   )),
               new FutureBuilder<String>(
-                  future: _barcodeString,
+                  future: getBarcode(),
                   builder:
                       (BuildContext context, AsyncSnapshot<String> snapshot) {
                     return Column(
