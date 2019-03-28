@@ -142,6 +142,8 @@ Future<PlainSuccessResponse> requestOtpCode(payload) async {
     response = await sendPostRequest(url, payload);
     return PlainSuccessResponse.fromResponse(response);
   } catch(e) {
+    print('reamon');
+    print(e);
     throw Exception('Failed to generate OTP code');
   }
 }
