@@ -12,6 +12,7 @@ class Routes {
   static String home = "/home";
   static String send = "/send";
   static String receive = "/receive";
+  static String businessRegistration = "/registerbusiness";
 
   static void configureRoutes(Router router) {
     router.notFoundHandler = new Handler(
@@ -31,13 +32,29 @@ class Routes {
         transitionType: TransitionType.fadeIn);
     router.define(account,
         handler: accountHandler, transitionType: TransitionType.fadeIn);
-    router.define(terms,
-        handler: termsHandler, transitionType: TransitionType.fadeIn);
-    router.define(home,
-        handler: homeHandler, transitionType: TransitionType.fadeIn);
-    router.define(send,
-        handler: sendHandler, transitionType: TransitionType.fadeIn);
-    router.define(receive,
-        handler: receiveHandler, transitionType: TransitionType.fadeIn);
+    router.define(
+        terms,
+        handler: termsHandler,
+        transitionType: TransitionType.fadeIn
+    );
+    router.define(
+        home,
+        handler: homeHandler,
+        transitionType: TransitionType.fadeIn
+    );
+    router.define(
+        send,
+        handler: sendHandler,
+        transitionType: TransitionType.fadeIn
+    );
+    router.define(
+        receive,
+        handler: receiveHandler,
+        transitionType: TransitionType.fadeIn
+    );
+    router.define(businessRegistration,
+        handler: businessRegistrationHandler,
+        transitionType: TransitionType.fadeIn
+    );
   }
 }
