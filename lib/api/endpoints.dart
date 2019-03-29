@@ -31,24 +31,31 @@ Future<dynamic> sendGetRequest(url) async {
 }
 
 Future<GenericCreateResponse> createUser(payload) async {
-  final String url = baseUrl + '/api/users/create';
-  final response = await sendPostRequest(url, payload);
-
-  if (response.statusCode == 200) {
+  try {
+    final String url = baseUrl + '/api/users/create';
+    final response = await sendPostRequest(url, payload);
     return GenericCreateResponse.fromResponse(response);
-  } else {
-    throw Exception('Failed to create user');
+  } catch (e) {
+    throw Exception(e);
   }
 }
 
-Future<GenericCreateResponse> createAccount(payload) async {
-  final String url = baseUrl + '/api/accounts/create';
-  final response = await sendPostRequest(url, payload);
-
-  if (response.statusCode == 200) {
+Future<GenericCreateResponse> registerBusiness(payload) async {
+  try {
+    final String url =baseUrl + '/api/business/registration';
+    final response = await sendPostRequest(url, payload);
     return GenericCreateResponse.fromResponse(response);
-  } else {
-    throw Exception('Failed to create account');
+  } catch (e){
+    throw Exception(e);
+  }
+}
+Future<GenericCreateResponse> createAccount(payload) async {
+  try {
+    final String url = baseUrl + '/api/accounts/create';
+    final response = await sendPostRequest(url, payload);
+    return GenericCreateResponse.fromResponse(response);
+  } catch (e) {
+    throw Exception(e);
   }
 }
 

@@ -13,6 +13,7 @@ class Routes {
   static String send = "/send";
   static String receive = "/receive";
   static String businessRegistration = "/registerbusiness";
+  static String businessTools = "/businesstools";
 
   static void configureRoutes(Router router) {
     router.notFoundHandler = new Handler(
@@ -54,6 +55,10 @@ class Routes {
     );
     router.define(businessRegistration,
         handler: businessRegistrationHandler,
+        transitionType: TransitionType.fadeIn
+    );
+    router.define(businessTools,
+        handler: businessToolsHandler,
         transitionType: TransitionType.fadeIn
     );
   }

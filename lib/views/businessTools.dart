@@ -11,12 +11,12 @@ class BusinessAccount {
   String address;
 }
 
-class BusinessRegistrationComponent extends StatefulWidget {
+class BusinessToolsComponent extends StatefulWidget {
   @override
-  BusinessRegistrationComponentState createState() => new BusinessRegistrationComponentState();
+  BusinessToolsComponentState createState() => new BusinessToolsComponentState();
 }
 
-class BusinessRegistrationComponentState extends State<BusinessRegistrationComponent> {
+class BusinessToolsComponentState extends State<BusinessToolsComponent> {
   final _formKey = GlobalKey<FormState>();
   BusinessAccount businessInfo = new BusinessAccount();
 

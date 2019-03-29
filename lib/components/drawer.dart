@@ -84,10 +84,10 @@ Drawer buildDrawer(BuildContext context) {
               Application.router.navigateTo(context, "/account");
             }),
         ListTile(
-            title: Text('Register Business'),
+            title: Text('Business Tools'),
             trailing: Icon(Icons.business),
             onTap: () {
-              Application.router.navigateTo(context, "/registerbusiness");
+              Application.router.navigateTo(context, "/businesstools");
             })
       ],
     ),
