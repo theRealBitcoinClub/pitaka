@@ -58,7 +58,7 @@ class RequestComponentState extends State<RequestComponent> {
         _submitting = true;
       });
 
-      newMobile.number = "+63" + newMobile.number.substring(1).replaceAll("-", "");
+      newMobile.number = "+63" + newMobile.number.substring(1).replaceAll(" - ", "");
       var numberPayload = {"mobile_number": newMobile.number};
       var resp = await requestOtpCode(numberPayload);
 
