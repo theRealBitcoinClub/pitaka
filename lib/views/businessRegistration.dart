@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../components/drawer.dart';
 import '../api/endpoints.dart';
 import '../views/app.dart';
 import 'package:flutter_masked_text/flutter_masked_text.dart';
@@ -18,6 +17,10 @@ class BusinessRegistrationComponent extends StatefulWidget {
 
 class BusinessRegistrationComponentState extends State<BusinessRegistrationComponent> {
   final _formKey = GlobalKey<FormState>();
+  List<String> _businessType = <String>['Corporation','Sole Proprietorship', 'Partnership'];
+
+  String _selectedType = 'Corporation';
+
   BusinessAccount businessInfo = new BusinessAccount();
 
   String validateCompanyName(String value) {
@@ -31,10 +34,9 @@ class BusinessRegistrationComponentState extends State<BusinessRegistrationCompo
   }
 
   String validateTin(String value) {
-    print(value);
     if (value.length == 0) {
       return 'The field TIN is required.';
-    } else if (value.length != 9) {
+    } else if (value.length != 11) {
       return 'Invalid input for field TIN.';
     }else {
       return null;
@@ -64,8 +66,7 @@ class BusinessRegistrationComponentState extends State<BusinessRegistrationCompo
       FocusScope.of(context).requestFocus(new FocusNode());
       // Save the form
       _formKey.currentState.save();
-      var response = await registerBusiness(businessInfo);
-      print(response);
+      await registerBusiness(businessInfo);
       //await FlutterKeychain.put(key: "defaultAccount", value: response.id);
       Application.router.navigateTo(context, "/home");
     }
@@ -95,17 +96,35 @@ class BusinessRegistrationComponentState extends State<BusinessRegistrationCompo
           new SizedBox(
             height: 30.0,
           ),
-          new TextFormField(
-            keyboardType: TextInputType.text,
-            onSaved: (value) {
-                businessInfo.type = value;
+          new FormField(
+            builder: (FormFieldState state) {
+              return InputDecorator(
+                decoration: InputDecoration(
+                  icon: const Icon(Icons.explore),
+                  labelText: 'Business Type',
+                ),
+                isEmpty: _selectedType == '',
+                child: new DropdownButtonHideUnderline(
+                  child: new DropdownButton(
+                    value: _selectedType,
+                    isDense: true,
+                    onChanged: (String newValue) {
+                      setState(() {
+                        _selectedType = newValue;
+                        businessInfo.type = newValue;
+                        state.didChange(newValue);
+                      });
+                    },
+                    items: _businessType.map((String value) {
+                      return new DropdownMenuItem(
+                        value: value,
+                        child: new Text(value),
+                      );
+                    }).toList(),
+                  ),
+                ),
+              );
             },
-            validator: validateType,
-            decoration: const InputDecoration(
-              icon: const Icon(Icons.explore),
-              hintText: 'Enter business type',
-              labelText: 'Business Type',
-            ),
           ),
           new SizedBox(
             height: 30.0,
@@ -160,10 +179,10 @@ class BusinessRegistrationComponentState extends State<BusinessRegistrationCompo
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
-          title: Text('Business Registration'),
+          title: Text('Register Business'),
           centerTitle: true,
         ),
-        drawer: buildDrawer(context),
+        // drawer: buildDrawer(context),
         body: new Builder(builder: (BuildContext context) {
           return new Stack(children: _buildAccountForm(context));
         })

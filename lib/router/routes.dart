@@ -13,6 +13,7 @@ class Routes {
   static String send = "/send";
   static String receive = "/receive";
   static String businessRegistration = "/registerbusiness";
+  static String setBusinessAccount = '/setbusinessaccount';
   static String businessTools = "/businesstools";
 
   static void configureRoutes(Router router) {
@@ -59,6 +60,10 @@ class Routes {
     );
     router.define(businessTools,
         handler: businessToolsHandler,
+        transitionType: TransitionType.fadeIn
+    );
+    router.define(setBusinessAccount,
+        handler: setBusinessAccountHandler,
         transitionType: TransitionType.fadeIn
     );
   }
