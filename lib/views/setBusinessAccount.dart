@@ -23,33 +23,33 @@ class SetBusinessAccountComponentState extends State<SetBusinessAccountComponent
   List<String> _paytacaAccounts = <String>['Account1','Account2', 'Account3'];
   String _selectedPaytacaAccount = 'Account1';
 
-  Future<void> _neverSatisfied() async {
-  return showDialog<void>(
-    context: context,
-    barrierDismissible: false, // user must tap button!
-    builder: (BuildContext context) {
-      return AlertDialog(
-        title: Text('Success'),
-        content: SingleChildScrollView(
-          child: ListBody(
-            children: <Widget>[
-              Text('Your account and bussiness are now connected.')
-            ],
+  Future<void> _successDialog() async {
+    return showDialog<void>(
+      context: context,
+      barrierDismissible: false, // user must tap button!
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Success'),
+          content: SingleChildScrollView(
+            child: ListBody(
+              children: <Widget>[
+                Text('Your account and bussiness are now connected.')
+              ],
+            ),
           ),
-        ),
-        actions: <Widget>[
-          FlatButton(
-            child: Text('Got It!'),
-            onPressed: () {
-              Navigator.of(context).pop();
-              Application.router.navigateTo(context, "/businesstools");
-            },
-          ),
-        ],
-      );
-    },
-  );
-}
+          actions: <Widget>[
+            FlatButton(
+              child: Text('Got It!'),
+              onPressed: () {
+                Navigator.of(context).pop();
+                Application.router.navigateTo(context, "/businesstools");
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
 
   String validateCompanyName(String value) {
     if (value.length == 0) {
@@ -93,7 +93,7 @@ class SetBusinessAccountComponentState extends State<SetBusinessAccountComponent
     print('a');
     if (valid) {
       print('b');
-      _neverSatisfied();
+      _successDialog();
       // Close the on-screen keyboard by removing focus from the form's inputs
       FocusScope.of(context).requestFocus(new FocusNode());
       // Save the form

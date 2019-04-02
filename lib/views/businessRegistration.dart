@@ -18,10 +18,39 @@ class BusinessRegistrationComponent extends StatefulWidget {
 class BusinessRegistrationComponentState extends State<BusinessRegistrationComponent> {
   final _formKey = GlobalKey<FormState>();
   List<String> _businessType = <String>['Corporation','Sole Proprietorship', 'Partnership'];
-
+  bool _submitting = false;
   String _selectedType = 'Corporation';
 
   BusinessAccount businessInfo = new BusinessAccount();
+  
+
+  Future<void> _successDialog() async {
+    return showDialog<void>(
+      context: context,
+      barrierDismissible: false, // user must tap button!
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Success'),
+          content: SingleChildScrollView(
+            child: ListBody(
+              children: <Widget>[
+                Text('Business account was successufully added.')
+              ],
+            ),
+          ),
+          actions: <Widget>[
+            FlatButton(
+              child: Text('Got It!'),
+              onPressed: () {
+                Navigator.of(context).pop();
+                Application.router.navigateTo(context, "/businesstools");
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
 
   String validateCompanyName(String value) {
     if (value.length == 0) {
@@ -62,13 +91,26 @@ class BusinessRegistrationComponentState extends State<BusinessRegistrationCompo
   void _submitForm(BuildContext context) async {
     var valid = _formKey.currentState.validate();
     if (valid) {
+      _formKey.currentState.save();
       // Close the on-screen keyboard by removing focus from the form's inputs
       FocusScope.of(context).requestFocus(new FocusNode());
       // Save the form
-      _formKey.currentState.save();
-      await registerBusiness(businessInfo);
-      //await FlutterKeychain.put(key: "defaultAccount", value: response.id);
-      Application.router.navigateTo(context, "/home");
+      var businessToRegister = {
+        "tin": businessInfo.tin,
+        "name": businessInfo.name,
+        "address": businessInfo.address,
+        "type": _selectedType
+      };
+      setState(() {
+        _submitting = true;
+      });
+      var response = await registerBusiness(businessToRegister);
+      if(response != null) {
+        setState(() {
+          _submitting = false;
+        });
+        _successDialog();
+      }
     }
   }
 
@@ -130,7 +172,7 @@ class BusinessRegistrationComponentState extends State<BusinessRegistrationCompo
             height: 30.0,
           ),
           new TextFormField(
-            keyboardType: TextInputType.number,
+            keyboardType: TextInputType.text,
             onSaved: (value) {
                 businessInfo.tin = value;
             },
@@ -172,6 +214,21 @@ class BusinessRegistrationComponentState extends State<BusinessRegistrationCompo
       ));
     var ws = new List<Widget>();
     ws.add(form);
+
+    if (_submitting) {
+      var modal = new Stack(
+        children: [
+          new Opacity(
+            opacity: 0.8,
+            child: const ModalBarrier(dismissible: false, color: Colors.grey),
+          ),
+          new Center(
+            child: new CircularProgressIndicator(),
+          ),
+        ],
+      );
+      ws.add(modal);
+    }
     return ws;
   }
 
