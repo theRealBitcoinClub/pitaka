@@ -9,6 +9,9 @@ import '../views/terms.dart';
 import '../views/home.dart';
 import '../views/send.dart';
 import '../views/receive.dart';
+import '../views/businessRegistration.dart';
+import '../views/businessTools.dart';
+import '../views/setBusinessAccount.dart';
 
 var rootHandler = new Handler(
     handlerFunc: (BuildContext context, Map<String, dynamic> params) {
@@ -54,3 +57,21 @@ var receiveHandler = new Handler(
     handlerFunc: (BuildContext context, Map<String, dynamic> params) {
   return new ReceiveComponent();
 });
+
+var businessRegistrationHandler = new Handler(
+    handlerFunc: (BuildContext context, Map<String, dynamic> params) {
+  return new BusinessRegistrationComponent();
+});
+
+var businessToolsHandler = new Handler(
+    handlerFunc: (BuildContext context, Map<String, dynamic> params) {
+  return new BusinessToolsComponent();
+});
+
+var setBusinessAccountHandler = new Handler(
+    handlerFunc: (BuildContext context, Map<String, dynamic> params) {
+  return new SetBusinessAccountComponent();
+});
+
+
+
