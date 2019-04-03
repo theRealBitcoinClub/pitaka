@@ -15,6 +15,7 @@ class AccountComponent extends StatefulWidget {
 
 class AccountComponentState extends State<AccountComponent> {
   final _formKey = GlobalKey<FormState>();
+  bool _submitting = false;
   Account newAccount = new Account();
   bool _autoValidate = false;
 
@@ -43,9 +44,17 @@ class AccountComponentState extends State<AccountComponent> {
         "txn_hash": "helloworld",
         "signature": signature
       };
+      setState(() {
+        _submitting = true;
+      });
       var response = await createAccount(accountPayload);
-      await FlutterKeychain.put(key: "defaultAccount", value: response.id);
-      Application.router.navigateTo(context, "/home");
+      if(response != null) {
+        setState(() {
+          _submitting = false;
+        });
+        await FlutterKeychain.put(key: "defaultAccount", value: response.id);
+        Application.router.navigateTo(context, "/home");
+      }
     }
   }
 
@@ -84,6 +93,20 @@ class AccountComponentState extends State<AccountComponent> {
         ));
     var ws = new List<Widget>();
     ws.add(form);
+    if (_submitting) {
+      var modal = new Stack(
+        children: [
+          new Opacity(
+            opacity: 0.8,
+            child: const ModalBarrier(dismissible: false, color: Colors.grey),
+          ),
+          new Center(
+            child: new CircularProgressIndicator(),
+          ),
+        ],
+      );
+      ws.add(modal);
+    }
     return ws;
   }
 
