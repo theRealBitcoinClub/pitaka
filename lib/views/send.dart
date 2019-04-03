@@ -11,6 +11,9 @@ import '../views/app.dart';
 import '../helpers.dart';
 import '../api/responses.dart';
 import '../api/config.dart';
+import 'package:crypto/crypto.dart';
+// import 'package:crypto/src/digest_sink.dart';
+import 'dart:convert';
 
 class SendComponent extends StatefulWidget {
   @override
@@ -29,7 +32,7 @@ String _randomString(int length) {
 class SendComponentState extends State<SendComponent> {
   String _barcodeString;
   String path = '/send';
-
+  var _txnQrCode;
   int accountIndex = 0;
   List<Account> accounts = [];
 
@@ -46,12 +49,19 @@ class SendComponentState extends State<SendComponent> {
   }
 
   Future<bool> sendFunds(
-      String toAccount, int amount, BuildContext context) async {
+    String toAccount, int amount, BuildContext context) async {
     String publicKey = await FlutterKeychain.get(key: "publicKey");
     String privateKey = await FlutterKeychain.get(key: "privateKey");
-    // String accounts = await FlutterKeychain.get(key: "accounts");
+    var key = utf8.encode('1pa-y&Taka#2019@34%#Crypto:)');
+    var hmacSha256 = new Hmac(sha256, key);
     final String txnhash = _randomString(20);
+    var concatenated;
+    var _txnDateTime;
     String signature = await signTransaction(txnhash, privateKey);
+    var now = new DateTime.now();
+    _txnDateTime = DateTime.parse(now.toString());
+    concatenated = "$amount:$publicKey:$_txnDateTime:$signature";
+    setState(() => _txnQrCode = hmacSha256.convert(utf8.encode(concatenated)));
     var payload = {
       'from_account': accounts[accountIndex].accountId,
       'to_account': toAccount,
@@ -61,21 +71,14 @@ class SendComponentState extends State<SendComponent> {
       "txn_hash": txnhash,
       "signature": signature
     };
+    
+    
     var response = await transferAsset(payload);
-    showDialog(
-        context: context,
-        builder: (_) => new AlertDialog(
-              title: new Text("Funds Sent"),
-              content: new Text("PHP $sendAmount was sent successfully!"),
-              actions: <Widget>[
-                new FlatButton(
-                  child: new Text("OK"),
-                  onPressed: () {
-                    Application.router.navigateTo(context, "/home");
-                  },
-                ),
-              ],
-            ));
+    if(response != null) {
+      String code = _txnQrCode.toString();
+      await FlutterKeychain.put(key: "_txnQrCode", value: code);
+      Application.router.navigateTo(context, "/proofOfPayment");
+    }
     return response.success;
   }
 
@@ -162,8 +165,7 @@ class SendComponentState extends State<SendComponent> {
                         new Text(snapshot.data != null ? snapshot.data : ''),
                         Visibility(
                             child: new TextField(
-                              decoration: new InputDecoration(
-                                  labelText: "Enter the amount"),
+                              decoration: new InputDecoration(labelText: "Enter the amount"),
                               keyboardType: TextInputType.number,
                               onChanged: (value) {
                                 sendAmount = int.parse(value);

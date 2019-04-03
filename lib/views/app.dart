@@ -15,7 +15,7 @@ class Application {
 
 class AppComponentState extends State<AppComponent> {
   static bool debugMode = false;
-
+  
   AppComponentState() {
     final router = new Router();
     Routes.configureRoutes(router);
