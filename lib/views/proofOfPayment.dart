@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-// import '../api/endpoints.dart';
 import '../views/app.dart';
-import 'package:flutter_keychain/flutter_keychain.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:qr_flutter/qr_flutter.dart';
 
 
 class ProofOfPaymentComponent extends StatefulWidget {
@@ -12,11 +12,14 @@ class ProofOfPaymentComponent extends StatefulWidget {
 class ProofOfPaymentComponentState extends State<ProofOfPaymentComponent> {
 
   Future<String> getVal() async {
-    var x = await FlutterKeychain.get(key: "_txnQrCode");
-    return x.toString();
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    return prefs.getString("_txnQrCode");
   }
 
+
   List<Widget> _buildAccountForm(BuildContext context) {
+    final bodyHeight = MediaQuery.of(context).size.height -
+      MediaQuery.of(context).viewInsets.bottom;
     Form form = new Form(
       child: new ListView(
         padding: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -24,17 +27,25 @@ class ProofOfPaymentComponentState extends State<ProofOfPaymentComponent> {
           new SizedBox(
             height: 30.0,
           ),
-          Text("${getVal()}"),
+          FutureBuilder(
+            future: getVal(),
+            builder: (BuildContext context, AsyncSnapshot snapshot) {
+              if(snapshot.hasData) {
+                return QrImage(
+                  data: snapshot.data,
+                  size: 0.6 * bodyHeight,
+                );
+              }
+            }),
           new RaisedButton(
             onPressed: () {
-              var x = getVal();
-              print(x);
               Application.router.navigateTo(context, '/home');
               },
             child: new Text('Continue'),
           )
         ],
-      ));
+      )
+    );
     var ws = new List<Widget>();
     ws.add(form);
 
@@ -43,6 +54,7 @@ class ProofOfPaymentComponentState extends State<ProofOfPaymentComponent> {
 
   @override
   Widget build(BuildContext context) {
+    
     return Scaffold(
         appBar: AppBar(
           title: Text('Proof Of Payment'),

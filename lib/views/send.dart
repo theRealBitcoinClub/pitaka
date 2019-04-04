@@ -12,7 +12,7 @@ import '../helpers.dart';
 import '../api/responses.dart';
 import '../api/config.dart';
 import 'package:crypto/crypto.dart';
-// import 'package:crypto/src/digest_sink.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 
 class SendComponent extends StatefulWidget {
@@ -35,6 +35,9 @@ class SendComponentState extends State<SendComponent> {
   var _txnQrCode;
   int accountIndex = 0;
   List<Account> accounts = [];
+  bool _submitting = false;
+  int sendAmount;
+  final _formKey = GlobalKey<FormState>();
 
   Future<List<Account>> getAccountsFromKeychain() async {
     String accounts = await FlutterKeychain.get(key: "accounts");
@@ -50,18 +53,21 @@ class SendComponentState extends State<SendComponent> {
 
   Future<bool> sendFunds(
     String toAccount, int amount, BuildContext context) async {
+    setState(() => _submitting = true);
     String publicKey = await FlutterKeychain.get(key: "publicKey");
     String privateKey = await FlutterKeychain.get(key: "privateKey");
-    var key = utf8.encode('1pa-y&Taka#2019@34%#Crypto:)');
-    var hmacSha256 = new Hmac(sha256, key);
+    SharedPreferences prefs = await SharedPreferences.getInstance();
     final String txnhash = _randomString(20);
+    String signature = await signTransaction(txnhash, privateKey);
+    var key = utf8.encode(hashCode);
+    var hmacSha256 = new Hmac(sha256, key);
     var concatenated;
     var _txnDateTime;
-    String signature = await signTransaction(txnhash, privateKey);
     var now = new DateTime.now();
     _txnDateTime = DateTime.parse(now.toString());
     concatenated = "$amount:$publicKey:$_txnDateTime:$signature";
     setState(() => _txnQrCode = hmacSha256.convert(utf8.encode(concatenated)));
+    prefs.setString("_txnQrCode", _txnQrCode.toString());
     var payload = {
       'from_account': accounts[accountIndex].accountId,
       'to_account': toAccount,
@@ -71,14 +77,9 @@ class SendComponentState extends State<SendComponent> {
       "txn_hash": txnhash,
       "signature": signature
     };
-    
-    
     var response = await transferAsset(payload);
-    if(response != null) {
-      String code = _txnQrCode.toString();
-      await FlutterKeychain.put(key: "_txnQrCode", value: code);
-      Application.router.navigateTo(context, "/proofOfPayment");
-    }
+    Application.router.navigateTo(context, "/proofOfPayment");
+    setState(() => _submitting = false);
     return response.success;
   }
 
@@ -91,8 +92,16 @@ class SendComponentState extends State<SendComponent> {
     return _barcodeString;
   }
 
-  int sendAmount;
-
+  String validateAmount(String value) {
+    if (value == null || value == "") {
+      return 'This field is required.';
+    } else if (value == '0') {
+      return 'Please enter valid amount.';
+    }else {
+      return null;
+    }
+  }
+  
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -101,88 +110,127 @@ class SendComponentState extends State<SendComponent> {
           centerTitle: true,
         ),
         drawer: buildDrawer(context),
-        body: Center(
-            child: Column(
+        body: new Builder(builder: (BuildContext context) {
+          return new Stack(children: _buildForm(context));
+        }),
+        bottomNavigationBar: buildBottomNavigation(context, path)
+      );
+  }
+
+  List<Widget> _buildForm(BuildContext context) {
+    Form form = new Form(
+      key: _formKey,
+      child: new ListView(
+        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+        children: <Widget>[
+          new SizedBox(
+            height: 30.0,
+          ),
+          Center(
+            child: FutureBuilder(
+              future: getAccountsFromKeychain(),
+              builder: (BuildContext context, AsyncSnapshot snapshot) {
+                if (snapshot.hasData) {
+                  accounts = snapshot.data;
+                  String sourceAccount =
+                    snapshot.data[accountIndex].accountName;
+                  return SwipeDetector(
+                    onSwipeLeft: () {
+                      setState(() {
+                        if (accountIndex <
+                            (snapshot.data.length - 1)) {
+                          accountIndex += 1;
+                        }
+                      });
+                    },
+                    onSwipeRight: () {
+                      setState(() {
+                        if (accountIndex > 0) {
+                          accountIndex -= 1;
+                        }
+                      });
+                    },
+                    swipeConfiguration: SwipeConfiguration(
+                      horizontalSwipeMaxHeightThreshold: 50.0,
+                      horizontalSwipeMinDisplacement: 50.0,
+                      horizontalSwipeMinVelocity: 200.0),
+                      child: new Container(
+                        padding: const EdgeInsets.only(
+                          top: 50.0, bottom: 50.00),
+                        child: Text(
+                          'Send from $sourceAccount account',
+                          style: new TextStyle(
+                            fontSize: 18.0,
+                          ),
+                        )
+                      )
+                    );
+                } else {
+                  return Text('Fetching accounts...');
+                }
+              }
+            )
+          ),
+          new Container(
+            margin: const EdgeInsets.only(top: 5.0),
+            child: new RaisedButton(
+              child: const Text('Scan QR Code'),
+              onPressed: scanBarcode,
+            )
+          ),
+          new FutureBuilder<String>(
+            future: getBarcode(),
+            builder: (BuildContext context, AsyncSnapshot<String> snapshot) {
+              return Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: <Widget>[
-              new SizedBox(
-                height: 30.0,
-              ),
-              Center(
-                  child: FutureBuilder(
-                      future: getAccountsFromKeychain(),
-                      builder: (BuildContext context, AsyncSnapshot snapshot) {
-                        if (snapshot.hasData) {
-                          accounts = snapshot.data;
-                          String sourceAccount =
-                              snapshot.data[accountIndex].accountName;
-                          return SwipeDetector(
-                              onSwipeLeft: () {
-                                setState(() {
-                                  if (accountIndex <
-                                      (snapshot.data.length - 1)) {
-                                    accountIndex += 1;
-                                  }
-                                });
-                              },
-                              onSwipeRight: () {
-                                setState(() {
-                                  if (accountIndex > 0) {
-                                    accountIndex -= 1;
-                                  }
-                                });
-                              },
-                              swipeConfiguration: SwipeConfiguration(
-                                  horizontalSwipeMaxHeightThreshold: 50.0,
-                                  horizontalSwipeMinDisplacement: 50.0,
-                                  horizontalSwipeMinVelocity: 200.0),
-                              child: new Container(
-                                  padding: const EdgeInsets.only(
-                                      top: 50.0, bottom: 50.00),
-                                  child: Text(
-                                    'Send from $sourceAccount account',
-                                    style: new TextStyle(
-                                      fontSize: 18.0,
-                                    ),
-                                  )));
-                        } else {
-                          return Text('Fetching accounts...');
+                  new Text(snapshot.data != null ? snapshot.data : ''),
+                  Visibility(
+                    child: new TextFormField(
+                      validator: validateAmount,
+                      decoration: new InputDecoration(labelText: "Enter the amount"),
+                      keyboardType: TextInputType.number,
+                      onSaved: (value) {
+                        setState(() => sendAmount = int.parse(value));
+                      },
+                    ),
+                    visible: snapshot.data != null
+                  ),
+                  Visibility(
+                    child: new RaisedButton(
+                      child: const Text("Send"),
+                      onPressed: () {
+                        var valid = _formKey.currentState.validate();
+                        if (valid) {
+                          _formKey.currentState.save();
+                          sendFunds(snapshot.data, sendAmount, context);
                         }
-                      })),
-              new Container(
-                  margin: const EdgeInsets.only(top: 5.0),
-                  child: new RaisedButton(
-                    child: const Text('Scan QR Code'),
-                    onPressed: scanBarcode,
-                  )),
-              new FutureBuilder<String>(
-                  future: getBarcode(),
-                  builder:
-                      (BuildContext context, AsyncSnapshot<String> snapshot) {
-                    return Column(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: <Widget>[
-                        new Text(snapshot.data != null ? snapshot.data : ''),
-                        Visibility(
-                            child: new TextField(
-                              decoration: new InputDecoration(labelText: "Enter the amount"),
-                              keyboardType: TextInputType.number,
-                              onChanged: (value) {
-                                sendAmount = int.parse(value);
-                              },
-                            ),
-                            visible: snapshot.data != null),
-                        Visibility(
-                            child: new RaisedButton(
-                                child: const Text("Send"),
-                                onPressed: () {
-                                  sendFunds(snapshot.data, sendAmount, context);
-                                }),
-                            visible: snapshot.data != null)
-                      ],
-                    );
-                  }),
-            ])),
-        bottomNavigationBar: buildBottomNavigation(context, path));
+                      }
+                    ),
+                    visible: snapshot.data != null)
+                ],
+              );
+            }
+          ),
+        ],
+      )
+    );
+    var ws = new List<Widget>();
+    ws.add(form);
+    if (_submitting) {
+      var modal = new Stack(
+        children: [
+          new Opacity(
+            opacity: 0.8,
+            child: const ModalBarrier(dismissible: false, color: Colors.grey),
+          ),
+          new Center(
+            child: new CircularProgressIndicator(),
+          ),
+        ],
+      );
+      ws.add(modal);
+    }
+    return ws;
   }
 }

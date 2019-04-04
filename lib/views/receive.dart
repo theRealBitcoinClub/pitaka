@@ -59,24 +59,26 @@ class ReceiveComponentState extends State<ReceiveComponent> {
                       });
                     },
                     swipeConfiguration: SwipeConfiguration(
-                        horizontalSwipeMaxHeightThreshold: 50.0,
-                        horizontalSwipeMinDisplacement: 50.0,
-                        horizontalSwipeMinVelocity: 200.0),
+                      horizontalSwipeMaxHeightThreshold: 50.0,
+                      horizontalSwipeMinDisplacement: 50.0,
+                      horizontalSwipeMinVelocity: 200.0),
                     child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: <Widget>[
-                          Text(
-                            snapshot.data[accountIndex].accountName,
-                            style: new TextStyle(
-                              fontSize: 18.0,
-                            ),
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: <Widget>[
+                        Text(
+                          snapshot.data[accountIndex].accountName,
+                          style: new TextStyle(
+                            fontSize: 18.0,
                           ),
-                          QrImage(
-                            data: snapshot.data[accountIndex].accountId,
-                            size: 0.6 * bodyHeight,
-                          )
-                        ]));
+                        ),
+                        QrImage(
+                          data: snapshot.data[accountIndex].accountId,
+                          size: 0.6 * bodyHeight,
+                        )
+                      ]
+                    )
+                  );
               } else {
                 return Column(
                     mainAxisAlignment: MainAxisAlignment.center,
