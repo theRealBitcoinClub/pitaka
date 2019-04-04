@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_keychain/flutter_keychain.dart';
 import 'package:after_layout/after_layout.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/services.dart';
 import 'package:local_auth/local_auth.dart';
 import 'dart:async';
@@ -66,14 +67,10 @@ class LandingComponentState extends State<LandingComponent>
   }
 
   void determinePath(BuildContext context) async {
-    if (AppComponentState.debugMode) {
-      print('The program is in debug mode...');
-      await FlutterKeychain.remove(key: "publicKey"); 
-    } else {
-      print('The program is live...');
-    }
-    String publicKey = await FlutterKeychain.get(key: "publicKey");
-    if (publicKey == null) {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    var installed = prefs.getBool('installed');
+    if (installed == null) {
+      await FlutterKeychain.clear();
       Application.router.navigateTo(context, "/onboarding/request");
     } else {
       await _authenticate();
