@@ -211,10 +211,10 @@ class BusinessRegistrationComponentState extends State<BusinessRegistrationCompo
             child: new Text('Create'),
           )
         ],
-      ));
+      )
+    );
     var ws = new List<Widget>();
     ws.add(form);
-
     if (_submitting) {
       var modal = new Stack(
         children: [
