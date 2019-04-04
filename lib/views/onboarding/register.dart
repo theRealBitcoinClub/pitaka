@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_sodium/flutter_sodium.dart';
 import 'package:flutter_keychain/flutter_keychain.dart';
 import 'package:back_button_interceptor/back_button_interceptor.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/services.dart';
 import 'package:local_auth/local_auth.dart';
 import "package:hex/hex.dart";
@@ -183,6 +184,8 @@ class RegisterComponentState extends State<RegisterComponent> {
           };
           await loginUser(loginPayload);
 
+          SharedPreferences prefs = await SharedPreferences.getInstance();
+          await prefs.setBool('installed', true);
           Application.router.navigateTo(context, "/account");
         }
       } else {
