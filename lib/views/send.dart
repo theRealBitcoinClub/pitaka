@@ -14,6 +14,7 @@ import '../api/config.dart';
 import 'package:crypto/crypto.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
+import 'package:intl/intl.dart';
 
 class SendComponent extends StatefulWidget {
   @override
@@ -62,12 +63,20 @@ class SendComponentState extends State<SendComponent> {
     var key = utf8.encode(hashCode);
     var hmacSha256 = new Hmac(sha256, key);
     var concatenated;
-    var _txnDateTime;
     var now = new DateTime.now();
-    _txnDateTime = DateTime.parse(now.toString());
+    var _txnDateTime = DateTime.parse(now.toString());
+    var _txnDate = DateFormat('MMMM dd, yyyy').format(
+      DateTime.parse(now.toString())
+    );
+    var _txnTime = DateFormat('h:mm a').format(
+      DateTime.parse(now.toString())
+    );
     concatenated = "$amount:$publicKey:$_txnDateTime:$signature";
     setState(() => _txnQrCode = hmacSha256.convert(utf8.encode(concatenated)));
     prefs.setString("_txnQrCode", _txnQrCode.toString());
+    prefs.setString("_txnDate", _txnDate);
+    prefs.setString("_txnTime", _txnTime);
+    prefs.setString("_txnAmount", amount.toString());
     var payload = {
       'from_account': accounts[accountIndex].accountId,
       'to_account': toAccount,
