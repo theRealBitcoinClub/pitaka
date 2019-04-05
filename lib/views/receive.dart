@@ -3,14 +3,14 @@ import 'package:qr_flutter/qr_flutter.dart';
 import 'package:flutter_keychain/flutter_keychain.dart';
 import 'package:swipedetector/swipedetector.dart';
 import '../views/app.dart';
-import '../api/config.dart';
-import 'package:crypto/crypto.dart';
 import 'dart:async';
 import '../components/drawer.dart';
 import '../components/bottomNavigation.dart';
 import '../api/responses.dart';
 import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
-import 'package:flutter_string_encryption/flutter_string_encryption.dart';
+import 'package:flutter_sodium/flutter_sodium.dart';
+import 'package:hex/hex.dart';
+
 
 
 class ReceiveComponent extends StatefulWidget {
@@ -20,7 +20,6 @@ class ReceiveComponent extends StatefulWidget {
 
 class ReceiveComponentState extends State<ReceiveComponent> {
   String path = "/receive";
-  String _qrCodeString = "";
   int accountIndex = 0;
   
   Future<List<Account>> getAccountsFromKeychain() async {
@@ -37,21 +36,56 @@ class ReceiveComponentState extends State<ReceiveComponent> {
 
   void scanQrcode() async {
     String qrcode = await FlutterBarcodeScanner.scanBarcode("#ff6666");
-    setState(() => _qrCodeString = qrcode);
-    final cryptor = new PlatformStringCryptor();
-    final String salt = await cryptor.generateSalt();
-    final String securityKey = await cryptor.generateKeyFromPassword(hashCode, salt);
-    try {
-      final String decrypted = await cryptor.decrypt(_qrCodeString, securityKey);
-      print(decrypted); // - A string to encrypt.
-    } on MacMismatchException {
-      print('Error po!');
-      // unable to decrypt (wrong key or forged data)
+    print(qrcode);
+    var strings = qrcode.split(':wallet:');
+    if (strings.length == 3) {
+      var signature = HEX.decode(strings[0]);
+      var publicKey = HEX.decode(strings[2]);
+      String message = strings[1];
+      var valid = await CryptoSign.verify(signature, message, publicKey);
+      if (valid) {
+        List info = message.split(":message:");
+        var now = DateTime.now();
+        var _txnDate = DateTime.parse(info[1]);
+        Duration difference = now.difference(_txnDate);
+        print(difference.inMinutes);
+        // Use difference in minutes to monitor the freshness of the transaction.
+        _successDialog();
+        return null;
+      }
     }
-    // _qrCodeString
-    _successDialog();
+    _failedDialog();
+    return null;
   }
 
+
+  Future<void> _failedDialog() async {
+    return showDialog<void>(
+      context: context,
+      barrierDismissible: false, // user must tap button!
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Failed'),
+          content: SingleChildScrollView(
+            child: ListBody(
+              children: <Widget>[
+                Text('Invalid code! Please try again.')
+              ],
+            ),
+          ),
+          actions: <Widget>[
+            FlatButton(
+              child: Text('Okay!'),
+              onPressed: () {
+                Navigator.of(context).pop();
+                Application.router.navigateTo(context, "/receive");
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
 
   Future<void> _successDialog() async {
     return showDialog<void>(
@@ -63,16 +97,16 @@ class ReceiveComponentState extends State<ReceiveComponent> {
           content: SingleChildScrollView(
             child: ListBody(
               children: <Widget>[
-                Text('Business account was successufully added.')
+                Text('Payment transaction has been verified.')
               ],
             ),
           ),
           actions: <Widget>[
             FlatButton(
-              child: Text('Got It!'),
+              child: Text('Okay!'),
               onPressed: () {
                 Navigator.of(context).pop();
-                Application.router.navigateTo(context, "/businesstools");
+                Application.router.navigateTo(context, "/home");
               },
             ),
           ],

@@ -21,5 +21,6 @@ String generateTransactionHash(Map txn) {
 Future<String> signTransaction(String txnHash, String privateKey) async {
   var privateKeyBytes = HEX.decode(privateKey);
   final signature = await CryptoSign.sign(txnHash, privateKeyBytes);
+  
   return HEX.encode(signature);
 }

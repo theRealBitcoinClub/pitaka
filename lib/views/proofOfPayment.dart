@@ -3,7 +3,6 @@ import '../views/app.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 
-
 class ProofOfPaymentComponent extends StatefulWidget {
   @override
   ProofOfPaymentComponentState createState() => new ProofOfPaymentComponentState();
@@ -13,14 +12,18 @@ class ProofOfPaymentComponentState extends State<ProofOfPaymentComponent> {
 
   Future<Map> getVal() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
+    print(prefs.getString("_txnSignature"));
     return {
       'code': prefs.getString("_txnQrCode"),
-      'date': prefs.getString("_txnDate"),
-      'amount': prefs.getString("_txnAmount"),
-      'time': prefs.getString("_txnTime")
+      'datetime': prefs.getString("_txnDateTime"),
+      'amount': prefs.getString("_txnAmount")
     };
   }
 
+  String convertToDoble (String val) {
+    var given = double.parse(val);
+    return "Php ${given.toStringAsFixed(2)}";
+  }
   List<Widget> _buildAccountForm(BuildContext context) {
     final bodyHeight = MediaQuery.of(context).size.height -
       MediaQuery.of(context).viewInsets.bottom;
@@ -31,12 +34,25 @@ class ProofOfPaymentComponentState extends State<ProofOfPaymentComponent> {
             if(snapshot.data != null) {
               return Center(
                 child: new ListView(
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16.0),
                   children: <Widget>[
-                    Text(snapshot.data['date']),
-                    Text(snapshot.data['time']),
-                    Text(snapshot.data['amount']),
+                    Text(
+                      convertToDoble(snapshot.data['amount']),
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 40.0,
+                        fontWeight: FontWeight.bold
+                      )
+                    ),
+                    Text(
+                      snapshot.data['datetime'],
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 20.0
+                      )
+                    ),
                     QrImage(
+                      version: 15,
                       data: snapshot.data['code'],
                       size: 0.6 * bodyHeight,
                     ),

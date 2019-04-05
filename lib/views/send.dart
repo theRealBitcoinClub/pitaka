@@ -1,4 +1,3 @@
-import 'dart:math';
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
@@ -11,30 +10,17 @@ import '../views/app.dart';
 import '../helpers.dart';
 import '../api/responses.dart';
 import '../api/config.dart';
-// import 'package:crypto/crypto.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-// import 'dart:convert';
 import 'package:intl/intl.dart';
-import 'package:flutter_string_encryption/flutter_string_encryption.dart';
 
 class SendComponent extends StatefulWidget {
   @override
   SendComponentState createState() => new SendComponentState();
 }
 
-String _randomString(int length) {
-  var rand = new Random();
-  var codeUnits = new List.generate(length, (index) {
-    return rand.nextInt(33) + 89;
-  });
-
-  return new String.fromCharCodes(codeUnits);
-}
-
 class SendComponentState extends State<SendComponent> {
   String _barcodeString;
   String path = '/send';
-  var _txnQrCode;
   int accountIndex = 0;
   List<Account> accounts = [];
   bool _submitting = false;
@@ -56,41 +42,20 @@ class SendComponentState extends State<SendComponent> {
   Future<bool> sendFunds(
     String toAccount, int amount, BuildContext context) async {
     setState(() => _submitting = true);
-    print('x');
     String publicKey = await FlutterKeychain.get(key: "publicKey");
-    print('y');
     String privateKey = await FlutterKeychain.get(key: "privateKey");
-    print('z');
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    print('A');
-    final cryptor = new PlatformStringCryptor();
-    print('B');
-    final String salt = await cryptor.generateSalt();
-    print('C');
-    final String securityKey = await cryptor.generateKeyFromPassword(hashCode, salt);
-    print('D');
-    final String txnhash = _randomString(20);
-    print('E');
-    String signature = await signTransaction(txnhash, privateKey);
-    var concatenated;
     var now = new DateTime.now();
     var _txnDateTime = DateTime.parse(now.toString());
-    var _txnDate = DateFormat('MMMM dd, yyyy').format(
+    var txnhash = "$amount:message:$_txnDateTime:message:$publicKey";
+    var _txnReadableDateTime = DateFormat('MMMM dd, yyyy  h:mm a').format(
       DateTime.parse(now.toString())
     );
-    print('C');
-    var _txnTime = DateFormat('h:mm a').format(
-      DateTime.parse(now.toString())
-    );
-    concatenated = "$amount:$publicKey:$_txnDateTime:$signature";
-    print(concatenated);
-    final String encrypted = await cryptor.encrypt(concatenated, securityKey);
-    setState(() => _txnQrCode = encrypted);
-    prefs.setString("_txnQrCode", _txnQrCode.toString());
-    prefs.setString("_txnDate", _txnDate);
-    prefs.setString("_txnTime", _txnTime);
+    String signature = await signTransaction(txnhash, privateKey);
+    var qrcode = "$signature:wallet:$txnhash:wallet:$publicKey";
+    prefs.setString("_txnQrCode", qrcode);
+    prefs.setString("_txnDateTime", _txnReadableDateTime);
     prefs.setString("_txnAmount", amount.toString());
-    print('D');
     var payload = {
       'from_account': accounts[accountIndex].accountId,
       'to_account': toAccount,
@@ -101,11 +66,8 @@ class SendComponentState extends State<SendComponent> {
       "signature": signature
     };
     var response = await transferAsset(payload);
-    print('E');
     Application.router.navigateTo(context, "/proofOfPayment");
-    print('F');
     setState(() => _submitting = false);
-    print('G');
     return response.success;
   }
 
