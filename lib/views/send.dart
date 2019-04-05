@@ -1,4 +1,3 @@
-import 'dart:math';
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
@@ -11,9 +10,7 @@ import '../views/app.dart';
 import '../helpers.dart';
 import '../api/responses.dart';
 import '../api/config.dart';
-import 'package:crypto/crypto.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'dart:convert';
 import 'package:intl/intl.dart';
 
 class SendComponent extends StatefulWidget {
@@ -21,19 +18,9 @@ class SendComponent extends StatefulWidget {
   SendComponentState createState() => new SendComponentState();
 }
 
-String _randomString(int length) {
-  var rand = new Random();
-  var codeUnits = new List.generate(length, (index) {
-    return rand.nextInt(33) + 89;
-  });
-
-  return new String.fromCharCodes(codeUnits);
-}
-
 class SendComponentState extends State<SendComponent> {
   String _barcodeString;
   String path = '/send';
-  var _txnQrCode;
   int accountIndex = 0;
   List<Account> accounts = [];
   bool _submitting = false;
@@ -58,24 +45,16 @@ class SendComponentState extends State<SendComponent> {
     String publicKey = await FlutterKeychain.get(key: "publicKey");
     String privateKey = await FlutterKeychain.get(key: "privateKey");
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    final String txnhash = _randomString(20);
-    String signature = await signTransaction(txnhash, privateKey);
-    var key = utf8.encode(hashCode);
-    var hmacSha256 = new Hmac(sha256, key);
-    var concatenated;
     var now = new DateTime.now();
     var _txnDateTime = DateTime.parse(now.toString());
-    var _txnDate = DateFormat('MMMM dd, yyyy').format(
+    var txnhash = "$amount:message:$_txnDateTime:message:$publicKey";
+    var _txnReadableDateTime = DateFormat('MMMM dd, yyyy  h:mm a').format(
       DateTime.parse(now.toString())
     );
-    var _txnTime = DateFormat('h:mm a').format(
-      DateTime.parse(now.toString())
-    );
-    concatenated = "$amount:$publicKey:$_txnDateTime:$signature";
-    setState(() => _txnQrCode = hmacSha256.convert(utf8.encode(concatenated)));
-    prefs.setString("_txnQrCode", _txnQrCode.toString());
-    prefs.setString("_txnDate", _txnDate);
-    prefs.setString("_txnTime", _txnTime);
+    String signature = await signTransaction(txnhash, privateKey);
+    var qrcode = "$signature:wallet:$txnhash:wallet:$publicKey";
+    prefs.setString("_txnQrCode", qrcode);
+    prefs.setString("_txnDateTime", _txnReadableDateTime);
     prefs.setString("_txnAmount", amount.toString());
     var payload = {
       'from_account': accounts[accountIndex].accountId,
