@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../api/endpoints.dart';
-import '../views/app.dart';
+import '../../api/endpoints.dart';
+import '../../views/app.dart';
 import 'package:flutter_masked_text/flutter_masked_text.dart';
 
 class BusinessAccount {
@@ -34,7 +34,7 @@ class BusinessRegistrationComponentState extends State<BusinessRegistrationCompo
           content: SingleChildScrollView(
             child: ListBody(
               children: <Widget>[
-                Text('Business account was successufully added.')
+                Text('Business registration has been submitted.')
               ],
             ),
           ),
@@ -135,9 +135,6 @@ class BusinessRegistrationComponentState extends State<BusinessRegistrationCompo
               labelText: 'Company Name',
             ),
           ),
-          new SizedBox(
-            height: 30.0,
-          ),
           new FormField(
             builder: (FormFieldState state) {
               return InputDecorator(
@@ -168,9 +165,6 @@ class BusinessRegistrationComponentState extends State<BusinessRegistrationCompo
               );
             },
           ),
-          new SizedBox(
-            height: 30.0,
-          ),
           new TextFormField(
             keyboardType: TextInputType.text,
             onSaved: (value) {
@@ -185,9 +179,6 @@ class BusinessRegistrationComponentState extends State<BusinessRegistrationCompo
             controller: new MaskedTextController(
               mask: '000-000-000'
             )
-          ),
-          new SizedBox(
-            height: 30.0,
           ),
           new TextFormField(
             keyboardType: TextInputType.text,
@@ -208,7 +199,7 @@ class BusinessRegistrationComponentState extends State<BusinessRegistrationCompo
             onPressed: () {
                 _submitForm(context);
               },
-            child: new Text('Create'),
+            child: new Text('Submit'),
           )
         ],
       )

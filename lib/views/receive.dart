@@ -36,7 +36,6 @@ class ReceiveComponentState extends State<ReceiveComponent> {
 
   void scanQrcode() async {
     String qrcode = await FlutterBarcodeScanner.scanBarcode("#ff6666");
-    print(qrcode);
     var strings = qrcode.split(':wallet:');
     if (strings.length == 3) {
       var signature = HEX.decode(strings[0]);
@@ -52,10 +51,14 @@ class ReceiveComponentState extends State<ReceiveComponent> {
         // Use difference in minutes to monitor the freshness of the transaction.
         _successDialog();
         return null;
+      } else {
+        _failedDialog();
+      }
+    } else {
+      if (qrcode.length > 0) {
+        _failedDialog();
       }
     }
-    _failedDialog();
-    return null;
   }
 
 
@@ -65,11 +68,11 @@ class ReceiveComponentState extends State<ReceiveComponent> {
       barrierDismissible: false, // user must tap button!
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('Failed'),
+          title: Text('Failure'),
           content: SingleChildScrollView(
             child: ListBody(
               children: <Widget>[
-                Text('Invalid code! Please try again.')
+                Text("The proof of payment you scanned is invalid.")
               ],
             ),
           ),
@@ -97,7 +100,7 @@ class ReceiveComponentState extends State<ReceiveComponent> {
           content: SingleChildScrollView(
             child: ListBody(
               children: <Widget>[
-                Text('Payment transaction has been verified.')
+                Text('Proof of payment has been validated.')
               ],
             ),
           ),
@@ -163,7 +166,7 @@ class ReceiveComponentState extends State<ReceiveComponent> {
                           size: 0.6 * bodyHeight,
                         ),
                         new RaisedButton(
-                          child: const Text('Scan Proof'),
+                          child: const Text('Scan Payment Proof'),
                           onPressed: () {
                             scanQrcode();
                           },
