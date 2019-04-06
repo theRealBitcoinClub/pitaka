@@ -22,18 +22,23 @@ class SendComponentState extends State<SendComponent> {
   String _barcodeString;
   String path = '/send';
   int accountIndex = 0;
-  List<Account> accounts = [];
+  // List<Account> accounts = [];
   bool _submitting = false;
   int sendAmount;
   final _formKey = GlobalKey<FormState>();
+  // List<String> _paytacaAccounts = <String>[];
+  Account _selectedPaytacaAccount;
 
-  Future<List<Account>> getAccountsFromKeychain() async {
-    String accounts = await FlutterKeychain.get(key: "accounts");
+  Future<List<Account>> getAccounts() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    var _prefAccounts = prefs.get("accounts");
+    // String accounts = await FlutterKeychain.get(key: "accounts");
     List<Account> _accounts = [];
-    for (final acct in accounts.split(',')) {
+    for (final acct in _prefAccounts) {
       var acctObj = new Account();
-      acctObj.accountName = acct.split('|')[0];
-      acctObj.accountId = acct.split('|')[1];
+      acctObj.accountName = acct.split(' | ')[0];
+      acctObj.accountId = acct.split(' | ')[1];
+      acctObj.balance = acct.split(' | ')[2];
       _accounts.add(acctObj);
     }
     return _accounts;
@@ -57,7 +62,8 @@ class SendComponentState extends State<SendComponent> {
     prefs.setString("_txnDateTime", _txnReadableDateTime);
     prefs.setString("_txnAmount", amount.toString());
     var payload = {
-      'from_account': accounts[accountIndex].accountId,
+      // 'from_account': accounts[accountIndex].accountId,
+      'from_account': 'temp',
       'to_account': toAccount,
       'asset': phpAssetId,
       'amount': amount,
@@ -116,12 +122,13 @@ class SendComponentState extends State<SendComponent> {
           ),
           Center(
             child: FutureBuilder(
-              future: getAccountsFromKeychain(),
+              future: getAccounts(),
               builder: (BuildContext context, AsyncSnapshot snapshot) {
                 if (snapshot.hasData) {
-                  accounts = snapshot.data;
-                  String sourceAccount =
-                    snapshot.data[accountIndex].accountName;
+                  if (snapshot.data != null) {
+
+                  
+                  // accounts = snapshot.data;
                   return SwipeDetector(
                     onSwipeLeft: () {
                       setState(() {
@@ -145,14 +152,41 @@ class SendComponentState extends State<SendComponent> {
                       child: new Container(
                         padding: const EdgeInsets.only(
                           top: 50.0, bottom: 50.00),
-                        child: Text(
-                          'Send from $sourceAccount account',
-                          style: new TextStyle(
-                            fontSize: 18.0,
-                          ),
-                        )
+                        child: new FormField(
+                          builder: (FormFieldState state) {
+                            return InputDecorator(
+                              decoration: InputDecoration(
+                                labelText: 'Select Account',
+                              ),
+                              child: new DropdownButtonHideUnderline(
+                                child: new DropdownButton<Account>(
+                                  value: _selectedPaytacaAccount,
+                                  
+                                  isDense: true,
+                                  onChanged: (Account account) {
+                                      _selectedPaytacaAccount = account;
+                                      state.didChange(account);
+                                  },
+                                  items: snapshot.data.map<DropdownMenuItem<Account>>((Account account) {
+                                    return DropdownMenuItem<Account>(
+                                      value: account,
+                                      child: Text("${account.accountName} -  ${double.parse(account.balance).toStringAsFixed(2)}"),
+                                    );
+                                  }).toList()
+                                ),
+                              )
+                            );
+                          },
+                        ),
+                        // child: Text(
+                        //   'Send from $sourceAccount account',
+                        //   style: new TextStyle(
+                        //     fontSize: 18.0,
+                        //   ),
+                        // )
                       )
                     );
+                  }
                 } else {
                   return Text('Fetching accounts...');
                 }
