@@ -62,8 +62,7 @@ class SendComponentState extends State<SendComponent> {
     prefs.setString("_txnDateTime", _txnReadableDateTime);
     prefs.setString("_txnAmount", amount.toString());
     var payload = {
-      // 'from_account': accounts[accountIndex].accountId,
-      'from_account': 'temp',
+      'from_account': _selectedPaytacaAccount.accountId,
       'to_account': toAccount,
       'asset': phpAssetId,
       'amount': amount,
@@ -127,28 +126,28 @@ class SendComponentState extends State<SendComponent> {
                 if (snapshot.hasData) {
                   if (snapshot.data != null) {
 
-                  
-                  // accounts = snapshot.data;
-                  return SwipeDetector(
-                    onSwipeLeft: () {
-                      setState(() {
-                        if (accountIndex <
-                            (snapshot.data.length - 1)) {
-                          accountIndex += 1;
-                        }
-                      });
-                    },
-                    onSwipeRight: () {
-                      setState(() {
-                        if (accountIndex > 0) {
-                          accountIndex -= 1;
-                        }
-                      });
-                    },
-                    swipeConfiguration: SwipeConfiguration(
-                      horizontalSwipeMaxHeightThreshold: 50.0,
-                      horizontalSwipeMinDisplacement: 50.0,
-                      horizontalSwipeMinVelocity: 200.0),
+                    _selectedPaytacaAccount = snapshot.data[0];
+                    return SwipeDetector(
+                      onSwipeLeft: () {
+                        setState(() {
+                          if (accountIndex <
+                              (snapshot.data.length - 1)) {
+                            accountIndex += 1;
+                          }
+                        });
+                      },
+                      onSwipeRight: () {
+                        setState(() {
+                          if (accountIndex > 0) {
+                            accountIndex -= 1;
+                          }
+                        });
+                      },
+                      swipeConfiguration: SwipeConfiguration(
+                        horizontalSwipeMaxHeightThreshold: 50.0,
+                        horizontalSwipeMinDisplacement: 50.0,
+                        horizontalSwipeMinVelocity: 200.0
+                      ),
                       child: new Container(
                         padding: const EdgeInsets.only(
                           top: 50.0, bottom: 50.00),
@@ -170,7 +169,7 @@ class SendComponentState extends State<SendComponent> {
                                   items: snapshot.data.map<DropdownMenuItem<Account>>((Account account) {
                                     return DropdownMenuItem<Account>(
                                       value: account,
-                                      child: Text("${account.accountName} -  ${double.parse(account.balance).toStringAsFixed(2)}"),
+                                      child: Text("${account.accountName} ( ${double.parse(account.balance).toStringAsFixed(2)} )"),
                                     );
                                   }).toList()
                                 ),
@@ -178,12 +177,6 @@ class SendComponentState extends State<SendComponent> {
                             );
                           },
                         ),
-                        // child: Text(
-                        //   'Send from $sourceAccount account',
-                        //   style: new TextStyle(
-                        //     fontSize: 18.0,
-                        //   ),
-                        // )
                       )
                     );
                   }
@@ -239,6 +232,9 @@ class SendComponentState extends State<SendComponent> {
     );
     var ws = new List<Widget>();
     ws.add(form);
+    if(_selectedPaytacaAccount != null) {
+     print('aw'); 
+    }
     if (_submitting) {
       var modal = new Stack(
         children: [
