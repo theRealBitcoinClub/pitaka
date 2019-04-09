@@ -6,12 +6,12 @@ import '../views/app.dart';
 import 'dart:async';
 import '../components/drawer.dart';
 import '../components/bottomNavigation.dart';
-import '../api/responses.dart';
 import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
 import 'package:flutter_sodium/flutter_sodium.dart';
 import 'package:hex/hex.dart';
-
-
+// import '../views/send.dart';
+// import '../api/responses.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class ReceiveComponent extends StatefulWidget {
   @override
@@ -21,17 +21,14 @@ class ReceiveComponent extends StatefulWidget {
 class ReceiveComponentState extends State<ReceiveComponent> {
   String path = "/receive";
   int accountIndex = 0;
+  final _formKey = GlobalKey<FormState>();
+  String _selectedPaytacaAccount;
+  List data = List(); //edited line
   
-  Future<List<Account>> getAccountsFromKeychain() async {
-    String accounts = await FlutterKeychain.get(key: "accounts");
-    List<Account> _accounts = [];
-    for (final acct in accounts.split(',')) {
-      var acctObj = new Account();
-      acctObj.accountName = acct.split('|')[0];
-      acctObj.accountId = acct.split('|')[1];
-      _accounts.add(acctObj);
-    }
-    return _accounts;
+  @override
+  void initState() {
+    super.initState();
+    this.getAccounts();
   }
 
   void scanQrcode() async {
@@ -58,6 +55,22 @@ class ReceiveComponentState extends State<ReceiveComponent> {
     return null;
   }
 
+  Future<String> getAccounts() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    var _prefAccounts = prefs.get("accounts");
+    List<Map> _accounts = [];
+    for (final acct in _prefAccounts) {
+      var acctObj = new Map();
+      acctObj['accountName'] = acct.split(' | ')[0];
+      acctObj['accountId'] = acct.split(' | ')[1];
+      acctObj['balance'] = acct.split(' | ')[2];
+      _accounts.add(acctObj);
+    }
+    setState(() {
+      data = _accounts;
+    });
+    return 'Success';
+  }
 
   Future<void> _failedDialog() async {
     return showDialog<void>(
@@ -115,69 +128,75 @@ class ReceiveComponentState extends State<ReceiveComponent> {
     );
   }
 
+
   @override
   Widget build(BuildContext context) {
-    final bodyHeight = MediaQuery.of(context).size.height -
-        MediaQuery.of(context).viewInsets.bottom;
     return Scaffold(
         appBar: AppBar(
-          title: Text('Receive'),
+          title: Text('Send'),
           centerTitle: true,
         ),
         drawer: buildDrawer(context),
-        body: new FutureBuilder(
-            future: getAccountsFromKeychain(),
-            builder: (BuildContext context, AsyncSnapshot snapshot) {
-              if (snapshot.hasData) {
-                return SwipeDetector(
-                    onSwipeLeft: () {
+        body: new Builder(builder: (BuildContext context) {
+          return new Stack(children: _buildForm(context));
+        }),
+        bottomNavigationBar: buildBottomNavigation(context, path)
+      );
+  }
+
+  List<Widget> _buildForm(BuildContext context) {
+    final bodyHeight = MediaQuery.of(context).size.height -
+        MediaQuery.of(context).viewInsets.bottom;
+    Form form = new Form(
+      key: _formKey,
+      child: new ListView(
+        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+        children: <Widget>[
+          new SizedBox(
+            height: 30.0,
+          ),
+          new FormField(
+            builder: (FormFieldState state) {
+              return InputDecorator(
+                decoration: InputDecoration(
+                  labelText: 'Select Account',
+                ),
+                child: new DropdownButtonHideUnderline(
+                  child: new DropdownButton(
+                    value: _selectedPaytacaAccount,
+                    isDense: true,
+                    onChanged: (newVal) {
                       setState(() {
-                        if (accountIndex < (snapshot.data.length - 1)) {
-                          accountIndex += 1;
-                        }
+                        _selectedPaytacaAccount = newVal;
+                        state.didChange(newVal);
                       });
                     },
-                    onSwipeRight: () {
-                      setState(() {
-                        if (accountIndex > 0) {
-                          accountIndex -= 1;
-                        }
-                      });
-                    },
-                    swipeConfiguration: SwipeConfiguration(
-                      horizontalSwipeMaxHeightThreshold: 50.0,
-                      horizontalSwipeMinDisplacement: 50.0,
-                      horizontalSwipeMinVelocity: 200.0),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: <Widget>[
-                        Text(
-                          snapshot.data[accountIndex].accountName,
-                          style: new TextStyle(
-                            fontSize: 18.0,
-                          ),
-                        ),
-                        QrImage(
-                          data: snapshot.data[accountIndex].accountId,
-                          size: 0.6 * bodyHeight,
-                        ),
-                        new RaisedButton(
-                          child: const Text('Scan Proof'),
-                          onPressed: () {
-                            scanQrcode();
-                          },
-                        )
-                      ]
-                    )
-                  );
-              } else {
-                return Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: <Widget>[new CircularProgressIndicator()]);
-              }
-            }),
-        bottomNavigationBar: buildBottomNavigation(context, path));
+                    items: data.map((item) {
+                      return DropdownMenuItem(
+                        value: item['accountId'],
+                        child: new Text("${item['accountName']} ( ${double.parse(item['balance']).toStringAsFixed(2)} )"),
+                      );
+                    }).toList()
+                  ),
+                )
+              );
+            },
+          ),
+          QrImage(
+            data: _selectedPaytacaAccount,
+            size: 0.6 * bodyHeight,
+          ),
+          new RaisedButton(
+            child: const Text('Scan Proof'),
+            onPressed: () {
+              scanQrcode();
+            },
+          )
+        ],
+      )
+    );
+    var ws = new List<Widget>();
+    ws.add(form);
+    return ws;
   }
 }

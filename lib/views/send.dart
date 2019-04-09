@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
 import 'package:flutter_keychain/flutter_keychain.dart';
@@ -22,26 +23,33 @@ class SendComponentState extends State<SendComponent> {
   String _barcodeString;
   String path = '/send';
   int accountIndex = 0;
-  // List<Account> accounts = [];
   bool _submitting = false;
   int sendAmount;
   final _formKey = GlobalKey<FormState>();
-  // List<String> _paytacaAccounts = <String>[];
-  Account _selectedPaytacaAccount;
+  String _selectedPaytacaAccount;
+  List data = List(); //edited line
 
-  Future<List<Account>> getAccounts() async {
+  Future<String> getAccounts() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     var _prefAccounts = prefs.get("accounts");
-    // String accounts = await FlutterKeychain.get(key: "accounts");
-    List<Account> _accounts = [];
+    List<Map> _accounts = [];
     for (final acct in _prefAccounts) {
-      var acctObj = new Account();
-      acctObj.accountName = acct.split(' | ')[0];
-      acctObj.accountId = acct.split(' | ')[1];
-      acctObj.balance = acct.split(' | ')[2];
+      var acctObj = new Map();
+      acctObj['accountName'] = acct.split(' | ')[0];
+      acctObj['accountId'] = acct.split(' | ')[1];
+      acctObj['balance'] = acct.split(' | ')[2];
       _accounts.add(acctObj);
     }
-    return _accounts;
+    setState(() {
+      data = _accounts;
+    });
+    return 'Success';
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    this.getAccounts();
   }
 
   Future<bool> sendFunds(
@@ -62,7 +70,7 @@ class SendComponentState extends State<SendComponent> {
     prefs.setString("_txnDateTime", _txnReadableDateTime);
     prefs.setString("_txnAmount", amount.toString());
     var payload = {
-      'from_account': _selectedPaytacaAccount.accountId,
+      'from_account': _selectedPaytacaAccount,
       'to_account': toAccount,
       'asset': phpAssetId,
       'amount': amount,
@@ -119,73 +127,6 @@ class SendComponentState extends State<SendComponent> {
           new SizedBox(
             height: 30.0,
           ),
-          Center(
-            child: FutureBuilder(
-              future: getAccounts(),
-              builder: (BuildContext context, AsyncSnapshot snapshot) {
-                if (snapshot.hasData) {
-                  if (snapshot.data != null) {
-
-                    _selectedPaytacaAccount = snapshot.data[0];
-                    return SwipeDetector(
-                      onSwipeLeft: () {
-                        setState(() {
-                          if (accountIndex <
-                              (snapshot.data.length - 1)) {
-                            accountIndex += 1;
-                          }
-                        });
-                      },
-                      onSwipeRight: () {
-                        setState(() {
-                          if (accountIndex > 0) {
-                            accountIndex -= 1;
-                          }
-                        });
-                      },
-                      swipeConfiguration: SwipeConfiguration(
-                        horizontalSwipeMaxHeightThreshold: 50.0,
-                        horizontalSwipeMinDisplacement: 50.0,
-                        horizontalSwipeMinVelocity: 200.0
-                      ),
-                      child: new Container(
-                        padding: const EdgeInsets.only(
-                          top: 50.0, bottom: 50.00),
-                        child: new FormField(
-                          builder: (FormFieldState state) {
-                            return InputDecorator(
-                              decoration: InputDecoration(
-                                labelText: 'Select Account',
-                              ),
-                              child: new DropdownButtonHideUnderline(
-                                child: new DropdownButton<Account>(
-                                  value: _selectedPaytacaAccount,
-                                  
-                                  isDense: true,
-                                  onChanged: (Account account) {
-                                      _selectedPaytacaAccount = account;
-                                      state.didChange(account);
-                                  },
-                                  items: snapshot.data.map<DropdownMenuItem<Account>>((Account account) {
-                                    return DropdownMenuItem<Account>(
-                                      value: account,
-                                      child: Text("${account.accountName} ( ${double.parse(account.balance).toStringAsFixed(2)} )"),
-                                    );
-                                  }).toList()
-                                ),
-                              )
-                            );
-                          },
-                        ),
-                      )
-                    );
-                  }
-                } else {
-                  return Text('Fetching accounts...');
-                }
-              }
-            )
-          ),
           new Container(
             margin: const EdgeInsets.only(top: 5.0),
             child: new RaisedButton(
@@ -199,7 +140,36 @@ class SendComponentState extends State<SendComponent> {
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: <Widget>[
-                  new Text(snapshot.data != null ? snapshot.data : ''),
+                  Visibility(
+                    child:  new FormField(
+                        builder: (FormFieldState state) {
+                          return InputDecorator(
+                            decoration: InputDecoration(
+                              labelText: 'Select Account',
+                            ),
+                            child: new DropdownButtonHideUnderline(
+                              child: new DropdownButton(
+                                value: _selectedPaytacaAccount,
+                                isDense: true,
+                                onChanged: (newVal) {
+                                  setState(() {
+                                    _selectedPaytacaAccount = newVal;
+                                    state.didChange(newVal);
+                                  });
+                                },
+                                items: data.map((item) {
+                                  return DropdownMenuItem(
+                                    value: item['accountId'],
+                                    child: new Text("${item['accountName']} ( ${double.parse(item['balance']).toStringAsFixed(2)} )"),
+                                  );
+                                }).toList()
+                              ),
+                            )
+                          );
+                        },
+                      ),
+                    visible: snapshot.data != null,
+                  ),
                   Visibility(
                     child: new TextFormField(
                       validator: validateAmount,
@@ -232,9 +202,6 @@ class SendComponentState extends State<SendComponent> {
     );
     var ws = new List<Widget>();
     ws.add(form);
-    if(_selectedPaytacaAccount != null) {
-     print('aw'); 
-    }
     if (_submitting) {
       var modal = new Stack(
         children: [
