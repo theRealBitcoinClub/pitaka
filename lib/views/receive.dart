@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:qr_flutter/qr_flutter.dart';
-import 'package:flutter_keychain/flutter_keychain.dart';
-import 'package:swipedetector/swipedetector.dart';
 import '../views/app.dart';
 import 'dart:async';
 import '../components/drawer.dart';
@@ -9,8 +7,6 @@ import '../components/bottomNavigation.dart';
 import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
 import 'package:flutter_sodium/flutter_sodium.dart';
 import 'package:hex/hex.dart';
-// import '../views/send.dart';
-// import '../api/responses.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ReceiveComponent extends StatefulWidget {
@@ -136,7 +132,7 @@ class ReceiveComponentState extends State<ReceiveComponent> {
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
-          title: Text('Send'),
+          title: Text('Receive'),
           centerTitle: true,
         ),
         drawer: buildDrawer(context),
@@ -186,7 +182,7 @@ class ReceiveComponentState extends State<ReceiveComponent> {
             },
           ),
           QrImage(
-            data: _selectedPaytacaAccount,
+            data: _selectedPaytacaAccount != null ? "::paytaca::$_selectedPaytacaAccount::paytaca::": null,
             size: 0.6 * bodyHeight,
           ),
           new RaisedButton(
