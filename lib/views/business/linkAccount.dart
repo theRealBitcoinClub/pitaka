@@ -1,8 +1,8 @@
 // SetBusinessAccountComponent
 
 import 'package:flutter/material.dart';
-import '../api/endpoints.dart';
-import '../views/app.dart';
+import '../../api/endpoints.dart';
+import '../../views/app.dart';
 
 class FormAccount {
   String paytacaAccount;
@@ -33,7 +33,7 @@ class SetBusinessAccountComponentState extends State<SetBusinessAccountComponent
           content: SingleChildScrollView(
             child: ListBody(
               children: <Widget>[
-                Text('Your account and bussiness are now connected.')
+                Text('Your selected business and account are now linked.')
               ],
             ),
           ),
@@ -118,37 +118,7 @@ class SetBusinessAccountComponentState extends State<SetBusinessAccountComponent
             builder: (FormFieldState state) {
               return InputDecorator(
                 decoration: InputDecoration(
-                  icon: const Icon(Icons.account_box),
-                  labelText: 'Paytaca',
-                ),
-                isEmpty: _selectedPaytacaAccount == '',
-                child: new DropdownButtonHideUnderline(
-                  child: new DropdownButton(
-                    value: _selectedPaytacaAccount,
-                    isDense: true,
-                    onChanged: (String newValue) {
-                      setState(() {
-                        _selectedPaytacaAccount = newValue;
-                        formInfo.paytacaAccount = newValue;
-                        state.didChange(newValue);
-                      });
-                    },
-                    items: _paytacaAccounts.map((String value) {
-                      return new DropdownMenuItem(
-                        value: value,
-                        child: new Text(value),
-                      );
-                    }).toList(),
-                  ),
-                ),
-              );
-            },
-          ),
-          new FormField(
-            builder: (FormFieldState state) {
-              return InputDecorator(
-                decoration: InputDecoration(
-                  icon: const Icon(Icons.account_balance_wallet),
+                  icon: const Icon(Icons.business),
                   labelText: 'Business',
                 ),
                 isEmpty: _selectedType == '',
@@ -164,6 +134,36 @@ class SetBusinessAccountComponentState extends State<SetBusinessAccountComponent
                       });
                     },
                     items: _businessType.map((String value) {
+                      return new DropdownMenuItem(
+                        value: value,
+                        child: new Text(value),
+                      );
+                    }).toList(),
+                  ),
+                ),
+              );
+            },
+          ),
+          new FormField(
+            builder: (FormFieldState state) {
+              return InputDecorator(
+                decoration: InputDecoration(
+                  icon: const Icon(Icons.account_balance_wallet),
+                  labelText: 'Account',
+                ),
+                isEmpty: _selectedPaytacaAccount == '',
+                child: new DropdownButtonHideUnderline(
+                  child: new DropdownButton(
+                    value: _selectedPaytacaAccount,
+                    isDense: true,
+                    onChanged: (String newValue) {
+                      setState(() {
+                        _selectedPaytacaAccount = newValue;
+                        formInfo.paytacaAccount = newValue;
+                        state.didChange(newValue);
+                      });
+                    },
+                    items: _paytacaAccounts.map((String value) {
                       return new DropdownMenuItem(
                         value: value,
                         child: new Text(value),

@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
-import '../views/app.dart';
+import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:qr_flutter/qr_flutter.dart';
+import '../views/app.dart';
 
 class ProofOfPaymentComponent extends StatefulWidget {
   @override
@@ -22,7 +23,9 @@ class ProofOfPaymentComponentState extends State<ProofOfPaymentComponent> {
 
   String convertToDoble (String val) {
     var given = double.parse(val);
-    return "Php ${given.toStringAsFixed(2)}";
+    // return "PHP ${given.toStringAsFixed(2)}";
+    final formatCurrency = new NumberFormat.currency(symbol: 'PHP ');
+    return "${formatCurrency.format(given)}";
   }
   List<Widget> _buildAccountForm(BuildContext context) {
     final bodyHeight = MediaQuery.of(context).size.height -
@@ -36,11 +39,14 @@ class ProofOfPaymentComponentState extends State<ProofOfPaymentComponent> {
                 child: new ListView(
                   padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16.0),
                   children: <Widget>[
+                    new SizedBox(
+                      height: 30.0,
+                    ),
                     Text(
                       convertToDoble(snapshot.data['amount']),
                       textAlign: TextAlign.center,
                       style: TextStyle(
-                        fontSize: 40.0,
+                        fontSize: 35.0,
                         fontWeight: FontWeight.bold
                       )
                     ),
@@ -51,10 +57,16 @@ class ProofOfPaymentComponentState extends State<ProofOfPaymentComponent> {
                         fontSize: 20.0
                       )
                     ),
+                    new SizedBox(
+                      height: 30.0,
+                    ),
                     QrImage(
                       version: 15,
                       data: snapshot.data['code'],
-                      size: 0.6 * bodyHeight,
+                      size: 0.5 * bodyHeight,
+                    ),
+                    new SizedBox(
+                      height: 10.0,
                     ),
                     new RaisedButton(
                       onPressed: () {
@@ -79,7 +91,7 @@ class ProofOfPaymentComponentState extends State<ProofOfPaymentComponent> {
     
     return Scaffold(
         appBar: AppBar(
-          title: Text('Proof Of Payment'),
+          title: Text('Payment Proof'),
           centerTitle: true,
           automaticallyImplyLeading: false
         ),

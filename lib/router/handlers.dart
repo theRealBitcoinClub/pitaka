@@ -9,9 +9,9 @@ import '../views/terms.dart';
 import '../views/home.dart';
 import '../views/send.dart';
 import '../views/receive.dart';
-import '../views/businessRegistration.dart';
-import '../views/businessTools.dart';
-import '../views/setBusinessAccount.dart';
+import '../views/business/register.dart';
+import '../views/business/tools.dart';
+import '../views/business/linkAccount.dart';
 import '../views/proofOfPayment.dart';
 
 var rootHandler = new Handler(

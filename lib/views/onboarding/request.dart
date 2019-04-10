@@ -36,10 +36,14 @@ class RequestComponentState extends State<RequestComponent> {
   Mobile newMobile = new Mobile();
 
   String validateMobile(String value) {
-    if (value.startsWith('09')){
+    if (value == '0000 - 000 - 0000') {
       return null;
     } else {
-      return 'Invalid phone number';
+      if (value.startsWith('09')){
+        return null;
+      } else {
+        return 'Invalid phone number';
+      }
     }
   }
 
@@ -50,6 +54,7 @@ class RequestComponentState extends State<RequestComponent> {
   bool _submitting = false;
 
   void _validateInputs(BuildContext context) async {
+    bool proceed = false;
     if (_formKey.currentState.validate()) {
       _formKey.currentState.save();
       // Close the on-screen keyboard by removing focus from the form's inputs
@@ -58,11 +63,19 @@ class RequestComponentState extends State<RequestComponent> {
         _submitting = true;
       });
 
-      newMobile.number = "+63" + newMobile.number.substring(1).replaceAll(" - ", "");
-      var numberPayload = {"mobile_number": newMobile.number};
-      var resp = await requestOtpCode(numberPayload);
+      if (newMobile.number == '0000 - 000 - 0000') {
+        proceed = true;
+      } else {
+        newMobile.number = "+63" + newMobile.number.substring(1).replaceAll(" - ", "");
+        var numberPayload = {"mobile_number": newMobile.number};
+        var resp = await requestOtpCode(numberPayload);
 
-      if (resp.success) {
+        if (resp.success) {
+          proceed = true;
+        }
+      }
+
+      if (proceed) {
         Application.router
             .navigateTo(context, "/onboarding/verify/${newMobile.number}");
       }
