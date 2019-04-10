@@ -96,13 +96,15 @@ Future<BalancesResponse> getBalances() async {
     // Store account details in keychain
     List<String> _accounts = [];
     for (final bal in response.data['balances']) {
-      String acct = bal['AccountName'] + '|' + bal['AccountID'];
+      String acct = "${bal['AccountName']} | ${bal['AccountID']} | ${bal['Balance']}";
       _accounts.add(acct);
     }
-    await FlutterKeychain.put(key: "accounts", value: _accounts.join(','));
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setStringList('accounts', _accounts);
     // Parse response into BalanceResponse
     return BalancesResponse.fromResponse(response);
   } catch (e) {
+    print(e);
     // Login before resending the request again
     await sendLoginRequest();
     return await getBalances();
@@ -149,7 +151,6 @@ Future<PlainSuccessResponse> requestOtpCode(payload) async {
     response = await sendPostRequest(url, payload);
     return PlainSuccessResponse.fromResponse(response);
   } catch(e) {
-    print('reamon');
     print(e);
     throw Exception('Failed to generate OTP code');
   }

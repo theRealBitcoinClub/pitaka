@@ -91,6 +91,7 @@ class TransactionsResponse {
 class Account {
   String accountName;
   String accountId;
+  String balance;
 }
 
 class AccountsResponse {

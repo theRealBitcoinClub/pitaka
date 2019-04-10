@@ -78,12 +78,12 @@ Drawer buildDrawer(BuildContext context) {
             onTap: () {
               Application.router.navigateTo(context, "/receive");
             }),
-        // ListTile(
-        //     title: Text('Create Account'),
-        //     trailing: Icon(Icons.person_outline),
-        //     onTap: () {
-        //       Application.router.navigateTo(context, "/account");
-        //     }),
+        ListTile(
+            title: Text('Create Account'),
+            trailing: Icon(Icons.person_outline),
+            onTap: () {
+              Application.router.navigateTo(context, "/account");
+            }),
         ListTile(
             title: Text('Business Tools'),
             trailing: Icon(Icons.business),

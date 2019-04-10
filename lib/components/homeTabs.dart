@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../api/endpoints.dart';
 
+
 final formatCurrency = new NumberFormat.currency(symbol: 'PHP ');
 
 ListView _buildBalancesList(balances) {
