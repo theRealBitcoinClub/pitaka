@@ -16,6 +16,7 @@ class Routes {
   static String setBusinessAccount = '/setbusinessaccount';
   static String businessTools = "/businesstools";
   static String proofOfPayment = "/proofOfPayment";
+  static String businesses = "/businesses";
 
   static void configureRoutes(Router router) {
     router.notFoundHandler = new Handler(
@@ -69,6 +70,10 @@ class Routes {
     );
     router.define(proofOfPayment,
         handler: proofOfPaymentAccountHandler,
+        transitionType: TransitionType.fadeIn
+    );
+    router.define(businesses,
+        handler: businessesHandler,
         transitionType: TransitionType.fadeIn
     );
   }
