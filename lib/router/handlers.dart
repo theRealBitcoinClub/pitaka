@@ -4,7 +4,7 @@ import '../views/landing.dart';
 import '../views/onboarding/request.dart';
 import '../views/onboarding/verify.dart';
 import '../views/onboarding/register.dart';
-import '../views/account.dart';
+import '../views/onboarding/account.dart';
 import '../views/terms.dart';
 import '../views/home.dart';
 import '../views/send.dart';
@@ -13,6 +13,7 @@ import '../views/business/register.dart';
 import '../views/business/tools.dart';
 import '../views/business/linkAccount.dart';
 import '../views/proofOfPayment.dart';
+import '../views/addAccount.dart';
 
 var rootHandler = new Handler(
     handlerFunc: (BuildContext context, Map<String, dynamic> params) {
@@ -78,4 +79,9 @@ var setBusinessAccountHandler = new Handler(
 var proofOfPaymentAccountHandler = new Handler(
     handlerFunc: (BuildContext context, Map<String, dynamic> params) {
   return new ProofOfPaymentComponent();
+});
+
+var addAccountHandler = new Handler(
+    handlerFunc: (BuildContext context, Map<String, dynamic> params) {
+  return new AddAccountComponent();
 });

@@ -82,7 +82,7 @@ Drawer buildDrawer(BuildContext context) {
             title: Text('Create Account'),
             trailing: Icon(Icons.person_outline),
             onTap: () {
-              Application.router.navigateTo(context, "/account");
+              Application.router.navigateTo(context, "/addAccount");
             }),
         ListTile(
             title: Text('Business Tools'),
