@@ -12,6 +12,8 @@ import 'dart:async';
 import '../app.dart';
 import '../../api/endpoints.dart';
 import '../../helpers.dart';
+import 'package:flutter_datetime_picker/flutter_datetime_picker.dart';
+  
 
 class User {
   String firstName;
@@ -104,27 +106,26 @@ class RegisterComponentState extends State<RegisterComponent> {
       return null;
   }
 
-  final TextEditingController _birthDateController =
-      new TextEditingController();
-  Future _chooseDate(BuildContext context, String initialDateString) async {
-    var now = new DateTime.now();
-    var initialDate = convertToDate(initialDateString) ?? now;
-    initialDate = (initialDate.year >= 1900 && initialDate.isBefore(now)
-        ? initialDate
-        : now);
+  final TextEditingController _birthDateController = new TextEditingController();
+  // Future _chooseDate(BuildContext context, String initialDateString) async {
+  //   var now = new DateTime.now();
+  //   var initialDate = convertToDate(initialDateString) ?? now;
+  //   initialDate = (initialDate.year >= 1900 && initialDate.isBefore(now)
+  //       ? initialDate
+  //       : now);
 
-    var result = await showDatePicker(
-        context: context,
-        initialDate: initialDate,
-        firstDate: new DateTime(1900),
-        lastDate: new DateTime.now());
+  //   var result = await showDatePicker(
+  //       context: context,
+  //       initialDate: initialDate,
+  //       firstDate: new DateTime(1900),
+  //       lastDate: new DateTime.now());
 
-    if (result == null) return;
+  //   if (result == null) return;
 
-    setState(() {
-      _birthDateController.text = new DateFormat.yMd().format(result);
-    });
-  }
+  //   setState(() {
+  //     _birthDateController.text = new DateFormat.yMd().format(result);
+  //   });
+  // }
 
   DateTime convertToDate(String input) {
     try {
@@ -262,7 +263,17 @@ class RegisterComponentState extends State<RegisterComponent> {
               ),
               new GestureDetector(
                   onTap: () {
-                    _chooseDate(context, _birthDateController.text);
+                    DatePicker.showDatePicker(context,
+                      showTitleActions: true,
+                      onChanged: (date) {},
+                      onConfirm: (date) {
+                        setState(() {
+                          _birthDateController.text = new DateFormat.yMd().format(date);
+                        });
+                      },
+                      currentTime: DateTime.now(),
+                      locale: LocaleType.en
+                    );
                   },
                   behavior: HitTestBehavior.translucent,
                   child: new Container(
