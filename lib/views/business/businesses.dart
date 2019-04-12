@@ -19,14 +19,23 @@ class BusinessesComponentState extends State<BusinessesComponent> {
     {
       'title': 'Business 1',
       'address': 'address 1',
+      'type': 'corporation',
+      'tin': '920-029-093-000',
+      'linkedaccount': 'None'
     },
     {
       'title': 'Business 2',
       'address': 'address 2',
+      'type': 'corporation',
+      'tin': '920-029-093-000',
+      'linkedaccount': 'None'
     },
     {
       'title': 'Business 3',
       'address': 'address 3',
+      'type': 'corporation',
+      'tin': '920-029-093-000',
+      'linkedaccount': 'None'
     }
   ];
 
@@ -35,19 +44,79 @@ class BusinessesComponentState extends State<BusinessesComponent> {
     return Card(
       color: Colors.white,
       elevation: 2.0,
-      child: Padding(
-        padding: EdgeInsets.all(8.0),
-        child: (
-          ListTile(
+      child:
+          ExpansionTile(
             leading: const Icon(Icons.business),
-            title: Text("${tools[index]['title']}"),
-            subtitle: Text("${tools[index]['address']}"),
-            onTap: (){
-              // Application.router.navigateTo(context, "${tools[index]['path']}");
-            },
+            title: Text(
+              "${tools[index]['title']}",
+              textAlign: TextAlign.center
+            ),
+            children: <Widget>[
+              ListTile(
+                leading: Padding(
+                  padding: EdgeInsets.only(top:4.0),
+                  child:Text(
+                  "Address : ",
+                  )
+                ),
+                title: Text(
+                  "${tools[index]['address']}",
+                  textAlign: TextAlign.left,
+                  style: new TextStyle(
+                    fontSize: 14.0,
+                  ),
+                ),
+              ),
+              ListTile(
+                leading: Padding(
+                  padding: EdgeInsets.only(top:4.0),
+                  child:Text(
+                  "Type : ",
+                  )
+                ),
+                title: Text(
+                  "${tools[index]['type']}",
+                  textAlign: TextAlign.left,
+                  style: new TextStyle(
+                    fontSize: 14.0,
+                  ),
+                ),
+              ),
+              ListTile(
+                leading: Padding(
+                  padding: EdgeInsets.only(top:4.0),
+                  child:Text(
+                  "TIN : ",
+                  )
+                ),
+                title: Text(
+                  "${tools[index]['tin']}",
+                  textAlign: TextAlign.left,
+                  style: new TextStyle(
+                    fontSize: 14.0,
+                  ),
+                ),
+              ),
+              ListTile(
+                leading: Padding(
+                  padding: EdgeInsets.only(top:4.0),
+                  child:Text(
+                  "Linked Account : ",
+                  )
+                ),
+                title: Text(
+                  "${tools[index]['linkedaccount']}",
+                  textAlign: TextAlign.left,
+                  style: new TextStyle(
+                    fontSize: 14.0,
+                  ),
+                ),
+              ),
+            ],
+            // onTap: (){
+            //   // Application.router.navigateTo(context, "${tools[index]['path']}");
+            // },
           )
-        )
-      )
     );
   }
 
