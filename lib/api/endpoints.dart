@@ -42,7 +42,14 @@ Future<GenericCreateResponse> createUser(payload) async {
 
 Future<GenericCreateResponse> registerBusiness(payload) async {
   try {
-    final String url =baseUrl + '/api/business/registration';
+    String publicKey = await FlutterKeychain.get(key: "publicKey");
+    String privateKey = await FlutterKeychain.get(key: "privateKey");
+    var txnhash = "${payload['tin']}:message:$publicKey";
+    String signature = await signTransaction(txnhash, privateKey);
+    payload['signature'] = signature;
+    payload['txn_hash'] = txnhash;
+    payload['public_key'] = publicKey;
+    final String url = baseUrl + '/api/business/registration';
     final response = await sendPostRequest(url, payload);
     return GenericCreateResponse.fromResponse(response);
   } catch (e){
@@ -96,6 +103,34 @@ Future<void> sendLoginRequest() async {
     "signature": loginSignature,
   };
   await loginUser(loginPayload);
+}
+
+Future getBusinessList() async {
+  final String url = baseUrl + "/api/business/list?sel=all";
+  // temp = ();
+  List data = List();
+  Response response;
+  print('awwww');
+  try {
+    response = await sendGetRequest(url);
+    print('hahahaha');
+    print(response);
+    for (final temp in response.business) {
+      var subData = {
+        'id' : temp['id'],
+        'name': temp['name'],
+        'tin': temp['tin'],
+        'type': temp['type'],
+        'linkedaccount': ''
+      };
+      data.add(subData);
+    }
+    print('-----------------  naks');
+    print(data);
+  } catch (e) {
+    print(e);
+  }
+  // return data;
 }
 
 Future<BalancesResponse> getBalances() async {

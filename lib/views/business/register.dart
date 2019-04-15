@@ -94,12 +94,12 @@ class BusinessRegistrationComponentState extends State<BusinessRegistrationCompo
       _formKey.currentState.save();
       // Close the on-screen keyboard by removing focus from the form's inputs
       FocusScope.of(context).requestFocus(new FocusNode());
-      // Save the form
       var businessToRegister = {
         "tin": businessInfo.tin,
         "name": businessInfo.name,
         "address": businessInfo.address,
-        "type": _selectedType
+        "type": _selectedType,
+        
       };
       setState(() {
         _submitting = true;
