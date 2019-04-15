@@ -13,6 +13,7 @@ import '../views/business/register.dart';
 import '../views/business/tools.dart';
 import '../views/business/linkAccount.dart';
 import '../views/proofOfPayment.dart';
+import '../views/business/businesses.dart';
 import '../views/addAccount.dart';
 
 var rootHandler = new Handler(
@@ -79,6 +80,11 @@ var setBusinessAccountHandler = new Handler(
 var proofOfPaymentAccountHandler = new Handler(
     handlerFunc: (BuildContext context, Map<String, dynamic> params) {
   return new ProofOfPaymentComponent();
+});
+
+var businessesHandler = new Handler(
+    handlerFunc: (BuildContext context, Map<String, dynamic> params) {
+  return new BusinessesComponent();
 });
 
 var addAccountHandler = new Handler(

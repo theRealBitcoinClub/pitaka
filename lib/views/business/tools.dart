@@ -12,6 +12,11 @@ class BusinessToolsComponentState extends State<BusinessToolsComponent> {
 
   List<Map<String, dynamic>> tools = [
     {
+      'title': 'Businesses',
+      'subtitle': 'List of businesses',
+      'path': '/businesses'
+    },
+    {
       'title': 'Register Business',
       'subtitle': 'Apply for business registration',
       'path': '/registerbusiness'
