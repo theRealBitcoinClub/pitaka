@@ -3,20 +3,21 @@ import 'package:flutter_keychain/flutter_keychain.dart';
 import '../api/endpoints.dart';
 import '../views/app.dart';
 import '../helpers.dart';
+import '../components/drawer.dart';
 
-class Account {
+class AddAccount {
   String name;
 }
 
-class AccountComponent extends StatefulWidget {
+class AddAccountComponent extends StatefulWidget {
   @override
-  AccountComponentState createState() => new AccountComponentState();
+  AddAccountComponentState createState() => new AddAccountComponentState();
 }
 
-class AccountComponentState extends State<AccountComponent> {
+class AddAccountComponentState extends State<AddAccountComponent> {
   final _formKey = GlobalKey<FormState>();
   bool _submitting = false;
-  Account newAccount = new Account();
+  AddAccount newAccount = new AddAccount();
   bool _autoValidate = false;
 
   String validateName(String value) {
@@ -115,9 +116,10 @@ class AccountComponentState extends State<AccountComponent> {
     return Scaffold(
         appBar: AppBar(
           title: Text('Create Account'),
-          automaticallyImplyLeading: false,
+          // automaticallyImplyLeading: false,
           centerTitle: true,
         ),
+        drawer: buildDrawer(context),
         body: new Builder(builder: (BuildContext context) {
           return new Stack(children: _buildAccountForm(context));
         }));

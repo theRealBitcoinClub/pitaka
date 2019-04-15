@@ -16,11 +16,12 @@ class GenericCreateResponse {
 
 class PlainSuccessResponse {
   final bool success;
+  final String error;
 
-  PlainSuccessResponse({this.success});
+  PlainSuccessResponse({this.success, this.error});
 
   factory PlainSuccessResponse.fromResponse(Response response) {
-    return PlainSuccessResponse(success: response.data['success']);
+    return PlainSuccessResponse(success: response.data['success'], error: response.data['error']);
   }
 }
 

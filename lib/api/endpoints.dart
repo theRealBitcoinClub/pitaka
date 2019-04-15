@@ -59,6 +59,16 @@ Future<GenericCreateResponse> createAccount(payload) async {
   }
 }
 
+Future<GenericCreateResponse> addAccount(payload) async {
+  try {
+    final String url = baseUrl + '/api/accounts/create';
+    final response = await sendPostRequest(url, payload);
+    return GenericCreateResponse.fromResponse(response);
+  } catch (e) {
+    throw Exception(e);
+  }
+}
+
 Future<PlainSuccessResponse> loginUser(payload) async {
   final String url = baseUrl + '/api/auth/login';
   try {
