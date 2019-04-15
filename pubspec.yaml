@@ -34,6 +34,7 @@ dependencies:
   shared_preferences: ^0.5.1+1
   swipedetector: ^1.2.0
   crypto: ^2.0.6
+  flutter_datetime_picker: ^1.1.6
   flutter:
     sdk: flutter
 
