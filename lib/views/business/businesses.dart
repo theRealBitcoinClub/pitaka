@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import '../../api/endpoints.dart';
 // import '../../views/app.dart';
+import 'package:flutter_keychain/flutter_keychain.dart';
 
 class FormAccount {
   String paytacaAccount;
@@ -15,47 +16,16 @@ class BusinessesComponent extends StatefulWidget {
 }
 
 class BusinessesComponentState extends State<BusinessesComponent> {
-  List businesses = List(); //edited line
-  // List<Map<String, dynamic>> tools = [
-  //   {
-  //     'title': 'Business 1',
-  //     'address': 'address 1',
-  //     'type': 'corporation',
-  //     'tin': '920-029-093-000',
-  //     'linkedaccount': 'None'
-  //   },
-  //   {
-  //     'title': 'Business 2',
-  //     'address': 'address 2',
-  //     'type': 'corporation',
-  //     'tin': '920-029-093-000',
-  //     'linkedaccount': 'None'
-  //   },
-  //   {
-  //     'title': 'Business 3',
-  //     'address': 'address 3',
-  //     'type': 'corporation',
-  //     'tin': '920-029-093-000',
-  //     'linkedaccount': 'None'
-  //   }
-  // ];
+  List businesses = List();
+  bool hasData = false;
 
   Future<String> getList() async {
-    // SharedPreferences prefs = await SharedPreferences.getInstance();
-    // var data = await getBusinessList();
-    // var _prefAccounts = prefs.get("accounts");
-    // List<Map> _accounts = [];
-    // for (final acct in _prefAccounts) {
-    //   var acctObj = new Map();
-    //   acctObj['accountName'] = acct.split(' | ')[0];
-    //   acctObj['accountId'] = acct.split(' | ')[1];
-    //   acctObj['balance'] = acct.split(' | ')[2];
-    //   _accounts.add(acctObj);
-    // }
-    // setState(() {
-    //   data = _accounts;
-    //   _selectedPaytacaAccount= _accounts[0]['accountId'];
-    // });
+    var data = await getBusinessList();
+    setState(() {
+      businesses = data;
+      hasData = true;
+    });
+    print(data);
     return 'Success';
   }
 
@@ -153,11 +123,15 @@ class BusinessesComponentState extends State<BusinessesComponent> {
           title: Text('Businesses'),
           centerTitle: true,
         ),
-        body: new ListView.builder
-          (
-            itemCount: businesses.length,
-            itemBuilder: (BuildContext ctxt, int index) => buildBody(ctxt, index)
-          ),
+        body: Container(
+          child: 
+            new ListView.builder
+              (
+                itemCount: businesses.length,
+                itemBuilder: (BuildContext ctxt, int index) =>
+                    buildBody(ctxt, index)
+              )
+        ),
       );
   }
 }

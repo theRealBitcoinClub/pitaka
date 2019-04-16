@@ -107,30 +107,25 @@ Future<void> sendLoginRequest() async {
 
 Future getBusinessList() async {
   final String url = baseUrl + "/api/business/list?sel=all";
-  // temp = ();
   List data = List();
   Response response;
-  print('awwww');
   try {
     response = await sendGetRequest(url);
-    print('hahahaha');
-    print(response);
-    for (final temp in response.business) {
+    for (final temp in response.data['business']) {
       var subData = {
         'id' : temp['id'],
-        'name': temp['name'],
+        'title': temp['name'],
         'tin': temp['tin'],
         'type': temp['type'],
-        'linkedaccount': ''
+        'address': temp['address'],
+        'linkedaccount': temp['linked_account_name']
       };
       data.add(subData);
     }
-    print('-----------------  naks');
-    print(data);
   } catch (e) {
     print(e);
   }
-  // return data;
+  return data;
 }
 
 Future<BalancesResponse> getBalances() async {
