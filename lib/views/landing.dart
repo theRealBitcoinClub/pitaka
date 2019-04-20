@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_keychain/flutter_keychain.dart';
 import 'package:after_layout/after_layout.dart';
@@ -14,6 +16,8 @@ class LandingComponent extends StatefulWidget {
 
 class LandingComponentState extends State<LandingComponent>
     with AfterLayoutMixin<LandingComponent> {
+
+
   @override
   Widget build(BuildContext context) {
     return new Container(
@@ -59,7 +63,10 @@ class LandingComponentState extends State<LandingComponent>
       authenticated = await auth.authenticateWithBiometrics(
           localizedReason: 'Scan your fingerprint to authenticate',
           useErrorDialogs: true,
-          stickyAuth: false);
+          stickyAuth: true);
+      if (!authenticated) {
+        exit(0);
+      }
     } on PlatformException catch (e) {
       print(e);
     }
