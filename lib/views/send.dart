@@ -27,7 +27,7 @@ class SendComponentState extends State<SendComponent> {
   int sendAmount;
   final _formKey = GlobalKey<FormState>();
   String _selectedPaytacaAccount;
-  List data = List(); //edited line
+  List data = List();
   bool validCode = false;
   bool _errorFound = false;
   String _errorMessage;

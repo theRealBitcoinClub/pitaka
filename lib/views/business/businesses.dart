@@ -1,9 +1,12 @@
 // SetBusinessAccountComponent
 
 import 'package:flutter/material.dart';
-import '../../api/endpoints.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:convert';
+
+// import '../../api/endpoints.dart';
 // import '../../views/app.dart';
-import 'package:flutter_keychain/flutter_keychain.dart';
+// import 'package:flutter_keychain/flutter_keychain.dart';
 
 class FormAccount {
   String paytacaAccount;
@@ -17,15 +20,13 @@ class BusinessesComponent extends StatefulWidget {
 
 class BusinessesComponentState extends State<BusinessesComponent> {
   List businesses = List();
-  bool hasData = false;
 
   Future<String> getList() async {
-    var data = await getBusinessList();
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    var resp = prefs.getString('businessList-all');
     setState(() {
-      businesses = data;
-      hasData = true;
+      businesses = json.decode(resp);
     });
-    print(data);
     return 'Success';
   }
 
@@ -36,7 +37,6 @@ class BusinessesComponentState extends State<BusinessesComponent> {
   }
 
   Widget buildBody(BuildContext context, int index) {
-
     return Card(
       color: Colors.white,
       elevation: 2.0,
@@ -109,29 +109,30 @@ class BusinessesComponentState extends State<BusinessesComponent> {
                 ),
               ),
             ],
-            // onTap: (){
-            //   // Application.router.navigateTo(context, "${tools[index]['path']}");
-            // },
           )
     );
   }
 
+  Widget bodyFunc() {
+    if (businesses.length == 0) {
+      return Center(child: CircularProgressIndicator());
+    } else {
+      return new ListView.builder
+        (
+          itemCount: businesses.length,
+          itemBuilder: (BuildContext ctxt, int index) =>
+              buildBody(ctxt, index)
+        );
+    }
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(
-          title: Text('Businesses'),
-          centerTitle: true,
-        ),
-        body: Container(
-          child: 
-            new ListView.builder
-              (
-                itemCount: businesses.length,
-                itemBuilder: (BuildContext ctxt, int index) =>
-                    buildBody(ctxt, index)
-              )
-        ),
-      );
+      appBar: AppBar(
+        title: Text('Businesses'),
+        centerTitle: true,
+      ),
+      body: bodyFunc(),
+    );
   }
 }
