@@ -1,8 +1,12 @@
 // SetBusinessAccountComponent
 
 import 'package:flutter/material.dart';
-import '../../api/endpoints.dart';
-import '../../views/app.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:convert';
+
+// import '../../api/endpoints.dart';
+// import '../../views/app.dart';
+// import 'package:flutter_keychain/flutter_keychain.dart';
 
 class FormAccount {
   String paytacaAccount;
@@ -15,32 +19,24 @@ class BusinessesComponent extends StatefulWidget {
 }
 
 class BusinessesComponentState extends State<BusinessesComponent> {
-  List<Map<String, dynamic>> tools = [
-    {
-      'title': 'Business 1',
-      'address': 'address 1',
-      'type': 'corporation',
-      'tin': '920-029-093-000',
-      'linkedaccount': 'None'
-    },
-    {
-      'title': 'Business 2',
-      'address': 'address 2',
-      'type': 'corporation',
-      'tin': '920-029-093-000',
-      'linkedaccount': 'None'
-    },
-    {
-      'title': 'Business 3',
-      'address': 'address 3',
-      'type': 'corporation',
-      'tin': '920-029-093-000',
-      'linkedaccount': 'None'
-    }
-  ];
+  List businesses = List();
+
+  Future<String> getList() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    var resp = prefs.getString('businessList-all');
+    setState(() {
+      businesses = json.decode(resp);
+    });
+    return 'Success';
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    this.getList();
+  }
 
   Widget buildBody(BuildContext context, int index) {
-
     return Card(
       color: Colors.white,
       elevation: 2.0,
@@ -48,7 +44,7 @@ class BusinessesComponentState extends State<BusinessesComponent> {
           ExpansionTile(
             leading: const Icon(Icons.business),
             title: Text(
-              "${tools[index]['title']}",
+              "${businesses[index]['title']}",
               textAlign: TextAlign.center
             ),
             children: <Widget>[
@@ -60,7 +56,7 @@ class BusinessesComponentState extends State<BusinessesComponent> {
                   )
                 ),
                 title: Text(
-                  "${tools[index]['address']}",
+                  "${businesses[index]['address']}",
                   textAlign: TextAlign.left,
                   style: new TextStyle(
                     fontSize: 14.0,
@@ -75,7 +71,7 @@ class BusinessesComponentState extends State<BusinessesComponent> {
                   )
                 ),
                 title: Text(
-                  "${tools[index]['type']}",
+                  "${businesses[index]['type']}",
                   textAlign: TextAlign.left,
                   style: new TextStyle(
                     fontSize: 14.0,
@@ -90,7 +86,7 @@ class BusinessesComponentState extends State<BusinessesComponent> {
                   )
                 ),
                 title: Text(
-                  "${tools[index]['tin']}",
+                  "${businesses[index]['tin']}",
                   textAlign: TextAlign.left,
                   style: new TextStyle(
                     fontSize: 14.0,
@@ -105,7 +101,7 @@ class BusinessesComponentState extends State<BusinessesComponent> {
                   )
                 ),
                 title: Text(
-                  "${tools[index]['linkedaccount']}",
+                  "${businesses[index]['linkedaccount']}",
                   textAlign: TextAlign.left,
                   style: new TextStyle(
                     fontSize: 14.0,
@@ -113,25 +109,30 @@ class BusinessesComponentState extends State<BusinessesComponent> {
                 ),
               ),
             ],
-            // onTap: (){
-            //   // Application.router.navigateTo(context, "${tools[index]['path']}");
-            // },
           )
     );
   }
 
+  Widget bodyFunc() {
+    if (businesses.length == 0) {
+      return Center(child: CircularProgressIndicator());
+    } else {
+      return new ListView.builder
+        (
+          itemCount: businesses.length,
+          itemBuilder: (BuildContext ctxt, int index) =>
+              buildBody(ctxt, index)
+        );
+    }
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(
-          title: Text('Businesses'),
-          centerTitle: true,
-        ),
-        body: new ListView.builder
-          (
-            itemCount: tools.length,
-            itemBuilder: (BuildContext ctxt, int index) => buildBody(ctxt, index)
-          ),
-      );
+      appBar: AppBar(
+        title: Text('Businesses'),
+        centerTitle: true,
+      ),
+      body: bodyFunc(),
+    );
   }
 }

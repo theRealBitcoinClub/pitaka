@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../components/drawer.dart';
 import '../../views/app.dart';
+import '../../api/endpoints.dart';
 
 
 class BusinessToolsComponent extends StatefulWidget {
@@ -9,6 +10,21 @@ class BusinessToolsComponent extends StatefulWidget {
 }
 
 class BusinessToolsComponentState extends State<BusinessToolsComponent> {
+  bool _loading = true;
+
+  Future<String> getReferences() async {
+    await getBusinesReferences();
+    setState(() {
+      _loading = false;
+    });
+    return 'Success';
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    this.getReferences();
+  }
 
   List<Map<String, dynamic>> tools = [
     {
@@ -42,6 +58,19 @@ class BusinessToolsComponentState extends State<BusinessToolsComponent> {
     );
   }
 
+  Widget bodyFunc() {
+    if (_loading == true) {
+      return new Center(child: CircularProgressIndicator());
+    } else {
+      return new ListView.builder
+      (
+        itemCount: tools.length,
+        itemBuilder: (BuildContext ctxt, int index) => buildBody(ctxt, index)
+      );
+    }
+    
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -50,11 +79,7 @@ class BusinessToolsComponentState extends State<BusinessToolsComponent> {
           centerTitle: true,
         ),
         drawer: buildDrawer(context),
-        body: new ListView.builder
-          (
-            itemCount: tools.length,
-            itemBuilder: (BuildContext ctxt, int index) => buildBody(ctxt, index)
-          ),
+        body: bodyFunc(),
       );
   }
 }

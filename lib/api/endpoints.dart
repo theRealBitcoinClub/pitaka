@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:dio/dio.dart';
 import 'package:cookie_jar/cookie_jar.dart';
 import 'package:flutter_keychain/flutter_keychain.dart';
@@ -42,13 +44,39 @@ Future<GenericCreateResponse> createUser(payload) async {
 
 Future<GenericCreateResponse> registerBusiness(payload) async {
   try {
-    final String url =baseUrl + '/api/business/registration';
+    String publicKey = await FlutterKeychain.get(key: "publicKey");
+    String privateKey = await FlutterKeychain.get(key: "privateKey");
+    var txnhash = "${payload['tin']}:message:$publicKey";
+    String signature = await signTransaction(txnhash, privateKey);
+    payload['signature'] = signature;
+    payload['txn_hash'] = txnhash;
+    payload['public_key'] = publicKey;
+    final String url = baseUrl + '/api/business/registration';
     final response = await sendPostRequest(url, payload);
     return GenericCreateResponse.fromResponse(response);
   } catch (e){
     throw Exception(e);
   }
 }
+
+Future<GenericCreateResponse> linkBusinessToAccount(payload) async {
+  try {
+    String publicKey = await FlutterKeychain.get(key: "publicKey");
+    String privateKey = await FlutterKeychain.get(key: "privateKey");
+    var txnhash = "linkToBusiness:message:$publicKey";
+    String signature = await signTransaction(txnhash, privateKey);
+    payload['signature'] = signature;
+    payload['txn_hash'] = txnhash;
+    payload['public_key'] = publicKey;
+    final String url = baseUrl + '/api/business/connect-account';
+    final response = await sendPostRequest(url, payload);
+    return GenericCreateResponse.fromResponse(response);
+  } catch (e){
+    throw Exception(e);
+  }
+}
+
+
 Future<GenericCreateResponse> createAccount(payload) async {
   try {
     final String url = baseUrl + '/api/accounts/create';
@@ -98,6 +126,53 @@ Future<void> sendLoginRequest() async {
   await loginUser(loginPayload);
 }
 
+Future getBusinessList(List list) async {
+  for (final q in list) {
+    final String url = baseUrl + "/api/business/list?sel=$q";
+    List data = List();
+    Response response;
+    try {
+      response = await sendGetRequest(url);
+      if (response.data['business'] != null) {
+        for (final temp in response.data['business']) {
+          var subData = {
+            'id' : temp['id'],
+            'title': temp['name'],
+            'tin': temp['tin'],
+            'type': temp['type'],
+            'address': temp['address'],
+            'linkedaccount': temp['linked_account_name']
+          };
+          data.add(subData);
+        }
+      }
+    } catch (e) {
+      throw(e);
+    }
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    var temp = json.encode(data);
+    await prefs.setString('businessList-$q', temp);
+  }
+}
+
+Future getAccountsList() async {
+  final String url = baseUrl + "/api/accounts/list-not-linked-to-business";
+  List data = List();
+  Response response;
+  try {
+    response = await sendGetRequest(url);
+    if (response.data['account'] != null) {
+      data = response.data['account'];
+    }
+  } catch (e) {
+    throw(e);
+  }
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  var temp = json.encode(data);
+  await prefs.setString('accountsList', temp);
+  return data;
+}
+
 Future<BalancesResponse> getBalances() async {
   final String url = baseUrl + '/api/wallet/balance';
   Response response;
@@ -142,6 +217,11 @@ Future<AccountsResponse> getAccounts() async {
   } else {
     throw Exception('Failed to get accounts');
   }
+}
+
+Future getBusinesReferences () async {
+  await getBusinessList(['all', 'false']);
+  await getAccountsList();
 }
 
 Future<PlainSuccessResponse> transferAsset(payload) async {
