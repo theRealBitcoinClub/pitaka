@@ -36,6 +36,7 @@ dependencies:
   crypto: ^2.0.6
   flutter_datetime_picker: ^1.1.6
   permission_handler: ^3.0.0
+  sqflite: ^1.1.5
   flutter:
     sdk: flutter
 
