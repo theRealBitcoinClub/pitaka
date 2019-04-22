@@ -9,6 +9,7 @@ import 'package:local_auth/local_auth.dart';
 import 'dart:async';
 import '../views/app.dart';
 
+
 class LandingComponent extends StatefulWidget {
   @override
   LandingComponentState createState() => new LandingComponentState();
@@ -54,6 +55,8 @@ class LandingComponentState extends State<LandingComponent>
   void afterFirstLayout(BuildContext context) {
     determinePath(context);
   }
+
+  
 
   final LocalAuthentication auth = LocalAuthentication();
   bool authenticated = false;
