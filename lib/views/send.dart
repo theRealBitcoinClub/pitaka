@@ -1,18 +1,17 @@
 import 'dart:async';
-// import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
 import 'package:flutter_keychain/flutter_keychain.dart';
-// import 'package:swipedetector/swipedetector.dart';
 import '../components/bottomNavigation.dart';
 import '../components/drawer.dart';
 import '../api/endpoints.dart';
 import '../views/app.dart';
 import '../helpers.dart';
-// import '../api/responses.dart';
 import '../api/config.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:intl/intl.dart';
+import 'package:permission_handler/permission_handler.dart';
+
 
 class SendComponent extends StatefulWidget {
   @override
@@ -96,11 +95,20 @@ class SendComponentState extends State<SendComponent> {
   }
 
   void scanBarcode() async {
+    allowCamera();
     String barcode = await FlutterBarcodeScanner.scanBarcode("#ff6666");
     if (barcode.length > 0) {
       setState(() => _barcodeString = barcode);
     } else {
       setState(() => _barcodeString = '');
+    }
+  }
+
+  void allowCamera() async {
+    var permission = PermissionHandler();
+    PermissionStatus cameraStatus = await permission.checkPermissionStatus(PermissionGroup.camera);
+    if (cameraStatus == PermissionStatus.denied) {
+          await permission.requestPermissions([PermissionGroup.camera]);
     }
   }
 
