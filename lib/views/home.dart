@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import '../components/drawer.dart';
 import '../components/bottomNavigation.dart';
 import '../components/homeTabs.dart';
+// import 'package:pitaka/models/balance.dart';
+// import 'package:pitaka/utils/database_helper.dart';
+
 
 class HomeComponent extends StatefulWidget {
   @override

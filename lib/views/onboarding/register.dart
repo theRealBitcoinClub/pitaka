@@ -13,7 +13,7 @@ import '../app.dart';
 import '../../api/endpoints.dart';
 import '../../helpers.dart';
 import 'package:flutter_datetime_picker/flutter_datetime_picker.dart';
-  
+import 'package:pitaka/utils/database_helper.dart';
 
 class User {
   String firstName;
@@ -30,6 +30,8 @@ class RegisterComponent extends StatefulWidget {
 }
 
 class RegisterComponentState extends State<RegisterComponent> {
+  DatabaseHelper databaseHelper = DatabaseHelper();
+
   @override
   void initState() {
     super.initState();
@@ -107,25 +109,6 @@ class RegisterComponentState extends State<RegisterComponent> {
   }
 
   final TextEditingController _birthDateController = new TextEditingController();
-  // Future _chooseDate(BuildContext context, String initialDateString) async {
-  //   var now = new DateTime.now();
-  //   var initialDate = convertToDate(initialDateString) ?? now;
-  //   initialDate = (initialDate.year >= 1900 && initialDate.isBefore(now)
-  //       ? initialDate
-  //       : now);
-
-  //   var result = await showDatePicker(
-  //       context: context,
-  //       initialDate: initialDate,
-  //       firstDate: new DateTime(1900),
-  //       lastDate: new DateTime.now());
-
-  //   if (result == null) return;
-
-  //   setState(() {
-  //     _birthDateController.text = new DateFormat.yMd().format(result);
-  //   });
-  // }
 
   DateTime convertToDate(String input) {
     try {
@@ -188,6 +171,7 @@ class RegisterComponentState extends State<RegisterComponent> {
           SharedPreferences prefs = await SharedPreferences.getInstance();
           await prefs.setBool('installed', true);
           Application.router.navigateTo(context, "/account");
+          databaseHelper.initializeDatabase();
         }
       } else {
         _showSnackBar("Please agree to our Terms and Conditions");
