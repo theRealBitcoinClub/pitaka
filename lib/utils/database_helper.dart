@@ -38,7 +38,6 @@ class DatabaseHelper {
 		// Get the directory path for both Android and iOS to store database.
 		Directory directory = await getApplicationDocumentsDirectory();
 		String path = directory.path + 'local.db';
-    print ('----------------> The path is $path');
 
 		// Open/create the database at a given path
 		var pitakaDatabase = await openDatabase(path, version: 1, onCreate: _createDb);
@@ -55,7 +54,6 @@ class DatabaseHelper {
       "signature TEXT,"
       "datecreated TEXT"
       ")");
-  print('-------> HAHAHAAHAH');
 
     await db.execute("CREATE TABLE OfflineTransaction ("
       "id INTEGER PRIMARY KEY,"
@@ -64,7 +62,6 @@ class DatabaseHelper {
       "transactionType TEXT,"
       "transactionJson TEXT"
       ")");
-  print('-------> HEHEHEHEHEHEHE');
 	}
 
 	// Get latest balance of balance objects in database
