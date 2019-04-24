@@ -37,6 +37,7 @@ dependencies:
   flutter_datetime_picker: ^1.1.6
   permission_handler: ^3.0.0
   sqflite: ^1.1.5
+  connectivity: ^0.4.3+1
   flutter:
     sdk: flutter
 

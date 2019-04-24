@@ -11,6 +11,7 @@ import '../api/config.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:intl/intl.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'globals.dart' as globals;
 
 
 class SendComponent extends StatefulWidget {
@@ -53,7 +54,9 @@ class SendComponentState extends State<SendComponent> {
   void initState() {
     super.initState();
     this.getAccounts();
+    globals.checker();
   }
+  
 
   Future<bool> sendFunds(
     String toAccount, int amount, BuildContext context) async {
@@ -147,6 +150,7 @@ class SendComponentState extends State<SendComponent> {
     return Scaffold(
         appBar: AppBar(
           title: Text('Send'),
+          actions: globals.netWorkIndentifier,
           centerTitle: true,
         ),
         drawer: buildDrawer(context),

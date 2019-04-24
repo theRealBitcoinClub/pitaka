@@ -8,6 +8,8 @@ import 'package:flutter/services.dart';
 import 'package:local_auth/local_auth.dart';
 import 'dart:async';
 import '../views/app.dart';
+import 'globals.dart' as globals;
+
 
 
 class LandingComponent extends StatefulWidget {
@@ -56,7 +58,12 @@ class LandingComponentState extends State<LandingComponent>
     determinePath(context);
   }
 
-  
+  @override
+  void initState() {
+    super.initState();
+    globals.checkInternet();
+    globals.checker();
+  }
 
   final LocalAuthentication auth = LocalAuthentication();
   bool authenticated = false;
@@ -89,4 +96,13 @@ class LandingComponentState extends State<LandingComponent>
       }
     }
   }
+
+  // Future<bool> _checkConnectivity () async{
+  //   var connectivityResult = await (Connectivity().checkConnectivity());
+  //   if (connectivityResult == ConnectivityResult.mobile) {
+  //     // I am connected to a mobile network.
+  //   } else if (connectivityResult == ConnectivityResult.wifi) {
+  //     // I am connected to a wifi network.
+  //   }
+  // }
 }

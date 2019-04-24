@@ -143,6 +143,19 @@ class ReceiveComponentState extends State<ReceiveComponent> {
       );
   }
 
+  Widget buildButton (){
+    if (_selectedPaytacaAccount != null) {
+      return new RaisedButton(
+        child: const Text('Scan Proof'),
+        onPressed: () {
+          scanQrcode();
+        },
+      );
+    } else {
+      return new SizedBox();
+    }
+  }
+
   List<Widget> _buildForm(BuildContext context) {
     final bodyHeight = MediaQuery.of(context).size.height -
         MediaQuery.of(context).viewInsets.bottom;
@@ -185,12 +198,7 @@ class ReceiveComponentState extends State<ReceiveComponent> {
             data: _selectedPaytacaAccount != null ? "::paytaca::$_selectedPaytacaAccount::paytaca::": null,
             size: 0.6 * bodyHeight,
           ),
-          new RaisedButton(
-            child: const Text('Scan Proof'),
-            onPressed: () {
-              scanQrcode();
-            },
-          )
+          buildButton()
         ],
       )
     );
