@@ -31,7 +31,8 @@ class SendComponentState extends State<SendComponent> {
   bool validCode = false;
   bool _errorFound = false;
   String _errorMessage;
-
+  bool online = globals.online;
+  
   Future<String> getAccounts() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     var _prefAccounts = prefs.get("accounts");
@@ -54,7 +55,6 @@ class SendComponentState extends State<SendComponent> {
   void initState() {
     super.initState();
     this.getAccounts();
-    globals.checker();
   }
   
 
@@ -145,12 +145,28 @@ class SendComponentState extends State<SendComponent> {
     }
   }
   
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
           title: Text('Send'),
-          actions: globals.netWorkIndentifier,
+          actions: [
+            Padding(
+              padding: EdgeInsets.only(right: 20.0),
+              child: GestureDetector(
+                child: online ? new Icon(Icons.wifi): new Icon(Icons.signal_wifi_off),
+                onTap: (){
+                  setState(() {
+                    online = !online;  
+                    globals.online = online;
+                    globals.triggerInternet(online);
+                  });
+                  
+                }
+              ) 
+            )
+          ],
           centerTitle: true,
         ),
         drawer: buildDrawer(context),

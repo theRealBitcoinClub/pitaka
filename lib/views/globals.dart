@@ -1,18 +1,27 @@
-import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../views/globals.dart' as globals;
-import '../views/home.dart';
-
-List<Widget> netWorkIndentifier = [];
+import 'package:connectivity/connectivity.dart';
 
 
 
+bool _online = false;
+bool get online => _online;
+set online(bool value) => _online = value;
 
 Future<SharedPreferences> getPrefs() async {
+  var connectivityResult = await (Connectivity().checkConnectivity());
+  if (connectivityResult == ConnectivityResult.mobile || connectivityResult == ConnectivityResult.wifi) {
+    online = true;
+  } else {
+    online = false;
+  }
   SharedPreferences prefs = await SharedPreferences.getInstance().then((resp){
     return resp;
   });
   return prefs;
+}
+
+void triggerInternet(status) {
+  print('Internet is turning $status'); 
 }
 
 void checkInternet () {
@@ -21,43 +30,4 @@ void checkInternet () {
   });
 }
 
-void checker (dynamic parent) {
-  getPrefs().then((prefs){
-    List<Widget> arr = [];
-    if (prefs.getBool("online") == true) {
-      arr.add(
-        Padding(
-          padding: EdgeInsets.only(right: 20.0),
-          child: GestureDetector(
-            child: new Icon(Icons.wifi),
-            onTap: (){
-              prefs.setBool("online", false);
-            }
-          ) 
-        )
-      );
-    } else {
-      arr.add(
-        Padding(
-          padding: EdgeInsets.only(right: 20.0),
-          child: GestureDetector(child: new Icon(Icons.signal_wifi_off), onTap: () {
-            prefs.setBool("online", true);
-            netWorkIndentifier.clear();
-              netWorkIndentifier.add(
-                Padding(
-                  padding: EdgeInsets.only(right: 20.0),
-                  child: GestureDetector(
-                    child: new Icon(Icons.wifi),
-                    onTap: (){
-                      prefs.setBool("online", false);
-                    }
-                  ) 
-                )
-              );
-          },) 
-        )
-      );
-    }
-    netWorkIndentifier = arr;  
-  });
-}
+

@@ -62,7 +62,6 @@ class LandingComponentState extends State<LandingComponent>
   void initState() {
     super.initState();
     globals.checkInternet();
-    globals.checker();
   }
 
   final LocalAuthentication auth = LocalAuthentication();

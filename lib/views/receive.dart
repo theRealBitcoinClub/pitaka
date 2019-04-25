@@ -8,6 +8,7 @@ import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
 import 'package:flutter_sodium/flutter_sodium.dart';
 import 'package:hex/hex.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'globals.dart' as globals;
 
 class ReceiveComponent extends StatefulWidget {
   @override
@@ -20,6 +21,7 @@ class ReceiveComponentState extends State<ReceiveComponent> {
   final _formKey = GlobalKey<FormState>();
   String _selectedPaytacaAccount;
   List data = List(); //edited line
+  bool online = globals.online;
   
   @override
   void initState() {
@@ -133,6 +135,22 @@ class ReceiveComponentState extends State<ReceiveComponent> {
     return Scaffold(
         appBar: AppBar(
           title: Text('Receive'),
+          actions: [
+            Padding(
+              padding: EdgeInsets.only(right: 20.0),
+              child: GestureDetector(
+                child: online ? new Icon(Icons.wifi): new Icon(Icons.signal_wifi_off),
+                onTap: (){
+                  setState(() {
+                    online = !online;  
+                    globals.online = online;
+                    globals.triggerInternet(online);
+                  });
+                  
+                }
+              ) 
+            )
+          ],
           centerTitle: true,
         ),
         drawer: buildDrawer(context),
@@ -152,7 +170,7 @@ class ReceiveComponentState extends State<ReceiveComponent> {
         },
       );
     } else {
-      return new SizedBox();
+      return new Container();
     }
   }
 
