@@ -132,6 +132,19 @@ class AddAccountComponentState extends State<AddAccountComponent> {
   }
 
   @override
+  void initState() {
+    super.initState();
+    globals.checkConnection().then((status){
+      setState(() {
+        if (status == false) {
+          online = false;  
+          globals.online = online;
+        }
+      });
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
@@ -142,9 +155,16 @@ class AddAccountComponentState extends State<AddAccountComponent> {
               child: GestureDetector(
                 child: online ? new Icon(Icons.wifi): new Icon(Icons.signal_wifi_off),
                 onTap: (){
-                  setState(() {
-                    online = !online;  
-                    globals.online = online;
+                  globals.checkConnection().then((status){
+                    setState(() {
+                      if (status == true) {
+                        online = !online;  
+                        globals.online = online;  
+                      } else {
+                        online = false;  
+                        globals.online = online;
+                      }
+                    });
                   });
                 }
               ) 

@@ -25,6 +25,14 @@ class BusinessToolsComponentState extends State<BusinessToolsComponent> {
   void initState() {
     super.initState();
     this.getReferences();
+    globals.checkConnection().then((status){
+      setState(() {
+        if (status == false) {
+          online = false;  
+          globals.online = online;
+        }
+      });
+    });
   }
 
   List<Map<String, dynamic>> tools = [
@@ -98,9 +106,16 @@ class BusinessToolsComponentState extends State<BusinessToolsComponent> {
               child: GestureDetector(
                 child: online ? new Icon(Icons.wifi): new Icon(Icons.signal_wifi_off),
                 onTap: (){
-                  setState(() {
-                    online = !online;  
-                    globals.online = online;
+                  globals.checkConnection().then((status){
+                    setState(() {
+                      if (status == true) {
+                        online = !online;  
+                        globals.online = online;  
+                      } else {
+                        online = false;  
+                        globals.online = online;
+                      }
+                    });
                   });
                 }
               ) 

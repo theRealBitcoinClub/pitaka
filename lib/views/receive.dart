@@ -27,6 +27,15 @@ class ReceiveComponentState extends State<ReceiveComponent> {
   void initState() {
     super.initState();
     this.getAccounts();
+    globals.checkConnection().then((status){
+      setState(() {
+        if (status == false) {
+          online = false;  
+          globals.online = online;
+        }
+      });
+    });
+    
   }
 
   void scanQrcode() async {
@@ -141,9 +150,16 @@ class ReceiveComponentState extends State<ReceiveComponent> {
               child: GestureDetector(
                 child: online ? new Icon(Icons.wifi): new Icon(Icons.signal_wifi_off),
                 onTap: (){
-                  setState(() {
-                    online = !online;  
-                    globals.online = online;
+                  globals.checkConnection().then((status){
+                    setState(() {
+                      if (status == true) {
+                        online = !online;  
+                        globals.online = online;  
+                      } else {
+                        online = false;  
+                        globals.online = online;
+                      }
+                    });
                   });
                 }
               ) 
