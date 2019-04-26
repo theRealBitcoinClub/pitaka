@@ -11,7 +11,7 @@ import '../api/config.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:intl/intl.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'globals.dart' as globals;
+import '../utils/globals.dart' as globals;
 
 
 class SendComponent extends StatefulWidget {
@@ -160,9 +160,7 @@ class SendComponentState extends State<SendComponent> {
                   setState(() {
                     online = !online;  
                     globals.online = online;
-                    globals.triggerInternet(online);
                   });
-                  
                 }
               ) 
             )

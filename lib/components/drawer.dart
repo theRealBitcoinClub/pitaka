@@ -47,19 +47,6 @@ Drawer buildDrawer(BuildContext context) {
                 );
               }
             }),
-        // UserAccountsDrawerHeader(
-        //   accountName: Text("Name"),
-        //   accountEmail: Text("email"),
-        //   currentAccountPicture: CircleAvatar(
-        //     backgroundColor: Theme.of(context).platform == TargetPlatform.iOS
-        //         ? Colors.blue
-        //         : Colors.white,
-        //     child: Text(
-        //       "JT",
-        //       style: TextStyle(fontSize: 40.0),
-        //     ),
-        //   ),
-        // ),
         ListTile(
             title: Text('Home'),
             trailing: Icon(Icons.home),

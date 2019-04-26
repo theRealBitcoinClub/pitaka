@@ -4,6 +4,7 @@ import '../api/endpoints.dart';
 import '../views/app.dart';
 import '../helpers.dart';
 import '../components/drawer.dart';
+import '../utils/globals.dart' as globals;
 
 class AddAccount {
   String name;
@@ -19,7 +20,8 @@ class AddAccountComponentState extends State<AddAccountComponent> {
   bool _submitting = false;
   AddAccount newAccount = new AddAccount();
   bool _autoValidate = false;
-
+  bool online = globals.online;
+  
   String validateName(String value) {
     if (value.length < 3)
       return 'Name must be more than 2 charater';
@@ -60,7 +62,8 @@ class AddAccountComponentState extends State<AddAccountComponent> {
   }
 
   List<Widget> _buildAccountForm(BuildContext context) {
-    Form form = new Form(
+    if (globals.online) {
+      Form form = new Form(
         key: _formKey,
         autovalidate: _autoValidate,
         child: new ListView(
@@ -91,24 +94,41 @@ class AddAccountComponentState extends State<AddAccountComponent> {
               child: new Text('Create'),
             )
           ],
-        ));
-    var ws = new List<Widget>();
-    ws.add(form);
-    if (_submitting) {
-      var modal = new Stack(
-        children: [
-          new Opacity(
-            opacity: 0.8,
-            child: const ModalBarrier(dismissible: false, color: Colors.grey),
-          ),
-          new Center(
-            child: new CircularProgressIndicator(),
-          ),
-        ],
+        )
       );
-      ws.add(modal);
+      var ws = new List<Widget>();
+      ws.add(form);
+      if (_submitting) {
+        var modal = new Stack(
+          children: [
+            new Opacity(
+              opacity: 0.8,
+              child: const ModalBarrier(dismissible: false, color: Colors.grey),
+            ),
+            new Center(
+              child: new CircularProgressIndicator(),
+            ),
+          ],
+        );
+        ws.add(modal);
+      }
+      return ws;
+    } else {
+      return <Widget> [
+        new Center(
+          child: new Padding(
+              padding: EdgeInsets.all(8.0),
+              child:new Container(
+              child: Text(
+                "This is not available in offline mode.",
+                style: TextStyle(fontSize: 18.0)
+              )
+            )
+          )
+        )
+      ];
     }
-    return ws;
+    
   }
 
   @override
@@ -116,7 +136,20 @@ class AddAccountComponentState extends State<AddAccountComponent> {
     return Scaffold(
         appBar: AppBar(
           title: Text('Create Account'),
-          // automaticallyImplyLeading: false,
+          actions: [
+            Padding(
+              padding: EdgeInsets.only(right: 20.0),
+              child: GestureDetector(
+                child: online ? new Icon(Icons.wifi): new Icon(Icons.signal_wifi_off),
+                onTap: (){
+                  setState(() {
+                    online = !online;  
+                    globals.online = online;
+                  });
+                }
+              ) 
+            )
+          ],
           centerTitle: true,
         ),
         drawer: buildDrawer(context),

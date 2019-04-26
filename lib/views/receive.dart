@@ -8,7 +8,7 @@ import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
 import 'package:flutter_sodium/flutter_sodium.dart';
 import 'package:hex/hex.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'globals.dart' as globals;
+import '../utils/globals.dart' as globals;
 
 class ReceiveComponent extends StatefulWidget {
   @override
@@ -144,9 +144,7 @@ class ReceiveComponentState extends State<ReceiveComponent> {
                   setState(() {
                     online = !online;  
                     globals.online = online;
-                    globals.triggerInternet(online);
                   });
-                  
                 }
               ) 
             )

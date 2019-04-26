@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../components/drawer.dart';
 import '../components/bottomNavigation.dart';
 import '../components/homeTabs.dart';
-import 'globals.dart' as globals;
+import '../utils/globals.dart' as globals;
 
 
 class HomeComponent extends StatefulWidget {
@@ -38,9 +38,7 @@ class HomeComponentState extends State<HomeComponent> {
                     setState(() {
                       online = !online;  
                       globals.online = online;
-                      globals.triggerInternet(online);
                     });
-                    
                   }
                 ) 
               )

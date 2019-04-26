@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../../components/drawer.dart';
 import '../../views/app.dart';
 import '../../api/endpoints.dart';
-
+import '../../utils/globals.dart' as globals;
 
 class BusinessToolsComponent extends StatefulWidget {
   @override
@@ -11,6 +11,7 @@ class BusinessToolsComponent extends StatefulWidget {
 
 class BusinessToolsComponentState extends State<BusinessToolsComponent> {
   bool _loading = true;
+  bool online = globals.online;
 
   Future<String> getReferences() async {
     await getBusinesReferences();
@@ -59,15 +60,30 @@ class BusinessToolsComponentState extends State<BusinessToolsComponent> {
   }
 
   Widget bodyFunc() {
-    if (_loading == true) {
-      return new Center(child: CircularProgressIndicator());
+    if (globals.online) {
+      if (_loading == true) {
+        return new Center(child: CircularProgressIndicator());
+      } else {
+        return new ListView.builder
+        (
+          itemCount: tools.length,
+          itemBuilder: (BuildContext ctxt, int index) => buildBody(ctxt, index)
+        );
+      }
     } else {
-      return new ListView.builder
-      (
-        itemCount: tools.length,
-        itemBuilder: (BuildContext ctxt, int index) => buildBody(ctxt, index)
+      return new Center(
+        child: new Padding(
+            padding: EdgeInsets.all(8.0),
+            child:new Container(
+            child: Text(
+              "This is not available in offline mode.",
+              style: TextStyle(fontSize: 18.0)
+            )
+          )
+        )
       );
     }
+    
     
   }
 
@@ -76,6 +92,20 @@ class BusinessToolsComponentState extends State<BusinessToolsComponent> {
     return Scaffold(
         appBar: AppBar(
           title: Text('Business Tools'),
+          actions: [
+            Padding(
+              padding: EdgeInsets.only(right: 20.0),
+              child: GestureDetector(
+                child: online ? new Icon(Icons.wifi): new Icon(Icons.signal_wifi_off),
+                onTap: (){
+                  setState(() {
+                    online = !online;  
+                    globals.online = online;
+                  });
+                }
+              ) 
+            )
+          ],
           centerTitle: true,
         ),
         drawer: buildDrawer(context),
