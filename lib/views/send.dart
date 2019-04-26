@@ -11,6 +11,7 @@ import '../api/config.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:intl/intl.dart';
 import 'package:permission_handler/permission_handler.dart';
+import '../utils/globals.dart' as globals;
 
 
 class SendComponent extends StatefulWidget {
@@ -30,7 +31,8 @@ class SendComponentState extends State<SendComponent> {
   bool validCode = false;
   bool _errorFound = false;
   String _errorMessage;
-
+  bool online = globals.online;
+  
   Future<String> getAccounts() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     var _prefAccounts = prefs.get("accounts");
@@ -53,7 +55,16 @@ class SendComponentState extends State<SendComponent> {
   void initState() {
     super.initState();
     this.getAccounts();
+    globals.checkConnection().then((status){
+      setState(() {
+        if (status == false) {
+          online = false;  
+          globals.online = online;
+        }
+      });
+    });
   }
+  
 
   Future<bool> sendFunds(
     String toAccount, int amount, BuildContext context) async {
@@ -142,11 +153,33 @@ class SendComponentState extends State<SendComponent> {
     }
   }
   
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
           title: Text('Send'),
+          actions: [
+            Padding(
+              padding: EdgeInsets.only(right: 20.0),
+              child: GestureDetector(
+                child: online ? new Icon(Icons.wifi): new Icon(Icons.signal_wifi_off),
+                onTap: (){
+                  globals.checkConnection().then((status){
+                    setState(() {
+                      if (status == true) {
+                        online = !online;  
+                        globals.online = online;  
+                      } else {
+                        online = false;  
+                        globals.online = online;
+                      }
+                    });
+                  });
+                }
+              ) 
+            )
+          ],
           centerTitle: true,
         ),
         drawer: buildDrawer(context),

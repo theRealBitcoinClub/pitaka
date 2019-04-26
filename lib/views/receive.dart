@@ -8,6 +8,7 @@ import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
 import 'package:flutter_sodium/flutter_sodium.dart';
 import 'package:hex/hex.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../utils/globals.dart' as globals;
 
 class ReceiveComponent extends StatefulWidget {
   @override
@@ -20,11 +21,21 @@ class ReceiveComponentState extends State<ReceiveComponent> {
   final _formKey = GlobalKey<FormState>();
   String _selectedPaytacaAccount;
   List data = List(); //edited line
+  bool online = globals.online;
   
   @override
   void initState() {
     super.initState();
     this.getAccounts();
+    globals.checkConnection().then((status){
+      setState(() {
+        if (status == false) {
+          online = false;  
+          globals.online = online;
+        }
+      });
+    });
+    
   }
 
   void scanQrcode() async {
@@ -133,6 +144,27 @@ class ReceiveComponentState extends State<ReceiveComponent> {
     return Scaffold(
         appBar: AppBar(
           title: Text('Receive'),
+          actions: [
+            Padding(
+              padding: EdgeInsets.only(right: 20.0),
+              child: GestureDetector(
+                child: online ? new Icon(Icons.wifi): new Icon(Icons.signal_wifi_off),
+                onTap: (){
+                  globals.checkConnection().then((status){
+                    setState(() {
+                      if (status == true) {
+                        online = !online;  
+                        globals.online = online;  
+                      } else {
+                        online = false;  
+                        globals.online = online;
+                      }
+                    });
+                  });
+                }
+              ) 
+            )
+          ],
           centerTitle: true,
         ),
         drawer: buildDrawer(context),
@@ -141,6 +173,19 @@ class ReceiveComponentState extends State<ReceiveComponent> {
         }),
         bottomNavigationBar: buildBottomNavigation(context, path)
       );
+  }
+
+  Widget buildButton (){
+    if (_selectedPaytacaAccount != null) {
+      return new RaisedButton(
+        child: const Text('Scan Proof'),
+        onPressed: () {
+          scanQrcode();
+        },
+      );
+    } else {
+      return new Container();
+    }
   }
 
   List<Widget> _buildForm(BuildContext context) {
@@ -185,12 +230,7 @@ class ReceiveComponentState extends State<ReceiveComponent> {
             data: _selectedPaytacaAccount != null ? "::paytaca::$_selectedPaytacaAccount::paytaca::": null,
             size: 0.6 * bodyHeight,
           ),
-          new RaisedButton(
-            child: const Text('Scan Proof'),
-            onPressed: () {
-              scanQrcode();
-            },
-          )
+          buildButton()
         ],
       )
     );

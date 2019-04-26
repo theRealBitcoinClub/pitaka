@@ -8,6 +8,8 @@ import 'package:flutter/services.dart';
 import 'package:local_auth/local_auth.dart';
 import 'dart:async';
 import '../views/app.dart';
+import '../utils/globals.dart' as globals;
+
 
 
 class LandingComponent extends StatefulWidget {
@@ -56,7 +58,11 @@ class LandingComponentState extends State<LandingComponent>
     determinePath(context);
   }
 
-  
+  @override
+  void initState() {
+    super.initState();
+    globals.checkInternet();
+  }
 
   final LocalAuthentication auth = LocalAuthentication();
   bool authenticated = false;
