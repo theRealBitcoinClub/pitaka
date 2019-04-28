@@ -299,7 +299,7 @@ class SetBusinessAccountComponentState extends State<SetBusinessAccountComponent
             child: ListView(
               children: <Widget> [
                 new Text(
-                  "No more business to link.",
+                  "No businesses to link. Register one now.",
                   textAlign: TextAlign.center,
                   style: new TextStyle(fontSize: 18.0)
                 ),
