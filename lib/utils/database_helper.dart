@@ -1,20 +1,14 @@
-// import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 import 'dart:async';
 import 'dart:io';
 import 'package:path_provider/path_provider.dart';
-// import 'package:pitaka/model/balance.dart';
+// import '../models/balance.dart';
+import '../api/responses.dart';
 
 class DatabaseHelper {
   static DatabaseHelper _databaseHelper;    // Singleton DatabaseHelper
 	static Database _database;                // Singleton Database
 
-  // String noteTable = 'note_table';
-	// String colId = 'id';
-	// String colTitle = 'title';
-	// String colDescription = 'description';
-	// String colPriority = 'priority';
-	// String colDate = 'date';
 
 	DatabaseHelper._createInstance(); // Named constructor to create instance of DatabaseHelper
 
@@ -64,12 +58,39 @@ class DatabaseHelper {
       ")");
 	}
 
+  // Update latest balance of balance objects in database
+  Future<String> updateOfflineBalances (List<Balance> balances) async {
+    Database db = await this.database;
+    await db.delete('Balance');
+    for (final balance in balances) {
+      var values = {
+        'balance': balance.balance,
+        'account': balance.accountName
+      };
+      await db.insert(
+        'Balance',
+        values
+      );
+    }
+		return 'success';
+  }
+
 	// Get latest balance of balance objects in database
-	Future<int> getLatestBalance() async {
+	Future <List<Map<String, dynamic>>> offLineBalances() async {
 		Database db = await this.database;
-		List<Map<String, dynamic>> bal = await db.rawQuery('SELECT balance from balance limit 1');
-		int result = Sqflite.firstIntValue(bal);
+		List<Map<String, dynamic>> result = await db.query('Balance');
 		return result;
 	}
+
+  Future<int> updateBalances(Map payload) async{
+    Database db = await this.database;
+    var result = db.update(
+      'Balance',
+      payload,
+      where: 'id: ?',
+      whereArgs: [payload['id']]
+    );
+    return result;
+  }
 
 }

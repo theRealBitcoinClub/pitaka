@@ -10,6 +10,10 @@ import 'dart:async';
 import 'config.dart';
 import 'responses.dart';
 import '../helpers.dart';
+import '../utils/database_helper.dart';
+import '../utils/globals.dart' as globals;
+
+DatabaseHelper databaseHelper = DatabaseHelper();
 
 Future<dynamic> sendPostRequest(url, payload) async {
   var dio = new Dio();
@@ -173,30 +177,41 @@ Future getAccountsList() async {
   return data;
 }
 
-Future<BalancesResponse> getBalances() async {
+Future<BalancesResponse> getOffLineBalances() async {
+  var resp = await databaseHelper.offLineBalances();
+  return BalancesResponse.fromDatabase(resp);
+}
+
+Future<BalancesResponse> getOnlineBalances() async {
   final String url = baseUrl + '/api/wallet/balance';
   Response response;
   try {
     response = await sendGetRequest(url);
     // Store account details in keychain
     List<String> _accounts = [];
+    List<Balance> _balances = [];
     for (final bal in response.data['balances']) {
+      var balanceObj = new Balance();
       String acct = "${bal['AccountName']} | ${bal['AccountID']} | ${bal['Balance']}";
       _accounts.add(acct);
+      balanceObj.accountName = bal['AccountName'];
+      balanceObj.balance = bal['Balance'].toDouble();
+      _balances.add(balanceObj);
     }
     SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.setStringList('accounts', _accounts);
+    await databaseHelper.updateOfflineBalances(_balances);
     // Parse response into BalanceResponse
     return BalancesResponse.fromResponse(response);
   } catch (e) {
-    print(e);
     // Login before resending the request again
-    await sendLoginRequest();
-    return await getBalances();
+    var resp = await databaseHelper.offLineBalances();
+    return BalancesResponse.fromDatabase(resp);
+    
   }
 }
 
-Future<TransactionsResponse> getTransactions() async {
+Future<TransactionsResponse> getOnlineTransactions() async {
   final String url = baseUrl + '/api/wallet/transactions';
   Response response;
   try {
@@ -205,8 +220,14 @@ Future<TransactionsResponse> getTransactions() async {
   } catch (e) {
     // Login before resending the request again
     await sendLoginRequest();
-    return await getTransactions();
+    return await getOnlineTransactions();
   }
+}
+
+Future<TransactionsResponse> getOffLineTransactions() async {
+  Response response;
+  return TransactionsResponse.fromResponse(response);
+  
 }
 
 Future<AccountsResponse> getAccounts() async {
@@ -224,14 +245,20 @@ Future getBusinesReferences () async {
   await getAccountsList();
 }
 
-Future<PlainSuccessResponse> transferAsset(payload) async {
-  final String url = baseUrl + '/api/assets/transfer';
-  final response = await sendPostRequest(url, payload);
-  if (response.statusCode == 200) {
-    return PlainSuccessResponse.fromResponse(response);
+Future<PlainSuccessResponse> transferAsset(Map payload) async {
+  if (globals.online) {
+    final String url = baseUrl + '/api/assets/transfer';
+    final response = await sendPostRequest(url, payload);
+    if (response.statusCode == 200) {
+      return PlainSuccessResponse.fromResponse(response);
+    } else {
+      throw Exception('Failed to transfer asset');
+    }
   } else {
-    throw Exception('Failed to transfer asset');
+    await databaseHelper.updateBalances(payload);
+    return PlainSuccessResponse.toDatabase();
   }
+  
 }
 
 Future<PlainSuccessResponse> requestOtpCode(payload) async {

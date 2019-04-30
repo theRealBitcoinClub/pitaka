@@ -30,6 +30,8 @@ class BusinessToolsComponentState extends State<BusinessToolsComponent> {
         if (status == false) {
           online = false;  
           globals.online = online;
+        } else {
+          globals.online = online;
         }
       });
     });

@@ -23,6 +23,10 @@ class PlainSuccessResponse {
   factory PlainSuccessResponse.fromResponse(Response response) {
     return PlainSuccessResponse(success: response.data['success'], error: response.data['error']);
   }
+
+  factory PlainSuccessResponse.toDatabase(){
+    return PlainSuccessResponse(success: true, error: '');
+  }
 }
 
 class OtpVerificationResponse {
@@ -61,6 +65,20 @@ class BalancesResponse {
     return BalancesResponse(
         success: response.data['success'], balances: _balances);
   }
+
+  factory BalancesResponse.fromDatabase(List accounts) {
+    List<Balance> _balances = [];
+    for (final account in accounts) {
+      var balanceObj = new Balance();
+      balanceObj.accountName = account['account'];
+      balanceObj.balance = double.parse(account['balance']);
+      _balances.add(balanceObj);
+    }
+    return BalancesResponse(
+      success: true, balances: _balances
+    );
+  }
+
 }
 
 class Transaction {
