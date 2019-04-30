@@ -23,6 +23,8 @@ class HomeComponentState extends State<HomeComponent> {
         if (status == false) {
           online = false;  
           globals.online = online;
+        } else {
+          globals.online = online;
         }
       });
     });
@@ -68,12 +70,12 @@ class HomeComponentState extends State<HomeComponent> {
             centerTitle: true,
           ),
           drawer: buildDrawer(context),
-          body: TabBarView(
-            children: [
-              accountsTab,
-              transactionsTab,
-            ],
-          ),
+          body:  TabBarView(
+              children: [
+                accountsTab,
+                transactionsTab,
+              ],
+            ),
           bottomNavigationBar: buildBottomNavigation(context, path),
         ));
   }
