@@ -7,7 +7,6 @@ import 'package:dio_flutter_transformer/dio_flutter_transformer.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:path_provider/path_provider.dart';
 import 'dart:async';
-import 'config.dart';
 import 'responses.dart';
 import '../helpers.dart';
 import '../utils/database_helper.dart';
@@ -27,18 +26,24 @@ Future<dynamic> sendPostRequest(url, payload) async {
 }
 
 Future<dynamic> sendGetRequest(url) async {
+  var payload = {
+    'public_key': globals.serverPublicKey
+  };
   var dio = new Dio();
   var tempDir = await getTemporaryDirectory();
   String tempPath = tempDir.path;
   CookieJar cj = new PersistCookieJar(dir: tempPath);
   dio.interceptors.add(CookieManager(cj));
-  final response = await dio.get(url);
+  print('dumaan dito ------------------');
+  final response = await dio.get(url, queryParameters:payload);
+  print('the response is -------------');
+  print(response);
   return response;
 }
 
 Future<GenericCreateResponse> createUser(payload) async {
   try {
-    final String url = baseUrl + '/api/users/create';
+    final String url = globals.baseUrl + '/api/users/create';
     final response = await sendPostRequest(url, payload);
     return GenericCreateResponse.fromResponse(response);
   } catch (e) {
@@ -55,7 +60,7 @@ Future<GenericCreateResponse> registerBusiness(payload) async {
     payload['signature'] = signature;
     payload['txn_hash'] = txnhash;
     payload['public_key'] = publicKey;
-    final String url = baseUrl + '/api/business/registration';
+    final String url = globals.baseUrl + '/api/business/registration';
     final response = await sendPostRequest(url, payload);
     return GenericCreateResponse.fromResponse(response);
   } catch (e){
@@ -72,7 +77,7 @@ Future<GenericCreateResponse> linkBusinessToAccount(payload) async {
     payload['signature'] = signature;
     payload['txn_hash'] = txnhash;
     payload['public_key'] = publicKey;
-    final String url = baseUrl + '/api/business/connect-account';
+    final String url = globals.baseUrl + '/api/business/connect-account';
     final response = await sendPostRequest(url, payload);
     return GenericCreateResponse.fromResponse(response);
   } catch (e){
@@ -83,7 +88,7 @@ Future<GenericCreateResponse> linkBusinessToAccount(payload) async {
 
 Future<GenericCreateResponse> createAccount(payload) async {
   try {
-    final String url = baseUrl + '/api/accounts/create';
+    final String url = globals.baseUrl + '/api/accounts/create';
     final response = await sendPostRequest(url, payload);
     return GenericCreateResponse.fromResponse(response);
   } catch (e) {
@@ -93,7 +98,7 @@ Future<GenericCreateResponse> createAccount(payload) async {
 
 Future<GenericCreateResponse> addAccount(payload) async {
   try {
-    final String url = baseUrl + '/api/accounts/create';
+    final String url = globals.baseUrl + '/api/accounts/create';
     final response = await sendPostRequest(url, payload);
     return GenericCreateResponse.fromResponse(response);
   } catch (e) {
@@ -102,7 +107,7 @@ Future<GenericCreateResponse> addAccount(payload) async {
 }
 
 Future<PlainSuccessResponse> loginUser(payload) async {
-  final String url = baseUrl + '/api/auth/login';
+  final String url = globals.baseUrl + '/api/auth/login';
   try {
     Response response;
     response = await sendPostRequest(url, payload);
@@ -132,7 +137,7 @@ Future<void> sendLoginRequest() async {
 
 Future getBusinessList(List list) async {
   for (final q in list) {
-    final String url = baseUrl + "/api/business/list?sel=$q";
+    final String url = globals.baseUrl + "/api/business/list?sel=$q";
     List data = List();
     Response response;
     try {
@@ -160,7 +165,7 @@ Future getBusinessList(List list) async {
 }
 
 Future getAccountsList() async {
-  final String url = baseUrl + "/api/accounts/list-not-linked-to-business";
+  final String url = globals.baseUrl + "/api/accounts/list-not-linked-to-business";
   List data = List();
   Response response;
   try {
@@ -183,7 +188,7 @@ Future<BalancesResponse> getOffLineBalances() async {
 }
 
 Future<BalancesResponse> getOnlineBalances() async {
-  final String url = baseUrl + '/api/wallet/balance';
+  final String url = globals.baseUrl + '/api/wallet/balance';
   Response response;
   try {
     response = await sendGetRequest(url);
@@ -212,7 +217,7 @@ Future<BalancesResponse> getOnlineBalances() async {
 }
 
 Future<TransactionsResponse> getOnlineTransactions() async {
-  final String url = baseUrl + '/api/wallet/transactions';
+  final String url = globals.baseUrl + '/api/wallet/transactions';
   Response response;
   try {
     response = await sendGetRequest(url);
@@ -231,7 +236,7 @@ Future<TransactionsResponse> getOffLineTransactions() async {
 }
 
 Future<AccountsResponse> getAccounts() async {
-  final String url = baseUrl + '/api/accounts/list';
+  final String url = globals.baseUrl + '/api/accounts/list';
   final response = await sendGetRequest(url);
   if (response.statusCode == 200) {
     return AccountsResponse.fromResponse(response);
@@ -247,7 +252,7 @@ Future getBusinesReferences () async {
 
 Future<PlainSuccessResponse> transferAsset(Map payload) async {
   if (globals.online) {
-    final String url = baseUrl + '/api/assets/transfer';
+    final String url = globals.baseUrl + '/api/assets/transfer';
     final response = await sendPostRequest(url, payload);
     if (response.statusCode == 200) {
       return PlainSuccessResponse.fromResponse(response);
@@ -262,7 +267,7 @@ Future<PlainSuccessResponse> transferAsset(Map payload) async {
 }
 
 Future<PlainSuccessResponse> requestOtpCode(payload) async {
-  final String url = baseUrl + '/api/otp/request';
+  final String url = globals.baseUrl + '/api/otp/request';
   Response response;
   try {
     response = await sendPostRequest(url, payload);
@@ -274,7 +279,7 @@ Future<PlainSuccessResponse> requestOtpCode(payload) async {
 }
 
 Future<OtpVerificationResponse> verifyOtpCode(payload) async {
-  final String url = baseUrl + '/api/otp/verify';
+  final String url = globals.baseUrl + '/api/otp/verify';
   Response response;
   try {
     response = await sendPostRequest(url, payload);

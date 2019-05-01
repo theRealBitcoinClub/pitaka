@@ -7,7 +7,7 @@ import '../components/drawer.dart';
 import '../api/endpoints.dart';
 import '../views/app.dart';
 import '../helpers.dart';
-import '../api/config.dart';
+// import '../api/config.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:intl/intl.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -33,16 +33,19 @@ class SendComponentState extends State<SendComponent> {
   String _errorMessage;
   bool online = globals.online;
   
-  Future<String> getAccounts() async {
+  Future<String> getAccounts(destinationAccountId) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     var _prefAccounts = prefs.get("accounts");
     List<Map> _accounts = [];
     for (final acct in _prefAccounts) {
-      var acctObj = new Map();
-      acctObj['accountName'] = acct.split(' | ')[0];
-      acctObj['accountId'] = acct.split(' | ')[1];
-      acctObj['balance'] = acct.split(' | ')[2];
-      _accounts.add(acctObj);
+      String accountId = acct.split(' | ')[1];
+      if(accountId != destinationAccountId) {
+        var acctObj = new Map();
+        acctObj['accountName'] = acct.split(' | ')[0];
+        acctObj['accountId'] = accountId;
+        acctObj['balance'] = acct.split(' | ')[2];
+        _accounts.add(acctObj);
+      }
     }
     setState(() {
       data = _accounts;
@@ -54,7 +57,6 @@ class SendComponentState extends State<SendComponent> {
   @override
   void initState() {
     super.initState();
-    this.getAccounts();
     globals.checkConnection().then((status){
       setState(() {
         if (status == false) {
@@ -68,15 +70,21 @@ class SendComponentState extends State<SendComponent> {
   }
   
 
-  Future<bool> sendFunds(
-    String toAccount, int amount, BuildContext context) async {
+  Future<bool> sendFunds(String toAccount, int amount, BuildContext context) async {
+    print('---------------A');
     setState(() => _submitting = true);
+
     String publicKey = await FlutterKeychain.get(key: "publicKey");
+    print('---------------B');
     String privateKey = await FlutterKeychain.get(key: "privateKey");
+    print('---------------C');
     SharedPreferences prefs = await SharedPreferences.getInstance();
+    print('---------------D');
     var now = new DateTime.now();
     var _txnDateTime = DateTime.parse(now.toString());
-    var txnhash = "$amount:message:$_txnDateTime:message:$publicKey";
+    var txnhash = "$amount:messsage:$_txnDateTime:message:$publicKey";
+    String message = "sample";
+    String signature_balance = await signTransaction(message, privateKey);
     var _txnReadableDateTime = DateFormat('MMMM dd, yyyy  h:mm a').format(
       DateTime.parse(now.toString())
     );
@@ -88,12 +96,18 @@ class SendComponentState extends State<SendComponent> {
     var payload = {
       'from_account': _selectedPaytacaAccount,
       'to_account': toAccount,
-      'asset': phpAssetId,
+      'asset': globals.phpAssetId,
       'amount': amount,
       'public_key': publicKey,
-      "txn_hash": txnhash,
-      "signature": signature
+      'txn_hash': txnhash,
+      'signature': signature,
+      'signed_balance': {
+        'message': message,
+        'public_key': publicKey,
+        'signature': signature_balance
+      }
     };
+    
     var response = await transferAsset(payload);
     if (response.success == false) {
       setState(() {
@@ -109,6 +123,15 @@ class SendComponentState extends State<SendComponent> {
 
   void scanBarcode() async {
     allowCamera();
+    // String publicKey = await FlutterKeychain.get(key: "publicKey");
+    // String privateKey = await FlutterKeychain.get(key: "privateKey");
+    // String userid = await FlutterKeychain.get(key: "userId");
+    // print('user id ---------------------');
+    // print(userid);
+    // print('public key -------------------');
+    // print(publicKey);
+    // print('private key ------------------');
+    // print(privateKey);
     String barcode = await FlutterBarcodeScanner.scanBarcode("#ff6666");
     if (barcode.length > 0) {
       setState(() => _barcodeString = barcode);
@@ -126,7 +149,13 @@ class SendComponentState extends State<SendComponent> {
   }
 
   Future<String> getBarcode() async {
-    return _barcodeString;
+    if (_barcodeString.contains(new RegExp(r'::paytaca::.*::paytaca::$'))) {
+      var destinationAccountId = _barcodeString.split('::paytaca::')[1];
+      this.getAccounts(destinationAccountId);
+      return _barcodeString;
+    } else {
+      return '';
+    }
   }
 
   String validateAmount(String value) {
@@ -212,7 +241,7 @@ class SendComponentState extends State<SendComponent> {
             future: getBarcode(),
             builder: (BuildContext context, AsyncSnapshot<String> snapshot) {
               if (snapshot.data != null) {
-                if (snapshot.data.length > 0 && snapshot.data.contains(new RegExp(r'::paytaca::.*::paytaca::$')) ) {
+                if (snapshot.data.length > 0 ) {
                   return Column(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: <Widget>[
