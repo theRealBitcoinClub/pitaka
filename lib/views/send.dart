@@ -1,13 +1,11 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
-import 'package:flutter_keychain/flutter_keychain.dart';
 import '../components/bottomNavigation.dart';
 import '../components/drawer.dart';
 import '../api/endpoints.dart';
 import '../views/app.dart';
 import '../helpers.dart';
-// import '../api/config.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:intl/intl.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -71,23 +69,20 @@ class SendComponentState extends State<SendComponent> {
   
 
   Future<bool> sendFunds(String toAccount, int amount, BuildContext context) async {
-    print('---------------A');
     setState(() => _submitting = true);
-
-    String publicKey = await FlutterKeychain.get(key: "publicKey");
-    print('---------------B');
-    String privateKey = await FlutterKeychain.get(key: "privateKey");
-    print('---------------C');
+    String destinationAccount = toAccount.split('::paytaca::')[1];
+    String publicKey = await globals.storage.read(key: "publicKey");
+    String privateKey = await globals.storage.read(key: "privateKey");
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    print('---------------D');
     var now = new DateTime.now();
     var _txnDateTime = DateTime.parse(now.toString());
     var txnhash = "$amount:messsage:$_txnDateTime:message:$publicKey";
-    String message = "sample";
-    String signature_balance = await signTransaction(message, privateKey);
+    // String message = "sample";
+    // String temp = await signTransaction(message, privateKey);
     var _txnReadableDateTime = DateFormat('MMMM dd, yyyy  h:mm a').format(
       DateTime.parse(now.toString())
     );
+
     String signature = await signTransaction(txnhash, privateKey);
     var qrcode = "$signature:wallet:$txnhash:wallet:$publicKey";
     prefs.setString("_txnQrCode", qrcode);
@@ -95,19 +90,19 @@ class SendComponentState extends State<SendComponent> {
     prefs.setString("_txnAmount", amount.toString());
     var payload = {
       'from_account': _selectedPaytacaAccount,
-      'to_account': toAccount,
+      'to_account': destinationAccount,
       'asset': globals.phpAssetId,
       'amount': amount,
       'public_key': publicKey,
       'txn_hash': txnhash,
-      'signature': signature,
-      'signed_balance': {
-        'message': message,
-        'public_key': publicKey,
-        'signature': signature_balance
-      }
+      'signature': signature
+      // 'signed_balance': {
+      //   'message': message,
+      //   'public_key': publicKey,
+      //   'signature': temp
+      // }
     };
-    
+    print(payload);
     var response = await transferAsset(payload);
     if (response.success == false) {
       setState(() {
@@ -123,15 +118,15 @@ class SendComponentState extends State<SendComponent> {
 
   void scanBarcode() async {
     allowCamera();
-    // String publicKey = await FlutterKeychain.get(key: "publicKey");
-    // String privateKey = await FlutterKeychain.get(key: "privateKey");
-    // String userid = await FlutterKeychain.get(key: "userId");
-    // print('user id ---------------------');
-    // print(userid);
-    // print('public key -------------------');
-    // print(publicKey);
-    // print('private key ------------------');
-    // print(privateKey);
+    String privateKey = await globals.storage.read(key: "privateKey");
+    String publicKey = await globals.storage.read(key: "publicKey");
+    String userid = await globals.storage.read(key: "userId");
+    print('user id ---------------------');
+    print(userid);
+    print('public key -------------------');
+    print(publicKey);
+    print('private key ------------------');
+    print(privateKey);
     String barcode = await FlutterBarcodeScanner.scanBarcode("#ff6666");
     if (barcode.length > 0) {
       setState(() => _barcodeString = barcode);
@@ -151,7 +146,7 @@ class SendComponentState extends State<SendComponent> {
   Future<String> getBarcode() async {
     if (_barcodeString.contains(new RegExp(r'::paytaca::.*::paytaca::$'))) {
       var destinationAccountId = _barcodeString.split('::paytaca::')[1];
-      this.getAccounts(destinationAccountId);
+      await getAccounts(destinationAccountId);
       return _barcodeString;
     } else {
       return '';

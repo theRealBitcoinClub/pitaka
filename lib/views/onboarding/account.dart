@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_keychain/flutter_keychain.dart';
 import '../../api/endpoints.dart';
 import '../../views/app.dart';
 import '../../helpers.dart';
+import '../../utils/globals.dart' as globals;
 
 class Account {
   String name;
@@ -33,9 +33,9 @@ class AccountComponentState extends State<AccountComponent> {
       // Save the form
       _formKey.currentState.save();
       // Send request to create the account
-      String userId = await FlutterKeychain.get(key: "userId");
-      String publicKey = await FlutterKeychain.get(key: "publicKey");
-      String privateKey = await FlutterKeychain.get(key: "privateKey");
+      String userId = await globals.storage.read(key: "userId");
+      String publicKey = await globals.storage.read(key: "publicKey");
+      String privateKey = await globals.storage.read(key: "privateKey");
       String signature = await signTransaction("helloworld", privateKey);
       var accountPayload = {
         "creator": userId,
@@ -52,7 +52,7 @@ class AccountComponentState extends State<AccountComponent> {
         setState(() {
           _submitting = false;
         });
-        await FlutterKeychain.put(key: "defaultAccount", value: response.id);
+        await globals.storage.write(key: "defaultAccount", value: response.id);
         Application.router.navigateTo(context, "/home");
       }
     }

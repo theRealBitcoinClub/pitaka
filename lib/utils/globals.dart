@@ -1,14 +1,15 @@
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:connectivity/connectivity.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
  // const String baseUrl = 'https://lantaka-dev.paytaca.com';
-const String baseUrl = 'https://7ea97dd9.ngrok.io';
-const String phpAssetId = '87680574-8EC2-440A-A381-C33EE987FCE4';
+const String baseUrl = 'https://f89b6dad.ngrok.io';
+const String phpAssetId = '8BA673C2-2297-43F8-AF17-046FCDD162D9';
 bool _online = false;
 const String serverPublicKey = '7aeaa44510a950a9a4537faa2f40351dc4560d6d0d12abc0287dcffdd667d7a2';
 bool get online => _online;
 set online(bool value) => _online = value;
-
+final storage = new FlutterSecureStorage();
 
 Future<bool> checkConnection() async {
   var connectivityResult = await (Connectivity().checkConnectivity());

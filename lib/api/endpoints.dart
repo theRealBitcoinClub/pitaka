@@ -2,7 +2,6 @@ import 'dart:convert';
 
 import 'package:dio/dio.dart';
 import 'package:cookie_jar/cookie_jar.dart';
-import 'package:flutter_keychain/flutter_keychain.dart';
 import 'package:dio_flutter_transformer/dio_flutter_transformer.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:path_provider/path_provider.dart';
@@ -34,10 +33,7 @@ Future<dynamic> sendGetRequest(url) async {
   String tempPath = tempDir.path;
   CookieJar cj = new PersistCookieJar(dir: tempPath);
   dio.interceptors.add(CookieManager(cj));
-  print('dumaan dito ------------------');
   final response = await dio.get(url, queryParameters:payload);
-  print('the response is -------------');
-  print(response);
   return response;
 }
 
@@ -53,8 +49,8 @@ Future<GenericCreateResponse> createUser(payload) async {
 
 Future<GenericCreateResponse> registerBusiness(payload) async {
   try {
-    String publicKey = await FlutterKeychain.get(key: "publicKey");
-    String privateKey = await FlutterKeychain.get(key: "privateKey");
+    String publicKey = await globals.storage.read(key:"publicKey");
+    String privateKey = await globals.storage.read(key:"privateKey");
     var txnhash = "${payload['tin']}:message:$publicKey";
     String signature = await signTransaction(txnhash, privateKey);
     payload['signature'] = signature;
@@ -70,8 +66,8 @@ Future<GenericCreateResponse> registerBusiness(payload) async {
 
 Future<GenericCreateResponse> linkBusinessToAccount(payload) async {
   try {
-    String publicKey = await FlutterKeychain.get(key: "publicKey");
-    String privateKey = await FlutterKeychain.get(key: "privateKey");
+    String publicKey = await globals.storage.read(key:"publicKey");
+    String privateKey = await globals.storage.read(key:"privateKey");
     var txnhash = "linkToBusiness:message:$publicKey";
     String signature = await signTransaction(txnhash, privateKey);
     payload['signature'] = signature;
@@ -124,8 +120,8 @@ Future<PlainSuccessResponse> loginUser(payload) async {
 }
 
 Future<void> sendLoginRequest() async {
-  String publicKey = await FlutterKeychain.get(key: "publicKey");
-  String privateKey = await FlutterKeychain.get(key: "privateKey");
+  String publicKey = await globals.storage.read(key: "publicKey");
+  String privateKey = await globals.storage.read(key: "privateKey");
   String loginSignature = await signTransaction("hello world", privateKey);
   var loginPayload = {
     "public_key": publicKey,

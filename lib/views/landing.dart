@@ -1,7 +1,6 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_keychain/flutter_keychain.dart';
 import 'package:after_layout/after_layout.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/services.dart';
@@ -86,7 +85,7 @@ class LandingComponentState extends State<LandingComponent>
     SharedPreferences prefs = await SharedPreferences.getInstance();
     var installed = prefs.getBool('installed');
     if (installed == null) {
-      await FlutterKeychain.clear();
+      await globals.storage.deleteAll();
       Application.router.navigateTo(context, "/onboarding/request");
     } else {
       await _authenticate();
