@@ -43,6 +43,8 @@ class OtpVerificationResponse {
 class Balance {
   String accountName;
   String accountId;
+  String timestamp;
+  String signature;
   double balance;
 }
 
@@ -58,7 +60,11 @@ class BalancesResponse {
       for (final bal in response.data['balances']) {
         var balanceObj = new Balance();
         balanceObj.accountName = bal['AccountName'];
-        balanceObj.balance = bal['Balance'].toDouble();
+        double balance = bal['Balance'].toDouble();
+        balanceObj.balance = balance;
+        balanceObj.accountId = bal['AccountID'];
+        balanceObj.timestamp = response.data['timestamp'].toString();
+        balanceObj.signature = bal['Signature'];
         _balances.add(balanceObj);
       }
     }
@@ -70,8 +76,12 @@ class BalancesResponse {
     List<Balance> _balances = [];
     for (final account in accounts) {
       var balanceObj = new Balance();
-      balanceObj.accountName = account['account'];
-      balanceObj.balance = double.parse(account['balance']);
+      balanceObj.accountName = account['accountName'];
+      double balance = account['balance'].toDouble();
+      balanceObj.balance = balance;
+      balanceObj.accountId = account['accountId'];
+      balanceObj.timestamp = account['timestamp'];
+      balanceObj.signature = account['signature'];
       _balances.add(balanceObj);
     }
     return BalancesResponse(

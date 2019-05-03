@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../api/endpoints.dart';
 import '../../views/app.dart';
-import '../../helpers.dart';
+import '../../utils/helpers.dart';
 import '../../utils/globals.dart' as globals;
 
 class Account {

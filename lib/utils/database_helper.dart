@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:sqflite/sqflite.dart';
 import 'dart:async';
 import 'dart:io';
@@ -40,16 +42,16 @@ class DatabaseHelper {
 
 	void _createDb(Database db, int newVersion) async {
     await db.execute("CREATE TABLE Balance ("
-      "id INTEGER PRIMARY KEY,"
-      "account TEXT,"
-      "balance TEXT,"
+      "id INTEGER NOT NULL PRIMARY KEY,"
+      "accountName TEXT,"
+      "accountId TEXT,"
+      "balance DOUBLE(40,2),"
       "timestamp TEXT,"
-      "signature TEXT,"
-      "datecreated TEXT"
+      "signature TEXT"
       ")");
 
     await db.execute("CREATE TABLE OfflineTransaction ("
-      "id INTEGER PRIMARY KEY,"
+      "id INTEGER NOT NULL PRIMARY KEY,"
       "amount DOUBLE(40,2),"
       "timestamp TEXT,"
       "transactionType TEXT,"
@@ -64,7 +66,10 @@ class DatabaseHelper {
     for (final balance in balances) {
       var values = {
         'balance': balance.balance,
-        'account': balance.accountName
+        'accountName': balance.accountName,
+        'accountId': balance.accountId,
+        'timestamp': balance.timestamp,
+        'signature': balance.signature
       };
       await db.insert(
         'Balance',
@@ -81,15 +86,41 @@ class DatabaseHelper {
 		return result;
 	}
 
-  Future<int> updateBalances(Map payload) async{
+  Future<String> updateBalances(Map payload) async{
     Database db = await this.database;
-    var result = db.update(
-      'Balance',
-      payload,
-      where: 'id: ?',
-      whereArgs: [payload['id']]
-    );
-    return result;
+    String fromAccount = payload['from_account'];
+    String toAccount = payload['to_account'];
+    var qs1 = await db.query('Balance',where: 'accountId = ?', whereArgs: [fromAccount]);
+    var instance = qs1[0];
+    var signedBalance = {
+      'message': instance['balance'],
+      'signature': instance['signature'],
+      'balance': instance['balance']
+    };
+    payload['signed_balance'] =  signedBalance;
+    var temp = json.encode(payload);
+    db.insert('OfflineTransaction', {
+      "amount":payload['amount'],
+      "timestamp":instance['timestamp'],
+      "transactionType":"off-line",
+      "transactionJson": temp
+    });
+    double newBalance = instance['balance'] - payload['amount'];
+    await db.update('Balance', {'balance': newBalance}, where: 'accountId = ?', whereArgs: [fromAccount]);
+    // Check if the recipient is in the user accounts list.
+    var qs2 = await db.query('Balance',where: 'accountId = ?', whereArgs: [toAccount]);
+    if (qs2.length == 1) {
+      instance = qs2[0];
+      newBalance = instance['balance'] + payload['amount'];
+      await db.update('Balance', {'balance': newBalance}, where: 'accountId = ?', whereArgs: [toAccount]);
+    }
+    return 'success';
+  }
+
+  Future<int>processTransfer(Map payload) async {
+    // Database db = await this.database;
+    
+    return 1;
   }
 
 }

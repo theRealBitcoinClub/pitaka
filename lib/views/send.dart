@@ -5,7 +5,7 @@ import '../components/bottomNavigation.dart';
 import '../components/drawer.dart';
 import '../api/endpoints.dart';
 import '../views/app.dart';
-import '../helpers.dart';
+import '../utils/helpers.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:intl/intl.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -37,6 +37,7 @@ class SendComponentState extends State<SendComponent> {
     List<Map> _accounts = [];
     for (final acct in _prefAccounts) {
       String accountId = acct.split(' | ')[1];
+      // print('This destinations is : $destinationAccountId');
       if(accountId != destinationAccountId) {
         var acctObj = new Map();
         acctObj['accountName'] = acct.split(' | ')[0];
@@ -47,7 +48,7 @@ class SendComponentState extends State<SendComponent> {
     }
     setState(() {
       data = _accounts;
-      _selectedPaytacaAccount= _accounts[0]['accountId'];
+      // _selectedPaytacaAccount= _accounts[0]['accountId'];
     });
     return 'Success';
   }
@@ -77,8 +78,8 @@ class SendComponentState extends State<SendComponent> {
     var now = new DateTime.now();
     var _txnDateTime = DateTime.parse(now.toString());
     var txnhash = "$amount:messsage:$_txnDateTime:message:$publicKey";
-    // String message = "sample";
-    // String temp = await signTransaction(message, privateKey);
+    String message = "sample";
+    String temp = await signTransaction(message, privateKey);
     var _txnReadableDateTime = DateFormat('MMMM dd, yyyy  h:mm a').format(
       DateTime.parse(now.toString())
     );
@@ -96,13 +97,8 @@ class SendComponentState extends State<SendComponent> {
       'public_key': publicKey,
       'txn_hash': txnhash,
       'signature': signature
-      // 'signed_balance': {
-      //   'message': message,
-      //   'public_key': publicKey,
-      //   'signature': temp
-      // }
     };
-    print(payload);
+    // print(payload);
     var response = await transferAsset(payload);
     if (response.success == false) {
       setState(() {
@@ -118,15 +114,15 @@ class SendComponentState extends State<SendComponent> {
 
   void scanBarcode() async {
     allowCamera();
-    String privateKey = await globals.storage.read(key: "privateKey");
-    String publicKey = await globals.storage.read(key: "publicKey");
-    String userid = await globals.storage.read(key: "userId");
-    print('user id ---------------------');
-    print(userid);
-    print('public key -------------------');
-    print(publicKey);
-    print('private key ------------------');
-    print(privateKey);
+    // String privateKey = await globals.storage.read(key: "privateKey");
+    // String publicKey = await globals.storage.read(key: "publicKey");
+    // String userid = await globals.storage.read(key: "userId");
+    // print('user id ---------------------');
+    // print(userid);
+    // print('public key -------------------');
+    // print(publicKey);
+    // print('private key ------------------');
+    // print(privateKey);
     String barcode = await FlutterBarcodeScanner.scanBarcode("#ff6666");
     if (barcode.length > 0) {
       setState(() => _barcodeString = barcode);
@@ -242,9 +238,17 @@ class SendComponentState extends State<SendComponent> {
                     children: <Widget>[
                       Visibility(
                         child:  new FormField(
+                            validator: (value){
+                              if (value == null) {
+                                return 'This field is required.';
+                              } else {
+                                return null;
+                              }
+                            },
                             builder: (FormFieldState state) {
                               return InputDecorator(
                                 decoration: InputDecoration(
+                                  errorText: state.errorText,
                                   labelText: 'Select Account',
                                 ),
                                 child: new DropdownButtonHideUnderline(

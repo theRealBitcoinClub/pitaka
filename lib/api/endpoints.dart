@@ -7,7 +7,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:path_provider/path_provider.dart';
 import 'dart:async';
 import 'responses.dart';
-import '../helpers.dart';
+import '../utils/helpers.dart';
 import '../utils/database_helper.dart';
 import '../utils/globals.dart' as globals;
 
@@ -188,6 +188,7 @@ Future<BalancesResponse> getOnlineBalances() async {
   Response response;
   try {
     response = await sendGetRequest(url);
+    // print(response);
     // Store account details in keychain
     List<String> _accounts = [];
     List<Balance> _balances = [];
@@ -196,7 +197,11 @@ Future<BalancesResponse> getOnlineBalances() async {
       String acct = "${bal['AccountName']} | ${bal['AccountID']} | ${bal['Balance']}";
       _accounts.add(acct);
       balanceObj.accountName = bal['AccountName'];
-      balanceObj.balance = bal['Balance'].toDouble();
+      double balance = bal['Balance'].toDouble();
+      balanceObj.balance = balance;
+      balanceObj.accountId = bal['AccountID'];
+      balanceObj.timestamp = response.data['timestamp'].toString();
+      balanceObj.signature = bal['Signature'];
       _balances.add(balanceObj);
     }
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -206,6 +211,7 @@ Future<BalancesResponse> getOnlineBalances() async {
     return BalancesResponse.fromResponse(response);
   } catch (e) {
     // Login before resending the request again
+    print(e);
     var resp = await databaseHelper.offLineBalances();
     return BalancesResponse.fromDatabase(resp);
     
