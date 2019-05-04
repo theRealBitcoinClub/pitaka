@@ -153,10 +153,31 @@ class DatabaseHelper {
     return 'success';
   }
 
-  Future<int>processTransfer(Map payload) async {
-    // Database db = await this.database;
-    
-    return 1;
+  Future<int>acceptPayment(Map payload) async {
+    Database db = await this.database;
+    String table1 = 'Balance';
+    String table2 = 'OffLineTransaction';
+    var qs = await db.query(table1,where: 'accountId = ?', whereArgs: [payload['to_account']]);
+    var instance = qs[0];
+    var converted = json.encode(payload);
+    db.insert(table2, {
+      "amount":payload['amount'],
+      "timestamp":instance['timestamp'],
+      "transactionType":"incoming",
+      "transactionJson": converted
+    });
+    double newBalance = instance['balance'] + payload['amount'];
+    DateTime datetime = DateTime.now();
+    String dateOfLastBalance = new DateFormat.yMMMd().add_jm().format(datetime);
+    return await db.update(
+      table1,
+      {
+        'balance': newBalance,
+        'datetime': dateOfLastBalance
+      },
+      where: 'accountId = ?',
+      whereArgs: [payload['to_account']]
+    );
   }
 
 }

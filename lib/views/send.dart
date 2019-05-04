@@ -24,7 +24,8 @@ class SendComponentState extends State<SendComponent> {
   bool _submitting = false;
   int sendAmount;
   final _formKey = GlobalKey<FormState>();
-  String _selectedPaytacaAccount;
+  String selectedPaytacaAccount;
+  String lastBalance;
   List data = List();
   bool validCode = false;
   bool _errorFound = false;
@@ -48,7 +49,7 @@ class SendComponentState extends State<SendComponent> {
     }
     setState(() {
       data = _accounts;
-      // _selectedPaytacaAccount= _accounts[0]['accountId'];
+      // selectedPaytacaAccount= _accounts[0]['accountId'];
     });
     return 'Success';
   }
@@ -69,28 +70,26 @@ class SendComponentState extends State<SendComponent> {
   }
   
 
-  Future<bool> sendFunds(String toAccount, int amount, BuildContext context) async {
+  Future<bool> sendFunds(String toAccount, int amount, BuildContext context, String lBalance) async {
     setState(() => _submitting = true);
     String destinationAccount = toAccount.split('::paytaca::')[1];
     String publicKey = await globals.storage.read(key: "publicKey");
     String privateKey = await globals.storage.read(key: "privateKey");
     SharedPreferences prefs = await SharedPreferences.getInstance();
     var now = new DateTime.now();
-    var _txnDateTime = DateTime.parse(now.toString());
-    var txnhash = "$amount:messsage:$_txnDateTime:message:$publicKey";
-    String message = "sample";
-    String temp = await signTransaction(message, privateKey);
+    var txnDateTime = DateTime.parse(now.toString());
+    var txnhash = "$amount:messsage:$txnDateTime:message:$publicKey";
     var _txnReadableDateTime = DateFormat('MMMM dd, yyyy  h:mm a').format(
       DateTime.parse(now.toString())
     );
 
     String signature = await signTransaction(txnhash, privateKey);
-    var qrcode = "$signature:wallet:$txnhash:wallet:$publicKey";
+    var qrcode = "$signature:wallet:$txnhash:wallet:$publicKey:wallet:$lBalance";
     prefs.setString("_txnQrCode", qrcode);
     prefs.setString("_txnDateTime", _txnReadableDateTime);
     prefs.setString("_txnAmount", amount.toString());
     var payload = {
-      'from_account': _selectedPaytacaAccount,
+      'from_account': selectedPaytacaAccount,
       'to_account': destinationAccount,
       'asset': globals.phpAssetId,
       'amount': amount,
@@ -114,15 +113,15 @@ class SendComponentState extends State<SendComponent> {
 
   void scanBarcode() async {
     allowCamera();
-    String privateKey = await globals.storage.read(key: "privateKey");
-    String publicKey = await globals.storage.read(key: "publicKey");
-    String userid = await globals.storage.read(key: "userId");
-    print('user id ---------------------');
-    print(userid);
-    print('public key -------------------');
-    print(publicKey);
-    print('private key ------------------');
-    print(privateKey);
+    // String privateKey = await globals.storage.read(key: "privateKey");
+    // String publicKey = await globals.storage.read(key: "publicKey");
+    // String userid = await globals.storage.read(key: "userId");
+    // print('user id ---------------------');
+    // print(userid);
+    // print('public key -------------------');
+    // print(publicKey);
+    // print('private key ------------------');
+    // print(privateKey);
     String barcode = await FlutterBarcodeScanner.scanBarcode("#ff6666");
     if (barcode.length > 0) {
       setState(() => _barcodeString = barcode);
@@ -157,7 +156,7 @@ class SendComponentState extends State<SendComponent> {
     } else {
       var currentBalance;
       for(final map in data) {
-        if(_selectedPaytacaAccount ==  map['accountId']){
+        if(selectedPaytacaAccount ==  map['accountId']){
           currentBalance = map['balance'];
           break;
         }
@@ -253,17 +252,20 @@ class SendComponentState extends State<SendComponent> {
                                 ),
                                 child: new DropdownButtonHideUnderline(
                                   child: new DropdownButton(
-                                    value: _selectedPaytacaAccount,
+                                    value: selectedPaytacaAccount,
                                     isDense: true,
                                     onChanged: (newVal) {
+                                      String accountId = newVal.split('::sep::')[0];
+                                      String balance = newVal.split('::sep::')[1];
                                       setState(() {
-                                        _selectedPaytacaAccount = newVal;
+                                        selectedPaytacaAccount = accountId;
+                                        lastBalance = balance;
                                         state.didChange(newVal);
                                       });
                                     },
                                     items: data.map((item) {
                                       return DropdownMenuItem(
-                                        value: item['accountId'],
+                                        value: "$item['accountId']::sep::$item['balance']",
                                         child: new Text("${item['accountName']} ( ${double.parse(item['balance']).toStringAsFixed(2)} )"),
                                       );
                                     }).toList()
@@ -292,7 +294,7 @@ class SendComponentState extends State<SendComponent> {
                             var valid = _formKey.currentState.validate();
                             if (valid) {
                               _formKey.currentState.save();
-                              sendFunds(snapshot.data, sendAmount, context);
+                              sendFunds(snapshot.data, sendAmount, context, lastBalance);
                             }
                           }
                         ),

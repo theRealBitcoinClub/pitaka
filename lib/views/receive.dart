@@ -9,6 +9,7 @@ import 'package:flutter_sodium/flutter_sodium.dart';
 import 'package:hex/hex.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../utils/globals.dart' as globals;
+import '../api/endpoints.dart';
 
 class ReceiveComponent extends StatefulWidget {
   @override
@@ -43,20 +44,57 @@ class ReceiveComponentState extends State<ReceiveComponent> {
   void scanQrcode() async {
     String qrcode = await FlutterBarcodeScanner.scanBarcode("#ff6666");
     var strings = qrcode.split(':wallet:');
-    if (strings.length == 3) {
-      var signature = HEX.decode(strings[0]);
-      var publicKey = HEX.decode(strings[2]);
-      String message = strings[1];
-      var valid = await CryptoSign.verify(signature, message, publicKey);
-      if (valid) {
-        List info = message.split(":message:");
-        var now = DateTime.now();
-        var _txnDate = DateTime.parse(info[1]);
-        Duration difference = now.difference(_txnDate);
-        print(difference.inMinutes);
-        // Use difference in minutes to monitor the freshness of the transaction.
-        _successDialog();
-        return null;
+    if (strings.length == 7) {
+      double amount = double.parse(strings[0]);
+      double lBalance = double.parse(strings[3]);
+      if (amount <= lBalance) {
+        String message = strings[1];
+        String pubKey = strings[2];
+        String fromAccount = strings[4];
+        String txnhash = strings[5];
+        String txnsignature = strings[6];
+        var signature = HEX.decode(amount.toString());
+        var publicKey = HEX.decode(pubKey);
+        var valid = await CryptoSign.verify(signature, message, publicKey);
+        if (valid) {
+          List info = message.split(":message:");
+          var now = DateTime.now();
+          var _txnDate = DateTime.parse(info[1]);
+          Duration difference = now.difference(_txnDate);
+          if (difference.inHours < 12) {
+            var payload = {
+              'from_account': fromAccount,
+              'to_account': _selectedPaytacaAccount,
+              'asset': globals.phpAssetId,
+              'amount': amount,
+              'public_key': publicKey,
+              'txn_hash': txnhash,
+              'signature': txnsignature,
+              'signed_balance':  {
+                'message': message,
+                'signature': signature,
+                'balance': publicKey
+              }
+            };
+            var response = await receiveAsset(payload);
+            if (response.success == false) {
+              // setState(() {
+                // _errorFound = true;
+                // _errorMessage = response.error;
+              // });
+            } else {
+              Application.router.navigateTo(context, "/proofOfPayment");
+            }
+            // setState(() => _submitting = false);
+            // return response.success;
+            _successDialog();
+          }
+          // print(difference.inMinutes);
+          // Use difference in minutes to monitor the freshness of the transaction.
+          // return null;
+        } else {
+          _failedDialog();
+        }
       } else {
         _failedDialog();
       }

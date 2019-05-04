@@ -268,6 +268,17 @@ Future<PlainSuccessResponse> transferAsset(Map payload) async {
   
 }
 
+Future<PlainSuccessResponse> receiveAsset(Map payload) async {
+  Response response;
+  if (globals.online) {
+    print('This is not yet working');
+    return PlainSuccessResponse.fromResponse(response);
+  } else {
+    await databaseHelper.acceptPayment(payload);
+    return PlainSuccessResponse.toDatabase();
+  }
+}
+
 Future<PlainSuccessResponse> requestOtpCode(payload) async {
   final String url = globals.baseUrl + '/api/otp/request';
   Response response;
