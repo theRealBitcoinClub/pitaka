@@ -32,6 +32,8 @@ class ReceiveComponentState extends State<ReceiveComponent> {
         if (status == false) {
           online = false;  
           globals.online = online;
+        } else {
+          globals.online = online;
         }
       });
     });

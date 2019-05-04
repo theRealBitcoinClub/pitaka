@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_sodium/flutter_sodium.dart';
-import 'package:flutter_keychain/flutter_keychain.dart';
 import 'package:back_button_interceptor/back_button_interceptor.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/services.dart';
@@ -11,9 +10,11 @@ import 'dart:typed_data';
 import 'dart:async';
 import '../app.dart';
 import '../../api/endpoints.dart';
-import '../../helpers.dart';
+import '../../utils/helpers.dart';
 import 'package:flutter_datetime_picker/flutter_datetime_picker.dart';
 import 'package:pitaka/utils/database_helper.dart';
+import '../../utils/globals.dart' as globals;
+
 
 class User {
   String firstName;
@@ -76,8 +77,8 @@ class RegisterComponentState extends State<RegisterComponent> {
     privateKey = HEX.encode(privateKeyBytes);
 
     await _authenticate();
-    await FlutterKeychain.put(key: "publicKey", value: publicKey);
-    await FlutterKeychain.put(key: "privateKey", value: privateKey);
+    await globals.storage.write(key: "publicKey", value: publicKey);
+    await globals.storage.write(key: "privateKey", value: privateKey);
   }
 
   final _formKey = GlobalKey<FormState>();
@@ -156,8 +157,7 @@ class RegisterComponentState extends State<RegisterComponent> {
           userPayload["txn_hash"] = txnHash;
           userPayload["signature"] = signature;
           var user = await createUser(userPayload);
-          await FlutterKeychain.put(key: "userId", value: user.id);
-
+          await globals.storage.write(key: "userId", value: user.id);
           // Login
           String loginSignature =
               await signTransaction("hello world", privateKey);

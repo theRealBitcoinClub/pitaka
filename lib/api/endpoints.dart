@@ -2,14 +2,16 @@ import 'dart:convert';
 
 import 'package:dio/dio.dart';
 import 'package:cookie_jar/cookie_jar.dart';
-import 'package:flutter_keychain/flutter_keychain.dart';
 import 'package:dio_flutter_transformer/dio_flutter_transformer.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:path_provider/path_provider.dart';
 import 'dart:async';
-import 'config.dart';
 import 'responses.dart';
-import '../helpers.dart';
+import '../utils/helpers.dart';
+import '../utils/database_helper.dart';
+import '../utils/globals.dart' as globals;
+
+DatabaseHelper databaseHelper = DatabaseHelper();
 
 Future<dynamic> sendPostRequest(url, payload) async {
   var dio = new Dio();
@@ -23,18 +25,21 @@ Future<dynamic> sendPostRequest(url, payload) async {
 }
 
 Future<dynamic> sendGetRequest(url) async {
+  var payload = {
+    'public_key': globals.serverPublicKey
+  };
   var dio = new Dio();
   var tempDir = await getTemporaryDirectory();
   String tempPath = tempDir.path;
   CookieJar cj = new PersistCookieJar(dir: tempPath);
   dio.interceptors.add(CookieManager(cj));
-  final response = await dio.get(url);
+  final response = await dio.get(url, queryParameters:payload);
   return response;
 }
 
 Future<GenericCreateResponse> createUser(payload) async {
   try {
-    final String url = baseUrl + '/api/users/create';
+    final String url = globals.baseUrl + '/api/users/create';
     final response = await sendPostRequest(url, payload);
     return GenericCreateResponse.fromResponse(response);
   } catch (e) {
@@ -44,14 +49,14 @@ Future<GenericCreateResponse> createUser(payload) async {
 
 Future<GenericCreateResponse> registerBusiness(payload) async {
   try {
-    String publicKey = await FlutterKeychain.get(key: "publicKey");
-    String privateKey = await FlutterKeychain.get(key: "privateKey");
+    String publicKey = await globals.storage.read(key:"publicKey");
+    String privateKey = await globals.storage.read(key:"privateKey");
     var txnhash = "${payload['tin']}:message:$publicKey";
     String signature = await signTransaction(txnhash, privateKey);
     payload['signature'] = signature;
     payload['txn_hash'] = txnhash;
     payload['public_key'] = publicKey;
-    final String url = baseUrl + '/api/business/registration';
+    final String url = globals.baseUrl + '/api/business/registration';
     final response = await sendPostRequest(url, payload);
     return GenericCreateResponse.fromResponse(response);
   } catch (e){
@@ -61,14 +66,14 @@ Future<GenericCreateResponse> registerBusiness(payload) async {
 
 Future<GenericCreateResponse> linkBusinessToAccount(payload) async {
   try {
-    String publicKey = await FlutterKeychain.get(key: "publicKey");
-    String privateKey = await FlutterKeychain.get(key: "privateKey");
+    String publicKey = await globals.storage.read(key:"publicKey");
+    String privateKey = await globals.storage.read(key:"privateKey");
     var txnhash = "linkToBusiness:message:$publicKey";
     String signature = await signTransaction(txnhash, privateKey);
     payload['signature'] = signature;
     payload['txn_hash'] = txnhash;
     payload['public_key'] = publicKey;
-    final String url = baseUrl + '/api/business/connect-account';
+    final String url = globals.baseUrl + '/api/business/connect-account';
     final response = await sendPostRequest(url, payload);
     return GenericCreateResponse.fromResponse(response);
   } catch (e){
@@ -79,7 +84,7 @@ Future<GenericCreateResponse> linkBusinessToAccount(payload) async {
 
 Future<GenericCreateResponse> createAccount(payload) async {
   try {
-    final String url = baseUrl + '/api/accounts/create';
+    final String url = globals.baseUrl + '/api/accounts/create';
     final response = await sendPostRequest(url, payload);
     return GenericCreateResponse.fromResponse(response);
   } catch (e) {
@@ -89,7 +94,7 @@ Future<GenericCreateResponse> createAccount(payload) async {
 
 Future<GenericCreateResponse> addAccount(payload) async {
   try {
-    final String url = baseUrl + '/api/accounts/create';
+    final String url = globals.baseUrl + '/api/accounts/create';
     final response = await sendPostRequest(url, payload);
     return GenericCreateResponse.fromResponse(response);
   } catch (e) {
@@ -98,7 +103,7 @@ Future<GenericCreateResponse> addAccount(payload) async {
 }
 
 Future<PlainSuccessResponse> loginUser(payload) async {
-  final String url = baseUrl + '/api/auth/login';
+  final String url = globals.baseUrl + '/api/auth/login';
   try {
     Response response;
     response = await sendPostRequest(url, payload);
@@ -115,8 +120,8 @@ Future<PlainSuccessResponse> loginUser(payload) async {
 }
 
 Future<void> sendLoginRequest() async {
-  String publicKey = await FlutterKeychain.get(key: "publicKey");
-  String privateKey = await FlutterKeychain.get(key: "privateKey");
+  String publicKey = await globals.storage.read(key: "publicKey");
+  String privateKey = await globals.storage.read(key: "privateKey");
   String loginSignature = await signTransaction("hello world", privateKey);
   var loginPayload = {
     "public_key": publicKey,
@@ -128,7 +133,7 @@ Future<void> sendLoginRequest() async {
 
 Future getBusinessList(List list) async {
   for (final q in list) {
-    final String url = baseUrl + "/api/business/list?sel=$q";
+    final String url = globals.baseUrl + "/api/business/list?sel=$q";
     List data = List();
     Response response;
     try {
@@ -156,7 +161,7 @@ Future getBusinessList(List list) async {
 }
 
 Future getAccountsList() async {
-  final String url = baseUrl + "/api/accounts/list-not-linked-to-business";
+  final String url = globals.baseUrl + "/api/accounts/list-not-linked-to-business";
   List data = List();
   Response response;
   try {
@@ -173,31 +178,48 @@ Future getAccountsList() async {
   return data;
 }
 
-Future<BalancesResponse> getBalances() async {
-  final String url = baseUrl + '/api/wallet/balance';
+Future<BalancesResponse> getOffLineBalances() async {
+  var resp = await databaseHelper.offLineBalances();
+  return BalancesResponse.fromDatabase(resp);
+}
+
+Future<BalancesResponse> getOnlineBalances() async {
+  final String url = globals.baseUrl + '/api/wallet/balance';
   Response response;
   try {
     response = await sendGetRequest(url);
+    // print(response);
     // Store account details in keychain
     List<String> _accounts = [];
+    List<Balance> _balances = [];
     for (final bal in response.data['balances']) {
+      var balanceObj = new Balance();
       String acct = "${bal['AccountName']} | ${bal['AccountID']} | ${bal['Balance']}";
       _accounts.add(acct);
+      balanceObj.accountName = bal['AccountName'];
+      double balance = bal['Balance'].toDouble();
+      balanceObj.balance = balance;
+      balanceObj.accountId = bal['AccountID'];
+      balanceObj.timestamp = response.data['timestamp'].toString();
+      balanceObj.signature = bal['Signature'];
+      _balances.add(balanceObj);
     }
     SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.setStringList('accounts', _accounts);
+    await databaseHelper.updateOfflineBalances(_balances);
     // Parse response into BalanceResponse
     return BalancesResponse.fromResponse(response);
   } catch (e) {
-    print(e);
     // Login before resending the request again
-    await sendLoginRequest();
-    return await getBalances();
+    print(e);
+    var resp = await databaseHelper.offLineBalances();
+    return BalancesResponse.fromDatabase(resp);
+    
   }
 }
 
-Future<TransactionsResponse> getTransactions() async {
-  final String url = baseUrl + '/api/wallet/transactions';
+Future<TransactionsResponse> getOnlineTransactions() async {
+  final String url = globals.baseUrl + '/api/wallet/transactions';
   Response response;
   try {
     response = await sendGetRequest(url);
@@ -205,12 +227,18 @@ Future<TransactionsResponse> getTransactions() async {
   } catch (e) {
     // Login before resending the request again
     await sendLoginRequest();
-    return await getTransactions();
+    return await getOnlineTransactions();
   }
 }
 
+Future<TransactionsResponse> getOffLineTransactions() async {
+  Response response;
+  return TransactionsResponse.fromResponse(response);
+  
+}
+
 Future<AccountsResponse> getAccounts() async {
-  final String url = baseUrl + '/api/accounts/list';
+  final String url = globals.baseUrl + '/api/accounts/list';
   final response = await sendGetRequest(url);
   if (response.statusCode == 200) {
     return AccountsResponse.fromResponse(response);
@@ -224,18 +252,24 @@ Future getBusinesReferences () async {
   await getAccountsList();
 }
 
-Future<PlainSuccessResponse> transferAsset(payload) async {
-  final String url = baseUrl + '/api/assets/transfer';
-  final response = await sendPostRequest(url, payload);
-  if (response.statusCode == 200) {
-    return PlainSuccessResponse.fromResponse(response);
+Future<PlainSuccessResponse> transferAsset(Map payload) async {
+  if (globals.online) {
+    final String url = globals.baseUrl + '/api/assets/transfer';
+    final response = await sendPostRequest(url, payload);
+    if (response.statusCode == 200) {
+      return PlainSuccessResponse.fromResponse(response);
+    } else {
+      throw Exception('Failed to transfer asset');
+    }
   } else {
-    throw Exception('Failed to transfer asset');
+    await databaseHelper.updateBalances(payload);
+    return PlainSuccessResponse.toDatabase();
   }
+  
 }
 
 Future<PlainSuccessResponse> requestOtpCode(payload) async {
-  final String url = baseUrl + '/api/otp/request';
+  final String url = globals.baseUrl + '/api/otp/request';
   Response response;
   try {
     response = await sendPostRequest(url, payload);
@@ -247,7 +281,7 @@ Future<PlainSuccessResponse> requestOtpCode(payload) async {
 }
 
 Future<OtpVerificationResponse> verifyOtpCode(payload) async {
-  final String url = baseUrl + '/api/otp/verify';
+  final String url = globals.baseUrl + '/api/otp/verify';
   Response response;
   try {
     response = await sendPostRequest(url, payload);
