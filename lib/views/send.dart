@@ -114,15 +114,15 @@ class SendComponentState extends State<SendComponent> {
 
   void scanBarcode() async {
     allowCamera();
-    // String privateKey = await globals.storage.read(key: "privateKey");
-    // String publicKey = await globals.storage.read(key: "publicKey");
-    // String userid = await globals.storage.read(key: "userId");
-    // print('user id ---------------------');
-    // print(userid);
-    // print('public key -------------------');
-    // print(publicKey);
-    // print('private key ------------------');
-    // print(privateKey);
+    String privateKey = await globals.storage.read(key: "privateKey");
+    String publicKey = await globals.storage.read(key: "publicKey");
+    String userid = await globals.storage.read(key: "userId");
+    print('user id ---------------------');
+    print(userid);
+    print('public key -------------------');
+    print(publicKey);
+    print('private key ------------------');
+    print(privateKey);
     String barcode = await FlutterBarcodeScanner.scanBarcode("#ff6666");
     if (barcode.length > 0) {
       setState(() => _barcodeString = barcode);
