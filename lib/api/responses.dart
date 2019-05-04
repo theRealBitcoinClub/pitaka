@@ -46,6 +46,7 @@ class Balance {
   String timestamp;
   String signature;
   double balance;
+  String date;
 }
 
 class BalancesResponse {
@@ -82,6 +83,7 @@ class BalancesResponse {
       balanceObj.accountId = account['accountId'];
       balanceObj.timestamp = account['timestamp'];
       balanceObj.signature = account['signature'];
+      balanceObj.date = account['datetime'];
       _balances.add(balanceObj);
     }
     return BalancesResponse(

@@ -9,6 +9,7 @@ ListView _buildBalancesList(balances) {
   return ListView.builder(
       itemCount: balances.length,
       itemBuilder: (BuildContext context, int index) {
+        String dateOfLastBalance = balances[index].date;
         return 
           Column(
             children: <Widget>[
@@ -27,6 +28,13 @@ ListView _buildBalancesList(balances) {
                               fontSize: 18.0, fontWeight: FontWeight.bold),
                         ),
                       ),
+                      globals.online == false ? Padding(
+                        padding: const EdgeInsets.fromLTRB(8.0, 0, 12.0, 12.0),
+                        child: Text(
+                          "$dateOfLastBalance",
+                          style: TextStyle(fontSize: 12.0)
+                        )
+                      ) : Container(),
                       Padding(
                         padding:
                             const EdgeInsets.fromLTRB(12.0, 6.0, 12.0, 12.0),
@@ -34,7 +42,8 @@ ListView _buildBalancesList(balances) {
                           "${formatCurrency.format(balances[index].balance)}",
                           style: TextStyle(fontSize: 18.0),
                         ),
-                      ),
+                      )
+                      
                     ],
                   ),
                 ],
