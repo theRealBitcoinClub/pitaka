@@ -1,4 +1,8 @@
+import 'dart:convert';
+
+import 'package:crypto/crypto.dart';
 import 'package:flutter/material.dart';
+import 'package:pitaka/utils/helpers.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import '../views/app.dart';
 import 'dart:async';
@@ -43,60 +47,66 @@ class ReceiveComponentState extends State<ReceiveComponent> {
 
   void scanQrcode() async {
     String qrcode = await FlutterBarcodeScanner.scanBarcode("#ff6666");
-    var strings = qrcode.split(':wallet:');
-    if (strings.length == 7) {
-      double amount = double.parse(strings[0]);
-      double lBalance = double.parse(strings[3]);
-      if (amount <= lBalance) {
-        String message = strings[1];
-        String pubKey = strings[2];
-        String fromAccount = strings[4];
-        String txnhash = strings[5];
-        String txnsignature = strings[6];
-        var signature = HEX.decode(amount.toString());
-        var publicKey = HEX.decode(pubKey);
-        var valid = await CryptoSign.verify(signature, message, publicKey);
-        if (valid) {
-          List info = message.split(":message:");
-          var now = DateTime.now();
-          var _txnDate = DateTime.parse(info[1]);
-          Duration difference = now.difference(_txnDate);
-          if (difference.inHours < 12) {
-            var payload = {
-              'from_account': fromAccount,
-              'to_account': _selectedPaytacaAccount,
-              'asset': globals.phpAssetId,
-              'amount': amount,
-              'public_key': publicKey,
-              'txn_hash': txnhash,
-              'signature': txnsignature,
-              'signed_balance':  {
-                'message': message,
-                'signature': signature,
-                'balance': publicKey
-              }
-            };
-            var response = await receiveAsset(payload);
-            if (response.success == false) {
-              // setState(() {
-                // _errorFound = true;
-                // _errorMessage = response.error;
-              // });
-            } else {
-              Application.router.navigateTo(context, "/proofOfPayment");
+    var qrArr = qrcode.split(':wallet:');
+    if (qrArr.length == 3) {
+      List hashArr = qrArr[1].split(':messsage:');
+      if(hashArr.length == 5){
+        double amount = double.parse(hashArr[0]);
+        double lBalance = double.parse(hashArr[4]);
+        if(amount <= lBalance) {
+          String pubKey = qrArr[2];
+          String fromAccount = hashArr[3];
+          String txnHash = qrArr[2];
+          String txnSignature = qrArr[0];
+          var signature = HEX.decode(txnSignature);
+          var publicKey = HEX.decode(pubKey);
+          var valid = await CryptoSign.verify(signature, txnHash, publicKey);
+          if (valid) {
+            var now = DateTime.now();
+            var _txnDate = DateTime.parse(hashArr[1]);
+            Duration difference = now.difference(_txnDate);
+            if (difference.inHours < 12) {
+              var concatenated = "$lBalance$fromAccount${hashArr[1]}";
+              var bytes = utf8.encode(concatenated);
+              var hashMessage = sha256.convert(bytes).toString();
+              String lastSignedBalance = await signTransaction(hashMessage, globals.serverPublicKey);
+              var payload = {
+                'from_account': fromAccount,
+                'to_account': _selectedPaytacaAccount,
+                'asset': globals.phpAssetId,
+                'amount': amount,
+                'public_key': publicKey,
+                'txn_hash': txnHash,
+                'signature': txnSignature,
+                'signed_balance':  {
+                  'message': hashMessage,
+                  'signature': lastSignedBalance,
+                  'balance': lBalance,
+                  'timestamp': hashArr[1]
+                }
+              };
+              print('this is the payload ----------------------');
+              print(payload);
+              // var response = await receiveAsset(payload);
+              // if (response.success == false) {
+              //   // setState(() {
+              //     // _errorFound = true;
+              //     // _errorMessage = response.error;
+              //   // });
+              // } else {
+              //   Application.router.navigateTo(context, "/proofOfPayment");
+              // }
+              // // setState(() => _submitting = false);
+              // // return response.success;
+              // _successDialog();
             }
-            // setState(() => _submitting = false);
-            // return response.success;
-            _successDialog();
+            // print(difference.inMinutes);
+            // Use difference in minutes to monitor the freshness of the transaction.
+            // return null;
+          } else {
+            _failedDialog();
           }
-          // print(difference.inMinutes);
-          // Use difference in minutes to monitor the freshness of the transaction.
-          // return null;
-        } else {
-          _failedDialog();
         }
-      } else {
-        _failedDialog();
       }
     } else {
       if (qrcode.length > 0) {

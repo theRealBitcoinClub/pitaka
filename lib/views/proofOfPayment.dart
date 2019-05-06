@@ -13,7 +13,7 @@ class ProofOfPaymentComponentState extends State<ProofOfPaymentComponent> {
 
   Future<Map> getVal() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    print(prefs.getString("_txnSignature"));
+    // print(prefs.getString("_txnSignature"));
     return {
       'code': prefs.getString("_txnQrCode"),
       'datetime': prefs.getString("_txnDateTime"),

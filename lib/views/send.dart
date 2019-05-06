@@ -10,6 +10,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:intl/intl.dart';
 import 'package:permission_handler/permission_handler.dart';
 import '../utils/globals.dart' as globals;
+import '../utils/database_helper.dart' as xmen;
+
 
 
 class SendComponent extends StatefulWidget {
@@ -25,6 +27,7 @@ class SendComponentState extends State<SendComponent> {
   int sendAmount;
   final _formKey = GlobalKey<FormState>();
   String selectedPaytacaAccount;
+  String sourceAccount;
   String lastBalance;
   List data = List();
   bool validCode = false;
@@ -36,6 +39,8 @@ class SendComponentState extends State<SendComponent> {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     var _prefAccounts = prefs.get("accounts");
     List<Map> _accounts = [];
+    var x = xmen.DatabaseHelper();
+    
     for (final acct in _prefAccounts) {
       String accountId = acct.split(' | ')[1];
       // print('This destinations is : $destinationAccountId');
@@ -43,7 +48,11 @@ class SendComponentState extends State<SendComponent> {
         var acctObj = new Map();
         acctObj['accountName'] = acct.split(' | ')[0];
         acctObj['accountId'] = accountId;
-        acctObj['balance'] = acct.split(' | ')[2];
+        if (globals.online) {
+          acctObj['balance'] = acct.split(' | ')[2];
+        } else {
+          acctObj['balance'] = await x.checkAccountBalance(accountId);
+        }
         _accounts.add(acctObj);
       }
     }
@@ -78,13 +87,13 @@ class SendComponentState extends State<SendComponent> {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     var now = new DateTime.now();
     var txnDateTime = DateTime.parse(now.toString());
-    var txnhash = "$amount:messsage:$txnDateTime:message:$publicKey";
+    var txnhash = "$amount:messsage:$txnDateTime:message:"
+    "message:$selectedPaytacaAccount:message:$lBalance";
     var _txnReadableDateTime = DateFormat('MMMM dd, yyyy  h:mm a').format(
       DateTime.parse(now.toString())
     );
-
     String signature = await signTransaction(txnhash, privateKey);
-    var qrcode = "$signature:wallet:$txnhash:wallet:$publicKey:wallet:$lBalance";
+    var qrcode = "$signature:wallet:$txnhash:wallet:$publicKey";
     prefs.setString("_txnQrCode", qrcode);
     prefs.setString("_txnDateTime", _txnReadableDateTime);
     prefs.setString("_txnAmount", amount.toString());
@@ -97,7 +106,6 @@ class SendComponentState extends State<SendComponent> {
       'txn_hash': txnhash,
       'signature': signature
     };
-    // print(payload);
     var response = await transferAsset(payload);
     if (response.success == false) {
       setState(() {
@@ -252,20 +260,21 @@ class SendComponentState extends State<SendComponent> {
                                 ),
                                 child: new DropdownButtonHideUnderline(
                                   child: new DropdownButton(
-                                    value: selectedPaytacaAccount,
+                                    value: sourceAccount,
                                     isDense: true,
                                     onChanged: (newVal) {
                                       String accountId = newVal.split('::sep::')[0];
                                       String balance = newVal.split('::sep::')[1];
                                       setState(() {
                                         selectedPaytacaAccount = accountId;
+                                        sourceAccount = newVal;
                                         lastBalance = balance;
                                         state.didChange(newVal);
                                       });
                                     },
                                     items: data.map((item) {
                                       return DropdownMenuItem(
-                                        value: "$item['accountId']::sep::$item['balance']",
+                                        value: "${item['accountId']}::sep::${item['balance']}",
                                         child: new Text("${item['accountName']} ( ${double.parse(item['balance']).toStringAsFixed(2)} )"),
                                       );
                                     }).toList()

@@ -1,11 +1,14 @@
 import 'dart:convert';
 
+import 'package:crypto/crypto.dart';
 import 'package:intl/intl.dart';
 import 'package:sqflite/sqflite.dart';
 import 'dart:async';
 import 'dart:io';
 import 'package:path_provider/path_provider.dart';
 import '../api/responses.dart';
+// import '../utils/helpers.dart';
+// import '../utils/globals.dart' as globals;
 
 
 class DatabaseHelper {
@@ -55,6 +58,7 @@ class DatabaseHelper {
 
     await db.execute("CREATE TABLE OfflineTransaction ("
       "id INTEGER NOT NULL PRIMARY KEY,"
+      "account INTEGER,"
       "amount DOUBLE(40,2),"
       "timestamp TEXT,"
       "transactionType TEXT,"
@@ -66,6 +70,7 @@ class DatabaseHelper {
   Future<String> updateOfflineBalances (List<Balance> balances) async {
     Database db = await this.database;
     await db.delete('Balance');
+    db.delete('OfflineTransaction');
     for (final balance in balances) {
       DateTime datetime = DateTime.now();
       String dateOfLastBalance = new DateFormat.yMMMd().add_jm().format(datetime);
@@ -77,78 +82,118 @@ class DatabaseHelper {
         'signature': balance.signature,
         'datetime': dateOfLastBalance
       };
-      try {
-        await db.insert(
-          'Balance',
-          values
-        );
-      } catch (e) {
-        print('May Error');
-        print(e);
-      }      
+      await db.insert(
+        'Balance',
+        values
+      );
     }
 		return 'success';
   }
 
+  Future<String> checkAccountBalance (String accountId) async {
+    Database db = await this.database;
+    var balances = await db.query(
+      'Balance',
+      orderBy: 'id ASC',
+      where: 'accountId = ?',
+      whereArgs: [accountId]
+    );
+    var balance = balances[0];
+    double totalTransactions = 0.0;
+    var transactions = await db.query(
+      'OfflineTransaction',
+      orderBy: 'id ASC',
+      where: 'account = ?',
+      whereArgs: [balance['id']]
+    );
+    for (final txn in transactions) {
+      if(txn['transactionType'] == 'incoming') {
+        totalTransactions -= txn['amount'].toDouble();
+      } else {
+        totalTransactions += txn['amount'].toDouble();
+      }
+    }
+    var computedBalance =  balance['balance'] - totalTransactions;
+    return computedBalance.toString();
+  } 
+  
 	// Get latest balance of balance objects in database
 	Future <List<Map<String, dynamic>>> offLineBalances() async {
 		Database db = await this.database;
-		List<Map<String, dynamic>> result = await db.query('Balance');
+    List<Map<String, dynamic>> result = [];
+		List<Map<String, dynamic>> qs = await db.query('Balance');
+    for (var account in qs) {
+      // qs = await db.query('OfflineTransaction');
+      double totalTransactions = 0.0;
+      var latestTimeStamp = account['timestamp'];
+      var transactions = [];
+      transactions = await db.query(
+        'OfflineTransaction',
+        orderBy: 'id ASC',
+        where: 'account = ?',
+        whereArgs: [account['id']]
+      );
+      for (final txn in transactions) {
+        if(txn['transactionType'] == 'incoming') {
+          totalTransactions -= txn['amount'].toDouble();
+        } else {
+          totalTransactions += txn['amount'].toDouble();
+        }
+        latestTimeStamp = txn['timestamp'];
+      }
+      double computedBalance;
+      var val = account['balance'].toDouble();
+      computedBalance =  val - totalTransactions;
+      result.add({
+        'balance': computedBalance,
+        'timestamp': latestTimeStamp,
+        'accountName': account['accountName'],
+        'accountId': account['accountId'],
+        'signature': account['signature'],
+        'datetime': account['datetime']
+      });
+    }
 		return result;
 	}
 
-  Future<String> updateBalances(Map payload) async{
+ 
+  Future<String> offLineTransfer(Map payload) async{
     Database db = await this.database;
     String fromAccount = payload['from_account'];
     String toAccount = payload['to_account'];
-    DateTime datetime = DateTime.now();
     String table1 = 'Balance';
-    String table2 = 'OffLineTransaction';
-    String dateOfLastBalance = new DateFormat.yMMMd().add_jm().format(datetime);
+    String table2 = 'OfflineTransaction';
     var qs1 = await db.query(table1,where: 'accountId = ?', whereArgs: [fromAccount]);
     var instance = qs1[0];
+    var concatenated = "${instance['balance']}${instance['accountId']}${instance['timestamp']}";
+    var bytes = utf8.encode(concatenated);
+    var hashMessage = sha256.convert(bytes).toString();
     payload['signed_balance'] =  {
-      'message': instance['balance'],
+      'message': hashMessage,
       'signature': instance['signature'],
-      'balance': instance['balance']
+      'balance': instance['balance'],
+      'timestamp': instance['timestamp']
     };
     var converted = json.encode(payload);
-    db.insert(table2, {
+    var txnTimeStamp = payload['txn_hash'].split(':messsage:')[1];
+    await db.insert(table2, {
+      "account": instance['id'],
       "amount":payload['amount'],
-      "timestamp":instance['timestamp'],
+      "timestamp":txnTimeStamp,
       "transactionType":"outcoming",
       "transactionJson": converted
     });
-    double newBalance = instance['balance'] - payload['amount'];
-    db.update(
-      table1,
-      {
-        'balance': newBalance,
-        'datetime': dateOfLastBalance
-      },
-      where: 'accountId = ?',
-      whereArgs: [fromAccount]
-    );
     // Check if the recipient(toAccount) is in the user's accounts.
     var qs2 = await db.query(table1,where: 'accountId = ?', whereArgs: [toAccount]);
     if (qs2.length == 1) {
       instance = qs2[0];
-      newBalance = instance['balance'] + payload['amount'];
-      db.insert(table2, {
+      await db.insert(table2, {
+        "account": instance['id'],
         "amount":payload['amount'],
-        "timestamp":instance['timestamp'],
+        "timestamp":txnTimeStamp,
         "transactionType":"incoming",
         "transactionJson": converted
       });
-      db.update(
-        table1,
-        {
-          'balance': newBalance,
-          'datetime': dateOfLastBalance
-        },
-        where: 'accountId = ?',
-        whereArgs: [toAccount]
-      );
     }
     return 'success';
   }
@@ -156,7 +201,7 @@ class DatabaseHelper {
   Future<int>acceptPayment(Map payload) async {
     Database db = await this.database;
     String table1 = 'Balance';
-    String table2 = 'OffLineTransaction';
+    String table2 = 'OfflineTransaction';
     var qs = await db.query(table1,where: 'accountId = ?', whereArgs: [payload['to_account']]);
     var instance = qs[0];
     var converted = json.encode(payload);

@@ -262,7 +262,7 @@ Future<PlainSuccessResponse> transferAsset(Map payload) async {
       throw Exception('Failed to transfer asset');
     }
   } else {
-    await databaseHelper.updateBalances(payload);
+    await databaseHelper.offLineTransfer(payload);
     return PlainSuccessResponse.toDatabase();
   }
   
