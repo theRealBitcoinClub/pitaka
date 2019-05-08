@@ -10,7 +10,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:intl/intl.dart';
 import 'package:permission_handler/permission_handler.dart';
 import '../utils/globals.dart' as globals;
-import '../utils/database_helper.dart' as xmen;
+import '../utils/database_helper.dart';
 
 
 
@@ -24,22 +24,23 @@ class SendComponentState extends State<SendComponent> {
   String path = '/send';
   int accountIndex = 0;
   bool _submitting = false;
-  int sendAmount;
+  static int sendAmount;
   final _formKey = GlobalKey<FormState>();
   String selectedPaytacaAccount;
   String sourceAccount;
   String lastBalance;
-  List data = List();
+  static List data = List();
   bool validCode = false;
-  bool _errorFound = false;
-  String _errorMessage;
+  static bool _errorFound = false;
+  static String _errorMessage;
   bool online = globals.online;
+  DatabaseHelper databaseHelper = DatabaseHelper();
+
   
-  Future<String> getAccounts(destinationAccountId) async {
+  Future<List> getAccounts(destinationAccountId) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     var _prefAccounts = prefs.get("accounts");
     List<Map> _accounts = [];
-    var x = xmen.DatabaseHelper();
     for (final acct in _prefAccounts) {
       String accountId = acct.split(' | ')[1];
       if(accountId != destinationAccountId) {
@@ -50,17 +51,15 @@ class SendComponentState extends State<SendComponent> {
         if (globals.online) {
           acctObj['balance'] = onlineBalance;
         } else {
-          var resp = await x.offlineBalanceAnalyser(accountId, onlineBalance.toDouble());
-          acctObj['balance'] = resp['computedBalance'];
+          var x = double.tryParse(onlineBalance);
+          var resp = await databaseHelper.offlineBalanceAnalyser(accountId, x);
+          acctObj['balance'] = resp['computedBalance'].toString();
         }
         _accounts.add(acctObj);
       }
     }
-    setState(() {
-      data = _accounts;
-      // selectedPaytacaAccount= _accounts[0]['accountId'];
-    });
-    return 'Success';
+    data = _accounts;
+    return _accounts;
   }
 
   @override
@@ -80,15 +79,16 @@ class SendComponentState extends State<SendComponent> {
   
 
   Future<bool> sendFunds(String toAccount, int amount, BuildContext context, String lBalance) async {
-    setState(() => _submitting = true);
-    String destinationAccount = toAccount.split('::paytaca::')[1];
+    _submitting = true;
+    String destinationAccount = toAccount;
     String publicKey = await globals.storage.read(key: "publicKey");
     String privateKey = await globals.storage.read(key: "privateKey");
     SharedPreferences prefs = await SharedPreferences.getInstance();
+    
     var now = new DateTime.now();
     var txnDateTime = DateTime.parse(now.toString());
-    var txnhash = "$amount:messsage:$txnDateTime:message:"
-    "message:$selectedPaytacaAccount:message:$lBalance";
+    var txnhash = "$amount:-:$txnDateTime:-:"
+    "$selectedPaytacaAccount:-:$lBalance";
     var _txnReadableDateTime = DateFormat('MMMM dd, yyyy  h:mm a').format(
       DateTime.parse(now.toString())
     );
@@ -108,34 +108,25 @@ class SendComponentState extends State<SendComponent> {
     };
     var response = await transferAsset(payload);
     if (response.success == false) {
-      setState(() {
-        _errorFound = true;
-        _errorMessage = response.error;
-      });
+      _errorFound = true;
+      _errorMessage = response.error;
     } else {
       Application.router.navigateTo(context, "/proofOfPayment");
     }
-    setState(() => _submitting = false);
+    _submitting = false;
     return response.success;
   }
 
   void scanBarcode() async {
     allowCamera();
-    // String privateKey = await globals.storage.read(key: "privateKey");
-    // String publicKey = await globals.storage.read(key: "publicKey");
-    // String userid = await globals.storage.read(key: "userId");
-    // print('user id ---------------------');
-    // print(userid);
-    // print('public key -------------------');
-    // print(publicKey);
-    // print('private key ------------------');
-    // print(privateKey);
     String barcode = await FlutterBarcodeScanner.scanBarcode("#ff6666");
-    if (barcode.length > 0) {
-      setState(() => _barcodeString = barcode);
-    } else {
-      setState(() => _barcodeString = '');
-    }
+    setState(() {
+      if (barcode.length > 0) {
+        _barcodeString = barcode;
+      } else {
+        _barcodeString = '';
+      }  
+    });
   }
 
   void allowCamera() async {
@@ -146,15 +137,17 @@ class SendComponentState extends State<SendComponent> {
     }
   }
 
+
   Future<String> getBarcode() async {
     if (_barcodeString.contains(new RegExp(r'::paytaca::.*::paytaca::$'))) {
       var destinationAccountId = _barcodeString.split('::paytaca::')[1];
       await getAccounts(destinationAccountId);
-      return _barcodeString;
+      return destinationAccountId;
     } else {
-      return '';
+      return null;
     }
   }
+
 
   String validateAmount(String value) {
     if (value == null || value == "") {
@@ -219,7 +212,8 @@ class SendComponentState extends State<SendComponent> {
       );
   }
 
-  List<Widget> _buildForm(BuildContext context) {
+
+List<Widget> _buildForm(BuildContext context) {
     Form form = new Form(
       key: _formKey,
       child: new ListView(
@@ -238,83 +232,86 @@ class SendComponentState extends State<SendComponent> {
           new FutureBuilder<String>(
             future: getBarcode(),
             builder: (BuildContext context, AsyncSnapshot<String> snapshot) {
-              if (snapshot.data != null) {
-                if (snapshot.data.length > 0 ) {
-                  return Column(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: <Widget>[
-                      Visibility(
-                        child:  new FormField(
-                            validator: (value){
-                              if (value == null) {
-                                return 'This field is required.';
-                              } else {
-                                return null;
-                              }
-                            },
-                            builder: (FormFieldState state) {
-                              return InputDecorator(
-                                decoration: InputDecoration(
-                                  errorText: state.errorText,
-                                  labelText: 'Select Account',
-                                ),
-                                child: new DropdownButtonHideUnderline(
-                                  child: new DropdownButton(
-                                    value: sourceAccount,
-                                    isDense: true,
-                                    onChanged: (newVal) {
-                                      String accountId = newVal.split('::sep::')[0];
-                                      String balance = newVal.split('::sep::')[1];
-                                      setState(() {
-                                        selectedPaytacaAccount = accountId;
-                                        sourceAccount = newVal;
-                                        lastBalance = balance;
-                                        state.didChange(newVal);
-                                      });
-                                    },
-                                    items: data.map((item) {
-                                      return DropdownMenuItem(
-                                        value: "${item['accountId']}::sep::${item['balance']}",
-                                        child: new Text("${item['accountName']} ( ${double.parse(item['balance']).toStringAsFixed(2)} )"),
-                                      );
-                                    }).toList()
+              if(snapshot.hasData) {
+                if (snapshot.data != null) {
+                  if (snapshot.data.length > 0 ) {
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: <Widget>[
+                        Visibility(
+                          child:  new FormField(
+                              validator: (value){
+                                if (value == null) {
+                                  return 'This field is required.';
+                                } else {
+                                  return null;
+                                }
+                              },
+                              builder: (FormFieldState state) {
+                                return InputDecorator(
+                                  decoration: InputDecoration(
+                                    errorText: state.errorText,
+                                    labelText: 'Select Account',
                                   ),
-                                )
-                              );
+                                  child: new DropdownButtonHideUnderline(
+                                    child: new DropdownButton(
+                                      value: sourceAccount,
+                                      isDense: true,
+                                      onChanged: (newVal) {
+                                        String accountId = newVal.split('::sep::')[0];
+                                        String balance = newVal.split('::sep::')[1];
+                                        setState(() {
+                                          selectedPaytacaAccount = accountId;
+                                          sourceAccount = newVal;
+                                          lastBalance = balance;
+                                          state.didChange(newVal);
+                                        });
+                                      },
+                                      items: data.map((item) {
+                                        return DropdownMenuItem(
+                                          value: "${item['accountId']}::sep::${item['balance']}",
+                                          child: new Text("${item['accountName']} ( ${double.parse(item['balance']).toStringAsFixed(2)} )"),
+                                        );
+                                      }).toList()
+                                    ),
+                                  )
+                                );
+                              },
+                            ),
+                          visible: snapshot.data != null,
+                        ),
+                        Visibility(
+                          child: new TextFormField(
+                            validator: validateAmount,
+                            decoration: new InputDecoration(labelText: "Enter the amount"),
+                            keyboardType: TextInputType.number,
+                            onSaved: (value) {
+                              sendAmount = int.parse(value);
                             },
                           ),
-                        visible: snapshot.data != null,
-                      ),
-                      Visibility(
-                        child: new TextFormField(
-                          validator: validateAmount,
-                          decoration: new InputDecoration(labelText: "Enter the amount"),
-                          keyboardType: TextInputType.number,
-                          onSaved: (value) {
-                            setState(() => sendAmount = int.parse(value));
-                          },
+                          visible: snapshot.data != null
                         ),
-                        visible: snapshot.data != null
-                      ),
-                      Visibility(
-                        child: new RaisedButton(
-                          child: const Text("Send"),
-                          onPressed: () {
-                            var valid = _formKey.currentState.validate();
-                            if (valid) {
-                              _formKey.currentState.save();
-                              sendFunds(snapshot.data, sendAmount, context, lastBalance);
+                        Visibility(
+                          child: new RaisedButton(
+                            child: const Text("Send"),
+                            onPressed: () {
+                              var valid = _formKey.currentState.validate();
+                              if (valid) {
+                                _formKey.currentState.save();
+                                sendFunds(snapshot.data, sendAmount, context,lastBalance);
+                              }
                             }
-                          }
-                        ),
-                        visible: snapshot.data != null)
-                    ],
-                  );
-                } else {
-                  return Column();
+                          ),
+                          visible: snapshot.data != null)
+                      ],
+                    );
+                  } else {
+                    return Container();
+                  }
                 }
+              } else {
+                return Container();
               }
-              
             }
           ),
         ],
@@ -354,10 +351,8 @@ class SendComponentState extends State<SendComponent> {
                 onPressed: () {
                   Navigator.of(context).pop();
                   Application.router.navigateTo(context, "/send");
-                  setState(() {
-                    _errorMessage = '';
-                    _errorFound = false;
-                  });
+                  _errorMessage = '';
+                  _errorFound = false;
                 },
               ),
             ],

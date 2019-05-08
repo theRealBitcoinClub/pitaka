@@ -78,7 +78,7 @@ class BalancesResponse {
     for (final account in accounts) {
       var balanceObj = new Balance();
       balanceObj.accountName = account['accountName'];
-      double balance = account['balance'].toDouble();
+      var balance = double.tryParse(account['balance']);
       balanceObj.balance = balance;
       balanceObj.accountId = account['accountId'];
       balanceObj.timestamp = account['timestamp'];

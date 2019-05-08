@@ -58,7 +58,7 @@ class DatabaseHelper {
 
     await db.execute("CREATE TABLE OfflineTransaction ("
       "id INTEGER NOT NULL PRIMARY KEY,"
-      "account INTEGER,"
+      "account TEXT,"
       "amount DOUBLE(40,2),"
       "timestamp TEXT,"
       "transactionType TEXT,"
@@ -94,8 +94,7 @@ class DatabaseHelper {
   Future <Map<String, dynamic>> offlineBalanceAnalyser(String accountId, double onlineBalance) async {
     Database db = await this.database;
     double totalTransactions = 0.0;
-    String latestTimeStamp;
-    double amt;
+    String latestTimeStamp = '';
     var transactions = await db.query(
       'OfflineTransaction',
       orderBy: 'id ASC',
@@ -103,22 +102,19 @@ class DatabaseHelper {
       whereArgs: [accountId]
     );
     for (final txn in transactions) {
-      amt = txn['amount'].toDouble();
-      if(txn['transactionType'] == 'incoming') {
+      var amt = double.tryParse(txn['amount'].toString());
+      if(txn['transactionType'].toString() == 'incoming') {
         totalTransactions -= amt;
       } else {
         totalTransactions += amt;
       }
-      latestTimeStamp = txn['timestamp'];
+      latestTimeStamp = txn['timestamp'].toString();
     }
     double computedBalance =  onlineBalance - totalTransactions;
-    var temp = {
+    return {
       'latestTimeStamp': latestTimeStamp,
       'computedBalance': computedBalance
     };
-    print('this is the result');
-    print(temp);
-    return temp;
   }
 
 	// Get latest balance of balance objects in database
@@ -127,21 +123,22 @@ class DatabaseHelper {
     List<Map<String, dynamic>> result = [];
 		List<Map<String, dynamic>> qs = await db.query('Balance');
     for (var account in qs) {
-      var latestTimeStamp = account['timestamp'];
-      double onlineBalance = account['balance'].toDouble();
+      double onlineBalance = account['balance'];
+      var timestamp = account['timestamp'];
       String accountId = account['accountId'].toString();
       var resp = await offlineBalanceAnalyser(accountId, onlineBalance);
-      if (resp['latestTimeStamp'] != null) {
-        latestTimeStamp = resp['latestTimeStamp'];
+      if (resp['latestTimeStamp'] != '') {
+        timestamp = resp['latestTimeStamp'];
       }
-      result.add({
-        'balance': resp['computedBalance'],
-        'timestamp': latestTimeStamp,
+      var info = {
+        'balance': resp['computedBalance'].toString(),
+        'timestamp': timestamp,
         'accountName': account['accountName'],
         'accountId': accountId,
         'signature': account['signature'],
         'datetime': account['datetime']
-      });
+      };
+      result.add(info);
     }
 		return result;
 	}
@@ -165,9 +162,9 @@ class DatabaseHelper {
       'timestamp': instance['timestamp']
     };
     var converted = json.encode(payload);
-    var txnTimeStamp = payload['txn_hash'].split(':messsage:')[1];
+    var txnTimeStamp = payload['txn_hash'].split(':-:')[1];
     await db.insert(table2, {
-      "account": instance['id'],
+      "account": instance['accountId'],
       "amount":payload['amount'],
       "timestamp":txnTimeStamp,
       "transactionType":"outcoming",
@@ -178,7 +175,7 @@ class DatabaseHelper {
     if (qs2.length == 1) {
       instance = qs2[0];
       await db.insert(table2, {
-        "account": instance['id'],
+        "account": instance['accountId'],
         "amount":payload['amount'],
         "timestamp":txnTimeStamp,
         "transactionType":"incoming",
