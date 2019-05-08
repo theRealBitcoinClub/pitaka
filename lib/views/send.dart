@@ -40,18 +40,18 @@ class SendComponentState extends State<SendComponent> {
     var _prefAccounts = prefs.get("accounts");
     List<Map> _accounts = [];
     var x = xmen.DatabaseHelper();
-    
     for (final acct in _prefAccounts) {
       String accountId = acct.split(' | ')[1];
-      // print('This destinations is : $destinationAccountId');
       if(accountId != destinationAccountId) {
         var acctObj = new Map();
+        var onlineBalance = acct.split(' | ')[2];
         acctObj['accountName'] = acct.split(' | ')[0];
         acctObj['accountId'] = accountId;
         if (globals.online) {
-          acctObj['balance'] = acct.split(' | ')[2];
+          acctObj['balance'] = onlineBalance;
         } else {
-          acctObj['balance'] = await x.checkAccountBalance(accountId);
+          var resp = await x.offlineBalanceAnalyser(accountId, onlineBalance.toDouble());
+          acctObj['balance'] = resp['computedBalance'];
         }
         _accounts.add(acctObj);
       }

@@ -3,7 +3,7 @@ import 'package:connectivity/connectivity.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
  // const String baseUrl = 'https://lantaka-dev.paytaca.com';
-const String baseUrl = 'https://ad38ab35.ngrok.io';
+const String baseUrl = 'https://85d9bb64.ngrok.io';
 const String phpAssetId = '';
 bool _online = false;
 const String serverPublicKey = '7aeaa44510a950a9a4537faa2f40351dc4560d6d0d12abc0287dcffdd667d7a2';

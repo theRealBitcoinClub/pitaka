@@ -90,65 +90,55 @@ class DatabaseHelper {
 		return 'success';
   }
 
-  Future<String> checkAccountBalance (String accountId) async {
+  
+  Future <Map<String, dynamic>> offlineBalanceAnalyser(String accountId, double onlineBalance) async {
     Database db = await this.database;
-    var balances = await db.query(
-      'Balance',
-      orderBy: 'id ASC',
-      where: 'accountId = ?',
-      whereArgs: [accountId]
-    );
-    var balance = balances[0];
     double totalTransactions = 0.0;
+    String latestTimeStamp;
+    double amt;
     var transactions = await db.query(
       'OfflineTransaction',
       orderBy: 'id ASC',
       where: 'account = ?',
-      whereArgs: [balance['id']]
+      whereArgs: [accountId]
     );
     for (final txn in transactions) {
+      amt = txn['amount'].toDouble();
       if(txn['transactionType'] == 'incoming') {
-        totalTransactions -= txn['amount'].toDouble();
+        totalTransactions -= amt;
       } else {
-        totalTransactions += txn['amount'].toDouble();
+        totalTransactions += amt;
       }
+      latestTimeStamp = txn['timestamp'];
     }
-    var computedBalance =  balance['balance'] - totalTransactions;
-    return computedBalance.toString();
-  } 
-  
+    double computedBalance =  onlineBalance - totalTransactions;
+    var temp = {
+      'latestTimeStamp': latestTimeStamp,
+      'computedBalance': computedBalance
+    };
+    print('this is the result');
+    print(temp);
+    return temp;
+  }
+
 	// Get latest balance of balance objects in database
 	Future <List<Map<String, dynamic>>> offLineBalances() async {
 		Database db = await this.database;
     List<Map<String, dynamic>> result = [];
 		List<Map<String, dynamic>> qs = await db.query('Balance');
     for (var account in qs) {
-      // qs = await db.query('OfflineTransaction');
-      double totalTransactions = 0.0;
       var latestTimeStamp = account['timestamp'];
-      var transactions = [];
-      transactions = await db.query(
-        'OfflineTransaction',
-        orderBy: 'id ASC',
-        where: 'account = ?',
-        whereArgs: [account['id']]
-      );
-      for (final txn in transactions) {
-        if(txn['transactionType'] == 'incoming') {
-          totalTransactions -= txn['amount'].toDouble();
-        } else {
-          totalTransactions += txn['amount'].toDouble();
-        }
-        latestTimeStamp = txn['timestamp'];
+      double onlineBalance = account['balance'].toDouble();
+      String accountId = account['accountId'].toString();
+      var resp = await offlineBalanceAnalyser(accountId, onlineBalance);
+      if (resp['latestTimeStamp'] != null) {
+        latestTimeStamp = resp['latestTimeStamp'];
       }
-      double computedBalance;
-      var val = account['balance'].toDouble();
-      computedBalance =  val - totalTransactions;
       result.add({
-        'balance': computedBalance,
+        'balance': resp['computedBalance'],
         'timestamp': latestTimeStamp,
         'accountName': account['accountName'],
-        'accountId': account['accountId'],
+        'accountId': accountId,
         'signature': account['signature'],
         'datetime': account['datetime']
       });
