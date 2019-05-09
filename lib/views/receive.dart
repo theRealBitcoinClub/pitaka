@@ -9,11 +9,12 @@ import 'dart:async';
 import '../components/drawer.dart';
 import '../components/bottomNavigation.dart';
 import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
-// import 'package:flutter_sodium/flutter_sodium.dart';
+import 'package:flutter_sodium/flutter_sodium.dart';
 import 'package:hex/hex.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../utils/globals.dart' as globals;
 import '../api/endpoints.dart';
+import 'package:archive/archive.dart';
 // import '../api/endpoints.dart';
 
 class ReceiveComponent extends StatefulWidget {
@@ -26,7 +27,7 @@ class ReceiveComponentState extends State<ReceiveComponent> {
   int accountIndex = 0;
   final _formKey = GlobalKey<FormState>();
   String _selectedPaytacaAccount;
-  List data = List(); //edited line
+  static List data = List(); //edited line
   bool online = globals.online;
   
   @override
@@ -48,7 +49,10 @@ class ReceiveComponentState extends State<ReceiveComponent> {
 
   void scanQrcode() async {
     String qrcode = await FlutterBarcodeScanner.scanBarcode("#ff6666");
-    var qrArr = qrcode.split(':wallet:');
+    var baseDecoded = base64.decode(qrcode);
+    var gzipDecoded = new GZipDecoder().decodeBytes(baseDecoded);
+    var utf8Decoded = utf8.decode(gzipDecoded);
+    var qrArr = utf8Decoded.split(':wallet:');
     if (qrArr.length == 3) {
       var stringified  = qrArr[1].toString();
       List hashArr = stringified.split(':-:');
@@ -60,23 +64,16 @@ class ReceiveComponentState extends State<ReceiveComponent> {
           String fromAccount = hashArr[2];
           String txnHash = qrArr[1];
           String txnSignature = qrArr[0];
-          // var signature = HEX.decode(txnSignature);
+          var signature = HEX.decode(txnSignature);
           var publicKey = HEX.decode(pubKey);
-          // var valid = await CryptoSign.verify(signature, txnHash, publicKey);
-          bool valid = true;
+          var valid = await CryptoSign.verify(signature, txnHash, publicKey);
           if (valid == true) {
-            // var now = DateTime.now();
-            // var _txnDate = DateTime.parse(hashArr[1]);
-            // Duration difference = now.difference(_txnDate);
-            // if (difference.inHours < 12) {
-            // if (valid == true) {
-
             var timestamp = hashArr[1];
             var concatenated = "$lBalance$fromAccount$timestamp";
             var bytes = utf8.encode(concatenated);
             var hashMessage = sha256.convert(bytes).toString();
-            String lastSignedBalance = '';
-            // String lastSignedBalance = await signTransaction(hashMessage, globals.serverPublicKey);
+            var lastSignedBalance = '';
+            // var lastSignedBalance = await signTransaction(hashMessage, globals.serverPublicKey);
             var payload = {
               'from_account': fromAccount,
               'to_account': _selectedPaytacaAccount,
@@ -95,47 +92,54 @@ class ReceiveComponentState extends State<ReceiveComponent> {
             var response = await receiveAsset(payload);
             if (response.success == false) {
               _failedDialog();
-              // setState(() {
-              // _errorFound = true;
-              // _errorMessage = response.error;
-              // });
             } else {
-              // Application.router.navigateTo(context, "/proofOfPayment");
-              // }
-              // setState(() => _submitting = false);
-              // return response.success;
               _successDialog();
             }
-            // print(difference.inMinutes);
-            // Use difference in minutes to monitor the freshness of the transaction.
-            return null;
           } else {
             _failedDialog();
           }
         }
       }
     } else {
-      // if (qrcode.length > 0) {
-        _failedDialog();
-      // }
+      _failedDialog();
     }
   }
 
-  Future<String> getAccounts() async {
+  Future<List> getAccounts() async {
+    // SharedPreferences prefs = await SharedPreferences.getInstance();
+    // var _prefAccounts = prefs.get("accounts");
+    // List<Map> _accounts = [];
+    // for (final acct in _prefAccounts) {
+    //   var acctObj = new Map();
+    //   acctObj['accountName'] = acct.split(' | ')[0];
+    //   acctObj['accountId'] = acct.split(' | ')[1];
+    //   acctObj['balance'] = acct.split(' | ')[2];
+    //   _accounts.add(acctObj);
+    // }
+    // setState(() {
+    //   data = _accounts;
+    // });
+    // return 'Success';
     SharedPreferences prefs = await SharedPreferences.getInstance();
     var _prefAccounts = prefs.get("accounts");
     List<Map> _accounts = [];
     for (final acct in _prefAccounts) {
+      String accountId = acct.split(' | ')[1];
       var acctObj = new Map();
+      var onlineBalance = acct.split(' | ')[2];
       acctObj['accountName'] = acct.split(' | ')[0];
-      acctObj['accountId'] = acct.split(' | ')[1];
-      acctObj['balance'] = acct.split(' | ')[2];
+      acctObj['accountId'] = accountId;
+      if (globals.online) {
+        acctObj['balance'] = onlineBalance;
+      } else {
+        var x = double.tryParse(onlineBalance);
+        var resp = await databaseHelper.offlineBalanceAnalyser(accountId, x);
+        acctObj['balance'] = resp['computedBalance'].toString();
+      }
       _accounts.add(acctObj);
     }
-    setState(() {
-      data = _accounts;
-    });
-    return 'Success';
+    data = _accounts;
+    return _accounts;
   }
 
   Future<void> _failedDialog() async {
@@ -294,4 +298,7 @@ class ReceiveComponentState extends State<ReceiveComponent> {
     ws.add(form);
     return ws;
   }
+}
+
+class UTF8 {
 }

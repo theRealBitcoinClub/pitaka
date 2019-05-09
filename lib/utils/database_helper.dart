@@ -140,6 +140,7 @@ class DatabaseHelper {
       };
       result.add(info);
     }
+
 		return result;
 	}
 
@@ -200,6 +201,7 @@ class DatabaseHelper {
       var instance = qs2[0];
       var converted = json.encode(payload);
       return db.insert(table2, {
+        "account": payload['to_account'],
         "amount":payload['amount'],
         "timestamp":instance['timestamp'],
         "mode":"receive",
