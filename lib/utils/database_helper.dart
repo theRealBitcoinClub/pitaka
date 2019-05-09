@@ -61,7 +61,7 @@ class DatabaseHelper {
       "account TEXT,"
       "amount DOUBLE(40,2),"
       "timestamp TEXT,"
-      "transactionType TEXT,"
+      "mode TEXT,"
       "transactionJson TEXT"
       ")");
 	}
@@ -103,7 +103,7 @@ class DatabaseHelper {
     );
     for (final txn in transactions) {
       var amt = double.tryParse(txn['amount'].toString());
-      if(txn['transactionType'].toString() == 'incoming') {
+      if(txn['mode'].toString() == 'receive') {
         totalTransactions -= amt;
       } else {
         totalTransactions += amt;
@@ -143,7 +143,12 @@ class DatabaseHelper {
 		return result;
 	}
 
- 
+  Future <List<Map <String, dynamic>>> offLineTransactions () async {
+    Database db = await this.database;
+		List<Map<String, dynamic>> qs = await db.query('OfflineTransaction');
+    return qs;
+  }
+  
   Future<String> offLineTransfer(Map payload) async{
     Database db = await this.database;
     String fromAccount = payload['from_account'];
@@ -167,7 +172,7 @@ class DatabaseHelper {
       "account": instance['accountId'],
       "amount":payload['amount'],
       "timestamp":txnTimeStamp,
-      "transactionType":"outcoming",
+      "mode":"send",
       "transactionJson": converted
     });
     // Check if the recipient(toAccount) is in the user's accounts.
@@ -178,7 +183,7 @@ class DatabaseHelper {
         "account": instance['accountId'],
         "amount":payload['amount'],
         "timestamp":txnTimeStamp,
-        "transactionType":"incoming",
+        "mode":"receive",
         "transactionJson": converted
       });
     }
@@ -189,27 +194,33 @@ class DatabaseHelper {
     Database db = await this.database;
     String table1 = 'Balance';
     String table2 = 'OfflineTransaction';
-    var qs = await db.query(table1,where: 'accountId = ?', whereArgs: [payload['to_account']]);
-    var instance = qs[0];
-    var converted = json.encode(payload);
-    db.insert(table2, {
-      "amount":payload['amount'],
-      "timestamp":instance['timestamp'],
-      "transactionType":"incoming",
-      "transactionJson": converted
-    });
-    double newBalance = instance['balance'] + payload['amount'];
-    DateTime datetime = DateTime.now();
-    String dateOfLastBalance = new DateFormat.yMMMd().add_jm().format(datetime);
-    return await db.update(
-      table1,
-      {
-        'balance': newBalance,
-        'datetime': dateOfLastBalance
-      },
-      where: 'accountId = ?',
-      whereArgs: [payload['to_account']]
-    );
+    var qs1 = await db.query(table1,where: 'accountId = ?', whereArgs: [payload['from_account']]);
+    if (qs1.length == 0){
+      var qs2 = await db.query(table1,where: 'accountId = ?', whereArgs: [payload['to_account']]);
+      var instance = qs2[0];
+      var converted = json.encode(payload);
+      return db.insert(table2, {
+        "amount":payload['amount'],
+        "timestamp":instance['timestamp'],
+        "mode":"receive",
+        "transactionJson": converted
+      });
+    } else {
+      return 0;
+    }
+    
+    // double newBalance = instance['balance'] + payload['amount'];
+    // DateTime datetime = DateTime.now();
+    // String dateOfLastBalance = new DateFormat.yMMMd().add_jm().format(datetime);
+    // return await db.update(
+    //   table1,
+    //   {
+    //     'balance': newBalance,
+    //     'datetime': dateOfLastBalance
+    //   },
+    //   where: 'accountId = ?',
+    //   whereArgs: [payload['to_account']]
+    // );
   }
 
 }

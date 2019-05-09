@@ -94,16 +94,17 @@ class ReceiveComponentState extends State<ReceiveComponent> {
             };
             var response = await receiveAsset(payload);
             if (response.success == false) {
+              _failedDialog();
               // setState(() {
-                // _errorFound = true;
-                // _errorMessage = response.error;
+              // _errorFound = true;
+              // _errorMessage = response.error;
               // });
             } else {
               // Application.router.navigateTo(context, "/proofOfPayment");
-            // }
-            // setState(() => _submitting = false);
-            // return response.success;
-            _successDialog();
+              // }
+              // setState(() => _submitting = false);
+              // return response.success;
+              _successDialog();
             }
             // print(difference.inMinutes);
             // Use difference in minutes to monitor the freshness of the transaction.
