@@ -232,9 +232,8 @@ Future<TransactionsResponse> getOnlineTransactions() async {
 }
 
 Future<TransactionsResponse> getOffLineTransactions() async {
-  Response response;
-  return TransactionsResponse.fromResponse(response);
-  
+  var resp = await databaseHelper.offLineTransactions();
+  return TransactionsResponse.fromDatabase(resp);
 }
 
 Future<AccountsResponse> getAccounts() async {
