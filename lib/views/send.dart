@@ -29,6 +29,8 @@ class SendComponentState extends State<SendComponent> {
   String selectedPaytacaAccount;
   String sourceAccount;
   String lastBalance;
+  String lBalanceSignature;
+  String lBalanceTime;
   static List data = List();
   bool validCode = false;
   static bool _errorFound = false;
@@ -48,6 +50,8 @@ class SendComponentState extends State<SendComponent> {
         var onlineBalance = acct.split(' | ')[2];
         acctObj['accountName'] = acct.split(' | ')[0];
         acctObj['accountId'] = accountId;
+        acctObj['balanceSignature'] = acct.split(' | ')[3];
+        acctObj['timestamp'] = acct.split(' | ')[4];
         if (globals.online) {
           acctObj['balance'] = onlineBalance;
         } else {
@@ -78,7 +82,13 @@ class SendComponentState extends State<SendComponent> {
   }
   
 
-  Future<bool> sendFunds(String toAccount, int amount, BuildContext context, String lBalance) async {
+  Future<bool> sendFunds(
+    String toAccount,
+    int amount,
+    BuildContext context,
+    String lBalance,
+    String lSignedBalance,
+    String lBalanceTimeStamp) async {
     _submitting = true;
     String destinationAccount = toAccount;
     String publicKey = await globals.storage.read(key: "publicKey");
@@ -88,7 +98,7 @@ class SendComponentState extends State<SendComponent> {
     var now = new DateTime.now();
     var txnDateTime = DateTime.parse(now.toString());
     var txnhash = "$amount:-:$txnDateTime:-:"
-    "$selectedPaytacaAccount:-:$lBalance";
+    "$selectedPaytacaAccount:-:$lBalance:-:$lSignedBalance:-:$lBalanceTimeStamp";
     var _txnReadableDateTime = DateFormat('MMMM dd, yyyy  h:mm a').format(
       DateTime.parse(now.toString())
     );
@@ -269,16 +279,22 @@ List<Widget> _buildForm(BuildContext context) {
                                       onChanged: (newVal) {
                                         String accountId = newVal.split('::sep::')[0];
                                         String balance = newVal.split('::sep::')[1];
+                                        String signature = newVal.split('::sep::')[2];
+                                        String timestamp = newVal.split('::sep::')[3];
+                                        print('oi');
+                                        print(timestamp);
                                         setState(() {
                                           selectedPaytacaAccount = accountId;
                                           sourceAccount = newVal;
                                           lastBalance = balance;
+                                          lBalanceSignature = signature;
+                                          lBalanceTime = timestamp;
                                           state.didChange(newVal);
                                         });
                                       },
                                       items: data.map((item) {
                                         return DropdownMenuItem(
-                                          value: "${item['accountId']}::sep::${item['balance']}",
+                                          value: "${item['accountId']}::sep::${item['balance']}::sep::${item['balanceSignature']}::sep::${item['timestamp']}",
                                           child: new Text("${item['accountName']} ( ${double.parse(item['balance']).toStringAsFixed(2)} )"),
                                         );
                                       }).toList()
@@ -307,7 +323,14 @@ List<Widget> _buildForm(BuildContext context) {
                               var valid = _formKey.currentState.validate();
                               if (valid) {
                                 _formKey.currentState.save();
-                                sendFunds(snapshot.data, sendAmount, context,lastBalance);
+                                sendFunds(
+                                  snapshot.data,
+                                  sendAmount,
+                                  context,
+                                  lastBalance,
+                                  lBalanceSignature,
+                                  lBalanceTime
+                                  );
                               }
                             }
                           ),

@@ -67,7 +67,7 @@ class ProofOfPaymentComponentState extends State<ProofOfPaymentComponent> {
                       height: 30.0,
                     ),
                     QrImage(
-                      version: 11,
+                      version: 13,
                       data: snapshot.data['code'],
                       size: 0.5 * bodyHeight,
                     ),

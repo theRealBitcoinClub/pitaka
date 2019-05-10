@@ -194,13 +194,15 @@ Future<BalancesResponse> getOnlineBalances() async {
     List<Balance> _balances = [];
     for (final bal in response.data['balances']) {
       var balanceObj = new Balance();
-      String acct = "${bal['AccountName']} | ${bal['AccountID']} | ${bal['Balance']}";
+      var timestamp = response.data['timestamp'].toString();
+      String acct = "${bal['AccountName']} | ${bal['AccountID']} | "
+      "${bal['Balance']} | ${bal['Signature']} | $timestamp";
       _accounts.add(acct);
       balanceObj.accountName = bal['AccountName'];
       double balance = bal['Balance'].toDouble();
       balanceObj.balance = balance;
       balanceObj.accountId = bal['AccountID'];
-      balanceObj.timestamp = response.data['timestamp'].toString();
+      balanceObj.timestamp = timestamp;
       balanceObj.signature = bal['Signature'];
       _balances.add(balanceObj);
     }

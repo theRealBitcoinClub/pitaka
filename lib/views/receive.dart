@@ -2,7 +2,7 @@ import 'dart:convert';
 
 import 'package:crypto/crypto.dart';
 import 'package:flutter/material.dart';
-// import 'package:pitaka/utils/helpers.dart';
+import 'package:pitaka/utils/helpers.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import '../views/app.dart';
 import 'dart:async';
@@ -56,7 +56,7 @@ class ReceiveComponentState extends State<ReceiveComponent> {
     if (qrArr.length == 3) {
       var stringified  = qrArr[1].toString();
       List hashArr = stringified.split(':-:');
-      if(hashArr.length == 4){
+      if(hashArr.length == 6){
         double amount = double.parse(hashArr[0]);
         double lBalance = double.parse(hashArr[3]);
         if(amount <= lBalance) {
@@ -66,34 +66,40 @@ class ReceiveComponentState extends State<ReceiveComponent> {
           String txnSignature = qrArr[0];
           var signature = HEX.decode(txnSignature);
           var publicKey = HEX.decode(pubKey);
-          var valid = await CryptoSign.verify(signature, txnHash, publicKey);
-          if (valid == true) {
-            var timestamp = hashArr[1];
-            var concatenated = "$lBalance$fromAccount$timestamp";
-            var bytes = utf8.encode(concatenated);
+          var firstValidation = await CryptoSign.verify(signature, txnHash, publicKey);
+          if (firstValidation) {
+            var timestamp = hashArr[5];
+            var signValue = hashArr[4].toString();
+            var lastSignedBalance = HEX.decode(signValue);
+            var serverPublicKey = HEX.decode(globals.serverPublicKey);
+            var concatenated = "${lBalance.toStringAsFixed(6)}$fromAccount$timestamp";
+            List<int> bytes = utf8.encode(concatenated);
             var hashMessage = sha256.convert(bytes).toString();
-            var lastSignedBalance = '';
-            // var lastSignedBalance = await signTransaction(hashMessage, globals.serverPublicKey);
-            var payload = {
-              'from_account': fromAccount,
-              'to_account': _selectedPaytacaAccount,
-              'asset': globals.phpAssetId,
-              'amount': amount,
-              'public_key': publicKey,
-              'txn_hash': txnHash,
-              'signature': txnSignature,
-              'signed_balance':  {
-                'message': hashMessage,
-                'signature': lastSignedBalance,
-                'balance': lBalance,
-                'timestamp': timestamp
+            var secondValidation = await CryptoSign.verify(lastSignedBalance, hashMessage, serverPublicKey);
+            if (secondValidation) {
+              var payload = {
+                'from_account': fromAccount,
+                'to_account': _selectedPaytacaAccount,
+                'asset': globals.phpAssetId,
+                'amount': amount,
+                'public_key': publicKey,
+                'txn_hash': txnHash,
+                'signature': txnSignature,
+                'signed_balance':  {
+                  'message': hashMessage,
+                  'signature': lastSignedBalance,
+                  'balance': lBalance,
+                  'timestamp': timestamp
+                }
+              };
+              var response = await receiveAsset(payload);
+              if (response.success == false) {
+                _failedDialog();
+              } else {
+                _successDialog();
               }
-            };
-            var response = await receiveAsset(payload);
-            if (response.success == false) {
-              _failedDialog();
             } else {
-              _successDialog();
+              _failedDialog();
             }
           } else {
             _failedDialog();
