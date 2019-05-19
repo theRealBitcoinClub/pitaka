@@ -194,13 +194,15 @@ Future<BalancesResponse> getOnlineBalances() async {
     List<Balance> _balances = [];
     for (final bal in response.data['balances']) {
       var balanceObj = new Balance();
-      String acct = "${bal['AccountName']} | ${bal['AccountID']} | ${bal['Balance']}";
+      var timestamp = response.data['timestamp'].toString();
+      String acct = "${bal['AccountName']} | ${bal['AccountID']} | "
+      "${bal['Balance']} | ${bal['Signature']} | $timestamp";
       _accounts.add(acct);
       balanceObj.accountName = bal['AccountName'];
       double balance = bal['Balance'].toDouble();
       balanceObj.balance = balance;
       balanceObj.accountId = bal['AccountID'];
-      balanceObj.timestamp = response.data['timestamp'].toString();
+      balanceObj.timestamp = timestamp;
       balanceObj.signature = bal['Signature'];
       _balances.add(balanceObj);
     }
@@ -232,9 +234,8 @@ Future<TransactionsResponse> getOnlineTransactions() async {
 }
 
 Future<TransactionsResponse> getOffLineTransactions() async {
-  Response response;
-  return TransactionsResponse.fromResponse(response);
-  
+  var resp = await databaseHelper.offLineTransactions();
+  return TransactionsResponse.fromDatabase(resp);
 }
 
 Future<AccountsResponse> getAccounts() async {
@@ -262,10 +263,21 @@ Future<PlainSuccessResponse> transferAsset(Map payload) async {
       throw Exception('Failed to transfer asset');
     }
   } else {
-    await databaseHelper.updateBalances(payload);
+    await databaseHelper.offLineTransfer(payload);
     return PlainSuccessResponse.toDatabase();
   }
   
+}
+
+Future<PlainSuccessResponse> receiveAsset(Map payload) async {
+  Response response;
+  if (globals.online) {
+    print('This is not yet working');
+    return PlainSuccessResponse.fromResponse(response);
+  } else {
+    await databaseHelper.acceptPayment(payload);
+    return PlainSuccessResponse.toDatabase();
+  }
 }
 
 Future<PlainSuccessResponse> requestOtpCode(payload) async {

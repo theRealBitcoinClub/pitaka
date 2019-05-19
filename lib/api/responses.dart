@@ -78,7 +78,7 @@ class BalancesResponse {
     for (final account in accounts) {
       var balanceObj = new Balance();
       balanceObj.accountName = account['accountName'];
-      double balance = account['balance'].toDouble();
+      var balance = double.tryParse(account['balance']);
       balanceObj.balance = balance;
       balanceObj.accountId = account['accountId'];
       balanceObj.timestamp = account['timestamp'];
@@ -116,6 +116,18 @@ class TransactionsResponse {
     }
     return TransactionsResponse(
         success: response.data['success'], transactions: _transactions);
+  }
+
+  factory TransactionsResponse.fromDatabase(List transactions) {
+    List<Transaction> _trans = [];
+    for (final txn in transactions) {
+      var transObj = new Transaction();
+      transObj.mode = txn['mode'];
+      transObj.amount = txn['amount'].toDouble();
+      _trans.add(transObj);
+    }
+    return TransactionsResponse(
+        success: true, transactions: _trans);
   }
 }
 

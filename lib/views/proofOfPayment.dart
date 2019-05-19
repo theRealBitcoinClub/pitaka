@@ -1,3 +1,6 @@
+import 'dart:convert';
+
+import 'package:archive/archive.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -13,9 +16,12 @@ class ProofOfPaymentComponentState extends State<ProofOfPaymentComponent> {
 
   Future<Map> getVal() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    print(prefs.getString("_txnSignature"));
+    var code = prefs.getString("_txnQrCode");
+    List<int> stringBytes = utf8.encode(code);
+    List<int> gzipBytes = new GZipEncoder().encode(stringBytes);
+    String compressedString = base64.encode(gzipBytes);
     return {
-      'code': prefs.getString("_txnQrCode"),
+      'code': compressedString,
       'datetime': prefs.getString("_txnDateTime"),
       'amount': prefs.getString("_txnAmount")
     };
@@ -61,7 +67,7 @@ class ProofOfPaymentComponentState extends State<ProofOfPaymentComponent> {
                       height: 30.0,
                     ),
                     QrImage(
-                      version: 15,
+                      version: 13,
                       data: snapshot.data['code'],
                       size: 0.5 * bodyHeight,
                     ),

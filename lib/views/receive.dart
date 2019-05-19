@@ -1,4 +1,8 @@
+import 'dart:convert';
+
+import 'package:crypto/crypto.dart';
 import 'package:flutter/material.dart';
+import 'package:pitaka/utils/helpers.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import '../views/app.dart';
 import 'dart:async';
@@ -9,6 +13,9 @@ import 'package:flutter_sodium/flutter_sodium.dart';
 import 'package:hex/hex.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../utils/globals.dart' as globals;
+import '../api/endpoints.dart';
+import 'package:archive/archive.dart';
+// import '../api/endpoints.dart';
 
 class ReceiveComponent extends StatefulWidget {
   @override
@@ -20,7 +27,7 @@ class ReceiveComponentState extends State<ReceiveComponent> {
   int accountIndex = 0;
   final _formKey = GlobalKey<FormState>();
   String _selectedPaytacaAccount;
-  List data = List(); //edited line
+  static List data = List(); //edited line
   bool online = globals.online;
   
   @override
@@ -42,46 +49,103 @@ class ReceiveComponentState extends State<ReceiveComponent> {
 
   void scanQrcode() async {
     String qrcode = await FlutterBarcodeScanner.scanBarcode("#ff6666");
-    var strings = qrcode.split(':wallet:');
-    if (strings.length == 3) {
-      var signature = HEX.decode(strings[0]);
-      var publicKey = HEX.decode(strings[2]);
-      String message = strings[1];
-      var valid = await CryptoSign.verify(signature, message, publicKey);
-      if (valid) {
-        List info = message.split(":message:");
-        var now = DateTime.now();
-        var _txnDate = DateTime.parse(info[1]);
-        Duration difference = now.difference(_txnDate);
-        print(difference.inMinutes);
-        // Use difference in minutes to monitor the freshness of the transaction.
-        _successDialog();
-        return null;
-      } else {
-        _failedDialog();
+    var baseDecoded = base64.decode(qrcode);
+    var gzipDecoded = new GZipDecoder().decodeBytes(baseDecoded);
+    var utf8Decoded = utf8.decode(gzipDecoded);
+    var qrArr = utf8Decoded.split(':wallet:');
+    if (qrArr.length == 3) {
+      var stringified  = qrArr[1].toString();
+      List hashArr = stringified.split(':-:');
+      if(hashArr.length == 6){
+        double amount = double.parse(hashArr[0]);
+        double lBalance = double.parse(hashArr[3]);
+        if(amount <= lBalance) {
+          String pubKey = qrArr[2];
+          String fromAccount = hashArr[2];
+          String txnHash = qrArr[1];
+          String txnSignature = qrArr[0];
+          var signature = HEX.decode(txnSignature);
+          var publicKey = HEX.decode(pubKey);
+          var firstValidation = await CryptoSign.verify(signature, txnHash, publicKey);
+          if (firstValidation) {
+            var timestamp = hashArr[5];
+            var signValue = hashArr[4].toString();
+            var lastSignedBalance = HEX.decode(signValue);
+            var serverPublicKey = HEX.decode(globals.serverPublicKey);
+            var concatenated = "${lBalance.toStringAsFixed(6)}$fromAccount$timestamp";
+            List<int> bytes = utf8.encode(concatenated);
+            var hashMessage = sha256.convert(bytes).toString();
+            var secondValidation = await CryptoSign.verify(lastSignedBalance, hashMessage, serverPublicKey);
+            if (secondValidation) {
+              var payload = {
+                'from_account': fromAccount,
+                'to_account': _selectedPaytacaAccount,
+                'asset': globals.phpAssetId,
+                'amount': amount,
+                'public_key': publicKey,
+                'txn_hash': txnHash,
+                'signature': txnSignature,
+                'signed_balance':  {
+                  'message': hashMessage,
+                  'signature': lastSignedBalance,
+                  'balance': lBalance,
+                  'timestamp': timestamp
+                }
+              };
+              var response = await receiveAsset(payload);
+              if (response.success == false) {
+                _failedDialog();
+              } else {
+                _successDialog();
+              }
+            } else {
+              _failedDialog();
+            }
+          } else {
+            _failedDialog();
+          }
+        }
       }
     } else {
-      if (qrcode.length > 0) {
-        _failedDialog();
-      }
+      _failedDialog();
     }
   }
 
-  Future<String> getAccounts() async {
+  Future<List> getAccounts() async {
+    // SharedPreferences prefs = await SharedPreferences.getInstance();
+    // var _prefAccounts = prefs.get("accounts");
+    // List<Map> _accounts = [];
+    // for (final acct in _prefAccounts) {
+    //   var acctObj = new Map();
+    //   acctObj['accountName'] = acct.split(' | ')[0];
+    //   acctObj['accountId'] = acct.split(' | ')[1];
+    //   acctObj['balance'] = acct.split(' | ')[2];
+    //   _accounts.add(acctObj);
+    // }
+    // setState(() {
+    //   data = _accounts;
+    // });
+    // return 'Success';
     SharedPreferences prefs = await SharedPreferences.getInstance();
     var _prefAccounts = prefs.get("accounts");
     List<Map> _accounts = [];
     for (final acct in _prefAccounts) {
+      String accountId = acct.split(' | ')[1];
       var acctObj = new Map();
+      var onlineBalance = acct.split(' | ')[2];
       acctObj['accountName'] = acct.split(' | ')[0];
-      acctObj['accountId'] = acct.split(' | ')[1];
-      acctObj['balance'] = acct.split(' | ')[2];
+      acctObj['accountId'] = accountId;
+      if (globals.online) {
+        acctObj['balance'] = onlineBalance;
+      } else {
+        var x = double.tryParse(onlineBalance);
+        var resp = await databaseHelper.offlineBalanceAnalyser(accountId, x);
+        acctObj['balance'] = resp['computedBalance'].toString();
+      }
       _accounts.add(acctObj);
     }
-    setState(() {
-      data = _accounts;
-    });
-    return 'Success';
+    data = _accounts;
+    return _accounts;
   }
 
   Future<void> _failedDialog() async {
@@ -240,4 +304,7 @@ class ReceiveComponentState extends State<ReceiveComponent> {
     ws.add(form);
     return ws;
   }
+}
+
+class UTF8 {
 }
