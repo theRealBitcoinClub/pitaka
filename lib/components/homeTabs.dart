@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import '../api/endpoints.dart';
 import '../utils/globals.dart' as globals;
 
 final formatCurrency = new NumberFormat.currency(symbol: 'PHP ');
 
-ListView _buildBalancesList(balances) {
+ListView buildBalancesList(balances) {
   return ListView.builder(
       itemCount: balances.length,
       itemBuilder: (BuildContext context, int index) {
@@ -57,28 +56,6 @@ ListView _buildBalancesList(balances) {
       });
 }
 
-var accountsTab = new Builder(builder: (BuildContext context) {
-  return new Container(
-      alignment: Alignment.center,
-      child: new FutureBuilder(
-          future: globals.online == false ? getOffLineBalances() :  getOnlineBalances(),
-          builder: (BuildContext context, AsyncSnapshot snapshot) {
-            if (snapshot.hasData) {
-              if (snapshot.data != null) {
-                if (snapshot.data.success) {
-                  var balances = snapshot.data.balances;
-                  return _buildBalancesList(balances);
-                } else {
-                  return new CircularProgressIndicator();
-                }
-              } else {
-                return new CircularProgressIndicator();
-              }
-            } else {
-              return new CircularProgressIndicator();
-            }
-          }));
-});
 
 String _formatMode(String mode) {
   String formattedMode;
@@ -110,7 +87,7 @@ Icon _getModeIcon(String mode) {
   return icon;
 }
 
-ListView _buildTransactionsList(transactions) {
+ListView buildTransactionsList(transactions) {
   return ListView.builder(
       itemCount: transactions.length,
       itemBuilder: (BuildContext context, int index) {
@@ -168,27 +145,3 @@ ListView _buildTransactionsList(transactions) {
       });
 }
 
-var transactionsTab = new Builder(builder: (BuildContext context) {
-  return new Container(
-    alignment: Alignment.center,
-    child: new FutureBuilder(
-      future: globals.online ?  getOnlineTransactions() : getOffLineTransactions(),
-      builder: (BuildContext context, AsyncSnapshot snapshot) {
-        if (snapshot.hasData) {
-          if (snapshot.data != null) {
-            if (snapshot.data.transactions.length > 0) {
-              return _buildTransactionsList(snapshot.data.transactions);
-            } else {
-              return Text('No transactions to display');
-            }
-          } else {
-            return new CircularProgressIndicator();  
-          }
-        } else {
-          return new Container();
-          
-        }
-      }
-    )
-  );
-});
