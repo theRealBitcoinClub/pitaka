@@ -2,9 +2,10 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:connectivity/connectivity.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
- // const String baseUrl = 'https://lantaka-dev.paytaca.com';
-const String baseUrl = 'https://4582f36f.ngrok.io';
-const String phpAssetId = '';
+const String baseUrl = 'https://lantaka-dev.paytaca.com';
+// const String baseUrl = 'https://5445215b.ngrok.io';
+const String phpAssetId = '3A8F594F-D736-4673-945C-5465E0209AF0';
+
 bool _online = false;
 const String serverPublicKey = '7aeaa44510a950a9a4537faa2f40351dc4560d6d0d12abc0287dcffdd667d7a2';
 bool get online => _online;
