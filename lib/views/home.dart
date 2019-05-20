@@ -47,18 +47,20 @@ class HomeComponentState extends State<HomeComponent> {
               child: GestureDetector(
                 child: online ? new Icon(Icons.wifi): new Icon(Icons.signal_wifi_off),
                 onTap: (){
-                  globals.checkConnection().then((status){
-                    setState(() {
-                      if (status == true) {
-                        online = !online;  
-                        globals.online = online;
+                  if (globals.syncing == false) {
+                    globals.checkConnection().then((status){
+                      setState(() {
+                        if (status == true) {
+                          online = !online;  
+                          globals.online = online;
 
-                      } else {
-                        online = false;  
-                        globals.online = online;
-                      }
+                        } else {
+                          online = false;  
+                          globals.online = online;
+                        }
+                      });
                     });
-                  });
+                  }
                 }
               ) 
             )

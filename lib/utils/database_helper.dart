@@ -7,8 +7,9 @@ import 'dart:async';
 import 'dart:io';
 import 'package:path_provider/path_provider.dart';
 import '../api/responses.dart';
+import '../api/endpoints.dart';
 // import '../utils/helpers.dart';
-// import '../utils/globals.dart' as globals;
+import '../utils/globals.dart' as globals;
 
 
 class DatabaseHelper {
@@ -115,6 +116,20 @@ class DatabaseHelper {
       'latestTimeStamp': latestTimeStamp,
       'computedBalance': computedBalance
     };
+  }
+
+  Future <bool> synchToServer () async {
+    Database db = await this.database;
+    var transactions = await db.query(
+      'OfflineTransaction',
+      orderBy: 'id ASC'
+    );
+    for (final txn in transactions) {
+      var payload = json.decode(txn['transactionJson']);
+      final String url = globals.baseUrl + '/api/assets/transfer';
+      await sendPostRequest(url, payload);
+    }
+    return true;
   }
 
 	// Get latest balance of balance objects in database

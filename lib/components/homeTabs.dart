@@ -19,13 +19,13 @@ ListView buildBalancesList(balances) {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: <Widget>[
                       Padding(
-                        padding:
-                            const EdgeInsets.fromLTRB(8.0, 8.0, 8.0, 6.0),
-                        child: Text(
-                          "${balances[index].accountName}",
-                          style: TextStyle(
-                              fontSize: 18.0, fontWeight: FontWeight.bold),
-                        ),
+                        padding: const EdgeInsets.fromLTRB(8.0, 8.0, 0.0, 0.0),
+                        child:
+                            Text(
+                              "${balances[index].accountName}",
+                              style: TextStyle(
+                                  fontSize: 18.0, fontWeight: FontWeight.bold),
+                            )
                       ),
                       globals.online == false ? Padding(
                         padding: const EdgeInsets.fromLTRB(8.0, 0, 12.0, 12.0),
@@ -42,9 +42,20 @@ ListView buildBalancesList(balances) {
                           style: TextStyle(fontSize: 18.0),
                         ),
                       )
-                      
                     ],
-                  ),
+                  ), Column (
+                    children: <Widget>[
+                      globals.syncing ? Padding(
+                        padding: const EdgeInsets.fromLTRB(8.0, 0, 12.0, 12.0),
+                        child:
+                          Image.asset(
+                          "assets/images/loading.gif",
+                          height: 30.0,
+                          width: 30.0,
+                        )
+                      ): Container()
+                    ],
+                  )
                 ],
               ),
               Divider(
