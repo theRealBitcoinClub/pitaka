@@ -3,8 +3,8 @@ import 'package:connectivity/connectivity.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../utils/database_helper.dart';
 
-// const String baseUrl = 'https://lantaka-dev.paytaca.com';
-const String baseUrl = 'https://6e8d7119.ngrok.io';
+const String baseUrl = 'https://lantaka-dev.paytaca.com';
+// const String baseUrl = 'https://6e8d7119.ngrok.io';
 const String phpAssetId = '3A8F594F-D736-4673-945C-5465E0209AF0';
 
 bool _online = false;
