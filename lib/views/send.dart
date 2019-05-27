@@ -281,8 +281,6 @@ List<Widget> _buildForm(BuildContext context) {
                                         String balance = newVal.split('::sep::')[1];
                                         String signature = newVal.split('::sep::')[2];
                                         String timestamp = newVal.split('::sep::')[3];
-                                        print('oi');
-                                        print(timestamp);
                                         setState(() {
                                           selectedPaytacaAccount = accountId;
                                           sourceAccount = newVal;

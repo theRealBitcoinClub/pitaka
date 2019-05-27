@@ -118,6 +118,21 @@ class DatabaseHelper {
     };
   }
 
+  Future <bool> ifCleanDB () async {
+    Database db = await this.database;
+    var transactions = await db.query(
+      'OfflineTransaction',
+      orderBy: 'id ASC'
+    );
+    print('this is the length--------------');
+    print(transactions.length);
+    if (transactions.length == 0) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
   Future <bool> synchToServer () async {
     Database db = await this.database;
     var transactions = await db.query(
@@ -129,6 +144,8 @@ class DatabaseHelper {
       final String url = globals.baseUrl + '/api/assets/transfer';
       await sendPostRequest(url, payload);
     }
+    await db.delete('OfflineTransaction');
+    globals.syncing = false;
     return true;
   }
 

@@ -5,6 +5,7 @@ import '../components/homeTabs.dart' as hometabs;
 import 'package:intl/intl.dart';
 import '../api/endpoints.dart';
 import '../utils/globals.dart' as globals;
+import '../utils/database_helper.dart';
 
 
 class HomeComponent extends StatefulWidget {
@@ -15,7 +16,9 @@ class HomeComponent extends StatefulWidget {
 class HomeComponentState extends State<HomeComponent> {
   String path = "/home";
   bool online = globals.online;
+  bool syncing = globals.syncing;
   final formatCurrency = new NumberFormat.currency(symbol: 'PHP ');
+  DatabaseHelper databaseHelper = DatabaseHelper();
 
   @override
   void initState() {
@@ -53,14 +56,18 @@ class HomeComponentState extends State<HomeComponent> {
                         if (status == true) {
                           online = !online;  
                           globals.online = online;
+                          syncing = true;
+                          globals.syncing = true;
 
                         } else {
                           online = false;  
                           globals.online = online;
+                          syncing = false;
+                          globals.syncing = false;
                         }
                       });
                     });
-                  }
+                  } 
                 }
               ) 
             )
