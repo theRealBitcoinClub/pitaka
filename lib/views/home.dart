@@ -5,6 +5,7 @@ import '../components/homeTabs.dart' as hometabs;
 import 'package:intl/intl.dart';
 import '../api/endpoints.dart';
 import '../utils/globals.dart' as globals;
+import '../utils/database_helper.dart';
 
 
 class HomeComponent extends StatefulWidget {
@@ -15,7 +16,9 @@ class HomeComponent extends StatefulWidget {
 class HomeComponentState extends State<HomeComponent> {
   String path = "/home";
   bool online = globals.online;
+  bool syncing = globals.syncing;
   final formatCurrency = new NumberFormat.currency(symbol: 'PHP ');
+  DatabaseHelper databaseHelper = DatabaseHelper();
 
   @override
   void initState() {
@@ -47,18 +50,24 @@ class HomeComponentState extends State<HomeComponent> {
               child: GestureDetector(
                 child: online ? new Icon(Icons.wifi): new Icon(Icons.signal_wifi_off),
                 onTap: (){
-                  globals.checkConnection().then((status){
-                    setState(() {
-                      if (status == true) {
-                        online = !online;  
-                        globals.online = online;
+                  if (globals.syncing == false) {
+                    globals.checkConnection().then((status){
+                      setState(() {
+                        if (status == true) {
+                          online = !online;  
+                          globals.online = online;
+                          syncing = true;
+                          globals.syncing = true;
 
-                      } else {
-                        online = false;  
-                        globals.online = online;
-                      }
+                        } else {
+                          online = false;  
+                          globals.online = online;
+                          syncing = false;
+                          globals.syncing = false;
+                        }
+                      });
                     });
-                  });
+                  } 
                 }
               ) 
             )
