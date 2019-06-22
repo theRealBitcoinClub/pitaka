@@ -21,13 +21,27 @@
 	<key>CFBundleSignature</key>
 	<string>????</string>
 	<key>CFBundleVersion</key>
-	<string>2</string>
+	<string>6</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<key>NSAppleMusicUsageDescription</key>
+	<string>Allow this app access to Apple Music</string>
+	<key>NSCalendarsUsageDescription</key>
+	<string>Allow this app access to Calendar</string>
 	<key>NSCameraUsageDescription</key>
 	<string>Camera permission is required for barcode scanning.</string>
+	<key>NSContactsUsageDescription</key>
+	<string>Allow this app access to Contacts</string>
 	<key>NSFaceIDUsageDescription</key>
 	<string>Face ID permission is required for local authentication.</string>
+	<key>NSLocationAlwaysUsageDescription</key>
+	<string>Allow this app access to location all the time</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Allow this app access to location when in use</string>
+	<key>NSMotionUsageDescription</key>
+	<string>Allow this app access to Motion</string>
+	<key>NSSpeechRecognitionUsageDescription</key>
+	<string>Allow this app access to Speech Recognition</string>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
 	<key>UIMainStoryboardFile</key>
