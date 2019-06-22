@@ -5,6 +5,7 @@ import 'package:after_layout/after_layout.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/services.dart';
 import 'package:local_auth/local_auth.dart';
+import 'package:local_auth/error_codes.dart' as auth_error;
 import 'dart:async';
 import '../views/app.dart';
 import '../utils/globals.dart' as globals;
@@ -76,7 +77,11 @@ class LandingComponentState extends State<LandingComponent>
         exit(0);
       }
     } on PlatformException catch (e) {
-      print(e);
+      if (e.code == auth_error.notAvailable) {
+        // TODO - Automatically authenticate if the phone does not have fingerprint auth
+        // Change this later to custom PIN code authentication
+        authenticated = true;
+      }
     }
     if (!mounted) return;
   }

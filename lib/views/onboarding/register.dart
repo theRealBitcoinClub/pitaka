@@ -4,6 +4,7 @@ import 'package:back_button_interceptor/back_button_interceptor.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/services.dart';
 import 'package:local_auth/local_auth.dart';
+import 'package:local_auth/error_codes.dart' as auth_error;
 import "package:hex/hex.dart";
 import 'package:intl/intl.dart';
 import 'dart:typed_data';
@@ -60,7 +61,11 @@ class RegisterComponentState extends State<RegisterComponent> {
           useErrorDialogs: true,
           stickyAuth: false);
     } on PlatformException catch (e) {
-      print(e);
+      if (e.code == auth_error.notAvailable) {
+        // TODO - Automatically authenticate if the phone does not have fingerprint auth
+        // Change this later to custom PIN code authentication
+        authenticated = true;
+      }
     }
     if (!mounted) return;
   }
