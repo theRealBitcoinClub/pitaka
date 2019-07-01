@@ -64,7 +64,13 @@ class LandingComponentState extends State<LandingComponent>
   @override
   void afterFirstLayout(BuildContext context) {
   //  determinePath(context);
-     askUser();
+    try{
+      askUser();
+    } on PlatformException catch (e) {
+      if(e.code == auth_error.notAvailable){
+        _authenticate();
+      }
+    }
   }
 
   @override
@@ -81,9 +87,16 @@ class LandingComponentState extends State<LandingComponent>
   void onData(ScreenStateEvent event) {
     //print(event);
     if (event == ScreenStateEvent.SCREEN_UNLOCKED) {
-      askUser();
+      try {
+        askUser();
+      } on PlatformException catch (e) {
+        if (e.code == auth_error.notAvailable) {
+          _authenticate();
+        }
+      }
     }
   }
+
 
 
   final LocalAuthentication auth = LocalAuthentication();
