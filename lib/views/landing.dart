@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:after_layout/after_layout.dart';
@@ -6,11 +7,15 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/services.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:local_auth/error_codes.dart' as auth_error;
-import 'dart:async';
 import '../views/app.dart';
 import '../utils/globals.dart' as globals;
+import 'package:passcode_screen/passcode_screen.dart';
+import 'package:passcode_screen/circle.dart';
+import 'package:passcode_screen/keyboard.dart';
+import 'package:screen_state/screen_state.dart';
 
 
+enum Choice{BIOMETRICS, PIN}
 
 class LandingComponent extends StatefulWidget {
   @override
@@ -20,6 +25,9 @@ class LandingComponent extends StatefulWidget {
 class LandingComponentState extends State<LandingComponent>
     with AfterLayoutMixin<LandingComponent> {
 
+  var passCode = '1016';
+  Screen _screen;
+  StreamSubscription<ScreenStateEvent> _subscription;
 
   @override
   Widget build(BuildContext context) {
@@ -55,17 +63,33 @@ class LandingComponentState extends State<LandingComponent>
 
   @override
   void afterFirstLayout(BuildContext context) {
-    determinePath(context);
+  //  determinePath(context);
+     askUser();
   }
 
   @override
   void initState() {
     super.initState();
     globals.checkInternet();
+    initPlatformState();
   }
+
+  Future<void> initPlatformState() async {
+    startListening();
+  }
+
+  void onData(ScreenStateEvent event) {
+    //print(event);
+    if (event == ScreenStateEvent.SCREEN_UNLOCKED) {
+      askUser();
+    }
+  }
+
 
   final LocalAuthentication auth = LocalAuthentication();
   bool authenticated = false;
+  final StreamController<bool> _verificationNotifier =
+  StreamController<bool>.broadcast();
 
   Future<Null> _authenticate() async {
     try {
@@ -78,25 +102,116 @@ class LandingComponentState extends State<LandingComponent>
       }
     } on PlatformException catch (e) {
       if (e.code == auth_error.notAvailable) {
-        // TODO - Automatically authenticate if the phone does not have fingerprint auth
-        // Change this later to custom PIN code authentication
-        authenticated = true;
+        _pinCode();
+          // TODO - Automatically authenticate if the phone does not have fingerprint auth
+          // Change this later to custom PIN code authentication
+          //authenticated = true;
+          //Input PIN code authentication here
+          //!authenticate
       }
+      if (!mounted) return;
     }
-    if (!mounted) return;
+  }
+
+  void _onPassCodeEntered(String enteredPassCode) {
+    authenticated = passCode == enteredPassCode;
+    _verificationNotifier.add(authenticated);
+    if (authenticated == true){
+    //  determinePath(context);
+      Application.router.navigateTo(context, "/home");
+    }
   }
 
   void determinePath(BuildContext context) async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
+  /*  SharedPreferences prefs = await SharedPreferences.getInstance();
     var installed = prefs.getBool('installed');
     if (installed == null) {
       await globals.storage.deleteAll();
       Application.router.navigateTo(context, "/onboarding/request");
-    } else {
-      await _authenticate();
+    } else { */
+    // await askUser();
+     await _authenticate();
       if (authenticated == true) {
         Application.router.navigateTo(context, "/home");
-      }
+      //}
+    }
+  }
+
+  @override
+  void dispose() {
+    _verificationNotifier.close();
+    super.dispose();
+  }
+
+  void startListening() {
+    _screen = new Screen();
+    try {
+      _subscription = _screen.screenStateStream.listen(onData);
+    } on ScreenStateException catch (exception) {
+      print(exception);
+    }
+  }
+
+  void stopListening() {
+    _subscription.cancel();
+  }
+
+  void _pinCode() {
+    var circleUIConfig = new CircleUIConfig();
+    var keyboardUIConfig = new KeyboardUIConfig();
+    Navigator.push(
+        context,
+        PageRouteBuilder(
+            opaque: false,
+            pageBuilder: (context, animation, secondaryAnimation) =>
+                PasscodeScreen(
+                  title: 'Enter PIN Code',
+                  passwordDigits: passCode.length,
+                  circleUIConfig: circleUIConfig,
+                  keyboardUIConfig: keyboardUIConfig,
+                  passwordEnteredCallback: _onPassCodeEntered,
+                  cancelLocalizedText: 'Cancel',
+                  deleteLocalizedText: 'Delete',
+                  shouldTriggerVerification: _verificationNotifier.stream,
+                )
+          // TODO - Automatically authenticate if the phone does not have fingerprint auth
+          // Change this later to custom PIN code authentication
+          //authenticated = true;
+          //Input PIN code authentication here
+          //!authenticate
+        ));
+  }
+
+  Future askUser() async {
+    switch(
+    await showDialog(
+      barrierDismissible: false,
+      context: context,
+      // ignore: deprecated_member_use
+      child: new SimpleDialog(
+        title: new Text("Choose Authentication Method"),
+        children: <Widget>[
+          new SimpleDialogOption(
+            child: new Text("Biometrics"),
+            onPressed: (){
+              Navigator.pop(context, Choice.BIOMETRICS);
+            },
+          ),
+          new SimpleDialogOption(
+            child: new Text("Pin Code"),
+            onPressed: (){
+              Navigator.pop(context, Choice.PIN);
+            },
+          )
+        ],
+      )))
+    {
+      case Choice.BIOMETRICS:
+        determinePath(context);
+        break;
+      case Choice.PIN:
+        _pinCode();
+        break;
     }
   }
 }

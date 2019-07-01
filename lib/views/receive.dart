@@ -48,7 +48,7 @@ class ReceiveComponentState extends State<ReceiveComponent> {
   }
 
   void scanQrcode() async {
-    String qrcode = await FlutterBarcodeScanner.scanBarcode("#ff6666");
+    String qrcode = await FlutterBarcodeScanner.scanBarcode("#ff6666","okay", true);
     var baseDecoded = base64.decode(qrcode);
     var gzipDecoded = new GZipDecoder().decodeBytes(baseDecoded);
     var utf8Decoded = utf8.decode(gzipDecoded);

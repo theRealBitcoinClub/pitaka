@@ -2,7 +2,7 @@ import 'package:fluro/fluro.dart';
 import 'package:flutter/material.dart';
 import '../views/landing.dart';
 import '../views/onboarding/request.dart';
-import '../views/onboarding/verify.dart';
+//import '../views/onboarding/verify.dart';
 import '../views/onboarding/register.dart';
 import '../views/onboarding/account.dart';
 import '../views/terms.dart';
@@ -15,12 +15,13 @@ import '../views/business/linkAccount.dart';
 import '../views/proofOfPayment.dart';
 import '../views/business/businesses.dart';
 import '../views/addAccount.dart';
+import '../views/settings.dart';
 
 var rootHandler = new Handler(
     handlerFunc: (BuildContext context, Map<String, dynamic> params) {
   return new LandingComponent();
 });
-
+/*
 var onboardingRequestHandler = new Handler(
     handlerFunc: (BuildContext context, Map<String, dynamic> params) {
   return new RequestComponent();
@@ -30,7 +31,7 @@ var onboardingVerifyHandler = new Handler(
     handlerFunc: (BuildContext context, Map<String, dynamic> params) {
   return new VerifyComponent(mobileNumber: params["mobilenumber"][0]);
 });
-
+*/
 var onboardingRegisterHandler = new Handler(
     handlerFunc: (BuildContext context, Map<String, dynamic> params) {
   return new RegisterComponent(mobileNumber: params["mobilenumber"][0]);
@@ -90,4 +91,9 @@ var businessesHandler = new Handler(
 var addAccountHandler = new Handler(
     handlerFunc: (BuildContext context, Map<String, dynamic> params) {
   return new AddAccountComponent();
+});
+
+var settingsHandler = new Handler(
+    handlerFunc: (BuildContext context, Map<String, dynamic> params) {
+      return new SettingsComponent();
 });

@@ -28,8 +28,10 @@ class HomeComponentState extends State<HomeComponent> {
         if (status == false) {
           online = false;  
           globals.online = online;
+          print('Online');
         } else {
           globals.online = online;
+          print('Offline');
         }
       });
     });
@@ -58,12 +60,14 @@ class HomeComponentState extends State<HomeComponent> {
                           globals.online = online;
                           syncing = true;
                           globals.syncing = true;
+                          print('Online mode');
 
                         } else {
                           online = false;  
                           globals.online = online;
                           syncing = false;
                           globals.syncing = false;
+                          print('Offline mode');
                         }
                       });
                     });
@@ -127,7 +131,6 @@ class HomeComponentState extends State<HomeComponent> {
                       }
                     } else {
                       return new Container();
-                      
                     }
                   }
                 )
@@ -139,6 +142,4 @@ class HomeComponentState extends State<HomeComponent> {
       )
     );
   }
-
-
 }

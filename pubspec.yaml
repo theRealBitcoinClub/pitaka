@@ -39,6 +39,9 @@ dependencies:
   connectivity: ^0.4.3+1
   flutter_secure_storage: ^3.2.1+1
   archive: ^2.0.8
+  passcode_screen:
+  screen_state: ^0.1.1
+
   flutter:
     sdk: flutter
 

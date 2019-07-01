@@ -80,7 +80,7 @@ class BusinessToolsComponentState extends State<BusinessToolsComponent> {
           itemBuilder: (BuildContext ctxt, int index) => buildBody(ctxt, index)
         );
       }
-    } else {
+    }  else {
       return new Center(
         child: new Padding(
             padding: EdgeInsets.all(8.0),
