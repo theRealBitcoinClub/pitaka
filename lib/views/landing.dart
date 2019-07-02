@@ -63,6 +63,7 @@ class LandingComponentState extends State<LandingComponent>
 
   @override
   void afterFirstLayout(BuildContext context) {
+<<<<<<< Updated upstream
   //  determinePath(context);
     try{
       askUser();
@@ -71,6 +72,9 @@ class LandingComponentState extends State<LandingComponent>
         _authenticate();
       }
     }
+=======
+    askUser();
+>>>>>>> Stashed changes
   }
 
   @override
@@ -78,6 +82,20 @@ class LandingComponentState extends State<LandingComponent>
     super.initState();
     globals.checkInternet();
     initPlatformState();
+<<<<<<< Updated upstream
+=======
+  }
+
+  Future<void> initPlatformState() async {
+    startListening();
+  }
+
+  void onData(ScreenStateEvent event) {
+    //print(event);
+    if (event == ScreenStateEvent.SCREEN_UNLOCKED) {
+      askUser();
+    }
+>>>>>>> Stashed changes
   }
 
   Future<void> initPlatformState() async {
@@ -116,11 +134,17 @@ class LandingComponentState extends State<LandingComponent>
     } on PlatformException catch (e) {
       if (e.code == auth_error.notAvailable) {
         _pinCode();
+<<<<<<< Updated upstream
           // TODO - Automatically authenticate if the phone does not have fingerprint auth
           // Change this later to custom PIN code authentication
           //authenticated = true;
           //Input PIN code authentication here
           //!authenticate
+=======
+        // TODO - Automatically authenticate if the phone does not have fingerprint auth
+        // Change this later to custom PIN code authentication
+        //authenticated = true;
+>>>>>>> Stashed changes
       }
       if (!mounted) return;
     }
@@ -135,7 +159,91 @@ class LandingComponentState extends State<LandingComponent>
     }
   }
 
+  void _onPassCodeEntered(String enteredPassCode) {
+    authenticated = passCode == enteredPassCode;
+    _verificationNotifier.add(authenticated);
+    if (authenticated == true){
+      //  determinePath(context);
+      Application.router.navigateTo(context, "/home");
+    }
+  }
+
+  @override
+  void dispose() {
+    _verificationNotifier.close();
+    super.dispose();
+  }
+
+  void startListening() {
+    _screen = new Screen();
+    try {
+      _subscription = _screen.screenStateStream.listen(onData);
+    } on ScreenStateException catch (exception) {
+      print(exception);
+    }
+  }
+
+  void stopListening() {
+    _subscription.cancel();
+  }
+
+  void _pinCode() {
+    var circleUIConfig = new CircleUIConfig();
+    var keyboardUIConfig = new KeyboardUIConfig();
+    Navigator.push(
+        context,
+        PageRouteBuilder(
+            opaque: false,
+            pageBuilder: (context, animation, secondaryAnimation) =>
+                PasscodeScreen(
+                  title: 'Enter PIN Code',
+                  passwordDigits: passCode.length,
+                  circleUIConfig: circleUIConfig,
+                  keyboardUIConfig: keyboardUIConfig,
+                  passwordEnteredCallback: _onPassCodeEntered,
+                  cancelLocalizedText: 'Cancel',
+                  deleteLocalizedText: 'Delete',
+                  shouldTriggerVerification: _verificationNotifier.stream,
+                )
+        ));
+  }
+
+  Future askUser() async {
+    switch(
+    await showDialog(
+        barrierDismissible: false,
+        context: context,
+        // ignore: deprecated_member_use
+        child: new SimpleDialog(
+          title: new Text("Choose Authentication Method"),
+          children: <Widget>[
+            new SimpleDialogOption(
+              child: new Text("Biometrics"),
+              onPressed: (){
+                Navigator.pop(context, Choice.BIOMETRICS);
+              },
+            ),
+            new SimpleDialogOption(
+              child: new Text("Pin Code"),
+              onPressed: (){
+                Navigator.pop(context, Choice.PIN);
+              },
+            )
+          ],
+        )))
+    {
+      case Choice.BIOMETRICS:
+        determinePath(context);
+        break;
+      case Choice.PIN:
+        _pinCode();
+        break;
+    }
+  }
+
+
   void determinePath(BuildContext context) async {
+<<<<<<< Updated upstream
   /*  SharedPreferences prefs = await SharedPreferences.getInstance();
     var installed = prefs.getBool('installed');
     if (installed == null) {
@@ -226,5 +334,18 @@ class LandingComponentState extends State<LandingComponent>
         _pinCode();
         break;
     }
+=======
+  //  SharedPreferences prefs = await SharedPreferences.getInstance();
+  //  var installed = prefs.getBool('installed');
+  //  if (installed == null) {
+  //    await globals.storage.deleteAll();
+   //   Application.router.navigateTo(context, "/onboarding/request");
+  //  } else {
+      await _authenticate();
+      if (authenticated == true) {
+        Application.router.navigateTo(context, "/home");
+      }
+ //   }
+>>>>>>> Stashed changes
   }
 }
