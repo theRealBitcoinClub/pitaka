@@ -41,40 +41,29 @@ class LandingComponentState extends State<LandingComponent>
       ),
       child: new Center(
           child: new Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: <Widget>[
-          new Container(
-              width: 160.0,
-              height: 160.0,
-              child: new CircularProgressIndicator(
-                  valueColor: new AlwaysStoppedAnimation(Colors.red),
-                  strokeWidth: 4.0),
-              decoration: new BoxDecoration(
-                  color: Colors.red,
-                  shape: BoxShape.circle,
-                  image: new DecorationImage(
-                      fit: BoxFit.fill,
-                      image: new AssetImage("assets/icon/icon.png"))))
-        ],
-      )),
+            crossAxisAlignment: CrossAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              new Container(
+                  width: 160.0,
+                  height: 160.0,
+                  child: new CircularProgressIndicator(
+                      valueColor: new AlwaysStoppedAnimation(Colors.red),
+                      strokeWidth: 4.0),
+                  decoration: new BoxDecoration(
+                      color: Colors.red,
+                      shape: BoxShape.circle,
+                      image: new DecorationImage(
+                          fit: BoxFit.fill,
+                          image: new AssetImage("assets/icon/icon.png"))))
+            ],
+          )),
     );
   }
 
   @override
   void afterFirstLayout(BuildContext context) {
-<<<<<<< Updated upstream
-  //  determinePath(context);
-    try{
-      askUser();
-    } on PlatformException catch (e) {
-      if(e.code == auth_error.notAvailable){
-        _authenticate();
-      }
-    }
-=======
     askUser();
->>>>>>> Stashed changes
   }
 
   @override
@@ -82,8 +71,6 @@ class LandingComponentState extends State<LandingComponent>
     super.initState();
     globals.checkInternet();
     initPlatformState();
-<<<<<<< Updated upstream
-=======
   }
 
   Future<void> initPlatformState() async {
@@ -95,26 +82,7 @@ class LandingComponentState extends State<LandingComponent>
     if (event == ScreenStateEvent.SCREEN_UNLOCKED) {
       askUser();
     }
->>>>>>> Stashed changes
   }
-
-  Future<void> initPlatformState() async {
-    startListening();
-  }
-
-  void onData(ScreenStateEvent event) {
-    //print(event);
-    if (event == ScreenStateEvent.SCREEN_UNLOCKED) {
-      try {
-        askUser();
-      } on PlatformException catch (e) {
-        if (e.code == auth_error.notAvailable) {
-          _authenticate();
-        }
-      }
-    }
-  }
-
 
 
   final LocalAuthentication auth = LocalAuthentication();
@@ -134,17 +102,6 @@ class LandingComponentState extends State<LandingComponent>
     } on PlatformException catch (e) {
       if (e.code == auth_error.notAvailable) {
         _pinCode();
-<<<<<<< Updated upstream
-          // TODO - Automatically authenticate if the phone does not have fingerprint auth
-          // Change this later to custom PIN code authentication
-          //authenticated = true;
-          //Input PIN code authentication here
-          //!authenticate
-=======
-        // TODO - Automatically authenticate if the phone does not have fingerprint auth
-        // Change this later to custom PIN code authentication
-        //authenticated = true;
->>>>>>> Stashed changes
       }
       if (!mounted) return;
     }
@@ -153,16 +110,7 @@ class LandingComponentState extends State<LandingComponent>
   void _onPassCodeEntered(String enteredPassCode) {
     authenticated = passCode == enteredPassCode;
     _verificationNotifier.add(authenticated);
-    if (authenticated == true){
-    //  determinePath(context);
-      Application.router.navigateTo(context, "/home");
-    }
-  }
-
-  void _onPassCodeEntered(String enteredPassCode) {
-    authenticated = passCode == enteredPassCode;
-    _verificationNotifier.add(authenticated);
-    if (authenticated == true){
+    if (authenticated == true) {
       //  determinePath(context);
       Application.router.navigateTo(context, "/home");
     }
@@ -209,7 +157,7 @@ class LandingComponentState extends State<LandingComponent>
   }
 
   Future askUser() async {
-    switch(
+    switch (
     await showDialog(
         barrierDismissible: false,
         context: context,
@@ -219,19 +167,18 @@ class LandingComponentState extends State<LandingComponent>
           children: <Widget>[
             new SimpleDialogOption(
               child: new Text("Biometrics"),
-              onPressed: (){
+              onPressed: () {
                 Navigator.pop(context, Choice.BIOMETRICS);
               },
             ),
             new SimpleDialogOption(
               child: new Text("Pin Code"),
-              onPressed: (){
+              onPressed: () {
                 Navigator.pop(context, Choice.PIN);
               },
             )
           ],
-        )))
-    {
+        ))) {
       case Choice.BIOMETRICS:
         determinePath(context);
         break;
@@ -241,111 +188,19 @@ class LandingComponentState extends State<LandingComponent>
     }
   }
 
-
   void determinePath(BuildContext context) async {
-<<<<<<< Updated upstream
-  /*  SharedPreferences prefs = await SharedPreferences.getInstance();
+    /*  SharedPreferences prefs = await SharedPreferences.getInstance();
     var installed = prefs.getBool('installed');
     if (installed == null) {
       await globals.storage.deleteAll();
       Application.router.navigateTo(context, "/onboarding/request");
     } else { */
     // await askUser();
-     await _authenticate();
-      if (authenticated == true) {
-        Application.router.navigateTo(context, "/home");
+    await _authenticate();
+    if (authenticated == true) {
+      Application.router.navigateTo(context, "/home");
       //}
     }
   }
-
-  @override
-  void dispose() {
-    _verificationNotifier.close();
-    super.dispose();
-  }
-
-  void startListening() {
-    _screen = new Screen();
-    try {
-      _subscription = _screen.screenStateStream.listen(onData);
-    } on ScreenStateException catch (exception) {
-      print(exception);
-    }
-  }
-
-  void stopListening() {
-    _subscription.cancel();
-  }
-
-  void _pinCode() {
-    var circleUIConfig = new CircleUIConfig();
-    var keyboardUIConfig = new KeyboardUIConfig();
-    Navigator.push(
-        context,
-        PageRouteBuilder(
-            opaque: false,
-            pageBuilder: (context, animation, secondaryAnimation) =>
-                PasscodeScreen(
-                  title: 'Enter PIN Code',
-                  passwordDigits: passCode.length,
-                  circleUIConfig: circleUIConfig,
-                  keyboardUIConfig: keyboardUIConfig,
-                  passwordEnteredCallback: _onPassCodeEntered,
-                  cancelLocalizedText: 'Cancel',
-                  deleteLocalizedText: 'Delete',
-                  shouldTriggerVerification: _verificationNotifier.stream,
-                )
-          // TODO - Automatically authenticate if the phone does not have fingerprint auth
-          // Change this later to custom PIN code authentication
-          //authenticated = true;
-          //Input PIN code authentication here
-          //!authenticate
-        ));
-  }
-
-  Future askUser() async {
-    switch(
-    await showDialog(
-      barrierDismissible: false,
-      context: context,
-      // ignore: deprecated_member_use
-      child: new SimpleDialog(
-        title: new Text("Choose Authentication Method"),
-        children: <Widget>[
-          new SimpleDialogOption(
-            child: new Text("Biometrics"),
-            onPressed: (){
-              Navigator.pop(context, Choice.BIOMETRICS);
-            },
-          ),
-          new SimpleDialogOption(
-            child: new Text("Pin Code"),
-            onPressed: (){
-              Navigator.pop(context, Choice.PIN);
-            },
-          )
-        ],
-      )))
-    {
-      case Choice.BIOMETRICS:
-        determinePath(context);
-        break;
-      case Choice.PIN:
-        _pinCode();
-        break;
-    }
-=======
-  //  SharedPreferences prefs = await SharedPreferences.getInstance();
-  //  var installed = prefs.getBool('installed');
-  //  if (installed == null) {
-  //    await globals.storage.deleteAll();
-   //   Application.router.navigateTo(context, "/onboarding/request");
-  //  } else {
-      await _authenticate();
-      if (authenticated == true) {
-        Application.router.navigateTo(context, "/home");
-      }
- //   }
->>>>>>> Stashed changes
-  }
 }
+  
