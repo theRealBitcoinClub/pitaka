@@ -47,8 +47,6 @@ class VerifyComponentState extends State<VerifyComponent> {
 
   BuildContext _scaffoldContext;
   FocusNode focusNode = FocusNode();
-
-  bool _autoValidate = false;
   bool _submitting = false;
 
   void _validateInputs(BuildContext context) async {
@@ -84,11 +82,6 @@ class VerifyComponentState extends State<VerifyComponent> {
       }
     } else {
       _showSnackBar("Please correct errors in the form");
-
-      // If any data are not valid then start auto validation.
-      setState(() {
-        _autoValidate = true;
-      });
     }
   }
 
@@ -101,7 +94,7 @@ class VerifyComponentState extends State<VerifyComponent> {
   List<Widget> _buildOtpCodeForm(BuildContext context) {
     Form form = new Form(
       key: _formKey,
-      autovalidate: _autoValidate,
+      autovalidate: false,
       child: Center(
           child: Container(
             alignment: Alignment.center,

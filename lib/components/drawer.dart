@@ -48,19 +48,19 @@ Drawer buildDrawer(BuildContext context) {
               }
             }),
         ListTile(
-            title: Text('Home'),
-            trailing: Icon(Icons.home),
+            title: Text('Accounts'),
+            trailing: Icon(Icons.account_balance_wallet),
             onTap: () {
               Application.router.navigateTo(context, "/home");
             }),
         ListTile(
-            title: Text('Send'),
+            title: Text('Pay'),
             trailing: Icon(Icons.send),
             onTap: () {
               Application.router.navigateTo(context, "/send");
             }),
         ListTile(
-            title: Text('Receive'),
+            title: Text('QR Code'),
             trailing: Icon(Icons.inbox),
             onTap: () {
               Application.router.navigateTo(context, "/receive");

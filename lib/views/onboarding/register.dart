@@ -128,8 +128,6 @@ class RegisterComponentState extends State<RegisterComponent> {
   BuildContext _scaffoldContext;
   FocusNode focusNode = FocusNode();
   bool _termsChecked = false;
-
-  bool _autoValidate = false;
   bool _submitting = false;
 
   void _validateInputs(BuildContext context) async {
@@ -183,10 +181,6 @@ class RegisterComponentState extends State<RegisterComponent> {
       }
     } else {
       _showSnackBar("Please correct errors in the form");
-      // If any data are not valid then start auto validation.
-      setState(() {
-        _autoValidate = true;
-      });
     }
   }
 
@@ -199,7 +193,7 @@ class RegisterComponentState extends State<RegisterComponent> {
   List<Widget> _buildRegistrationForm(BuildContext context) {
     Form form = new Form(
         key: _formKey,
-        autovalidate: _autoValidate,
+        autovalidate: false,
         child: new ListView(
             padding: const EdgeInsets.symmetric(horizontal: 16.0),
             children: <Widget>[

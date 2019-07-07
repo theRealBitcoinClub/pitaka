@@ -23,15 +23,15 @@ BottomNavigationBar buildBottomNavigation(BuildContext context, String path) {
     onTap: onTabTapped,
     items: [
       new BottomNavigationBarItem(
-        icon: Icon(Icons.home),
-        title: Text('Home'),
+        icon: Icon(Icons.account_balance_wallet),
+        title: Text('Accounts'),
       ),
       new BottomNavigationBarItem(
         icon: Icon(Icons.send),
-        title: Text('Send'),
+        title: Text('Pay'),
       ),
       new BottomNavigationBarItem(
-          icon: Icon(Icons.inbox), title: Text('Receive'))
+          icon: Icon(Icons.inbox), title: Text('QR Code'))
     ],
   );
 }
