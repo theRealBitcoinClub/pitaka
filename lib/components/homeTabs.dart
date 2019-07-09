@@ -102,14 +102,13 @@ Icon _getModeIcon(String mode) {
 
 
 ListView buildTransactionsList(transactions) {
-  return ListView.builder(
-      itemCount: transactions.length,
-      itemBuilder: (BuildContext context, int index) {
-       // transactions[index].timestamp.toLocal();
+    return ListView.builder(
+        itemCount: transactions.length,
+        itemBuilder: (BuildContext context, int index) {
           return GestureDetector(
-              onTap: () {
-                print('Touched!');
-              },
+            //       onTap: () {
+            //         print('Touched!');
+            //       },
               child: Column(
                 children: <Widget>[
                   Row(
@@ -122,7 +121,8 @@ ListView buildTransactionsList(transactions) {
                             padding:
                             const EdgeInsets.fromLTRB(8.0, 8.0, 8.0, 6.0),
                             child: Text(
-                              "${_formatMode(transactions[index].mode)} ${transactions[index].accountName}",
+                              "${_formatMode(transactions[transactions.length - index -1]
+                                  .mode)} ${transactions[transactions.length - index -1].accountName}",
                               style: TextStyle(
                                   fontSize: 18.0, fontWeight: FontWeight.bold),
                             ),
@@ -132,7 +132,7 @@ ListView buildTransactionsList(transactions) {
                             const EdgeInsets.fromLTRB(12.0, 6.0, 12.0, 4.0),
                             child: Text(
                               "${formatCurrency.format(
-                                  transactions[index].amount)}",
+                                  transactions[transactions.length - index -1].amount)}",
                               style: TextStyle(fontSize: 18.0),
                             ),
                           ),
@@ -140,7 +140,7 @@ ListView buildTransactionsList(transactions) {
                             padding:
                             const EdgeInsets.fromLTRB(8.0, 4.0, 8.0, 4.0),
                             child: Text(
-                                "Date of transaction: ${transactions[index]
+                                "Date of transaction: ${transactions[transactions.length - index -1]
                                     .time}",
                                 style: TextStyle(fontSize: 12.0)
                             ),
@@ -154,7 +154,7 @@ ListView buildTransactionsList(transactions) {
                           children: <Widget>[
                             Padding(
                               padding: const EdgeInsets.all(8.0),
-                              child: _getModeIcon(transactions[index].mode),
+                              child: _getModeIcon(transactions[transactions.length - index -1].mode),
                             ),
                           ],
                         ),
@@ -167,6 +167,6 @@ ListView buildTransactionsList(transactions) {
                   )
                 ],
               ));
-         });
+        });
 }
 
