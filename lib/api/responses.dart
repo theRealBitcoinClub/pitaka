@@ -1,5 +1,7 @@
 import 'package:dio/dio.dart';
 
+import 'package:intl/intl.dart';
+
 class GenericCreateResponse {
   final bool success;
   final String id;
@@ -96,6 +98,10 @@ class BalancesResponse {
 class Transaction {
   String mode; // send or receive
   double amount;
+  String accountName;
+  String timestamp;
+  DateTime timeslot;
+  String time;
 }
 
 class TransactionsResponse {
@@ -107,13 +113,20 @@ class TransactionsResponse {
   factory TransactionsResponse.fromResponse(Response response) {
     List<Transaction> _transactions = [];
     if (response.data['transactions'] != null) {
-      for (final txn in response.data['transactions']) {
-        var transObj = new Transaction();
-        transObj.mode = txn['Mode'];
-        transObj.amount = txn['Amount'].toDouble();
-        _transactions.add(transObj);
+        for (final txn in response.data['transactions']) {
+          var transObj = new Transaction();
+
+          transObj.mode = txn['Mode'];
+          transObj.amount = txn['Amount'].toDouble();
+          transObj.accountName = txn['Account Name'].toString();
+          transObj.timestamp = txn['Timestamp'].toString();
+          transObj.timeslot = DateTime.tryParse(transObj.timestamp).toLocal();
+          transObj.time = DateFormat('y/M/d hh:mm a').format(transObj.timeslot).toString();
+          _transactions.add(transObj);
+
+        }
       }
-    }
+
     return TransactionsResponse(
         success: response.data['success'], transactions: _transactions);
   }
@@ -122,8 +135,10 @@ class TransactionsResponse {
     List<Transaction> _trans = [];
     for (final txn in transactions) {
       var transObj = new Transaction();
+
       transObj.mode = txn['mode'];
       transObj.amount = txn['amount'].toDouble();
+      transObj.timestamp = txn['timestamp'];
       _trans.add(transObj);
     }
     return TransactionsResponse(
@@ -156,4 +171,12 @@ class AccountsResponse {
     return AccountsResponse(
         success: response.data['success'], accounts: _accounts);
   }
+}
+
+String test() {
+  var now = new DateTime.now();
+  var formatter = new DateFormat('yyyy-MM-dd hh:mm a ');
+  String formatted = formatter.format(now);
+  print(formatted);
+  return formatted;
 }

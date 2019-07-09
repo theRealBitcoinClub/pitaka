@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import '../components/drawer.dart';
 import '../components/bottomNavigation.dart';
@@ -6,6 +8,8 @@ import 'package:intl/intl.dart';
 import '../api/endpoints.dart';
 import '../utils/globals.dart' as globals;
 import '../utils/database_helper.dart';
+import 'package:connectivity/connectivity.dart';
+import 'package:flutter/services.dart';
 
 
 class HomeComponent extends StatefulWidget {
@@ -20,6 +24,7 @@ class HomeComponentState extends State<HomeComponent> {
   final formatCurrency = new NumberFormat.currency(symbol: 'PHP ');
   DatabaseHelper databaseHelper = DatabaseHelper();
 
+
   @override
   void initState() {
     super.initState();
@@ -28,16 +33,21 @@ class HomeComponentState extends State<HomeComponent> {
         if (status == false) {
           online = false;  
           globals.online = online;
-          print('Online');
+          print('Offline');
         } else {
           globals.online = online;
-          print('Offline');
+          print('Online');
         }
       });
     });
   }
 
-  
+  @override
+  void dispose() {
+   // _connectivitySubscription.cancel();
+    super.dispose();
+  }
+
   @override
   build(BuildContext context) {
     return DefaultTabController (
@@ -71,9 +81,9 @@ class HomeComponentState extends State<HomeComponent> {
                         }
                       });
                     });
-                  } 
+                  }
                 }
-              ) 
+              )
             )
           ],
           bottom: TabBar(tabs: [

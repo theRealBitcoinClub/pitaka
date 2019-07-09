@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../utils/globals.dart' as globals;
+import '../api/responses.dart';
 
 final formatCurrency = new NumberFormat.currency(symbol: 'PHP ');
+var balanceObj = Balance();
 
 ListView buildBalancesList(balances) {
   return ListView.builder(
@@ -71,10 +73,10 @@ ListView buildBalancesList(balances) {
 String _formatMode(String mode) {
   String formattedMode;
   if (mode == 'receive') {
-    formattedMode = 'Received';
+    formattedMode = 'Received from';
   }
   if (mode == 'send') {
-    formattedMode = 'Sent';
+    formattedMode = 'Sent to';
   }
   return formattedMode;
 }
@@ -98,61 +100,73 @@ Icon _getModeIcon(String mode) {
   return icon;
 }
 
+
 ListView buildTransactionsList(transactions) {
   return ListView.builder(
       itemCount: transactions.length,
       itemBuilder: (BuildContext context, int index) {
-        return GestureDetector(
-            onTap: () {
-              print('Touched!');
-            },
-            child: Column(
-              children: <Widget>[
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: <Widget>[
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: <Widget>[
-                        Padding(
-                          padding:
-                              const EdgeInsets.fromLTRB(8.0, 8.0, 8.0, 6.0),
-                          child: Text(
-                            "${_formatMode(transactions[index].mode)}",
-                            style: TextStyle(
-                                fontSize: 18.0, fontWeight: FontWeight.bold),
-                          ),
-                        ),
-                        Padding(
-                          padding:
-                              const EdgeInsets.fromLTRB(12.0, 6.0, 12.0, 12.0),
-                          child: Text(
-                            "${formatCurrency.format(transactions[index].amount)}",
-                            style: TextStyle(fontSize: 18.0),
-                          ),
-                        ),
-                      ],
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+       // transactions[index].timestamp.toLocal();
+          return GestureDetector(
+              onTap: () {
+                print('Touched!');
+              },
+              child: Column(
+                children: <Widget>[
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: <Widget>[
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: <Widget>[
                           Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: _getModeIcon(transactions[index].mode),
+                            padding:
+                            const EdgeInsets.fromLTRB(8.0, 8.0, 8.0, 6.0),
+                            child: Text(
+                              "${_formatMode(transactions[index].mode)} ${transactions[index].accountName}",
+                              style: TextStyle(
+                                  fontSize: 18.0, fontWeight: FontWeight.bold),
+                            ),
+                          ),
+                          Padding(
+                            padding:
+                            const EdgeInsets.fromLTRB(12.0, 6.0, 12.0, 4.0),
+                            child: Text(
+                              "${formatCurrency.format(
+                                  transactions[index].amount)}",
+                              style: TextStyle(fontSize: 18.0),
+                            ),
+                          ),
+                          Padding(
+                            padding:
+                            const EdgeInsets.fromLTRB(8.0, 4.0, 8.0, 4.0),
+                            child: Text(
+                                "Date of transaction: ${transactions[index]
+                                    .time}",
+                                style: TextStyle(fontSize: 12.0)
+                            ),
                           ),
                         ],
                       ),
-                    ),
-                  ],
-                ),
-                Divider(
-                  height: 2.0,
-                  color: Colors.grey,
-                )
-              ],
-            ));
-      });
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: <Widget>[
+                            Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: _getModeIcon(transactions[index].mode),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                  Divider(
+                    height: 2.0,
+                    color: Colors.grey,
+                  )
+                ],
+              ));
+         });
 }
 

@@ -25,7 +25,7 @@ class LandingComponent extends StatefulWidget {
 class LandingComponentState extends State<LandingComponent>
     with AfterLayoutMixin<LandingComponent> {
 
-  var passCode = '1016';
+  var passCode = '1234';
   Screen _screen;
   StreamSubscription<ScreenStateEvent> _subscription;
 
@@ -63,7 +63,7 @@ class LandingComponentState extends State<LandingComponent>
 
   @override
   void afterFirstLayout(BuildContext context) {
-    askUser();
+    determinePath(context);
   }
 
   @override
@@ -180,7 +180,8 @@ class LandingComponentState extends State<LandingComponent>
           ],
         ))) {
       case Choice.BIOMETRICS:
-        determinePath(context);
+      //  determinePath(context);
+          await _authenticate();
         break;
       case Choice.PIN:
         _pinCode();
@@ -189,18 +190,17 @@ class LandingComponentState extends State<LandingComponent>
   }
 
   void determinePath(BuildContext context) async {
-    /*  SharedPreferences prefs = await SharedPreferences.getInstance();
+    SharedPreferences prefs = await SharedPreferences.getInstance();
     var installed = prefs.getBool('installed');
     if (installed == null) {
       await globals.storage.deleteAll();
       Application.router.navigateTo(context, "/onboarding/request");
-    } else { */
-    // await askUser();
-    await _authenticate();
-    if (authenticated == true) {
-      Application.router.navigateTo(context, "/home");
-      //}
+    } else {
+      await askUser();
+    //  await _authenticate();
+      if (authenticated == true) {
+        Application.router.navigateTo(context, "/home");
+        }
+      }
     }
   }
-}
-  

@@ -1,17 +1,24 @@
+import 'dart:async';
+
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:connectivity/connectivity.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../utils/database_helper.dart';
+import 'package:flutter/services.dart';
 
 const String baseUrl = 'https://lantaka-dev.paytaca.com';
 // const String baseUrl = 'https://6e8d7119.ngrok.io';
 const String phpAssetId = '3A8F594F-D736-4673-945C-5465E0209AF0';
+
+
 
 bool _online = false;
 bool _syncing = false;
 const String serverPublicKey = '7aeaa44510a950a9a4537faa2f40351dc4560d6d0d12abc0287dcffdd667d7a2';
 bool get online => _online;
 bool get syncing => _syncing;
+final Connectivity _connectivity = Connectivity();
+StreamSubscription<ConnectivityResult> _connectivitySubscription;
 
 set online(bool value) {
   _online = value;
@@ -22,6 +29,8 @@ set online(bool value) {
     syncing = false;
   }
 }
+//_connectivitySubscription =
+//_connectivity.onConnectivityChanged.listen(_updateConnectionStatus);
 
 set syncing(bool value) => _syncing = value;
 DatabaseHelper databaseHelper = DatabaseHelper();
@@ -30,12 +39,17 @@ final storage = new FlutterSecureStorage();
 
 Future<bool> checkConnection() async {
   var connectivityResult = await (Connectivity().checkConnectivity());
-  if (connectivityResult == ConnectivityResult.mobile || connectivityResult == ConnectivityResult.wifi) {
-    online = true;
-  } else {
-    online = false;
+  try {
+    if (connectivityResult == ConnectivityResult.mobile ||
+        connectivityResult == ConnectivityResult.wifi) {
+      online = true;
+    } else {
+      online = false;
+    }
+  }on PlatformException catch (e) {
+
   }
-  return online;
+return online;
 }
 
 void checkInternet () async {
@@ -44,5 +58,3 @@ void checkInternet () async {
     prefs.setBool("online", status);
   });
 }
-
-

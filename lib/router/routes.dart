@@ -5,7 +5,7 @@ import './handlers.dart';
 class Routes {
   static String root = "/";
   static String onboardingRequest = "/onboarding/request";
-  //static String onboardingVerify = "/onboarding/verify/:mobilenumber";
+  static String onboardingVerify = "/onboarding/verify/:mobilenumber";
   static String onboardingRegister = "/onboarding/register/:mobilenumber";
   static String account = "/account";
   static String terms = "/terms";
@@ -28,11 +28,11 @@ class Routes {
     router.define(root,
         handler: rootHandler, transitionType: TransitionType.fadeIn);
     router.define(onboardingRequest,
-    //    handler: onboardingRequestHandler,
+       handler: onboardingRequestHandler,
         transitionType: TransitionType.fadeIn);
-    //router.define(onboardingVerify,
-    //    handler: onboardingVerifyHandler,
-    //    transitionType: TransitionType.fadeIn);
+    router.define(onboardingVerify,
+        handler: onboardingVerifyHandler,
+        transitionType: TransitionType.fadeIn);
     router.define(onboardingRegister,
         handler: onboardingRegisterHandler,
         transitionType: TransitionType.fadeIn);
