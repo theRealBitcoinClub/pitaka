@@ -73,10 +73,10 @@ ListView buildBalancesList(balances) {
 String _formatMode(String mode) {
   String formattedMode;
   if (mode == 'receive') {
-    formattedMode = 'Received from';
+    formattedMode = 'Received';
   }
   if (mode == 'send') {
-    formattedMode = 'Sent to';
+    formattedMode = 'Sent';
   }
   return formattedMode;
 }
@@ -98,6 +98,17 @@ Icon _getModeIcon(String mode) {
     );
   }
   return icon;
+}
+
+String _formatUser(String mode){
+  String formattedUser;
+  if (mode == 'receive') {
+    formattedUser = 'Sender: ';
+  }
+  if (mode == 'send') {
+    formattedUser = 'Receiver: ';
+  }
+  return formattedUser;
 }
 
 
@@ -122,7 +133,7 @@ ListView buildTransactionsList(transactions) {
                             const EdgeInsets.fromLTRB(8.0, 8.0, 8.0, 6.0),
                             child: Text(
                               "${_formatMode(transactions[transactions.length - index -1]
-                                  .mode)} ${transactions[transactions.length - index -1].accountName}",
+                                  .mode)}",
                               style: TextStyle(
                                   fontSize: 18.0, fontWeight: FontWeight.bold),
                             ),
@@ -138,7 +149,17 @@ ListView buildTransactionsList(transactions) {
                           ),
                           Padding(
                             padding:
-                            const EdgeInsets.fromLTRB(8.0, 4.0, 8.0, 4.0),
+                            const EdgeInsets.fromLTRB(12.0, 2.0, 12.0, 2.0),
+                            child: Text(
+                              "${_formatUser(transactions[transactions.length - index -1]
+                                  .mode)} ${transactions[transactions.length-index-1].accountID}",
+                              style: TextStyle(
+                                  fontSize: 16.0, fontWeight: FontWeight.bold),
+                            ),
+                          ),
+                          Padding(
+                            padding:
+                            const EdgeInsets.fromLTRB(4.0, 4.0, 8.0, 4.0),
                             child: Text(
                                 "Date of transaction: ${transactions[transactions.length - index -1]
                                     .time}",

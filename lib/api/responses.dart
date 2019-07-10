@@ -98,7 +98,7 @@ class BalancesResponse {
 class Transaction {
   String mode; // send or receive
   double amount;
-  String accountName;
+  String accountID;
   String timestamp;
   DateTime timeslot;
   String time;
@@ -118,7 +118,7 @@ class TransactionsResponse {
 
           transObj.mode = txn['Mode'];
           transObj.amount = txn['Amount'].toDouble();
-          transObj.accountName = txn['Account Name'].toString();
+          transObj.accountID = txn['AccountID'];
           transObj.timestamp = txn['Timestamp'].toString();
           transObj.timeslot = DateTime.tryParse(transObj.timestamp).toLocal();
           transObj.time = DateFormat('y/M/d hh:mm a').format(transObj.timeslot).toString();
