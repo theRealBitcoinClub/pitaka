@@ -47,12 +47,13 @@ Future<bool> checkConnection() async {
       online = false;
     }
   }on PlatformException catch (e) {
-
+    print(e);
   }
 return online;
 }
 
 void checkInternet () async {
+
   checkConnection().then((status) async{
     SharedPreferences prefs = await SharedPreferences.getInstance();
     prefs.setBool("online", status);

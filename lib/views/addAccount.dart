@@ -15,6 +15,7 @@ class AddAccountComponent extends StatefulWidget {
 }
 
 class AddAccountComponentState extends State<AddAccountComponent> {
+
   final _formKey = GlobalKey<FormState>();
   bool _submitting = false;
   AddAccount newAccount = new AddAccount();

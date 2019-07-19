@@ -15,6 +15,10 @@ import '../../utils/helpers.dart';
 import 'package:flutter_datetime_picker/flutter_datetime_picker.dart';
 import 'package:pitaka/utils/database_helper.dart';
 import '../../utils/globals.dart' as globals;
+import 'package:passcode_screen/passcode_screen.dart';
+import 'package:passcode_screen/circle.dart';
+import 'package:passcode_screen/keyboard.dart';
+
 
 
 class User {
@@ -22,6 +26,8 @@ class User {
   String lastName;
   String emailAddress;
   DateTime birthDate;
+  String passCode;
+  String phoneImei;
 }
 
 class RegisterComponent extends StatefulWidget {
@@ -33,6 +39,8 @@ class RegisterComponent extends StatefulWidget {
 
 class RegisterComponentState extends State<RegisterComponent> {
   DatabaseHelper databaseHelper = DatabaseHelper();
+
+  String iniPasscode = '';
 
   @override
   void initState() {
@@ -53,6 +61,8 @@ class RegisterComponentState extends State<RegisterComponent> {
 
   final LocalAuthentication auth = LocalAuthentication();
   bool authenticated = false;
+  final StreamController<bool> _verificationNotifier =
+  StreamController<bool>.broadcast();
 
   Future<Null> _authenticate() async {
     try {
@@ -70,6 +80,41 @@ class RegisterComponentState extends State<RegisterComponent> {
     if (!mounted) return;
   }
 
+  void _onPassCodeEntered(String enteredPassCode) {
+    iniPasscode = enteredPassCode;
+    Navigator.push(
+        context,
+        PageRouteBuilder(
+            opaque: true,
+            pageBuilder: (context, animation, secondaryAnimation) =>
+                PasscodeScreen(
+                  title: 'Re-enter PIN Code',
+                  passwordDigits: 6,
+                //  backgroundColor: ,
+                  circleUIConfig: circleUIConfig,
+                  keyboardUIConfig: keyboardUIConfig,
+                  passwordEnteredCallback: validatePin,
+                  cancelLocalizedText: 'Cancel',
+                  deleteLocalizedText: 'Delete',
+                  shouldTriggerVerification: _verificationNotifier.stream,
+                //  cancelCallback: _onPasscodeCancelled,
+                )
+        ));
+  //  validatePin(iniPasscode);
+  }
+
+  void validatePin(String enteredPassCode) async{
+
+    if(enteredPassCode == iniPasscode) {
+      await globals.storage.write(key: "pinCode", value: iniPasscode);
+      final read = await globals.storage.read(key: "pinCode");
+      Application.router.navigateTo(context, "/home");
+    }
+
+    else if(enteredPassCode != iniPasscode)
+      return null;
+  }
+
   String publicKey;
   String privateKey;
 
@@ -81,7 +126,7 @@ class RegisterComponentState extends State<RegisterComponent> {
     publicKey = HEX.encode(publicKeyBytes);
     privateKey = HEX.encode(privateKeyBytes);
 
-    await _authenticate();
+   // await _authenticate();
     await globals.storage.write(key: "publicKey", value: publicKey);
     await globals.storage.write(key: "privateKey", value: privateKey);
   }
@@ -132,6 +177,9 @@ class RegisterComponentState extends State<RegisterComponent> {
   bool _autoValidate = false;
   bool _submitting = false;
 
+  var circleUIConfig = new CircleUIConfig();
+  var keyboardUIConfig = new KeyboardUIConfig();
+
   void _validateInputs(BuildContext context) async {
     if (_formKey.currentState.validate()) {
       // Close the on-screen keyboard by removing focus from the form's inputs
@@ -152,7 +200,8 @@ class RegisterComponentState extends State<RegisterComponent> {
             "lastname": newUser.lastName,
             "birthday": "2006-01-02",
             "email": newUser.emailAddress,
-            "mobile_number": "${widget.mobileNumber}"
+            "mobile_number": "${widget.mobileNumber}",
+            "ini_passcode": newUser.passCode
           };
           String txnHash = generateTransactionHash(userPayload);
           print(txnHash);
@@ -177,6 +226,7 @@ class RegisterComponentState extends State<RegisterComponent> {
           await prefs.setBool('installed', true);
           Application.router.navigateTo(context, "/account");
           databaseHelper.initializeDatabase();
+
         }
       } else {
         _showSnackBar("Please agree to our Terms and Conditions");
@@ -317,8 +367,26 @@ class RegisterComponentState extends State<RegisterComponent> {
               new RaisedButton(
                 onPressed: () {
                   _validateInputs(context);
+                  Navigator.push(
+                      context,
+                      PageRouteBuilder(
+                          opaque: false,
+                          pageBuilder: (context, animation, secondaryAnimation) =>
+                              PasscodeScreen(
+                                title: 'Enter Desired PIN Code',
+                                passwordDigits: 6,
+                                circleUIConfig: circleUIConfig,
+                                keyboardUIConfig: keyboardUIConfig,
+                                passwordEnteredCallback: _onPassCodeEntered,
+                                cancelLocalizedText: 'Cancel',
+                                deleteLocalizedText: 'Delete',
+                                shouldTriggerVerification: _verificationNotifier.stream,
+                           //     cancelCallback: _onPasscodeCancelled,
+                              )
+                      ));
                 },
                 child: new Text('Submit'),
+
               )
             ]));
 
@@ -356,4 +424,5 @@ class RegisterComponentState extends State<RegisterComponent> {
           return new Stack(children: _buildRegistrationForm(context));
         }));
   }
+
 }

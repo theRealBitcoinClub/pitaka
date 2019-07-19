@@ -25,7 +25,6 @@ class LandingComponent extends StatefulWidget {
 class LandingComponentState extends State<LandingComponent>
     with AfterLayoutMixin<LandingComponent> {
 
-  var passCode = '1234';
   Screen _screen;
   StreamSubscription<ScreenStateEvent> _subscription;
 
@@ -91,6 +90,7 @@ class LandingComponentState extends State<LandingComponent>
   StreamController<bool>.broadcast();
 
   Future<Null> _authenticate() async {
+
     try {
       authenticated = await auth.authenticateWithBiometrics(
           localizedReason: 'Scan your fingerprint to authenticate',
@@ -107,13 +107,15 @@ class LandingComponentState extends State<LandingComponent>
     }
   }
 
-  void _onPassCodeEntered(String enteredPassCode) {
+  void _onPassCodeEntered(String enteredPassCode) async{
+    var passCode = await globals.storage.read(key: "pinCode");
     authenticated = passCode == enteredPassCode;
     _verificationNotifier.add(authenticated);
     if (authenticated == true) {
-      //  determinePath(context);
       Application.router.navigateTo(context, "/home");
     }
+    else
+      _pinCode();
   }
 
   @override
@@ -135,6 +137,10 @@ class LandingComponentState extends State<LandingComponent>
     _subscription.cancel();
   }
 
+  void _onPasscodeCancelled() {
+    exit(0);
+  }
+
   void _pinCode() {
     var circleUIConfig = new CircleUIConfig();
     var keyboardUIConfig = new KeyboardUIConfig();
@@ -145,9 +151,11 @@ class LandingComponentState extends State<LandingComponent>
             pageBuilder: (context, animation, secondaryAnimation) =>
                 PasscodeScreen(
                   title: 'Enter PIN Code',
-                  passwordDigits: passCode.length,
+                  passwordDigits: 6,  
                   circleUIConfig: circleUIConfig,
                   keyboardUIConfig: keyboardUIConfig,
+                  cancelCallback: _onPasscodeCancelled,
+                //  isValidCallback: ,
                   passwordEnteredCallback: _onPassCodeEntered,
                   cancelLocalizedText: 'Cancel',
                   deleteLocalizedText: 'Delete',
@@ -195,6 +203,7 @@ class LandingComponentState extends State<LandingComponent>
     if (installed == null) {
       await globals.storage.deleteAll();
       Application.router.navigateTo(context, "/onboarding/request");
+  //  Application.router.navigateTo(context, "/onboarding/register");
     } else {
       await askUser();
     //  await _authenticate();
