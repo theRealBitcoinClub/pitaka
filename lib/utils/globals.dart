@@ -18,7 +18,7 @@ const String serverPublicKey = '7aeaa44510a950a9a4537faa2f40351dc4560d6d0d12abc0
 bool get online => _online;
 bool get syncing => _syncing;
 final Connectivity _connectivity = Connectivity();
-StreamSubscription<ConnectivityResult> _connectivitySubscription;
+StreamSubscription<ConnectivityResult> _connectivitySubscription = _connectivity.onConnectivityChanged.listen(checkConnection);
 
 set online(bool value) {
   _online = value;
@@ -29,19 +29,35 @@ set online(bool value) {
     syncing = false;
   }
 }
-//_connectivitySubscription =
-//_connectivity.onConnectivityChanged.listen(_updateConnectionStatus);
 
 set syncing(bool value) => _syncing = value;
 DatabaseHelper databaseHelper = DatabaseHelper();
 
 final storage = new FlutterSecureStorage();
 
-Future<bool> checkConnection() async {
+@override
+void dispose() {
+  _connectivitySubscription.cancel();
+}
+
+Future<void> initConnection() async{
+  ConnectivityResult result;
+  // Platform messages may fail, so we use a try/catch PlatformException.
+  try {
+    result = await _connectivity.checkConnectivity();
+  } on PlatformException catch (e) {
+    print(e.toString());
+  }
+  // If the widget was removed from the tree while the asynchronous platform
+  // message was in flight, we want to discard the reply rather than calling
+  // setState to update our non-existent appearance.
+  checkConnection();
+}
+
+Future<bool> checkConnection(ConnectivityResult result) async {
   var connectivityResult = await (Connectivity().checkConnectivity());
   try {
-    if (connectivityResult == ConnectivityResult.mobile ||
-        connectivityResult == ConnectivityResult.wifi) {
+    if (connectivityResult == ConnectivityResult.mobile || connectivityResult == ConnectivityResult.wifi) {
       online = true;
     } else {
       online = false;
@@ -52,8 +68,8 @@ Future<bool> checkConnection() async {
 return online;
 }
 
-void checkInternet () async {
 
+void checkInternet () async {
   checkConnection().then((status) async{
     SharedPreferences prefs = await SharedPreferences.getInstance();
     prefs.setBool("online", status);

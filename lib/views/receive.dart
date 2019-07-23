@@ -16,6 +16,8 @@ import '../utils/globals.dart' as globals;
 import '../api/endpoints.dart';
 import 'package:archive/archive.dart';
 // import '../api/endpoints.dart';
+import 'package:connectivity/connectivity.dart';
+
 
 class ReceiveComponent extends StatefulWidget {
   @override
@@ -29,12 +31,13 @@ class ReceiveComponentState extends State<ReceiveComponent> {
   String _selectedPaytacaAccount;
   static List data = List(); //edited line
   bool online = globals.online;
-  
+
   @override
-  void initState() {
+  void initState() async {
     super.initState();
     this.getAccounts();
-    globals.checkConnection().then((status){
+    ConnectivityResult result = await (Connectivity().checkConnectivity());
+    globals.checkConnection(result).then((status){
       setState(() {
         if (status == false) {
           online = false;  

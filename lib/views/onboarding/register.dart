@@ -26,8 +26,6 @@ class User {
   String lastName;
   String emailAddress;
   DateTime birthDate;
-  String passCode;
-  String phoneImei;
 }
 
 class RegisterComponent extends StatefulWidget {
@@ -108,7 +106,7 @@ class RegisterComponentState extends State<RegisterComponent> {
     if(enteredPassCode == iniPasscode) {
       await globals.storage.write(key: "pinCode", value: iniPasscode);
       final read = await globals.storage.read(key: "pinCode");
-      Application.router.navigateTo(context, "/home");
+      Application.router.navigateTo(context, "/account");
     }
 
     else if(enteredPassCode != iniPasscode)
@@ -126,7 +124,7 @@ class RegisterComponentState extends State<RegisterComponent> {
     publicKey = HEX.encode(publicKeyBytes);
     privateKey = HEX.encode(privateKeyBytes);
 
-   // await _authenticate();
+    await _authenticate();
     await globals.storage.write(key: "publicKey", value: publicKey);
     await globals.storage.write(key: "privateKey", value: privateKey);
   }
@@ -201,7 +199,6 @@ class RegisterComponentState extends State<RegisterComponent> {
             "birthday": "2006-01-02",
             "email": newUser.emailAddress,
             "mobile_number": "${widget.mobileNumber}",
-            "ini_passcode": newUser.passCode
           };
           String txnHash = generateTransactionHash(userPayload);
           print(txnHash);
@@ -381,9 +378,10 @@ class RegisterComponentState extends State<RegisterComponent> {
                                 cancelLocalizedText: 'Cancel',
                                 deleteLocalizedText: 'Delete',
                                 shouldTriggerVerification: _verificationNotifier.stream,
-                           //     cancelCallback: _onPasscodeCancelled,
+                                //     cancelCallback: _onPasscodeCancelled,
                               )
                       ));
+
                 },
                 child: new Text('Submit'),
 
@@ -424,5 +422,4 @@ class RegisterComponentState extends State<RegisterComponent> {
           return new Stack(children: _buildRegistrationForm(context));
         }));
   }
-
 }
