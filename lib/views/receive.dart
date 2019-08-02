@@ -37,7 +37,7 @@ class ReceiveComponentState extends State<ReceiveComponent> {
     super.initState();
     this.getAccounts();
     ConnectivityResult result = await (Connectivity().checkConnectivity());
-    globals.checkConnection(result).then((status){
+    globals.checkConnection().then((status){
       setState(() {
         if (status == false) {
           online = false;  
@@ -73,6 +73,7 @@ class ReceiveComponentState extends State<ReceiveComponent> {
           if (firstValidation) {
             var timestamp = hashArr[5];
             var signValue = hashArr[4].toString();
+            var txnID = hashArr[2];
             var lastSignedBalance = HEX.decode(signValue);
             var serverPublicKey = HEX.decode(globals.serverPublicKey);
             var concatenated = "${lBalance.toStringAsFixed(6)}$fromAccount$timestamp";
@@ -92,7 +93,8 @@ class ReceiveComponentState extends State<ReceiveComponent> {
                   'message': hashMessage,
                   'signature': lastSignedBalance,
                   'balance': lBalance,
-                  'timestamp': timestamp
+                  'timestamp': timestamp,
+                  'transaction_id': txnID
                 }
               };
               var response = await receiveAsset(payload);

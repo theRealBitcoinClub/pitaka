@@ -28,7 +28,7 @@ class HomeComponentState extends State<HomeComponent> {
   void initState() async {
     super.initState();
     ConnectivityResult result = await (Connectivity().checkConnectivity());
-    globals.checkConnection(result).then((status){
+    globals.checkConnection().then((status){
       setState(() {
         if (status == false) {
           online = false;  

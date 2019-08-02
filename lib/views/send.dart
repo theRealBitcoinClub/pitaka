@@ -11,6 +11,7 @@ import 'package:intl/intl.dart';
 import 'package:permission_handler/permission_handler.dart';
 import '../utils/globals.dart' as globals;
 import '../utils/database_helper.dart';
+import 'package:uuid/uuid.dart';
 
 
 
@@ -31,6 +32,7 @@ class SendComponentState extends State<SendComponent> {
   String lastBalance;
   String lBalanceSignature;
   String lBalanceTime;
+  String txnID;
   static List data = List();
   bool validCode = false;
   static bool _errorFound = false;
@@ -88,13 +90,16 @@ class SendComponentState extends State<SendComponent> {
     BuildContext context,
     String lBalance,
     String lSignedBalance,
+    String txnID,
     String lBalanceTimeStamp) async {
     _submitting = true;
     String destinationAccount = toAccount;
     String publicKey = await globals.storage.read(key: "publicKey");
     String privateKey = await globals.storage.read(key: "privateKey");
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    
+
+    var uuid = new Uuid();
+    txnID = uuid.v1();
     var now = new DateTime.now();
     var txnDateTime = DateTime.parse(now.toString());
     var txnhash = "$amount:-:$txnDateTime:-:"
@@ -114,7 +119,8 @@ class SendComponentState extends State<SendComponent> {
       'amount': amount,
       'public_key': publicKey,
       'txn_hash': txnhash,
-      'signature': signature
+      'signature': signature,
+      'transaction_id': txnID
     };
     var response = await transferAsset(payload);
     if (response.success == false) {
@@ -327,7 +333,8 @@ List<Widget> _buildForm(BuildContext context) {
                                   context,
                                   lastBalance,
                                   lBalanceSignature,
-                                  lBalanceTime
+                                  txnID,
+                                  lBalanceTime,
                                   );
                               }
                             }

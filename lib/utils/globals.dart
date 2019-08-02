@@ -18,7 +18,8 @@ const String serverPublicKey = '7aeaa44510a950a9a4537faa2f40351dc4560d6d0d12abc0
 bool get online => _online;
 bool get syncing => _syncing;
 final Connectivity _connectivity = Connectivity();
-StreamSubscription<ConnectivityResult> _connectivitySubscription = _connectivity.onConnectivityChanged.listen(checkConnection);
+ConnectivityResult result;
+//StreamSubscription<ConnectivityResult> _connectivitySubscription = _connectivity.onConnectivityChanged.listen();
 
 set online(bool value) {
   _online = value;
@@ -37,7 +38,7 @@ final storage = new FlutterSecureStorage();
 
 @override
 void dispose() {
-  _connectivitySubscription.cancel();
+ // _connectivitySubscription.cancel();
 }
 
 Future<void> initConnection() async{
@@ -54,7 +55,7 @@ Future<void> initConnection() async{
   checkConnection();
 }
 
-Future<bool> checkConnection(ConnectivityResult result) async {
+Future<bool> checkConnection() async {
   var connectivityResult = await (Connectivity().checkConnectivity());
   try {
     if (connectivityResult == ConnectivityResult.mobile || connectivityResult == ConnectivityResult.wifi) {
@@ -67,7 +68,6 @@ Future<bool> checkConnection(ConnectivityResult result) async {
   }
 return online;
 }
-
 
 void checkInternet () async {
   checkConnection().then((status) async{
