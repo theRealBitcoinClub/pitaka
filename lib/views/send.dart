@@ -100,6 +100,7 @@ class SendComponentState extends State<SendComponent> {
 
     var uuid = new Uuid();
     txnID = uuid.v1();
+
     var now = new DateTime.now();
     var txnDateTime = DateTime.parse(now.toString());
     var txnhash = "$amount:-:$txnDateTime:-:"
@@ -112,6 +113,7 @@ class SendComponentState extends State<SendComponent> {
     prefs.setString("_txnQrCode", qrcode);
     prefs.setString("_txnDateTime", _txnReadableDateTime);
     prefs.setString("_txnAmount", amount.toString());
+    prefs.setString("_txnID", txnID.substring(1,9));
     var payload = {
       'from_account': selectedPaytacaAccount,
       'to_account': destinationAccount,
@@ -120,7 +122,7 @@ class SendComponentState extends State<SendComponent> {
       'public_key': publicKey,
       'txn_hash': txnhash,
       'signature': signature,
-      'transaction_id': txnID
+      'transaction_id': txnID.substring(1,9)
     };
     var response = await transferAsset(payload);
     if (response.success == false) {

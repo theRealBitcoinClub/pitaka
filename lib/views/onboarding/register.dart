@@ -18,7 +18,6 @@ import '../../utils/globals.dart' as globals;
 import 'package:passcode_screen/passcode_screen.dart';
 import 'package:passcode_screen/circle.dart';
 import 'package:passcode_screen/keyboard.dart';
-import 'package:device_id/device_id.dart';
 
 
 

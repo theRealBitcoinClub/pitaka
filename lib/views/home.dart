@@ -11,6 +11,7 @@ import '../utils/database_helper.dart';
 import 'package:connectivity/connectivity.dart';
 import 'package:flutter/services.dart';
 
+
 class HomeComponent extends StatefulWidget {
   @override
   State createState() => new HomeComponentState();
@@ -25,9 +26,8 @@ class HomeComponentState extends State<HomeComponent> {
 
 
   @override
-  void initState() async {
+  void initState()  {
     super.initState();
-    ConnectivityResult result = await (Connectivity().checkConnectivity());
     globals.checkConnection().then((status){
       setState(() {
         if (status == false) {

@@ -102,6 +102,7 @@ class Transaction {
   String timestamp;
   DateTime timeslot;
   String time;
+  String txnID;
 }
 
 class TransactionsResponse {
@@ -123,6 +124,7 @@ class TransactionsResponse {
           transObj.timeslot = DateTime.tryParse(transObj.timestamp).toLocal();
           transObj.time = DateFormat('y/M/d hh:mm a').format(transObj.timeslot).toString();
           _transactions.add(transObj);
+          transObj.txnID = txn['Transaction ID'];
 
         }
       }
@@ -139,6 +141,7 @@ class TransactionsResponse {
       transObj.mode = txn['mode'];
       transObj.amount = txn['amount'].toDouble();
       transObj.timestamp = txn['timestamp'];
+      transObj.txnID = txn['Transaction ID'];
       _trans.add(transObj);
     }
     return TransactionsResponse(

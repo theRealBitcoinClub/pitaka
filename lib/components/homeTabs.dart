@@ -149,7 +149,7 @@ ListView buildTransactionsList(transactions) {
                           ),
                           Padding(
                             padding:
-                            const EdgeInsets.fromLTRB(12.0, 2.0, 12.0, 2.0),
+                            const EdgeInsets.fromLTRB(8.0, 2.0, 12.0, 2.0),
                             child: Text(
                               "${_formatUser(transactions[transactions.length - index -1]
                                   .mode)} ${transactions[transactions.length-index-1].accountID}",
@@ -159,7 +159,16 @@ ListView buildTransactionsList(transactions) {
                           ),
                           Padding(
                             padding:
-                            const EdgeInsets.fromLTRB(4.0, 4.0, 8.0, 4.0),
+                            const EdgeInsets.fromLTRB(4.0, 4.0, 8.0, 2.0),
+                            child: Text(
+                                "Transaction ID: ${transactions[transactions.length - index -1]
+                                    .txnID}",
+                                style: TextStyle(fontSize: 14.0, fontWeight: FontWeight.bold)
+                            ),
+                          ),
+                          Padding(
+                            padding:
+                            const EdgeInsets.fromLTRB(2.0, 4.0, 8.0, 4.0),
                             child: Text(
                                 "Date of transaction: ${transactions[transactions.length - index -1]
                                     .time}",

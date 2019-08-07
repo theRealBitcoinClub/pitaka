@@ -23,7 +23,8 @@ class ProofOfPaymentComponentState extends State<ProofOfPaymentComponent> {
     return {
       'code': compressedString,
       'datetime': prefs.getString("_txnDateTime"),
-      'amount': prefs.getString("_txnAmount")
+      'amount': prefs.getString("_txnAmount"),
+      'txnID': prefs.getString("_txnID")
     };
   }
 
@@ -47,6 +48,14 @@ class ProofOfPaymentComponentState extends State<ProofOfPaymentComponent> {
                   children: <Widget>[
                     new SizedBox(
                       height: 30.0,
+                    ),
+                    Text(
+                        snapshot.data['txnID'],
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                            fontSize: 25.0,
+                            fontWeight: FontWeight.bold
+                        )
                     ),
                     Text(
                       convertToDoble(snapshot.data['amount']),
