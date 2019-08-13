@@ -146,7 +146,7 @@ class SendComponentState extends State<SendComponent> {
     // print(publicKey);
     // print('private key ------------------');
     // print(privateKey);
-    String barcode = await FlutterBarcodeScanner.scanBarcode("#ff6666");
+    String barcode = await FlutterBarcodeScanner.scanBarcode("#ff6666","Cancel", true);
     setState(() {
       if (barcode.length > 0) {
         _barcodeString = barcode;

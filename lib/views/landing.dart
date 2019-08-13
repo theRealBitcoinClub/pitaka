@@ -79,7 +79,7 @@ class LandingComponentState extends State<LandingComponent>
   void onData(ScreenStateEvent event) {
     //print(event);
     if (event == ScreenStateEvent.SCREEN_UNLOCKED) {
-      askUser();
+      checkUser();
     }
   }
 
@@ -164,36 +164,12 @@ class LandingComponentState extends State<LandingComponent>
         ));
   }
 
-  Future askUser() async {
-    switch (
-    await showDialog(
-        barrierDismissible: false,
-        context: context,
-        // ignore: deprecated_member_use
-        child: new SimpleDialog(
-          title: new Text("Choose Authentication Method"),
-          children: <Widget>[
-            new SimpleDialogOption(
-              child: new Text("Biometrics"),
-              onPressed: () {
-                Navigator.pop(context, Choice.BIOMETRICS);
-              },
-            ),
-            new SimpleDialogOption(
-              child: new Text("Pin Code"),
-              onPressed: () {
-                Navigator.pop(context, Choice.PIN);
-              },
-            )
-          ],
-        ))) {
-      case Choice.BIOMETRICS:
-      //  determinePath(context);
-          await _authenticate();
-        break;
-      case Choice.PIN:
-        _pinCode();
-        break;
+  Future checkUser() async {
+    bool checkBiometrics = await auth.canCheckBiometrics;
+    if(checkBiometrics == false) {
+      _pinCode();
+    } else{
+      _authenticate();
     }
   }
 
