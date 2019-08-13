@@ -124,7 +124,7 @@ class TransactionsResponse {
           transObj.timeslot = DateTime.tryParse(transObj.timestamp).toLocal();
           transObj.time = DateFormat('y/M/d hh:mm a').format(transObj.timeslot).toString();
           _transactions.add(transObj);
-          transObj.txnID = txn['Transaction ID'];
+          transObj.txnID = txn['TransactionID'];
 
         }
       }

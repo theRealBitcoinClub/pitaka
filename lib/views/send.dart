@@ -113,7 +113,7 @@ class SendComponentState extends State<SendComponent> {
     prefs.setString("_txnQrCode", qrcode);
     prefs.setString("_txnDateTime", _txnReadableDateTime);
     prefs.setString("_txnAmount", amount.toString());
-    prefs.setString("_txnID", txnID.substring(0,8));
+    prefs.setString("_txnID", txnID.substring(0,8).toUpperCase());
     var payload = {
       'from_account': selectedPaytacaAccount,
       'to_account': destinationAccount,
@@ -122,7 +122,7 @@ class SendComponentState extends State<SendComponent> {
       'public_key': publicKey,
       'txn_hash': txnhash,
       'signature': signature,
-      'transaction_id': txnID.substring(0,8)
+      'transaction_id': txnID.substring(0,8).toUpperCase()
     };
     var response = await transferAsset(payload);
     if (response.success == false) {
@@ -146,7 +146,7 @@ class SendComponentState extends State<SendComponent> {
     // print(publicKey);
     // print('private key ------------------');
     // print(privateKey);
-    String barcode = await FlutterBarcodeScanner.scanBarcode("#ff6666","okay", true);
+    String barcode = await FlutterBarcodeScanner.scanBarcode("#ff6666");
     setState(() {
       if (barcode.length > 0) {
         _barcodeString = barcode;
@@ -251,10 +251,44 @@ List<Widget> _buildForm(BuildContext context) {
           ),
           new Container(
             margin: const EdgeInsets.only(top: 5.0),
-            child: new RaisedButton(
-              child: const Text('Scan QR Code'),
-              onPressed: scanBarcode,
+            child: new ButtonTheme(
+              height: 60,
+              buttonColor: Colors.white,
+              child: new OutlineButton(
+                borderSide: BorderSide(
+                  color: Colors.black
+                ),
+                child: const Text('Scan QR Code', style: TextStyle(fontSize: 18)),
+                onPressed: scanBarcode
+              )
             )
+          ),
+          new SizedBox(
+            height: 30.0,
+          ),
+          new Container(
+            child: new Text(
+              'OR',
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 18)
+            ),
+          ),
+          new SizedBox(
+            height: 30.0,
+          ),
+          new Container(
+            child: new Text(
+              'Enter Mobile Number',
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 18)
+            ),
+          ),
+          new Container(
+            child: new Text(
+              '[Coming Soon]',
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 16)
+            ),
           ),
           new FutureBuilder<String>(
             future: getBarcode(),

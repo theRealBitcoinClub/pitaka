@@ -205,8 +205,8 @@ class LandingComponentState extends State<LandingComponent>
       Application.router.navigateTo(context, "/onboarding/request");
   //  Application.router.navigateTo(context, "/onboarding/register");
     } else {
-      await askUser();
-    //  await _authenticate();
+      // await askUser();
+      await _authenticate();
       if (authenticated == true) {
         Application.router.navigateTo(context, "/home");
         }

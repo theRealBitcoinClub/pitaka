@@ -50,14 +50,6 @@ class ProofOfPaymentComponentState extends State<ProofOfPaymentComponent> {
                       height: 30.0,
                     ),
                     Text(
-                        snapshot.data['txnID'],
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                            fontSize: 25.0,
-                            fontWeight: FontWeight.bold
-                        )
-                    ),
-                    Text(
                       convertToDoble(snapshot.data['amount']),
                       textAlign: TextAlign.center,
                       style: TextStyle(
@@ -71,6 +63,14 @@ class ProofOfPaymentComponentState extends State<ProofOfPaymentComponent> {
                       style: TextStyle(
                         fontSize: 20.0
                       )
+                    ),
+                    Text(
+                        "ID: " + snapshot.data['txnID'],
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                            fontSize: 25.0,
+                            fontWeight: FontWeight.bold
+                        )
                     ),
                     new SizedBox(
                       height: 30.0,

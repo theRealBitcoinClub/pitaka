@@ -21,7 +21,7 @@ ListView buildBalancesList(balances) {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: <Widget>[
                       Padding(
-                        padding: const EdgeInsets.fromLTRB(8.0, 8.0, 0.0, 0.0),
+                        padding: const EdgeInsets.fromLTRB(15.0, 10.0, 0.0, 0.0),
                         child:
                             Text(
                               "${balances[index].accountName}",
@@ -29,21 +29,21 @@ ListView buildBalancesList(balances) {
                                   fontSize: 18.0, fontWeight: FontWeight.bold),
                             )
                       ),
-                      globals.online == false ? Padding(
-                        padding: const EdgeInsets.fromLTRB(8.0, 0, 12.0, 12.0),
+                      Padding(
+                        padding:
+                            const EdgeInsets.fromLTRB(15.0, 10.0, 12.0, 12.0),
                         child: Text(
-                          "$dateOfLastBalance",
+                          "${formatCurrency.format(balances[index].balance)}",
+                          style: TextStyle(fontSize: 25.0),
+                        ),
+                      ),
+                      globals.online == false ? Padding(
+                        padding: const EdgeInsets.fromLTRB(15.0, 0, 12.0, 12.0),
+                        child: Text(
+                          "as of $dateOfLastBalance",
                           style: TextStyle(fontSize: 12.0)
                         )
                       ) : Container(),
-                      Padding(
-                        padding:
-                            const EdgeInsets.fromLTRB(12.0, 6.0, 12.0, 12.0),
-                        child: Text(
-                          "${formatCurrency.format(balances[index].balance)}",
-                          style: TextStyle(fontSize: 18.0),
-                        ),
-                      )
                     ],
                   ), Column (
                     children: <Widget>[
@@ -130,49 +130,40 @@ ListView buildTransactionsList(transactions) {
                         children: <Widget>[
                           Padding(
                             padding:
-                            const EdgeInsets.fromLTRB(8.0, 8.0, 8.0, 6.0),
+                            const EdgeInsets.fromLTRB(15.0, 15.0, 12.0, 4.0),
                             child: Text(
                               "${_formatMode(transactions[transactions.length - index -1]
-                                  .mode)}",
-                              style: TextStyle(
-                                  fontSize: 18.0, fontWeight: FontWeight.bold),
-                            ),
-                          ),
-                          Padding(
-                            padding:
-                            const EdgeInsets.fromLTRB(12.0, 6.0, 12.0, 4.0),
-                            child: Text(
-                              "${formatCurrency.format(
+                                  .mode)} - ${formatCurrency.format(
                                   transactions[transactions.length - index -1].amount)}",
-                              style: TextStyle(fontSize: 18.0),
+                              style: TextStyle(fontSize: 20.0),
                             ),
                           ),
                           Padding(
                             padding:
-                            const EdgeInsets.fromLTRB(8.0, 2.0, 12.0, 2.0),
+                            const EdgeInsets.fromLTRB(15.0, 4.0, 8.0, 4.0),
                             child: Text(
-                              "${_formatUser(transactions[transactions.length - index -1]
-                                  .mode)} ${transactions[transactions.length-index-1].accountID}",
-                              style: TextStyle(
-                                  fontSize: 16.0, fontWeight: FontWeight.bold),
-                            ),
-                          ),
-                          Padding(
-                            padding:
-                            const EdgeInsets.fromLTRB(4.0, 4.0, 8.0, 2.0),
-                            child: Text(
-                                "Transaction ID: ${transactions[transactions.length - index -1]
-                                    .txnID}",
-                                style: TextStyle(fontSize: 14.0, fontWeight: FontWeight.bold)
-                            ),
-                          ),
-                          Padding(
-                            padding:
-                            const EdgeInsets.fromLTRB(2.0, 4.0, 8.0, 4.0),
-                            child: Text(
-                                "Date of transaction: ${transactions[transactions.length - index -1]
+                                "${transactions[transactions.length - index -1]
                                     .time}",
-                                style: TextStyle(fontSize: 12.0)
+                                style: TextStyle(fontSize: 16.0)
+                            ),
+                          ),
+                          // Padding(
+                          //   padding:
+                          //   const EdgeInsets.fromLTRB(8.0, 2.0, 12.0, 2.0),
+                          //   child: Text(
+                          //     "${_formatUser(transactions[transactions.length - index -1]
+                          //         .mode)} ${transactions[transactions.length-index-1].accountID}",
+                          //     style: TextStyle(
+                          //         fontSize: 16.0, fontWeight: FontWeight.bold),
+                          //   ),
+                          // ),
+                          Padding(
+                            padding:
+                            const EdgeInsets.fromLTRB(15.0, 4.0, 8.0, 15.0),
+                            child: Text(
+                                "ID: ${transactions[transactions.length - index -1]
+                                    .txnID}",
+                                style: TextStyle(fontSize: 16.0)
                             ),
                           ),
                         ],

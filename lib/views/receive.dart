@@ -50,7 +50,7 @@ class ReceiveComponentState extends State<ReceiveComponent> {
   }
 
   void scanQrcode() async {
-    String qrcode = await FlutterBarcodeScanner.scanBarcode("#ff6666","okay", true);
+    String qrcode = await FlutterBarcodeScanner.scanBarcode("#ff6666");
     var baseDecoded = base64.decode(qrcode);
     var gzipDecoded = new GZipDecoder().decodeBytes(baseDecoded);
     var utf8Decoded = utf8.decode(gzipDecoded);
@@ -286,13 +286,16 @@ class ReceiveComponentState extends State<ReceiveComponent> {
                     items: data.map((item) {
                       return DropdownMenuItem(
                         value: item['accountId'],
-                        child: new Text("${item['accountName']} ( ${double.parse(item['balance']).toStringAsFixed(2)} )"),
+                        child: new Text("${item['accountName']} ( PHP ${double.parse(item['balance']).toStringAsFixed(2)} )"),
                       );
                     }).toList()
                   ),
                 )
               );
             },
+          ),
+          new SizedBox(
+            height: 20.0,
           ),
           QrImage(
             data: _selectedPaytacaAccount != null ? "::paytaca::$_selectedPaytacaAccount::paytaca::": null,
