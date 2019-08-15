@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:connectivity/connectivity.dart';
@@ -57,12 +58,15 @@ Future<void> initConnection() async{
 
 Future<bool> checkConnection() async {
   var connectivityResult = await (Connectivity().checkConnectivity());
+  final result = await InternetAddress.lookup('google.com');
   try {
-    if (connectivityResult == ConnectivityResult.mobile || connectivityResult == ConnectivityResult.wifi) {
+    if (connectivityResult == ConnectivityResult.mobile && result.isNotEmpty && result[0].rawAddress.isNotEmpty ||
+        connectivityResult == ConnectivityResult.wifi && result.isNotEmpty && result[0].rawAddress.isNotEmpty ) {
       online = true;
     } else {
-      online = false;
-    }
+        online = false;
+      }
+
   }on PlatformException catch (e) {
     print(e);
   }
@@ -75,3 +79,4 @@ void checkInternet () async {
     prefs.setBool("online", status);
   });
 }
+

@@ -83,7 +83,25 @@ class RegisterComponentState extends State<RegisterComponent> {
   void askPin() async {
     checkBiometrics = await auth.canCheckBiometrics;
     if(checkBiometrics == false) {
-      checkBiometrics = false;
+      Navigator.push(
+          context,
+          PageRouteBuilder(
+              opaque: false,
+              pageBuilder: (context, animation, secondaryAnimation) =>
+                  PasscodeScreen(
+                    title: 'Enter Desired PIN Code',
+                    passwordDigits: 6,
+                    circleUIConfig: circleUIConfig,
+                    keyboardUIConfig: keyboardUIConfig,
+                    passwordEnteredCallback: _onPassCodeEntered,
+                    cancelLocalizedText: 'Cancel',
+                    deleteLocalizedText: 'Delete',
+                    shouldTriggerVerification: _verificationNotifier.stream,
+                    //     cancelCallback: _onPasscodeCancelled,
+                  )
+          ));
+    } else {
+      _validateInputs(context);
     }
 /*      Navigator.push(
           context,
@@ -393,28 +411,10 @@ class RegisterComponentState extends State<RegisterComponent> {
                 onPressed: () {
                   _validateInputs(context);
                   askPin();
-                  if(checkBiometrics == false) {
-                    Navigator.push(
-                        context,
-                        PageRouteBuilder(
-                            opaque: false,
-                            pageBuilder: (context, animation, secondaryAnimation) =>
-                                PasscodeScreen(
-                                  title: 'Enter Desired PIN Code',
-                                  passwordDigits: 6,
-                                  circleUIConfig: circleUIConfig,
-                                  keyboardUIConfig: keyboardUIConfig,
-                                  passwordEnteredCallback: _onPassCodeEntered,
-                                  cancelLocalizedText: 'Cancel',
-                                  deleteLocalizedText: 'Delete',
-                                  shouldTriggerVerification: _verificationNotifier.stream,
-                                  //     cancelCallback: _onPasscodeCancelled,
-                                )
-                        ));
-                  }
+
+
                 },
                 child: new Text('Submit'),
-
               )
             ]));
 
