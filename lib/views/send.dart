@@ -12,6 +12,7 @@ import 'package:permission_handler/permission_handler.dart';
 import '../utils/globals.dart' as globals;
 import '../utils/database_helper.dart';
 import 'package:uuid/uuid.dart';
+import '../utils/globals.dart';
 
 
 
@@ -39,6 +40,8 @@ class SendComponentState extends State<SendComponent> {
   static String _errorMessage;
   bool online = globals.online;
   DatabaseHelper databaseHelper = DatabaseHelper();
+  StreamSubscription _connectionChangeStream;
+  bool isOffline = false;
 
   
   Future<List> getAccounts(destinationAccountId) async {
@@ -71,7 +74,9 @@ class SendComponentState extends State<SendComponent> {
   @override
   void initState() {
     super.initState();
-    globals.checkConnection().then((status){
+    ConnectionStatusSingleton connectionStatus = ConnectionStatusSingleton.getInstance();
+    _connectionChangeStream = connectionStatus.connectionChange.listen(connectionChanged);
+  /*  globals.checkConnection().then((status){
       setState(() {
         if (status == false) {
           online = false;  
@@ -80,6 +85,21 @@ class SendComponentState extends State<SendComponent> {
           globals.online = online;
         }
       });
+    });*/
+  }
+
+  void connectionChanged(dynamic hasConnection) {
+    setState(() {
+      isOffline = !hasConnection;
+      if(isOffline == false) {
+        online = !online;
+        globals.online = online;
+        print("Online");
+      } else {
+        online = false;
+        globals.online = online;
+        print("Offline");
+      }
     });
   }
   
@@ -213,7 +233,7 @@ class SendComponentState extends State<SendComponent> {
               padding: EdgeInsets.only(right: 20.0),
               child: GestureDetector(
                 child: online ? new Icon(Icons.wifi): new Icon(Icons.signal_wifi_off),
-                onTap: (){
+              /*  onTap: (){
                   globals.checkConnection().then((status){
                     setState(() {
                       if (status == true) {
@@ -225,7 +245,7 @@ class SendComponentState extends State<SendComponent> {
                       }
                     });
                   });
-                }
+                }*/
               ) 
             )
           ],

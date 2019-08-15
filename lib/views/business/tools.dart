@@ -3,6 +3,8 @@ import '../../components/drawer.dart';
 import '../../views/app.dart';
 import '../../api/endpoints.dart';
 import '../../utils/globals.dart' as globals;
+import '../../utils/globals.dart';
+import 'dart:async';
 
 class BusinessToolsComponent extends StatefulWidget {
   @override
@@ -12,6 +14,8 @@ class BusinessToolsComponent extends StatefulWidget {
 class BusinessToolsComponentState extends State<BusinessToolsComponent> {
   bool _loading = true;
   bool online = globals.online;
+  StreamSubscription _connectionChangeStream;
+  bool isOffline = false;
 
   Future<String> getReferences() async {
     await getBusinesReferences();
@@ -25,7 +29,9 @@ class BusinessToolsComponentState extends State<BusinessToolsComponent> {
   void initState() {
     super.initState();
     this.getReferences();
-    globals.checkConnection().then((status){
+    ConnectionStatusSingleton connectionStatus = ConnectionStatusSingleton.getInstance();
+    _connectionChangeStream = connectionStatus.connectionChange.listen(connectionChanged);
+  /*  globals.checkConnection().then((status){
       setState(() {
         if (status == false) {
           online = false;  
@@ -34,6 +40,21 @@ class BusinessToolsComponentState extends State<BusinessToolsComponent> {
           globals.online = online;
         }
       });
+    });*/
+  }
+
+  void connectionChanged(dynamic hasConnection) {
+    setState(() {
+      isOffline = !hasConnection;
+      if(isOffline == false) {
+        online = false;
+        globals.online = online;
+        print("Online");
+      } else {
+        online = false;
+        globals.online = online;
+        print("Offline");
+      }
     });
   }
 
@@ -107,7 +128,7 @@ class BusinessToolsComponentState extends State<BusinessToolsComponent> {
               padding: EdgeInsets.only(right: 20.0),
               child: GestureDetector(
                 child: online ? new Icon(Icons.wifi): new Icon(Icons.signal_wifi_off),
-                onTap: (){
+               /* onTap: (){
                   globals.checkConnection().then((status){
                     setState(() {
                       if (status == true) {
@@ -119,8 +140,8 @@ class BusinessToolsComponentState extends State<BusinessToolsComponent> {
                       }
                     });
                   });
-                }
-              ) 
+                }*/
+              )
             )
           ],
           centerTitle: true,

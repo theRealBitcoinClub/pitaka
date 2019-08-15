@@ -4,6 +4,8 @@ import '../views/app.dart';
 import '../utils/helpers.dart';
 import '../components/drawer.dart';
 import '../utils/globals.dart' as globals;
+import '../utils/globals.dart';
+import 'dart:async';
 
 class AddAccount {
   String name;
@@ -21,7 +23,10 @@ class AddAccountComponentState extends State<AddAccountComponent> {
   AddAccount newAccount = new AddAccount();
   bool _autoValidate = false;
   bool online = globals.online;
-  
+  StreamSubscription _connectionChangeStream;
+  bool isOffline = false;
+
+
   String validateName(String value) {
     if (value.length < 3)
       return 'Name must be more than 2 charater';
@@ -134,7 +139,9 @@ class AddAccountComponentState extends State<AddAccountComponent> {
   @override
   void initState() {
     super.initState();
-    globals.checkConnection().then((status){
+    ConnectionStatusSingleton connectionStatus = ConnectionStatusSingleton.getInstance();
+    _connectionChangeStream = connectionStatus.connectionChange.listen(connectionChanged);
+  /*  globals.checkConnection().then((status){
       setState(() {
         if (status == false) {
           online = false;  
@@ -143,6 +150,22 @@ class AddAccountComponentState extends State<AddAccountComponent> {
           globals.online = online;
         }
       });
+    });*/
+  }
+
+
+  void connectionChanged(dynamic hasConnection) {
+    setState(() {
+      isOffline = !hasConnection;
+      if(isOffline == false) {
+        online = !online;
+        globals.online = online;
+        print("Online");
+      } else {
+        online = false;
+        globals.online = online;
+        print("Offline");
+      }
     });
   }
 
@@ -156,7 +179,7 @@ class AddAccountComponentState extends State<AddAccountComponent> {
               padding: EdgeInsets.only(right: 20.0),
               child: GestureDetector(
                 child: online ? new Icon(Icons.wifi): new Icon(Icons.signal_wifi_off),
-                onTap: (){
+            /*    onTap: (){
                   globals.checkConnection().then((status){
                     setState(() {
                       if (status == true) {
@@ -168,8 +191,8 @@ class AddAccountComponentState extends State<AddAccountComponent> {
                       }
                     });
                   });
-                }
-              ) 
+                }*/
+              )
             )
           ],
           centerTitle: true,

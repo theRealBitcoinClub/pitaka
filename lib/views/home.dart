@@ -10,6 +10,7 @@ import '../utils/globals.dart' as globals;
 import '../utils/database_helper.dart';
 import 'package:connectivity/connectivity.dart';
 import 'package:flutter/services.dart';
+import '../utils/globals.dart';
 
 
 class HomeComponent extends StatefulWidget {
@@ -23,12 +24,16 @@ class HomeComponentState extends State<HomeComponent> {
   bool syncing = globals.syncing;
   final formatCurrency = new NumberFormat.currency(symbol: 'PHP ');
   DatabaseHelper databaseHelper = DatabaseHelper();
+  StreamSubscription _connectionChangeStream;
+  bool isOffline = false;
 
 
   @override
   void initState()  {
     super.initState();
-    globals.checkConnection().then((status){
+    ConnectionStatusSingleton connectionStatus = ConnectionStatusSingleton.getInstance();
+    _connectionChangeStream = connectionStatus.connectionChange.listen(connectionChanged);
+    /*globals.checkConnection().then((status){
       setState(() {
         if (status == false) {
           online = false;  
@@ -39,6 +44,25 @@ class HomeComponentState extends State<HomeComponent> {
           print('Online');
         }
       });
+    });*/
+  }
+
+  void connectionChanged(dynamic hasConnection) {
+    setState(() {
+      isOffline = !hasConnection;
+      if(isOffline == false) {
+        online = !online;
+        globals.online = online;
+        syncing = true;
+        globals.syncing = true;
+        print("Online");
+      } else {
+        online = false;
+        globals.online = online;
+        syncing = false;
+        globals.syncing = false;
+        print("Offline");
+      }
     });
   }
 
@@ -61,7 +85,7 @@ class HomeComponentState extends State<HomeComponent> {
               padding: EdgeInsets.only(right: 20.0),
               child: GestureDetector(
                 child: online ? new Icon(Icons.wifi): new Icon(Icons.signal_wifi_off),
-                onTap: (){
+             /*   onTap: (){
                   if (globals.syncing == false) {
                     globals.checkConnection().then((status){
                       setState(() {
@@ -82,7 +106,7 @@ class HomeComponentState extends State<HomeComponent> {
                       });
                     });
                   }
-                }
+                }*/
               )
             )
           ],

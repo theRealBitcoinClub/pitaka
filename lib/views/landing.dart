@@ -13,6 +13,7 @@ import 'package:passcode_screen/passcode_screen.dart';
 import 'package:passcode_screen/circle.dart';
 import 'package:passcode_screen/keyboard.dart';
 import 'package:screen_state/screen_state.dart';
+import '../utils/globals.dart';
 
 
 enum Choice{BIOMETRICS, PIN}
@@ -27,6 +28,7 @@ class LandingComponentState extends State<LandingComponent>
 
   Screen _screen;
   StreamSubscription<ScreenStateEvent> _subscription;
+  ConnectionStatusSingleton connectionStatus = ConnectionStatusSingleton.getInstance();
 
   @override
   Widget build(BuildContext context) {

@@ -37,26 +37,8 @@ DatabaseHelper databaseHelper = DatabaseHelper();
 
 final storage = new FlutterSecureStorage();
 
-@override
-void dispose() {
- // _connectivitySubscription.cancel();
-}
 
-Future<void> initConnection() async{
-  ConnectivityResult result;
-  // Platform messages may fail, so we use a try/catch PlatformException.
-  try {
-    result = await _connectivity.checkConnectivity();
-  } on PlatformException catch (e) {
-    print(e.toString());
-  }
-  // If the widget was removed from the tree while the asynchronous platform
-  // message was in flight, we want to discard the reply rather than calling
-  // setState to update our non-existent appearance.
-  checkConnection();
-}
-
-Future<bool> checkConnection() async {
+Future<bool> iniConnection() async {
   var connectivityResult = await (Connectivity().checkConnectivity());
   final result = await InternetAddress.lookup('google.com');
   try {
@@ -74,9 +56,71 @@ return online;
 }
 
 void checkInternet () async {
-  checkConnection().then((status) async{
+  iniConnection().then((status) async{
     SharedPreferences prefs = await SharedPreferences.getInstance();
     prefs.setBool("online", status);
   });
 }
 
+class ConnectionStatusSingleton {
+  //This creates the single instance by calling the `_internal` constructor specified below
+  static final ConnectionStatusSingleton _singleton = new ConnectionStatusSingleton._internal();
+  ConnectionStatusSingleton._internal();
+
+  //This is what's used to retrieve the instance through the app
+  static ConnectionStatusSingleton getInstance() => _singleton;
+
+  //This tracks the current connection status
+  bool hasConnection = false;
+
+  //This is how we'll allow subscribing to connection changes
+  StreamController connectionChangeController = new StreamController.broadcast();
+
+  //flutter_connectivity
+  final Connectivity _connectivity = Connectivity();
+
+  //Hook into flutter_connectivity's Stream to listen for changes
+  //And check the connection status out of the gate
+  void initialize() {
+    _connectivity.onConnectivityChanged.listen(_connectionChange);
+    checkConnection();
+  }
+
+  Stream get connectionChange => connectionChangeController.stream;
+
+  //A clean up method to close our StreamController
+  //   Because this is meant to exist through the entire application life cycle this isn't
+  //   really an issue
+  void dispose() {
+    connectionChangeController.close();
+  }
+
+  //flutter_connectivity's listener
+  void _connectionChange(ConnectivityResult result) {
+    checkConnection();
+  }
+
+  //The test to actually see if there is a connection
+  Future<bool> checkConnection() async {
+    bool previousConnection = hasConnection;
+
+    try {
+      final result = await InternetAddress.lookup('google.com');
+      if (result.isNotEmpty && result[0].rawAddress.isNotEmpty) {
+        hasConnection = true;
+      } else {
+        hasConnection = false;
+      }
+    } on SocketException catch(_) {
+      hasConnection = false;
+    }
+
+    //The connection status changed send out an update to all listeners
+    if (previousConnection != hasConnection) {
+      connectionChangeController.add(hasConnection);
+    }
+
+    return hasConnection;
+  }
+
+}
