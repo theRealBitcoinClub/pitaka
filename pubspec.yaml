@@ -17,7 +17,7 @@ dependencies:
     git:
       url: git://github.com/lukef/qr.flutter.git
       ref: 2.0.0-dev
-  flutter_barcode_scanner: ^0.0.6
+  flutter_barcode_scanner: ^0.1.5+1
   local_auth: ^0.4.0+1
   flutter_sodium: ^0.0.9
   hex: ^0.1.2
