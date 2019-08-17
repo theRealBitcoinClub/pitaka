@@ -11,6 +11,8 @@ import 'package:intl/intl.dart';
 import 'package:permission_handler/permission_handler.dart';
 import '../utils/globals.dart' as globals;
 import '../utils/database_helper.dart';
+import 'package:uuid/uuid.dart';
+import '../utils/globals.dart';
 
 
 
@@ -31,12 +33,15 @@ class SendComponentState extends State<SendComponent> {
   String lastBalance;
   String lBalanceSignature;
   String lBalanceTime;
+  String txnID;
   static List data = List();
   bool validCode = false;
   static bool _errorFound = false;
   static String _errorMessage;
   bool online = globals.online;
   DatabaseHelper databaseHelper = DatabaseHelper();
+  StreamSubscription _connectionChangeStream;
+  bool isOffline = false;
 
   
   Future<List> getAccounts(destinationAccountId) async {
@@ -69,7 +74,9 @@ class SendComponentState extends State<SendComponent> {
   @override
   void initState() {
     super.initState();
-    globals.checkConnection().then((status){
+    ConnectionStatusSingleton connectionStatus = ConnectionStatusSingleton.getInstance();
+    _connectionChangeStream = connectionStatus.connectionChange.listen(connectionChanged);
+  /*  globals.checkConnection().then((status){
       setState(() {
         if (status == false) {
           online = false;  
@@ -78,6 +85,21 @@ class SendComponentState extends State<SendComponent> {
           globals.online = online;
         }
       });
+    });*/
+  }
+
+  void connectionChanged(dynamic hasConnection) {
+    setState(() {
+      isOffline = !hasConnection;
+      if(isOffline == false) {
+        online = !online;
+        globals.online = online;
+        print("Online");
+      } else {
+        online = false;
+        globals.online = online;
+        print("Offline");
+      }
     });
   }
   
@@ -88,13 +110,17 @@ class SendComponentState extends State<SendComponent> {
     BuildContext context,
     String lBalance,
     String lSignedBalance,
+    String txnID,
     String lBalanceTimeStamp) async {
     _submitting = true;
     String destinationAccount = toAccount;
     String publicKey = await globals.storage.read(key: "publicKey");
     String privateKey = await globals.storage.read(key: "privateKey");
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    
+
+    var uuid = new Uuid();
+    txnID = uuid.v1();
+
     var now = new DateTime.now();
     var txnDateTime = DateTime.parse(now.toString());
     var txnhash = "$amount:-:$txnDateTime:-:"
@@ -107,6 +133,7 @@ class SendComponentState extends State<SendComponent> {
     prefs.setString("_txnQrCode", qrcode);
     prefs.setString("_txnDateTime", _txnReadableDateTime);
     prefs.setString("_txnAmount", amount.toString());
+    prefs.setString("_txnID", txnID.substring(0,8).toUpperCase());
     var payload = {
       'from_account': selectedPaytacaAccount,
       'to_account': destinationAccount,
@@ -114,7 +141,8 @@ class SendComponentState extends State<SendComponent> {
       'amount': amount,
       'public_key': publicKey,
       'txn_hash': txnhash,
-      'signature': signature
+      'signature': signature,
+      'transaction_id': txnID.substring(0,8).toUpperCase()
     };
     var response = await transferAsset(payload);
     if (response.success == false) {
@@ -138,7 +166,7 @@ class SendComponentState extends State<SendComponent> {
     // print(publicKey);
     // print('private key ------------------');
     // print(privateKey);
-    String barcode = await FlutterBarcodeScanner.scanBarcode("#ff6666");
+    String barcode = await FlutterBarcodeScanner.scanBarcode("#ff6666","Cancel", true);
     setState(() {
       if (barcode.length > 0) {
         _barcodeString = barcode;
@@ -205,7 +233,7 @@ class SendComponentState extends State<SendComponent> {
               padding: EdgeInsets.only(right: 20.0),
               child: GestureDetector(
                 child: online ? new Icon(Icons.wifi): new Icon(Icons.signal_wifi_off),
-                onTap: (){
+              /*  onTap: (){
                   globals.checkConnection().then((status){
                     setState(() {
                       if (status == true) {
@@ -217,7 +245,7 @@ class SendComponentState extends State<SendComponent> {
                       }
                     });
                   });
-                }
+                }*/
               ) 
             )
           ],
@@ -243,10 +271,44 @@ List<Widget> _buildForm(BuildContext context) {
           ),
           new Container(
             margin: const EdgeInsets.only(top: 5.0),
-            child: new RaisedButton(
-              child: const Text('Scan QR Code'),
-              onPressed: scanBarcode,
+            child: new ButtonTheme(
+              height: 60,
+              buttonColor: Colors.white,
+              child: new OutlineButton(
+                borderSide: BorderSide(
+                  color: Colors.black
+                ),
+                child: const Text('Scan QR Code', style: TextStyle(fontSize: 18)),
+                onPressed: scanBarcode
+              )
             )
+          ),
+          new SizedBox(
+            height: 30.0,
+          ),
+          new Container(
+            child: new Text(
+              'OR',
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 18)
+            ),
+          ),
+          new SizedBox(
+            height: 30.0,
+          ),
+          new Container(
+            child: new Text(
+              'Enter Mobile Number',
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 18)
+            ),
+          ),
+          new Container(
+            child: new Text(
+              '[Coming Soon]',
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 16)
+            ),
           ),
           new FutureBuilder<String>(
             future: getBarcode(),
@@ -327,7 +389,8 @@ List<Widget> _buildForm(BuildContext context) {
                                   context,
                                   lastBalance,
                                   lBalanceSignature,
-                                  lBalanceTime
+                                  txnID,
+                                  lBalanceTime,
                                   );
                               }
                             }

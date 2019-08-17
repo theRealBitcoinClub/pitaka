@@ -16,6 +16,8 @@ import '../utils/globals.dart' as globals;
 import '../api/endpoints.dart';
 import 'package:archive/archive.dart';
 // import '../api/endpoints.dart';
+import '../utils/globals.dart';
+
 
 class ReceiveComponent extends StatefulWidget {
   @override
@@ -29,12 +31,16 @@ class ReceiveComponentState extends State<ReceiveComponent> {
   String _selectedPaytacaAccount;
   static List data = List(); //edited line
   bool online = globals.online;
-  
+  StreamSubscription _connectionChangeStream;
+  bool isOffline = false;
+
   @override
-  void initState() {
+  void initState()  {
     super.initState();
     this.getAccounts();
-    globals.checkConnection().then((status){
+    ConnectionStatusSingleton connectionStatus = ConnectionStatusSingleton.getInstance();
+    _connectionChangeStream = connectionStatus.connectionChange.listen(connectionChanged);
+  /*  globals.checkConnection().then((status){
       setState(() {
         if (status == false) {
           online = false;  
@@ -43,12 +49,27 @@ class ReceiveComponentState extends State<ReceiveComponent> {
           globals.online = online;
         }
       });
-    });
+    });*/
     
   }
 
+  void connectionChanged(dynamic hasConnection) {
+    setState(() {
+      isOffline = !hasConnection;
+      if(isOffline == false) {
+        online = !online;
+        globals.online = online;
+        print("Online");
+      } else {
+        online = false;
+        globals.online = online;
+        print("Offline");
+      }
+    });
+  }
+
   void scanQrcode() async {
-    String qrcode = await FlutterBarcodeScanner.scanBarcode("#ff6666");
+    String qrcode = await FlutterBarcodeScanner.scanBarcode("#ff6666","Cancel", true);
     var baseDecoded = base64.decode(qrcode);
     var gzipDecoded = new GZipDecoder().decodeBytes(baseDecoded);
     var utf8Decoded = utf8.decode(gzipDecoded);
@@ -89,7 +110,7 @@ class ReceiveComponentState extends State<ReceiveComponent> {
                   'message': hashMessage,
                   'signature': lastSignedBalance,
                   'balance': lBalance,
-                  'timestamp': timestamp
+                  'timestamp': timestamp,
                 }
               };
               var response = await receiveAsset(payload);
@@ -139,7 +160,7 @@ class ReceiveComponentState extends State<ReceiveComponent> {
         acctObj['balance'] = onlineBalance;
       } else {
         var x = double.tryParse(onlineBalance);
-        var resp = await databaseHelper.offlineBalanceAnalyser(accountId, x);
+        var resp = await globals.databaseHelper.offlineBalanceAnalyser(accountId, x);
         acctObj['balance'] = resp['computedBalance'].toString();
       }
       _accounts.add(acctObj);
@@ -215,7 +236,7 @@ class ReceiveComponentState extends State<ReceiveComponent> {
               padding: EdgeInsets.only(right: 20.0),
               child: GestureDetector(
                 child: online ? new Icon(Icons.wifi): new Icon(Icons.signal_wifi_off),
-                onTap: (){
+              /*  onTap: (){
                   globals.checkConnection().then((status){
                     setState(() {
                       if (status == true) {
@@ -227,7 +248,7 @@ class ReceiveComponentState extends State<ReceiveComponent> {
                       }
                     });
                   });
-                }
+                }*/
               ) 
             )
           ],
@@ -284,13 +305,16 @@ class ReceiveComponentState extends State<ReceiveComponent> {
                     items: data.map((item) {
                       return DropdownMenuItem(
                         value: item['accountId'],
-                        child: new Text("${item['accountName']} ( ${double.parse(item['balance']).toStringAsFixed(2)} )"),
+                        child: new Text("${item['accountName']} ( PHP ${double.parse(item['balance']).toStringAsFixed(2)} )"),
                       );
                     }).toList()
                   ),
                 )
               );
             },
+          ),
+          new SizedBox(
+            height: 20.0,
           ),
           QrImage(
             data: _selectedPaytacaAccount != null ? "::paytaca::$_selectedPaytacaAccount::paytaca::": null,

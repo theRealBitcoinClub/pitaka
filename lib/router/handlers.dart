@@ -15,6 +15,7 @@ import '../views/business/linkAccount.dart';
 import '../views/proofOfPayment.dart';
 import '../views/business/businesses.dart';
 import '../views/addAccount.dart';
+import '../views/settings.dart';
 
 var rootHandler = new Handler(
     handlerFunc: (BuildContext context, Map<String, dynamic> params) {
@@ -90,4 +91,9 @@ var businessesHandler = new Handler(
 var addAccountHandler = new Handler(
     handlerFunc: (BuildContext context, Map<String, dynamic> params) {
   return new AddAccountComponent();
+});
+
+var settingsHandler = new Handler(
+    handlerFunc: (BuildContext context, Map<String, dynamic> params) {
+      return new SettingsComponent();
 });

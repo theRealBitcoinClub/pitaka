@@ -76,7 +76,13 @@ Drawer buildDrawer(BuildContext context) {
             trailing: Icon(Icons.build),
             onTap: () {
               Application.router.navigateTo(context, "/businesstools");
-            })
+            }),
+        ListTile(
+          title: Text('Settings'),
+          trailing: Icon(Icons.settings),
+          onTap: (){
+            Application.router.navigateTo(context, "/settings");
+          }),
       ],
     ),
   );
