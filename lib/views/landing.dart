@@ -26,8 +26,8 @@ class LandingComponent extends StatefulWidget {
 class LandingComponentState extends State<LandingComponent>
     with AfterLayoutMixin<LandingComponent> {
 
-  Screen _screen;
-  StreamSubscription<ScreenStateEvent> _subscription;
+  // Screen _screen;
+  // StreamSubscription<ScreenStateEvent> _subscription;
   ConnectionStatusSingleton connectionStatus = ConnectionStatusSingleton.getInstance();
 
   @override
@@ -71,19 +71,19 @@ class LandingComponentState extends State<LandingComponent>
   void initState() {
     super.initState();
     globals.checkInternet();
-    initPlatformState();
+    // initPlatformState();
   }
 
-  Future<void> initPlatformState() async {
-    startListening();
-  }
+  // Future<void> initPlatformState() async {
+  //   startListening();
+  // }
 
-  void onData(ScreenStateEvent event) {
-    //print(event);
-    if (event == ScreenStateEvent.SCREEN_UNLOCKED) {
-      checkUser();
-    }
-  }
+  // void onData(ScreenStateEvent event) {
+  //   //print(event);
+  //   if (event == ScreenStateEvent.SCREEN_UNLOCKED) {
+  //     checkUser();
+  //   }
+  // }
 
 
   final LocalAuthentication auth = LocalAuthentication();
@@ -126,18 +126,18 @@ class LandingComponentState extends State<LandingComponent>
     super.dispose();
   }
 
-  void startListening() {
-    _screen = new Screen();
-    try {
-      _subscription = _screen.screenStateStream.listen(onData);
-    } on ScreenStateException catch (exception) {
-      print(exception);
-    }
-  }
+  // void startListening() {
+  //   _screen = new Screen();
+  //   try {
+  //     _subscription = _screen.screenStateStream.listen(onData);
+  //   } on ScreenStateException catch (exception) {
+  //     print(exception);
+  //   }
+  // }
 
-  void stopListening() {
-    _subscription.cancel();
-  }
+  // void stopListening() {
+  //   _subscription.cancel();
+  // }
 
   void _onPasscodeCancelled() {
     exit(0);
