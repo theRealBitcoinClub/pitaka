@@ -157,15 +157,6 @@ class SendComponentState extends State<SendComponent> {
 
   void scanBarcode() async {
     allowCamera();
-    // String privateKey = await globals.storage.read(key: "privateKey");
-    // String publicKey = await globals.storage.read(key: "publicKey");
-    // String userid = await globals.storage.read(key: "userId");
-    // print('user id ---------------------');
-    // print(userid);
-    // print('public key -------------------');
-    // print(publicKey);
-    // print('private key ------------------');
-    // print(privateKey);
     String barcode = await FlutterBarcodeScanner.scanBarcode("#ff6666","Cancel", true);
     setState(() {
       if (barcode.length > 0) {
@@ -232,20 +223,7 @@ class SendComponentState extends State<SendComponent> {
             Padding(
               padding: EdgeInsets.only(right: 20.0),
               child: GestureDetector(
-                child: online ? new Icon(Icons.wifi): new Icon(Icons.signal_wifi_off),
-              /*  onTap: (){
-                  globals.checkConnection().then((status){
-                    setState(() {
-                      if (status == true) {
-                        online = !online;  
-                        globals.online = online;  
-                      } else {
-                        online = false;  
-                        globals.online = online;
-                      }
-                    });
-                  });
-                }*/
+                child: online ? new Icon(Icons.wifi): new Icon(Icons.signal_wifi_off)
               ) 
             )
           ],
@@ -283,33 +261,6 @@ List<Widget> _buildForm(BuildContext context) {
               )
             )
           ),
-          new SizedBox(
-            height: 30.0,
-          ),
-          new Container(
-            child: new Text(
-              'OR',
-              textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 18)
-            ),
-          ),
-          new SizedBox(
-            height: 30.0,
-          ),
-          new Container(
-            child: new Text(
-              'Enter Mobile Number',
-              textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 18)
-            ),
-          ),
-          new Container(
-            child: new Text(
-              '[Coming Soon]',
-              textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 16)
-            ),
-          ),
           new FutureBuilder<String>(
             future: getBarcode(),
             builder: (BuildContext context, AsyncSnapshot<String> snapshot) {
@@ -319,6 +270,9 @@ List<Widget> _buildForm(BuildContext context) {
                     return Column(
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: <Widget>[
+                        new SizedBox(
+                          height: 20.0,
+                        ),
                         Visibility(
                           child:  new FormField(
                               validator: (value){

@@ -100,94 +100,70 @@ Icon _getModeIcon(String mode) {
   return icon;
 }
 
-String _formatUser(String mode){
-  String formattedUser;
-  if (mode == 'receive') {
-    formattedUser = 'Sender: ';
-  }
-  if (mode == 'send') {
-    formattedUser = 'Receiver: ';
-  }
-  return formattedUser;
-}
-
 
 ListView buildTransactionsList(transactions) {
     return ListView.builder(
         itemCount: transactions.length,
         itemBuilder: (BuildContext context, int index) {
           return GestureDetector(
-            //       onTap: () {
-            //         print('Touched!');
-            //       },
-              child: Column(
-                children: <Widget>[
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: <Widget>[
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+            child: Column(
+              children: <Widget>[
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: <Widget>[
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: <Widget>[
+                        Padding(
+                          padding:
+                          const EdgeInsets.fromLTRB(15.0, 15.0, 12.0, 4.0),
+                          child: Text(
+                            "${_formatMode(transactions[transactions.length - index -1]
+                                .mode)} - ${formatCurrency.format(
+                                transactions[transactions.length - index -1].amount)}",
+                            style: TextStyle(fontSize: 20.0),
+                          ),
+                        ),
+                        Padding(
+                          padding:
+                          const EdgeInsets.fromLTRB(15.0, 4.0, 8.0, 4.0),
+                          child: Text(
+                              "${transactions[transactions.length - index -1]
+                                  .time}",
+                              style: TextStyle(fontSize: 16.0)
+                          ),
+                        ),
+                        Padding(
+                          padding:
+                          const EdgeInsets.fromLTRB(15.0, 4.0, 8.0, 15.0),
+                          child: Text(
+                              "ID: ${transactions[transactions.length - index -1]
+                                  .txnID}",
+                              style: TextStyle(fontSize: 16.0)
+                          ),
+                        ),
+                      ],
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         children: <Widget>[
                           Padding(
-                            padding:
-                            const EdgeInsets.fromLTRB(15.0, 15.0, 12.0, 4.0),
-                            child: Text(
-                              "${_formatMode(transactions[transactions.length - index -1]
-                                  .mode)} - ${formatCurrency.format(
-                                  transactions[transactions.length - index -1].amount)}",
-                              style: TextStyle(fontSize: 20.0),
-                            ),
-                          ),
-                          Padding(
-                            padding:
-                            const EdgeInsets.fromLTRB(15.0, 4.0, 8.0, 4.0),
-                            child: Text(
-                                "${transactions[transactions.length - index -1]
-                                    .time}",
-                                style: TextStyle(fontSize: 16.0)
-                            ),
-                          ),
-                          // Padding(
-                          //   padding:
-                          //   const EdgeInsets.fromLTRB(8.0, 2.0, 12.0, 2.0),
-                          //   child: Text(
-                          //     "${_formatUser(transactions[transactions.length - index -1]
-                          //         .mode)} ${transactions[transactions.length-index-1].accountID}",
-                          //     style: TextStyle(
-                          //         fontSize: 16.0, fontWeight: FontWeight.bold),
-                          //   ),
-                          // ),
-                          Padding(
-                            padding:
-                            const EdgeInsets.fromLTRB(15.0, 4.0, 8.0, 15.0),
-                            child: Text(
-                                "ID: ${transactions[transactions.length - index -1]
-                                    .txnID}",
-                                style: TextStyle(fontSize: 16.0)
-                            ),
+                            padding: const EdgeInsets.all(8.0),
+                            child: _getModeIcon(transactions[transactions.length - index -1].mode),
                           ),
                         ],
                       ),
-                      Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                          children: <Widget>[
-                            Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: _getModeIcon(transactions[transactions.length - index -1].mode),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                  Divider(
-                    height: 2.0,
-                    color: Colors.grey,
-                  )
-                ],
-              ));
+                    ),
+                  ],
+                ),
+                Divider(
+                  height: 2.0,
+                  color: Colors.grey,
+                )
+              ],
+            ));
         });
 }
 

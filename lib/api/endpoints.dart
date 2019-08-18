@@ -188,7 +188,6 @@ Future<BalancesResponse> getOnlineBalances() async {
   Response response;
   try {
     response = await sendGetRequest(url);
-    // print(response);
     // Store account details in keychain
     List<String> _accounts = [];
     List<Balance> _balances = [];

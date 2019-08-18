@@ -87,7 +87,7 @@ class ProofOfPaymentComponentState extends State<ProofOfPaymentComponent> {
                       onPressed: () {
                         Application.router.navigateTo(context, '/home');
                         },
-                      child: new Text('Continue'),
+                      child: new Text('Back to Wallet'),
                     )
                   ],
                 ),

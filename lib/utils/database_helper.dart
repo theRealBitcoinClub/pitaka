@@ -242,19 +242,6 @@ class DatabaseHelper {
     } else {
       return 0;
     }
-    
-    // double newBalance = instance['balance'] + payload['amount'];
-    // DateTime datetime = DateTime.now();
-    // String dateOfLastBalance = new DateFormat.yMMMd().add_jm().format(datetime);
-    // return await db.update(
-    //   table1,
-    //   {
-    //     'balance': newBalance,
-    //     'datetime': dateOfLastBalance
-    //   },
-    //   where: 'accountId = ?',
-    //   whereArgs: [payload['to_account']]
-    // );
   }
 
 }

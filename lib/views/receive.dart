@@ -2,7 +2,6 @@ import 'dart:convert';
 
 import 'package:crypto/crypto.dart';
 import 'package:flutter/material.dart';
-import 'package:pitaka/utils/helpers.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import '../views/app.dart';
 import 'dart:async';
@@ -15,7 +14,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../utils/globals.dart' as globals;
 import '../api/endpoints.dart';
 import 'package:archive/archive.dart';
-// import '../api/endpoints.dart';
 import '../utils/globals.dart';
 
 
@@ -31,26 +29,12 @@ class ReceiveComponentState extends State<ReceiveComponent> {
   String _selectedPaytacaAccount;
   static List data = List(); //edited line
   bool online = globals.online;
-  StreamSubscription _connectionChangeStream;
   bool isOffline = false;
 
   @override
   void initState()  {
-    super.initState();
     this.getAccounts();
-    ConnectionStatusSingleton connectionStatus = ConnectionStatusSingleton.getInstance();
-    _connectionChangeStream = connectionStatus.connectionChange.listen(connectionChanged);
-  /*  globals.checkConnection().then((status){
-      setState(() {
-        if (status == false) {
-          online = false;  
-          globals.online = online;
-        } else {
-          globals.online = online;
-        }
-      });
-    });*/
-    
+    super.initState();
   }
 
   void connectionChanged(dynamic hasConnection) {
@@ -133,36 +117,22 @@ class ReceiveComponentState extends State<ReceiveComponent> {
   }
 
   Future<List> getAccounts() async {
-    // SharedPreferences prefs = await SharedPreferences.getInstance();
-    // var _prefAccounts = prefs.get("accounts");
-    // List<Map> _accounts = [];
-    // for (final acct in _prefAccounts) {
-    //   var acctObj = new Map();
-    //   acctObj['accountName'] = acct.split(' | ')[0];
-    //   acctObj['accountId'] = acct.split(' | ')[1];
-    //   acctObj['balance'] = acct.split(' | ')[2];
-    //   _accounts.add(acctObj);
-    // }
-    // setState(() {
-    //   data = _accounts;
-    // });
-    // return 'Success';
     SharedPreferences prefs = await SharedPreferences.getInstance();
     var _prefAccounts = prefs.get("accounts");
     List<Map> _accounts = [];
     for (final acct in _prefAccounts) {
       String accountId = acct.split(' | ')[1];
       var acctObj = new Map();
-      var onlineBalance = acct.split(' | ')[2];
+      // var onlineBalance = acct.split(' | ')[2];
       acctObj['accountName'] = acct.split(' | ')[0];
       acctObj['accountId'] = accountId;
-      if (globals.online) {
-        acctObj['balance'] = onlineBalance;
-      } else {
-        var x = double.tryParse(onlineBalance);
-        var resp = await globals.databaseHelper.offlineBalanceAnalyser(accountId, x);
-        acctObj['balance'] = resp['computedBalance'].toString();
-      }
+      // if (globals.online) {
+      //   acctObj['balance'] = onlineBalance;
+      // } else {
+      //   var x = double.tryParse(onlineBalance);
+      //   var resp = await globals.databaseHelper.offlineBalanceAnalyser(accountId, x);
+      //   acctObj['balance'] = resp['computedBalance'].toString();
+      // }
       _accounts.add(acctObj);
     }
     data = _accounts;
@@ -235,20 +205,7 @@ class ReceiveComponentState extends State<ReceiveComponent> {
             Padding(
               padding: EdgeInsets.only(right: 20.0),
               child: GestureDetector(
-                child: online ? new Icon(Icons.wifi): new Icon(Icons.signal_wifi_off),
-              /*  onTap: (){
-                  globals.checkConnection().then((status){
-                    setState(() {
-                      if (status == true) {
-                        online = !online;  
-                        globals.online = online;  
-                      } else {
-                        online = false;  
-                        globals.online = online;
-                      }
-                    });
-                  });
-                }*/
+                child: online ? new Icon(Icons.wifi): new Icon(Icons.signal_wifi_off)
               ) 
             )
           ],
@@ -264,11 +221,18 @@ class ReceiveComponentState extends State<ReceiveComponent> {
 
   Widget buildButton (){
     if (_selectedPaytacaAccount != null) {
-      return new RaisedButton(
-        child: const Text('Scan Proof'),
-        onPressed: () {
-          scanQrcode();
-        },
+      return new ButtonTheme(
+        height: 60,
+        buttonColor: Colors.white,
+        child: new OutlineButton(
+          borderSide: BorderSide(
+            color: Colors.black
+          ),
+          child: const Text('Scan Payment Proof', style: TextStyle(fontSize: 18)),
+          onPressed: () {
+            scanQrcode();
+          }
+        )
       );
     } else {
       return new Container();
@@ -276,15 +240,13 @@ class ReceiveComponentState extends State<ReceiveComponent> {
   }
 
   List<Widget> _buildForm(BuildContext context) {
-    final bodyHeight = MediaQuery.of(context).size.height -
-        MediaQuery.of(context).viewInsets.bottom;
     Form form = new Form(
       key: _formKey,
       child: new ListView(
         padding: const EdgeInsets.symmetric(horizontal: 16.0),
         children: <Widget>[
           new SizedBox(
-            height: 30.0,
+            height: 20.0,
           ),
           new FormField(
             builder: (FormFieldState state) {
@@ -305,7 +267,7 @@ class ReceiveComponentState extends State<ReceiveComponent> {
                     items: data.map((item) {
                       return DropdownMenuItem(
                         value: item['accountId'],
-                        child: new Text("${item['accountName']} ( PHP ${double.parse(item['balance']).toStringAsFixed(2)} )"),
+                        child: new Text("${item['accountName']}"),
                       );
                     }).toList()
                   ),
@@ -317,8 +279,10 @@ class ReceiveComponentState extends State<ReceiveComponent> {
             height: 20.0,
           ),
           QrImage(
-            data: _selectedPaytacaAccount != null ? "::paytaca::$_selectedPaytacaAccount::paytaca::": null,
-            size: 0.6 * bodyHeight,
+            data: _selectedPaytacaAccount != null ? "::paytaca::$_selectedPaytacaAccount::paytaca::": null
+          ),
+          new SizedBox(
+            height: 20.0,
           ),
           buildButton()
         ],
@@ -328,7 +292,4 @@ class ReceiveComponentState extends State<ReceiveComponent> {
     ws.add(form);
     return ws;
   }
-}
-
-class UTF8 {
 }
