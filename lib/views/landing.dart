@@ -88,8 +88,8 @@ class LandingComponentState extends State<LandingComponent>
 
   final LocalAuthentication auth = LocalAuthentication();
   bool authenticated = false;
-  final StreamController<bool> _verificationNotifier =
-  StreamController<bool>.broadcast();
+  // final StreamController<bool> _verificationNotifier =
+  // StreamController<bool>.broadcast();
 
   Future<Null> _authenticate() async {
 
@@ -102,29 +102,29 @@ class LandingComponentState extends State<LandingComponent>
         exit(0);
       }
     } on PlatformException catch (e) {
-      if (e.code == auth_error.notAvailable) {
-        _pinCode();
-      }
+      // if (e.code == auth_error.notAvailable) {
+      //   _pinCode();
+      // }
       if (!mounted) return;
     }
   }
 
-  void _onPassCodeEntered(String enteredPassCode) async{
-    var passCode = await globals.storage.read(key: "pinCode");
-    authenticated = passCode == enteredPassCode;
-    _verificationNotifier.add(authenticated);
-    if (authenticated == true) {
-      Application.router.navigateTo(context, "/home");
-    }
-    else
-      _pinCode();
-  }
+  // void _onPassCodeEntered(String enteredPassCode) async{
+  //   var passCode = await globals.storage.read(key: "pinCode");
+  //   authenticated = passCode == enteredPassCode;
+  //   _verificationNotifier.add(authenticated);
+  //   if (authenticated == true) {
+  //     Application.router.navigateTo(context, "/home");
+  //   }
+  //   else
+  //     _pinCode();
+  // }
 
-  @override
-  void dispose() {
-    _verificationNotifier.close();
-    super.dispose();
-  }
+  // @override
+  // void dispose() {
+  //   _verificationNotifier.close();
+  //   super.dispose();
+  // }
 
   // void startListening() {
   //   _screen = new Screen();
@@ -139,41 +139,41 @@ class LandingComponentState extends State<LandingComponent>
   //   _subscription.cancel();
   // }
 
-  void _onPasscodeCancelled() {
-    exit(0);
-  }
+  // void _onPasscodeCancelled() {
+  //   exit(0);
+  // }
 
-  void _pinCode() {
-    var circleUIConfig = new CircleUIConfig();
-    var keyboardUIConfig = new KeyboardUIConfig();
-    Navigator.push(
-        context,
-        PageRouteBuilder(
-            opaque: false,
-            pageBuilder: (context, animation, secondaryAnimation) =>
-                PasscodeScreen(
-                  title: 'Enter PIN Code',
-                  passwordDigits: 6,  
-                  circleUIConfig: circleUIConfig,
-                  keyboardUIConfig: keyboardUIConfig,
-                  cancelCallback: _onPasscodeCancelled,
-                //  isValidCallback: ,
-                  passwordEnteredCallback: _onPassCodeEntered,
-                  cancelLocalizedText: 'Cancel',
-                  deleteLocalizedText: 'Delete',
-                  shouldTriggerVerification: _verificationNotifier.stream,
-                )
-        ));
-  }
+  // void _pinCode() {
+  //   var circleUIConfig = new CircleUIConfig();
+  //   var keyboardUIConfig = new KeyboardUIConfig();
+  //   Navigator.push(
+  //       context,
+  //       PageRouteBuilder(
+  //           opaque: false,
+  //           pageBuilder: (context, animation, secondaryAnimation) =>
+  //               PasscodeScreen(
+  //                 title: 'Enter PIN Code',
+  //                 passwordDigits: 6,  
+  //                 circleUIConfig: circleUIConfig,
+  //                 keyboardUIConfig: keyboardUIConfig,
+  //                 cancelCallback: _onPasscodeCancelled,
+  //               //  isValidCallback: ,
+  //                 passwordEnteredCallback: _onPassCodeEntered,
+  //                 cancelLocalizedText: 'Cancel',
+  //                 deleteLocalizedText: 'Delete',
+  //                 shouldTriggerVerification: _verificationNotifier.stream,
+  //               )
+  //       ));
+  // }
 
-  Future checkUser() async {
-    bool checkBiometrics = await auth.canCheckBiometrics;
-    if(checkBiometrics == false) {
-      _pinCode();
-    } else{
-      _authenticate();
-    }
-  }
+  // Future checkUser() async {
+  //   bool checkBiometrics = await auth.canCheckBiometrics;
+  //   if(checkBiometrics == false) {
+  //     _pinCode();
+  //   } else{
+  //     _authenticate();
+  //   }
+  // }
 
   void determinePath(BuildContext context) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
