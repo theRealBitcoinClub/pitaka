@@ -71,11 +71,13 @@ class DatabaseHelper {
   Future<String> updateOfflineBalances (List<Balance> balances) async {
     Database db = await this.database;
     await db.delete('Balance');
-    db.delete('OfflineTransaction');
+    await db.delete('OfflineTransaction');
+    int idHolder = 1;
     for (final balance in balances) {
       DateTime datetime = DateTime.now();
       String dateOfLastBalance = new DateFormat.yMMMd().add_jm().format(datetime);
       var values = {
+        'id': idHolder,
         'balance': balance.balance,
         'accountName': balance.accountName,
         'accountId': balance.accountId,
@@ -83,10 +85,18 @@ class DatabaseHelper {
         'signature': balance.signature,
         'datetime': dateOfLastBalance
       };
-      await db.insert(
+      var idCheck = await db.query(
         'Balance',
-        values
+        where: 'id = ?',
+        whereArgs: [idHolder]
       );
+      if (idCheck.length == 0 ) {
+        await db.insert(
+          'Balance',
+          values
+        );
+      }
+      idHolder += 1;
     }
 		return 'success';
   }
@@ -170,9 +180,13 @@ class DatabaseHelper {
         'signature': account['signature'],
         'datetime': account['datetime']
       };
-      result.add(info);
-    }
 
+      if (result.indexOf(info) == -1) {
+        result.add(info);
+      }
+      
+    }
+    
 		return result;
 	}
 
