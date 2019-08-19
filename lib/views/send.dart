@@ -237,6 +237,7 @@ class SendComponentState extends State<SendComponent> {
       );
   }
 
+bool disableSubmitButton = false;
 
 List<Widget> _buildForm(BuildContext context) {
     Form form = new Form(
@@ -306,7 +307,7 @@ List<Widget> _buildForm(BuildContext context) {
                                           state.didChange(newVal);
                                         });
                                       },
-                                      items: data.map((item) {
+                                      items: data.length < 0 ? null : data.map((item) {
                                         return DropdownMenuItem(
                                           value: "${item['accountId']}::sep::${item['balance']}::sep::${item['balanceSignature']}::sep::${item['timestamp']}",
                                           child: new Text("${item['accountName']} ( ${double.parse(item['balance']).toStringAsFixed(2)} )"),
@@ -330,24 +331,39 @@ List<Widget> _buildForm(BuildContext context) {
                           ),
                           visible: snapshot.data != null
                         ),
+                        new SizedBox(
+                          height: 20.0,
+                        ),
                         Visibility(
-                          child: new RaisedButton(
-                            child: const Text("Send"),
-                            onPressed: () {
-                              var valid = _formKey.currentState.validate();
-                              if (valid) {
-                                _formKey.currentState.save();
-                                sendFunds(
-                                  snapshot.data,
-                                  sendAmount,
-                                  context,
-                                  lastBalance,
-                                  lBalanceSignature,
-                                  txnID,
-                                  lBalanceTime,
-                                  );
-                              }
-                            }
+                          child: Container(
+                            child: new ButtonTheme(
+                              height: 50,
+                              buttonColor: Colors.white,
+                              child: new OutlineButton(
+                                borderSide: BorderSide(
+                                  color: Colors.black
+                                ),
+                                child: const Text("Pay Now", style: TextStyle(fontSize: 18)),
+                                onPressed: disableSubmitButton ? null : () {
+                                  var valid = _formKey.currentState.validate();
+                                  if (valid) {
+                                    setState(() {
+                                      disableSubmitButton = true;
+                                    });
+                                    _formKey.currentState.save();
+                                    sendFunds(
+                                      snapshot.data,
+                                      sendAmount,
+                                      context,
+                                      lastBalance,
+                                      lBalanceSignature,
+                                      txnID,
+                                      lBalanceTime,
+                                      );
+                                  }
+                                }
+                              )
+                            )
                           ),
                           visible: snapshot.data != null)
                       ],
