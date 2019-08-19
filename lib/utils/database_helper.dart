@@ -28,7 +28,6 @@ class DatabaseHelper {
 	}
 
 	Future<Database> get database async {
-
 		if (_database == null) {
 			_database = await initializeDatabase();
 		}
@@ -39,7 +38,7 @@ class DatabaseHelper {
 		// Get the directory path for both Android and iOS to store database.
 		Directory directory = await getApplicationDocumentsDirectory();
 		String path = directory.path + 'local.db';
-
+    
 		// Open/create the database at a given path
 		var pitakaDatabase = await openDatabase(path, version: 1, onCreate: _createDb);
 		return pitakaDatabase;
@@ -56,15 +55,18 @@ class DatabaseHelper {
       "signature TEXT,"
       "datetime TEXT"
       ")");
-
+    print('balance done');
     await db.execute("CREATE TABLE OfflineTransaction ("
       "id INTEGER NOT NULL PRIMARY KEY,"
       "account TEXT,"
       "amount DOUBLE(40,2),"
       "timestamp TEXT,"
       "mode TEXT,"
-      "transactionJson TEXT"
+      "transactionJson TEXT,"
+      "txnID TEXT,"
+      "time TEXT"
       ")");
+      print('offlinetransaction done');
 	}
 
   // Update latest balance of balance objects in database
@@ -134,8 +136,6 @@ class DatabaseHelper {
       'OfflineTransaction',
       orderBy: 'id ASC'
     );
-    print('this is the length--------------');
-    print(transactions.length);
     if (transactions.length == 0) {
       return true;
     } else {
@@ -197,6 +197,7 @@ class DatabaseHelper {
   }
   
   Future<String> offLineTransfer(Map payload) async{
+    
     Database db = await this.database;
     String fromAccount = payload['from_account'];
     String toAccount = payload['to_account'];
@@ -220,8 +221,11 @@ class DatabaseHelper {
       "amount":payload['amount'],
       "timestamp":txnTimeStamp,
       "mode":"send",
-      "transactionJson": converted
+      "transactionJson": converted,
+      "txnID": payload["transaction_id"],
+      "time": txnTimeStamp
     });
+    
     // Check if the recipient(toAccount) is in the user's accounts.
     var qs2 = await db.query(table1,where: 'accountId = ?', whereArgs: [toAccount]);
     if (qs2.length == 1) {
@@ -231,7 +235,9 @@ class DatabaseHelper {
         "amount":payload['amount'],
         "timestamp":txnTimeStamp,
         "mode":"receive",
-        "transactionJson": converted
+        "transactionJson": converted,
+        "txnID": payload["transaction_id"],
+        "time": txnTimeStamp
       });
     }
     return 'success';
@@ -251,7 +257,9 @@ class DatabaseHelper {
         "amount":payload['amount'],
         "timestamp":instance['timestamp'],
         "mode":"receive",
-        "transactionJson": converted
+        "transactionJson": converted,
+        "txnID": payload["transaction_id"],
+        "time": instance['timestamp']
       });
     } else {
       return 0;

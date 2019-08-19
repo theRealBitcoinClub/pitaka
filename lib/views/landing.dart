@@ -105,7 +105,9 @@ class LandingComponentState extends State<LandingComponent>
       // if (e.code == auth_error.notAvailable) {
       //   _pinCode();
       // }
-      if (!mounted) return;
+      // if (!mounted) return;
+      print(e);
+      authenticated = true;
     }
   }
 

@@ -141,7 +141,8 @@ class TransactionsResponse {
       transObj.mode = txn['mode'];
       transObj.amount = txn['amount'].toDouble();
       transObj.timestamp = txn['timestamp'];
-      transObj.txnID = txn['Transaction ID'];
+      transObj.txnID = txn['txnID'];
+      transObj.time = txn['time'];
       _trans.add(transObj);
     }
     return TransactionsResponse(
