@@ -26,7 +26,7 @@ class SendComponentState extends State<SendComponent> {
   String path = '/send';
   int accountIndex = 0;
   bool _submitting = false;
-  static int sendAmount;
+  static double sendAmount;
   final _formKey = GlobalKey<FormState>();
   String selectedPaytacaAccount;
   String sourceAccount;
@@ -106,7 +106,7 @@ class SendComponentState extends State<SendComponent> {
 
   Future<bool> sendFunds(
     String toAccount,
-    int amount,
+    double amount,
     BuildContext context,
     String lBalance,
     String lSignedBalance,
@@ -325,7 +325,7 @@ List<Widget> _buildForm(BuildContext context) {
                             decoration: new InputDecoration(labelText: "Enter the amount"),
                             keyboardType: TextInputType.number,
                             onSaved: (value) {
-                              sendAmount = int.parse(value);
+                              sendAmount = double.parse(value);
                             },
                           ),
                           visible: snapshot.data != null
