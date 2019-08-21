@@ -42,6 +42,7 @@ class SendComponentState extends State<SendComponent> {
   DatabaseHelper databaseHelper = DatabaseHelper();
   StreamSubscription _connectionChangeStream;
   bool isOffline = false;
+  String newVal;
 
   
   Future<List> getAccounts(destinationAccountId) async {
@@ -102,6 +103,8 @@ class SendComponentState extends State<SendComponent> {
       }
     });
   }
+
+  final TextEditingController _accountController = new TextEditingController();
   
 
   Future<bool> sendFunds(
@@ -212,6 +215,35 @@ class SendComponentState extends State<SendComponent> {
       }
     }
   }
+
+   changeAccount(String newVal) {
+    selectedPaytacaAccount = null;
+    sourceAccount = null;
+    lastBalance = null;
+    lBalanceSignature = null;
+    lBalanceTime = null;
+
+
+    String accountId = newVal.split('::sep::')[0];
+    String balance = newVal.split('::sep::')[1];
+    String signature = newVal.split('::sep::')[2];
+    String timestamp = newVal.split('::sep::')[3];
+
+    setState(() {
+      selectedPaytacaAccount = null;
+      sourceAccount = null;
+      lastBalance = null;
+      lBalanceSignature = null;
+      lBalanceTime = null;
+
+      selectedPaytacaAccount = accountId;
+      sourceAccount = newVal;
+      lastBalance = balance;
+      lBalanceSignature = signature;
+      lBalanceTime = timestamp;
+     // state.didChange(newVal);
+    });
+  }
   
 
   @override
@@ -293,12 +325,19 @@ List<Widget> _buildForm(BuildContext context) {
                                     child: new DropdownButton(
                                       value: sourceAccount,
                                       isDense: true,
-                                      onChanged: (newVal) {
+                                      onChanged: (newVal){
                                         String accountId = newVal.split('::sep::')[0];
                                         String balance = newVal.split('::sep::')[1];
                                         String signature = newVal.split('::sep::')[2];
                                         String timestamp = newVal.split('::sep::')[3];
+
                                         setState(() {
+                                          selectedPaytacaAccount = null;
+                                          sourceAccount = null;
+                                          lastBalance = null;
+                                          lBalanceSignature = null;
+                                          lBalanceTime = null;
+
                                           selectedPaytacaAccount = accountId;
                                           sourceAccount = newVal;
                                           lastBalance = balance;
@@ -326,6 +365,7 @@ List<Widget> _buildForm(BuildContext context) {
                             decoration: new InputDecoration(labelText: "Enter the amount"),
                             keyboardType: TextInputType.number,
                             onSaved: (value) {
+                              sendAmount = null;
                               sendAmount = double.parse(value);
                             },
                           ),
