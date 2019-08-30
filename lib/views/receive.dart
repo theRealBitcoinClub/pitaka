@@ -257,7 +257,7 @@ class ReceiveComponentState extends State<ReceiveComponent> {
                 child: new DropdownButtonHideUnderline(
                   child: new DropdownButton(
                     value: _selectedPaytacaAccount,
-                    isDense: true,
+                    isDense: false,
                     onChanged: (newVal) {
                       setState(() {
                         _selectedPaytacaAccount = newVal;
