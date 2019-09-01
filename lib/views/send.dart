@@ -26,7 +26,7 @@ class SendComponentState extends State<SendComponent> {
   String path = '/send';
   int accountIndex = 0;
   bool _submitting = false;
-  static int sendAmount;
+  static double sendAmount;
   final _formKey = GlobalKey<FormState>();
   String selectedPaytacaAccount;
   String sourceAccount;
@@ -106,7 +106,7 @@ class SendComponentState extends State<SendComponent> {
 
   Future<bool> sendFunds(
     String toAccount,
-    int amount,
+    double amount,
     BuildContext context,
     String lBalance,
     String lSignedBalance,
@@ -237,6 +237,7 @@ class SendComponentState extends State<SendComponent> {
       );
   }
 
+bool disableSubmitButton = false;
 
 List<Widget> _buildForm(BuildContext context) {
     Form form = new Form(
@@ -306,7 +307,7 @@ List<Widget> _buildForm(BuildContext context) {
                                           state.didChange(newVal);
                                         });
                                       },
-                                      items: data.map((item) {
+                                      items: data.length < 0 ? null : data.map((item) {
                                         return DropdownMenuItem(
                                           value: "${item['accountId']}::sep::${item['balance']}::sep::${item['balanceSignature']}::sep::${item['timestamp']}",
                                           child: new Text("${item['accountName']} ( ${double.parse(item['balance']).toStringAsFixed(2)} )"),
@@ -325,29 +326,44 @@ List<Widget> _buildForm(BuildContext context) {
                             decoration: new InputDecoration(labelText: "Enter the amount"),
                             keyboardType: TextInputType.number,
                             onSaved: (value) {
-                              sendAmount = int.parse(value);
+                              sendAmount = double.parse(value);
                             },
                           ),
                           visible: snapshot.data != null
                         ),
+                        new SizedBox(
+                          height: 20.0,
+                        ),
                         Visibility(
-                          child: new RaisedButton(
-                            child: const Text("Send"),
-                            onPressed: () {
-                              var valid = _formKey.currentState.validate();
-                              if (valid) {
-                                _formKey.currentState.save();
-                                sendFunds(
-                                  snapshot.data,
-                                  sendAmount,
-                                  context,
-                                  lastBalance,
-                                  lBalanceSignature,
-                                  txnID,
-                                  lBalanceTime,
-                                  );
-                              }
-                            }
+                          child: Container(
+                            child: new ButtonTheme(
+                              height: 50,
+                              buttonColor: Colors.white,
+                              child: new OutlineButton(
+                                borderSide: BorderSide(
+                                  color: Colors.black
+                                ),
+                                child: const Text("Pay Now", style: TextStyle(fontSize: 18)),
+                                onPressed: disableSubmitButton ? null : () {
+                                  var valid = _formKey.currentState.validate();
+                                  if (valid) {
+                                    setState(() {
+                                      disableSubmitButton = true;
+                                    });
+                                    _formKey.currentState.save();
+                                    sendFunds(
+                                      snapshot.data,
+                                      sendAmount,
+                                      context,
+                                      lastBalance,
+                                      lBalanceSignature,
+                                      txnID,
+                                      lBalanceTime,
+                                      );
+                                  }
+                                }
+                              )
+                            )
                           ),
                           visible: snapshot.data != null)
                       ],

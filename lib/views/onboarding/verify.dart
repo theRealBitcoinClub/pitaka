@@ -139,22 +139,22 @@ class VerifyComponentState extends State<VerifyComponent> {
                   },
                   child: new Text('Submit'),
                 ),
-                new SizedBox(
-                  height: 30.0,
-                ),
-                new GestureDetector(
-                  onTap: () {
-                    print("Resend code...");
-                  },
-                  child: new Text(
-                    'Did not receive it? Resend Code.',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 16.0,
-                      color: Colors.blue,
-                    )
-                  )
-                ),
+                // new SizedBox(
+                //   height: 30.0,
+                // ),
+                // new GestureDetector(
+                //   onTap: () {
+                //     print("Resend code...");
+                //   },
+                //   child: new Text(
+                //     'Did not receive it? Resend Code.',
+                //     textAlign: TextAlign.center,
+                //     style: TextStyle(
+                //       fontSize: 16.0,
+                //       color: Colors.blue,
+                //     )
+                //   )
+                // ),
                 new SizedBox(
                   height: 50.0,
                 )

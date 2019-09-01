@@ -213,7 +213,9 @@ Future<BalancesResponse> getOnlineBalances() async {
   } catch (e) {
     // Login before resending the request again
     print(e);
+    print(response);
     var resp = await databaseHelper.offLineBalances();
+    
     return BalancesResponse.fromDatabase(resp);
     
   }
