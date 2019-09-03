@@ -33,8 +33,9 @@ class ReceiveComponentState extends State<ReceiveComponent> {
 
   @override
   void initState()  {
-    this.getAccounts();
     super.initState();
+    this.getAccounts();
+    _selectedPaytacaAccount = "Choose an Account";
   }
 
   void connectionChanged(dynamic hasConnection) {
@@ -116,7 +117,7 @@ class ReceiveComponentState extends State<ReceiveComponent> {
     }
   }
 
-  Future<List> getAccounts() async {
+   Future<List> getAccounts() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     var _prefAccounts = prefs.get("accounts");
     List<Map> _accounts = [];
@@ -256,20 +257,21 @@ class ReceiveComponentState extends State<ReceiveComponent> {
                 ),
                 child: new DropdownButtonHideUnderline(
                   child: new DropdownButton(
-                    value: _selectedPaytacaAccount,
-                    isDense: false,
-                    onChanged: (newVal) {
-                      setState(() {
-                        _selectedPaytacaAccount = newVal;
-                        state.didChange(newVal);
-                      });
-                    },
                     items: data.map((item) {
                       return DropdownMenuItem(
                         value: item['accountId'],
                         child: new Text("${item['accountName']}"),
                       );
-                    }).toList()
+                    }).toList(),
+                    iconEnabledColor: Colors.red,
+                    value: _selectedPaytacaAccount,
+                    isDense: true,
+                    onChanged: (newVal) {
+                        setState(() {
+                          _selectedPaytacaAccount = newVal;
+                          state.didChange(newVal);
+                        });
+                    },
                   ),
                 )
               );

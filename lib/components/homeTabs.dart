@@ -1,7 +1,13 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../utils/globals.dart' as globals;
 import '../api/responses.dart';
+import '../views/app.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:qr_flutter/qr_flutter.dart';
+import 'package:archive/archive.dart';
 
 final formatCurrency = new NumberFormat.currency(symbol: 'PHP ');
 var balanceObj = Balance();
@@ -100,70 +106,122 @@ Icon _getModeIcon(String mode) {
   return icon;
 }
 
+ _showProof(List<Transaction> transaction) {
+      print('WAS PRESSED');
 
-ListView buildTransactionsList(transactions) {
-    return ListView.builder(
-        itemCount: transactions.length,
-        itemBuilder: (BuildContext context, int index) {
-          return GestureDetector(
-            child: Column(
+      List<Widget> _buildAccountForm(BuildContext context) {
+        final bodyHeight = MediaQuery.of(context).size.height -
+            MediaQuery.of(context).viewInsets.bottom;
+        Widget widget = ListView.builder(
+            itemCount: transaction.length,
+            itemBuilder: (BuildContext context, int index) {
+              return Center(
+                child: new ListView(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16.0),
               children: <Widget>[
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: <Widget>[
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: <Widget>[
-                        Padding(
-                          padding:
-                          const EdgeInsets.fromLTRB(15.0, 15.0, 12.0, 4.0),
-                          child: Text(
-                            "${_formatMode(transactions[transactions.length - index -1]
-                                .mode)} - ${formatCurrency.format(
-                                transactions[transactions.length - index -1].amount)}",
-                            style: TextStyle(fontSize: 20.0),
-                          ),
-                        ),
-                        Padding(
-                          padding:
-                          const EdgeInsets.fromLTRB(15.0, 4.0, 8.0, 4.0),
-                          child: Text(
-                              "${transactions[transactions.length - index -1]
-                                  .time}",
-                              style: TextStyle(fontSize: 16.0)
-                          ),
-                        ),
-                        Padding(
-                          padding:
-                          const EdgeInsets.fromLTRB(15.0, 4.0, 8.0, 15.0),
-                          child: Text(
-                              "ID: ${transactions[transactions.length - index -1]
-                                  .txnID}",
-                              style: TextStyle(fontSize: 16.0)
-                          ),
-                        ),
-                      ],
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        children: <Widget>[
-                          Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: _getModeIcon(transactions[transactions.length - index -1].mode),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
+              new SizedBox(
+              height: 30.0,
+              ),
+                Text(
+                    "${formatCurrency.format(transaction[transaction.length - index - 1].amount)}",
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                        fontSize: 35.0,
+                        fontWeight: FontWeight.bold
+                    )
                 ),
-                Divider(
-                  height: 2.0,
-                  color: Colors.grey,
-                )
-              ],
-            ));
-        });
-}
+              ])
+              );
+            }
+        );
+        var ws = new List<Widget>();
+        ws.add(widget);
+        return ws;
+      }
+      @override
+      Widget build(BuildContext context) {
 
+        return Scaffold(
+            appBar: AppBar(
+                title: Text('Payment Proof'),
+                centerTitle: true,
+                automaticallyImplyLeading: false
+            ),
+            body: new Builder(builder: (BuildContext context) {
+              return new Stack(children: _buildAccountForm(context));
+            })
+        );
+      }
+ }
+
+   ListView buildTransactionsList(transactions) {
+     return ListView.builder(
+         itemCount: transactions.length,
+         itemBuilder: (BuildContext context, int index) {
+           return GestureDetector(
+               onTap: _showProof(transactions),
+               child: Column(
+                 children: <Widget>[
+                   Row(
+                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                     children: <Widget>[
+                       Column(
+                         crossAxisAlignment: CrossAxisAlignment.start,
+                         children: <Widget>[
+                           Padding(
+                             padding:
+                             const EdgeInsets.fromLTRB(15.0, 15.0, 12.0, 4.0),
+                             child: Text(
+                               "${_formatMode(
+                                   transactions[transactions.length - index - 1]
+                                       .mode)} - ${formatCurrency.format(
+                                   transactions[transactions.length - index - 1]
+                                       .amount)}",
+                               style: TextStyle(fontSize: 20.0),
+                             ),
+                           ),
+                           Padding(
+                             padding:
+                             const EdgeInsets.fromLTRB(15.0, 4.0, 8.0, 4.0),
+                             child: Text(
+                                 "${transactions[transactions.length - index -
+                                     1]
+                                     .time}",
+                                 style: TextStyle(fontSize: 16.0)
+                             ),
+                           ),
+                           Padding(
+                             padding:
+                             const EdgeInsets.fromLTRB(15.0, 4.0, 8.0, 15.0),
+                             child: Text(
+                                 "ID: ${transactions[transactions.length -
+                                     index - 1]
+                                     .txnID}",
+                                 style: TextStyle(fontSize: 16.0)
+                             ),
+                           ),
+                         ],
+                       ),
+                       Padding(
+                         padding: const EdgeInsets.all(8.0),
+                         child: Column(
+                           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                           children: <Widget>[
+                             Padding(
+                               padding: const EdgeInsets.all(8.0),
+                               child: _getModeIcon(transactions[transactions
+                                   .length - index - 1].mode),
+                             ),
+                           ],
+                         ),
+                       ),
+                     ],
+                   ),
+                   Divider(
+                     height: 2.0,
+                     color: Colors.grey,
+                   )
+                 ],
+               ));
+         });
+   }

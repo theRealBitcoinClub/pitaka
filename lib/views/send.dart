@@ -34,6 +34,7 @@ class SendComponentState extends State<SendComponent> {
   String lBalanceSignature;
   String lBalanceTime;
   String txnID;
+  String qrCode;
   static List data = List();
   bool validCode = false;
   static bool _errorFound = false;
@@ -114,7 +115,8 @@ class SendComponentState extends State<SendComponent> {
     String lBalance,
     String lSignedBalance,
     String txnID,
-    String lBalanceTimeStamp) async {
+    String lBalanceTimeStamp,
+    String qrCode  ) async {
     _submitting = true;
     String destinationAccount = toAccount;
     String publicKey = await globals.storage.read(key: "publicKey");
@@ -123,6 +125,7 @@ class SendComponentState extends State<SendComponent> {
 
     var uuid = new Uuid();
     txnID = uuid.v1();
+
 
     var now = new DateTime.now();
     var txnDateTime = DateTime.parse(now.toString());
@@ -145,7 +148,8 @@ class SendComponentState extends State<SendComponent> {
       'public_key': publicKey,
       'txn_hash': txnhash,
       'signature': signature,
-      'transaction_id': txnID.substring(0,8).toUpperCase()
+      'transaction_id': txnID.substring(0,8).toUpperCase(),
+      'txn_qrcode': qrcode
     };
     var response = await transferAsset(payload);
     if (response.success == false) {

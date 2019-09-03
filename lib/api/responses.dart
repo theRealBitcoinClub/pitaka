@@ -103,6 +103,7 @@ class Transaction {
   DateTime timeslot;
   String time;
   String txnID;
+  String code;
 }
 
 class TransactionsResponse {
@@ -125,7 +126,7 @@ class TransactionsResponse {
           transObj.time = DateFormat('y/M/d hh:mm a').format(transObj.timeslot).toString();
           _transactions.add(transObj);
           transObj.txnID = txn['TransactionID'];
-
+          transObj.code = txn['code'].toString();
         }
       }
 
