@@ -35,7 +35,6 @@ class ReceiveComponentState extends State<ReceiveComponent> {
   void initState()  {
     super.initState();
     this.getAccounts();
-    _selectedPaytacaAccount = "Choose an Account";
   }
 
   void connectionChanged(dynamic hasConnection) {
