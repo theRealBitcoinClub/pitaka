@@ -14,7 +14,7 @@ class OfflineTransaction {
         this._transactionJson,
         this._amount,
         this._txnID,
-        this._time
+        this._time,
         this._qrCode
     );
 
@@ -25,7 +25,7 @@ class OfflineTransaction {
         this._transactionJson,
         this._amount,
         this._txnID,
-        this._time
+        this._time,
         this._qrCode
     );
 

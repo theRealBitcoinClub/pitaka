@@ -19,6 +19,7 @@ class VerifyComponent extends StatefulWidget {
 }
 
 class VerifyComponentState extends State<VerifyComponent> {
+  final TextEditingController textController = new TextEditingController();
   @override
   void initState() {
     super.initState();
@@ -114,6 +115,7 @@ class VerifyComponentState extends State<VerifyComponent> {
                   height: 10.0,
                 ),
                 new TextFormField(
+                  controller: textController,
                   textAlign: TextAlign.center,
                   keyboardType: TextInputType.number,
                   validator: validateCode,
@@ -126,9 +128,7 @@ class VerifyComponentState extends State<VerifyComponent> {
                   decoration: const InputDecoration(
                     hintText: '******',
                   ),
-                  controller: new MaskedTextController(
-                    mask: '000000'
-                  ),
+                  maxLength: 11,
                 ),
                 new SizedBox(
                   height: 30.0,

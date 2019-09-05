@@ -130,7 +130,6 @@ class RequestComponentState extends State<RequestComponent> {
                         fontSize: 15.0
                       ),
                     ),
-                    maxLengthEnforced: true,
                   ),
                   new SizedBox(
                     height: 30.0,
