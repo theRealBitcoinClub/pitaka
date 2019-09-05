@@ -115,8 +115,7 @@ class SendComponentState extends State<SendComponent> {
     String lBalance,
     String lSignedBalance,
     String txnID,
-    String lBalanceTimeStamp,
-    String qrCode  ) async {
+    String lBalanceTimeStamp) async {
     _submitting = true;
     String destinationAccount = toAccount;
     String publicKey = await globals.storage.read(key: "publicKey");
@@ -403,7 +402,7 @@ List<Widget> _buildForm(BuildContext context) {
                                       lBalanceSignature,
                                       txnID,
                                       lBalanceTime,
-                                      );
+                                    );
                                   }
                                 }
                               )
