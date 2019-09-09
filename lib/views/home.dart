@@ -12,7 +12,6 @@ import 'package:connectivity/connectivity.dart';
 import 'package:flutter/services.dart';
 import '../utils/globals.dart';
 
-
 class HomeComponent extends StatefulWidget {
   @override
   State createState() => new HomeComponentState();

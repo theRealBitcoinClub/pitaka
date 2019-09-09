@@ -128,7 +128,7 @@ class VerifyComponentState extends State<VerifyComponent> {
                   decoration: const InputDecoration(
                     hintText: '******',
                   ),
-                  maxLength: 11,
+                  maxLength: 6,
                 ),
                 new SizedBox(
                   height: 30.0,
