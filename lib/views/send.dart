@@ -34,6 +34,7 @@ class SendComponentState extends State<SendComponent> {
   String lBalanceSignature;
   String lBalanceTime;
   String txnID;
+  String qrCode;
   static List data = List();
   bool validCode = false;
   static bool _errorFound = false;
@@ -42,6 +43,7 @@ class SendComponentState extends State<SendComponent> {
   DatabaseHelper databaseHelper = DatabaseHelper();
   StreamSubscription _connectionChangeStream;
   bool isOffline = false;
+  String newVal;
 
   
   Future<List> getAccounts(destinationAccountId) async {
@@ -102,6 +104,8 @@ class SendComponentState extends State<SendComponent> {
       }
     });
   }
+
+  final TextEditingController _accountController = new TextEditingController();
   
 
   Future<bool> sendFunds(
@@ -120,6 +124,7 @@ class SendComponentState extends State<SendComponent> {
 
     var uuid = new Uuid();
     txnID = uuid.v1();
+
 
     var now = new DateTime.now();
     var txnDateTime = DateTime.parse(now.toString());
@@ -142,7 +147,8 @@ class SendComponentState extends State<SendComponent> {
       'public_key': publicKey,
       'txn_hash': txnhash,
       'signature': signature,
-      'transaction_id': txnID.substring(0,8).toUpperCase()
+      'transaction_id': txnID.substring(0,8).toUpperCase(),
+      'txn_qrcode': qrcode
     };
     var response = await transferAsset(payload);
     if (response.success == false) {
@@ -211,6 +217,35 @@ class SendComponentState extends State<SendComponent> {
         
       }
     }
+  }
+
+   changeAccount(String newVal) {
+    selectedPaytacaAccount = null;
+    sourceAccount = null;
+    lastBalance = null;
+    lBalanceSignature = null;
+    lBalanceTime = null;
+
+
+    String accountId = newVal.split('::sep::')[0];
+    String balance = newVal.split('::sep::')[1];
+    String signature = newVal.split('::sep::')[2];
+    String timestamp = newVal.split('::sep::')[3];
+
+    setState(() {
+      selectedPaytacaAccount = null;
+      sourceAccount = null;
+      lastBalance = null;
+      lBalanceSignature = null;
+      lBalanceTime = null;
+
+      selectedPaytacaAccount = accountId;
+      sourceAccount = newVal;
+      lastBalance = balance;
+      lBalanceSignature = signature;
+      lBalanceTime = timestamp;
+     // state.didChange(newVal);
+    });
   }
   
 
@@ -293,12 +328,19 @@ List<Widget> _buildForm(BuildContext context) {
                                     child: new DropdownButton(
                                       value: sourceAccount,
                                       isDense: true,
-                                      onChanged: (newVal) {
+                                      onChanged: (newVal){
                                         String accountId = newVal.split('::sep::')[0];
                                         String balance = newVal.split('::sep::')[1];
                                         String signature = newVal.split('::sep::')[2];
                                         String timestamp = newVal.split('::sep::')[3];
+
                                         setState(() {
+                                          selectedPaytacaAccount = null;
+                                          sourceAccount = null;
+                                          lastBalance = null;
+                                          lBalanceSignature = null;
+                                          lBalanceTime = null;
+
                                           selectedPaytacaAccount = accountId;
                                           sourceAccount = newVal;
                                           lastBalance = balance;
@@ -326,6 +368,7 @@ List<Widget> _buildForm(BuildContext context) {
                             decoration: new InputDecoration(labelText: "Enter the amount"),
                             keyboardType: TextInputType.number,
                             onSaved: (value) {
+                              sendAmount = null;
                               sendAmount = double.parse(value);
                             },
                           ),
@@ -359,7 +402,7 @@ List<Widget> _buildForm(BuildContext context) {
                                       lBalanceSignature,
                                       txnID,
                                       lBalanceTime,
-                                      );
+                                    );
                                   }
                                 }
                               )

@@ -15,6 +15,7 @@ class RequestComponent extends StatefulWidget {
 }
 
 class RequestComponentState extends State<RequestComponent> {
+  final TextEditingController _accountController = new TextEditingController();
   @override
   void initState() {
     super.initState();
@@ -103,7 +104,7 @@ class RequestComponentState extends State<RequestComponent> {
                     child: new Text(
                       "Mobile Number Verification",
                       style: TextStyle(
-                      fontSize: 20.0,
+                      fontSize: 24.0,
                       )
                     )
                   ),
@@ -111,21 +112,24 @@ class RequestComponentState extends State<RequestComponent> {
                     height: 10.0,
                   ),
                   new TextFormField(
+                    controller: _accountController,
                     textAlign: TextAlign.center,
                     keyboardType: TextInputType.phone,
                     validator: validateMobile,
+                    autofocus: true,
                     onSaved: (value) {
                       newMobile.number = value;
                     },
+                    maxLength: 11,
                     style: TextStyle(
                       fontSize: 24.0
                     ),
                     decoration: const InputDecoration(
-                      hintText: '09** - *** - ****',
-                    ),
-                    controller: new MaskedTextController(
-                      mask: '0000 - 000 - 0000'
+                      hintText: 'Enter Mobile Number',
+                      hintStyle: TextStyle(
+                        fontSize: 15.0
                       ),
+                    ),
                   ),
                   new SizedBox(
                     height: 30.0,
