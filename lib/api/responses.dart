@@ -144,6 +144,7 @@ class TransactionsResponse {
       transObj.timestamp = txn['timestamp'];
       transObj.txnID = txn['txnID'];
       transObj.time = txn['time'];
+      transObj.code = txn['code'].toString();
       _trans.add(transObj);
     }
     return TransactionsResponse(

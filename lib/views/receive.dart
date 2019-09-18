@@ -52,6 +52,11 @@ class ReceiveComponentState extends State<ReceiveComponent> {
     });
   }
 
+  @override
+  void dispose() {
+    super.dispose();
+  }
+
   void scanQrcode() async {
     String qrcode = await FlutterBarcodeScanner.scanBarcode("#ff6666","Cancel", true);
     var baseDecoded = base64.decode(qrcode);

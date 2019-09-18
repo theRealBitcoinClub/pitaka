@@ -134,7 +134,6 @@ class SendComponentState extends State<SendComponent> {
     var _txnReadableDateTime = DateFormat('MMMM dd, yyyy  h:mm a').format(
       DateTime.parse(now.toString())
     );
-    print(txnhash);
     String signature = await signTransaction(txnhash, privateKey);
     var qrcode = "$signature:wallet:$txnhash:wallet:$publicKey";
     prefs.setString("_txnQrCode", qrcode);
