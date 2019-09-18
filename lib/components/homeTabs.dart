@@ -108,50 +108,6 @@ Icon _getModeIcon(String mode) {
 
  _showProof(List<Transaction> transaction) {
       print('WAS PRESSED');
-
-      List<Widget> _buildAccountForm(BuildContext context) {
-        final bodyHeight = MediaQuery.of(context).size.height -
-            MediaQuery.of(context).viewInsets.bottom;
-        Widget widget = ListView.builder(
-            itemCount: transaction.length,
-            itemBuilder: (BuildContext context, int index) {
-              return Center(
-                child: new ListView(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16.0),
-              children: <Widget>[
-              new SizedBox(
-              height: 30.0,
-              ),
-                Text(
-                    "${formatCurrency.format(transaction[transaction.length - index - 1].amount)}",
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                        fontSize: 35.0,
-                        fontWeight: FontWeight.bold
-                    )
-                ),
-              ])
-              );
-            }
-        );
-        var ws = new List<Widget>();
-        ws.add(widget);
-        return ws;
-      }
-      @override
-      Widget build(BuildContext context) {
-
-        return Scaffold(
-            appBar: AppBar(
-                title: Text('Payment Proof'),
-                centerTitle: true,
-                automaticallyImplyLeading: false
-            ),
-            body: new Builder(builder: (BuildContext context) {
-              return new Stack(children: _buildAccountForm(context));
-            })
-        );
-      }
  }
 
    ListView buildTransactionsList(transactions) {
