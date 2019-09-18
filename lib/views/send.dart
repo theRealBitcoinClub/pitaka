@@ -60,11 +60,12 @@ class SendComponentState extends State<SendComponent> {
         acctObj['balanceSignature'] = acct.split(' | ')[3];
         acctObj['timestamp'] = acct.split(' | ')[4];
         if (globals.online) {
-          acctObj['balance'] = onlineBalance;
+          acctObj['computedBalance'] = onlineBalance;
         } else {
-          var x = double.tryParse(onlineBalance);
-          var resp = await databaseHelper.offlineBalanceAnalyser(accountId, x);
-          acctObj['balance'] = resp['computedBalance'].toString();
+          var lastBalance = double.tryParse(onlineBalance);
+          var resp = await databaseHelper.offlineBalanceAnalyser(accountId, lastBalance);
+          acctObj['computedBalance'] = resp['computedBalance'].toString();
+          acctObj['lastBalance'] = lastBalance.toString();
         }
         _accounts.add(acctObj);
       }
@@ -133,6 +134,7 @@ class SendComponentState extends State<SendComponent> {
     var _txnReadableDateTime = DateFormat('MMMM dd, yyyy  h:mm a').format(
       DateTime.parse(now.toString())
     );
+    print(txnhash);
     String signature = await signTransaction(txnhash, privateKey);
     var qrcode = "$signature:wallet:$txnhash:wallet:$publicKey";
     prefs.setString("_txnQrCode", qrcode);
@@ -202,7 +204,7 @@ class SendComponentState extends State<SendComponent> {
       var currentBalance;
       for(final map in data) {
         if(selectedPaytacaAccount ==  map['accountId']){
-          currentBalance = map['balance'];
+          currentBalance = map['computedBalance'];
           break;
         }
       }
@@ -351,8 +353,8 @@ List<Widget> _buildForm(BuildContext context) {
                                       },
                                       items: data.length < 0 ? null : data.map((item) {
                                         return DropdownMenuItem(
-                                          value: "${item['accountId']}::sep::${item['balance']}::sep::${item['balanceSignature']}::sep::${item['timestamp']}",
-                                          child: new Text("${item['accountName']} ( ${double.parse(item['balance']).toStringAsFixed(2)} )"),
+                                          value: "${item['accountId']}::sep::${item['lastBalance']}::sep::${item['balanceSignature']}::sep::${item['timestamp']}",
+                                          child: new Text("${item['accountName']} ( ${double.parse(item['computedBalance']).toStringAsFixed(2)} )"),
                                         );
                                       }).toList()
                                     ),

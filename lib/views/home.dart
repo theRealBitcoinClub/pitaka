@@ -163,7 +163,8 @@ class HomeComponentState extends State<HomeComponent> {
                         return new CircularProgressIndicator();  
                       }
                     } else {
-                      return new Container();
+                      // return new Container();
+                      return new CircularProgressIndicator();
                     }
                   }
                 )
