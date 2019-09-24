@@ -8,7 +8,7 @@ import '../utils/database_helper.dart';
 import 'package:flutter/services.dart';
 
 //const String baseUrl = 'https://lantaka-dev.paytaca.com';
-const String baseUrl = 'https://9ab6fed8.ngrok.io';
+const String baseUrl = 'https://56397f20.ngrok.io';
 const String phpAssetId = '3A8F594F-D736-4673-945C-5465E0209AF0';
 
 

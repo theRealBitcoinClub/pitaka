@@ -15,7 +15,6 @@ import 'package:uuid/uuid.dart';
 import '../utils/globals.dart';
 
 
-
 class SendComponent extends StatefulWidget {
   @override
   SendComponentState createState() => new SendComponentState();
@@ -285,20 +284,27 @@ List<Widget> _buildForm(BuildContext context) {
           new SizedBox(
             height: 30.0,
           ),
-          new Container(
-            margin: const EdgeInsets.only(top: 5.0),
-            child: new ButtonTheme(
-              height: 60,
-              buttonColor: Colors.white,
-              child: new OutlineButton(
-                borderSide: BorderSide(
-                  color: Colors.black
-                ),
-                child: const Text('Scan QR Code', style: TextStyle(fontSize: 18)),
-                onPressed: scanBarcode
+          globals.online == false ? 
+            Container(
+              child: new Text(
+                "You've been offline for 6 hours, transaction not allowed. Please go online ASAP!",
+                textAlign: TextAlign.center,
+              ),
+            ) 
+          : new Container(
+              margin: const EdgeInsets.only(top: 5.0),
+              child: new ButtonTheme(
+                height: 60,
+                buttonColor: Colors.white,
+                child: new OutlineButton(
+                  borderSide: BorderSide(
+                    color: Colors.black
+                  ),
+                  child: const Text('Scan QR Code', style: TextStyle(fontSize: 18)),
+                  onPressed: scanBarcode
+                )
               )
-            )
-          ),
+            ),
           new FutureBuilder<String>(
             future: getBarcode(),
             builder: (BuildContext context, AsyncSnapshot<String> snapshot) {
