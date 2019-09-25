@@ -284,7 +284,8 @@ List<Widget> _buildForm(BuildContext context) {
           new SizedBox(
             height: 30.0,
           ),
-          globals.online == false ? 
+          // When maximum offline timeout (6 hours) is true show message transaction not allowed
+          globals.maxOfflineTime == true ? 
             Container(
               child: new Text(
                 "You've been offline for 6 hours, transaction not allowed. Please go online ASAP!",

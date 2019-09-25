@@ -8,11 +8,11 @@ import '../utils/database_helper.dart';
 import 'package:flutter/services.dart';
 
 //const String baseUrl = 'https://lantaka-dev.paytaca.com';
-const String baseUrl = 'https://56397f20.ngrok.io';
+const String baseUrl = 'https://90e7f9b3.ngrok.io';
 const String phpAssetId = '3A8F594F-D736-4673-945C-5465E0209AF0';
 
 
-
+bool maxOfflineTime;
 bool _online = false;
 bool _syncing = false;
 const String serverPublicKey = '7aeaa44510a950a9a4537faa2f40351dc4560d6d0d12abc0287dcffdd667d7a2';

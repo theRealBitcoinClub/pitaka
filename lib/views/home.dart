@@ -25,6 +25,7 @@ class HomeComponentState extends State<HomeComponent> {
   DatabaseHelper databaseHelper = DatabaseHelper();
   StreamSubscription _connectionChangeStream;
   bool isOffline = false;
+  bool maxOfflineTime = globals.maxOfflineTime;
 
 
   @override
@@ -54,6 +55,7 @@ class HomeComponentState extends State<HomeComponent> {
         globals.online = online;
         syncing = true;
         globals.syncing = true;
+        globals.maxOfflineTime = false;
         print("Online");
       } else {
         online = false;
@@ -61,8 +63,28 @@ class HomeComponentState extends State<HomeComponent> {
         syncing = false;
         globals.syncing = false;
         print("Offline");
+        startTimer();
       }
     });
+  }
+
+  // Timer for maximum offline timeout
+  Timer _timer;
+  int _start = 0;
+  void startTimer() {
+    const oneSec = const Duration(seconds: 1);
+    _timer = new Timer.periodic(
+        oneSec,
+        (Timer timer) => setState(() {
+          //if (_start >= 21600 || online == true) {  // 6 hours
+          if (_start >= 60 || online == true) { // 1 minute
+            timer.cancel();
+            globals.maxOfflineTime = true;
+          } else {
+            _start = _start + 1;
+            globals.maxOfflineTime = false;
+          }
+        }));
   }
 
   @override
