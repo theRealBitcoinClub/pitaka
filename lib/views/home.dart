@@ -25,8 +25,8 @@ class HomeComponentState extends State<HomeComponent> {
   DatabaseHelper databaseHelper = DatabaseHelper();
   StreamSubscription _connectionChangeStream;
   bool isOffline = false;
-  bool maxOfflineTime = globals.maxOfflineTime;
-
+  //bool maxOfflineTime = globals.maxOfflineTime;
+  
 
   @override
   void initState()  {
@@ -82,6 +82,7 @@ class HomeComponentState extends State<HomeComponent> {
             globals.maxOfflineTime = true;
           } else {
             _start = _start + 1;
+            print(_start);
             globals.maxOfflineTime = false;
           }
         }));
