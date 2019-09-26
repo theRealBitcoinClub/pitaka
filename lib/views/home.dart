@@ -11,6 +11,7 @@ import '../utils/database_helper.dart';
 import 'package:connectivity/connectivity.dart';
 import 'package:flutter/services.dart';
 import '../utils/globals.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class HomeComponent extends StatefulWidget {
   @override
@@ -25,7 +26,8 @@ class HomeComponentState extends State<HomeComponent> {
   DatabaseHelper databaseHelper = DatabaseHelper();
   StreamSubscription _connectionChangeStream;
   bool isOffline = false;
-  //bool maxOfflineTime = globals.maxOfflineTime;
+  bool maxOfflineTime = globals.maxOfflineTime;
+  int offlineTime;
   
 
   @override
@@ -64,6 +66,9 @@ class HomeComponentState extends State<HomeComponent> {
         globals.syncing = false;
         print("Offline");
         startTimer();
+        offlineTime = new DateTime.now().millisecondsSinceEpoch;
+        _save();
+        print(_read());
       }
     });
   }
@@ -77,7 +82,7 @@ class HomeComponentState extends State<HomeComponent> {
         oneSec,
         (Timer timer) => setState(() {
           //if (_start >= 21600 || online == true) {  // 6 hours
-          if (_start >= 60 || online == true) { // 1 minute
+          if (_start >= 60) { // 1 minute
             timer.cancel();
             globals.maxOfflineTime = true;
           } else {
@@ -86,6 +91,21 @@ class HomeComponentState extends State<HomeComponent> {
             globals.maxOfflineTime = false;
           }
         }));
+  }
+
+  _read() async {
+    final prefs = await SharedPreferences.getInstance();
+    final key = 'offlineTimeKey';
+    final value = prefs.getInt(key) ?? 0;
+    print('read: $value');
+  }
+
+  _save() async {
+    final prefs = await SharedPreferences.getInstance();
+    final key = 'offlineTimeKey';
+    final value = offlineTime;
+    prefs.setInt(key, value);
+    print('saved $value');
   }
 
   @override
