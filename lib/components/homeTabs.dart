@@ -106,8 +106,54 @@ Icon _getModeIcon(String mode) {
   return icon;
 }
 
- _showProof(List<Transaction> transaction) {
-      print('WAS PRESSED');
+ _showProof(List<Transaction> transaction, BuildContext context, int index) async {
+   SharedPreferences prefs = await SharedPreferences.getInstance();
+      print(transaction[transaction.length - index - 1].code);
+
+
+      int count = transaction.length;
+
+      Dialog errorDialog = Dialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.0)), //this right here
+        child: Container(
+          height: 500.0,
+          width: 600.0,
+
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              QrImage(
+                data: transaction[transaction.length - index - 1]
+                    .code,
+              ),
+
+              Padding(
+                padding:  EdgeInsets.all(10.0),
+                child: Text("${formatCurrency.format(
+                transaction[transaction.length - index - 1]
+                    .amount)}", style: TextStyle(fontSize: 20.0),) ,
+              ),
+              Padding(
+                padding: EdgeInsets.all(5.0),
+                child: Text("${transaction[transaction.length - index -
+                    1].time}", style: TextStyle(fontSize: 20.0),),
+              ),
+              Padding(
+                padding: EdgeInsets.all(5.0),
+                child: Text("ID: ${transaction[transaction.length -
+                    index - 1].txnID}", style: TextStyle(fontSize: 20.0),),
+              ),
+              Padding(padding: EdgeInsets.only(top: 20.0)),
+              FlatButton(onPressed: (){
+                Navigator.of(context).pop();
+              },
+                  child: Text('Back', style: TextStyle(color: Colors.red, fontSize: 18.0),))
+            ],
+          ),
+        ),
+      );
+
+      showDialog(context: context, builder: (BuildContext context) => errorDialog);
  }
 
    ListView buildTransactionsList(transactions) {
@@ -115,7 +161,7 @@ Icon _getModeIcon(String mode) {
          itemCount: transactions.length,
          itemBuilder: (BuildContext context, int index) {
            return GestureDetector(
-               onTap: _showProof(transactions),
+               onTap: () => _showProof(transactions, context, index),
                child: Column(
                  children: <Widget>[
                    Row(

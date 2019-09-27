@@ -157,6 +157,7 @@ class SendComponentState extends State<SendComponent> {
       _errorMessage = response.error;
     } else {
       Application.router.navigateTo(context, "/proofOfPayment");
+      print(qrcode);
     }
     _submitting = false;
     return response.success;
@@ -164,7 +165,7 @@ class SendComponentState extends State<SendComponent> {
 
   void scanBarcode() async {
     allowCamera();
-    String barcode = await FlutterBarcodeScanner.scanBarcode("#ff6666","Cancel", true);
+    String barcode = await FlutterBarcodeScanner.scanBarcode("#ff6666", "Cancel", true, ScanMode.QR);
     setState(() {
       if (barcode.length > 0) {
         _barcodeString = barcode;
