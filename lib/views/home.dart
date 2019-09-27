@@ -27,7 +27,7 @@ class HomeComponentState extends State<HomeComponent> {
   StreamSubscription _connectionChangeStream;
   bool isOffline = false;
   bool maxOfflineTime = globals.maxOfflineTime;
-  int offlineTime;
+  int offlineTime = globals.offlineTime;
   
 
   @override
@@ -52,23 +52,44 @@ class HomeComponentState extends State<HomeComponent> {
   void connectionChanged(dynamic hasConnection) {
     setState(() {
       isOffline = !hasConnection;
-      if(isOffline == false) {
+      if (isOffline == false) {
         online = !online;
         globals.online = online;
         syncing = true;
         globals.syncing = true;
         globals.maxOfflineTime = false;
         print("Online");
+
+        Future.delayed(Duration(milliseconds: 100), () async {
+          // Set offlineTime to zero
+          globals.offlineTime = 0;
+          _save(globals.offlineTime);
+          var val = await _read();
+          print("It's online, offline timestamp is: $val");
+        });
+
       } else {
         online = false;
         globals.online = online;
         syncing = false;
         globals.syncing = false;
         print("Offline");
-        startTimer();
-        offlineTime = new DateTime.now().millisecondsSinceEpoch;
-        _save();
-        print(_read());
+
+        // Wrap arround Future to get the value of previous timestamp
+        Future.delayed(Duration(milliseconds: 100), () async {
+          // Read the previous value of offlineTime
+          var prevTime = await _read();
+          print("Previous offline timestamp is: $prevTime");
+          if (prevTime == 0) {
+            // Get timestamp and save
+            globals.offlineTime = DateTime.now().millisecondsSinceEpoch;
+            _save(globals.offlineTime);
+            var val = await _read();
+            print("Get and save a new timestamp: $val");
+            globals.timeDiff = 0;
+            startTimer();
+          }
+        });
       }
     });
   }
@@ -82,7 +103,7 @@ class HomeComponentState extends State<HomeComponent> {
         oneSec,
         (Timer timer) => setState(() {
           //if (_start >= 21600 || online == true) {  // 6 hours
-          if (_start >= 60) { // 1 minute
+          if (_start >= 60 - globals.timeDiff) { // 1 minute
             timer.cancel();
             globals.maxOfflineTime = true;
           } else {
@@ -97,15 +118,14 @@ class HomeComponentState extends State<HomeComponent> {
     final prefs = await SharedPreferences.getInstance();
     final key = 'offlineTimeKey';
     final value = prefs.getInt(key) ?? 0;
-    print('read: $value');
+    return value;
   }
 
-  _save() async {
+  _save(val) async {
     final prefs = await SharedPreferences.getInstance();
     final key = 'offlineTimeKey';
-    final value = offlineTime;
+    final value = val;
     prefs.setInt(key, value);
-    print('saved $value');
   }
 
   @override

@@ -22,7 +22,8 @@ class AppComponentState extends State<AppComponent> with AfterLayoutMixin<AppCom
   static bool debugMode = false;
   bool maxOfflineTime = globals.maxOfflineTime;
   bool online = globals.online;
-  int offlineTime;
+  int timeDiff = globals.timeDiff;
+  int offlineTime = globals.offlineTime;
   
   AppComponentState() {
     final router = new Router();
@@ -46,26 +47,39 @@ class AppComponentState extends State<AppComponent> with AfterLayoutMixin<AppCom
   @override
   void afterFirstLayout(BuildContext context) {
     // Call startTimer function, this will be called once at app startup
-    startTimer();
+    // startTimer();
+
     // At app startup check if offline and get timestamp 
     // Add delay to prevent false reading of globals.online default value
     Future.delayed(Duration(milliseconds: 500), () async {
       if (globals.online == false) {
-        print("Hello");
+        // Read the previous value of offlineTime
         var prevTime = await _read();
-        print(prevTime);
-        if (prevTime == 0) {print(_read());
-          offlineTime = new DateTime.now().millisecondsSinceEpoch;
-          _save(offlineTime);
+        print("It's offline, offlineTime is: $prevTime - from 'app.dart'");
+
+        if (prevTime == 0) {
+          globals.offlineTime = new DateTime.now().millisecondsSinceEpoch;
+          _save(globals.offlineTime);
+          var val = await _read();
+          print("It's offline, offlineTime set to $val - from 'app.dart'");
         } else {
           var currentTime = new DateTime.now().millisecondsSinceEpoch;
           // Convert milliseconds time difference to seconds
-          var timeDiff = (currentTime - prevTime) / 1000;
-          print("You've been offline for $timeDiff seconds");
+          globals.timeDiff = ((currentTime - prevTime) / 1000).round();
+          print("You've been offline for" + " " + globals.timeDiff.toString() + " " + "seconds");
+
+          if (globals.timeDiff >= 60) {
+            globals.maxOfflineTime = true;
+          } else {
+            startTimer();
+          }
         }
       } else {
-        offlineTime = 0;
-        _save(offlineTime);
+        // Set and save offlineTime value to zero when online
+        globals.offlineTime = 0;
+        _save(globals.offlineTime);
+        var val = await _read();
+        print("It's online, offlineTime set to $val - from 'app.dart'");
       }
     });
   }
@@ -82,7 +96,7 @@ class AppComponentState extends State<AppComponent> with AfterLayoutMixin<AppCom
           if (globals.online == true) { // 1 minute
             timer.cancel();
             globals.maxOfflineTime = false;
-          } else if (_start >= 60) {
+          } else if (_start >= 60 - globals.timeDiff) {
             timer.cancel();
             globals.maxOfflineTime = true;
           } else {
