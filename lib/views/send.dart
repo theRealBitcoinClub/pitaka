@@ -1,4 +1,7 @@
 import 'dart:async';
+import 'dart:convert';
+import 'package:archive/archive.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
 import '../components/bottomNavigation.dart';
@@ -13,7 +16,7 @@ import '../utils/globals.dart' as globals;
 import '../utils/database_helper.dart';
 import 'package:uuid/uuid.dart';
 import '../utils/globals.dart';
-
+import '../views/proofOfPayment.dart';
 
 
 class SendComponent extends StatefulWidget {
@@ -107,7 +110,7 @@ class SendComponentState extends State<SendComponent> {
   }
 
   final TextEditingController _accountController = new TextEditingController();
-  
+
 
   Future<bool> sendFunds(
     String toAccount,
@@ -140,6 +143,9 @@ class SendComponentState extends State<SendComponent> {
     prefs.setString("_txnDateTime", _txnReadableDateTime);
     prefs.setString("_txnAmount", amount.toString());
     prefs.setString("_txnID", txnID.substring(0,8).toUpperCase());
+    List<int> stringBytes = utf8.encode(qrcode);
+    List<int> gzipBytes = new GZipEncoder().encode(stringBytes);
+    String compressedString = base64.encode(gzipBytes);
     var payload = {
       'from_account': selectedPaytacaAccount,
       'to_account': destinationAccount,
@@ -149,7 +155,7 @@ class SendComponentState extends State<SendComponent> {
       'txn_hash': txnhash,
       'signature': signature,
       'transaction_id': txnID.substring(0,8).toUpperCase(),
-      'txn_qrcode': qrcode
+      'txn_qrcode': compressedString
     };
     var response = await transferAsset(payload);
     if (response.success == false) {
@@ -157,7 +163,8 @@ class SendComponentState extends State<SendComponent> {
       _errorMessage = response.error;
     } else {
       Application.router.navigateTo(context, "/proofOfPayment");
-      print(qrcode);
+      print('QrCode: $qrcode');
+      print(payload);
     }
     _submitting = false;
     return response.success;

@@ -9,7 +9,6 @@ void main() {
   connectionStatus.initialize();
 
   ReceiveComponentState comp = new ReceiveComponentState();
-
   comp.getAccounts();
 
   runApp(new AppComponent());

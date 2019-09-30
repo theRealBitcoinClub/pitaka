@@ -107,41 +107,46 @@ Icon _getModeIcon(String mode) {
 }
 
  _showProof(List<Transaction> transaction, BuildContext context, int index) async {
+
    SharedPreferences prefs = await SharedPreferences.getInstance();
-      print(transaction[transaction.length - index - 1].code);
+      print("Qr Code:  ${transaction[transaction.length - index - 1].paymentProof}");
+      print("Qr code: ${prefs.getString("_txnQrCode")}");
 
 
       int count = transaction.length;
 
-      Dialog errorDialog = Dialog(
+      Dialog transacDialog = Dialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.0)), //this right here
         child: Container(
           height: 500.0,
-          width: 600.0,
+          width: 400.0,
 
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
               QrImage(
-                data: transaction[transaction.length - index - 1]
-                    .code,
+                data: transaction[transaction.length - index - 1].paymentProof,
+                size: 250.0
               ),
 
               Padding(
                 padding:  EdgeInsets.all(10.0),
                 child: Text("${formatCurrency.format(
                 transaction[transaction.length - index - 1]
-                    .amount)}", style: TextStyle(fontSize: 20.0),) ,
+                    .amount)}", style: TextStyle(fontSize: 20.0),
+                ),
               ),
               Padding(
                 padding: EdgeInsets.all(5.0),
                 child: Text("${transaction[transaction.length - index -
-                    1].time}", style: TextStyle(fontSize: 20.0),),
+                    1].time}", style: TextStyle(fontSize: 20.0),
+                ),
               ),
               Padding(
                 padding: EdgeInsets.all(5.0),
                 child: Text("ID: ${transaction[transaction.length -
-                    index - 1].txnID}", style: TextStyle(fontSize: 20.0),),
+                    index - 1].txnID}", style: TextStyle(fontSize: 20.0),
+                ),
               ),
               Padding(padding: EdgeInsets.only(top: 20.0)),
               FlatButton(onPressed: (){
@@ -153,7 +158,7 @@ Icon _getModeIcon(String mode) {
         ),
       );
 
-      showDialog(context: context, builder: (BuildContext context) => errorDialog);
+      showDialog(context: context, builder: (BuildContext context) => transacDialog);
  }
 
    ListView buildTransactionsList(transactions) {

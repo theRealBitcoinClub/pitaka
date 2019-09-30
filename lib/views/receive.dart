@@ -107,6 +107,7 @@ class ReceiveComponentState extends State<ReceiveComponent> {
                 _failedDialog();
               } else {
                 _successDialog();
+                print(payload);
               }
             } else {
               _failedDialog();

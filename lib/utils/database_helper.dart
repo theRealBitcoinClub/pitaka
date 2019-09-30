@@ -63,6 +63,7 @@ class DatabaseHelper {
       "timestamp TEXT,"
       "mode TEXT,"
       "transactionJson TEXT,"
+      "paymentProof TEXT,"
       "txnID TEXT,"
       "time TEXT"
       ")");
@@ -223,6 +224,7 @@ class DatabaseHelper {
       "mode":"send",
       "transactionJson": converted,
       "txnID": payload["transaction_id"],
+      "paymentProof": payload["txn_qrcode"],
       "time": txnTimeStamp
     });
     
