@@ -92,11 +92,10 @@ class AppComponentState extends State<AppComponent> with AfterLayoutMixin<AppCom
     _timer = new Timer.periodic(
         oneSec,
         (Timer timer) => setState(() {
-          //if (_start >= 21600 || online == true) {  // 6 hours
-          if (globals.online == true) { // 1 minute
+          if (globals.online == true) {
             timer.cancel();
             globals.maxOfflineTime = false;
-          } else if (_start >= 60 - globals.timeDiff) {
+          } else if (_start >= 60 - globals.timeDiff) { // (60) 1 minute, change to 21600 for 6 hours
             timer.cancel();
             globals.maxOfflineTime = true;
           } else {

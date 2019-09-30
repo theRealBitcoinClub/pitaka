@@ -8,17 +8,18 @@ import '../utils/database_helper.dart';
 import 'package:flutter/services.dart';
 
 //const String baseUrl = 'https://lantaka-dev.paytaca.com';
-const String baseUrl = 'https://1edc474f.ngrok.io';
+const String baseUrl = 'https://1069a580.ngrok.io';
 const String phpAssetId = '3A8F594F-D736-4673-945C-5465E0209AF0';
 
 int offlineTime;
 int timeDiff;
-bool maxOfflineTime = false;
+bool _maxOfflineTime = false;
 bool _online = false;
 bool _syncing = false;
 const String serverPublicKey = '7aeaa44510a950a9a4537faa2f40351dc4560d6d0d12abc0287dcffdd667d7a2';
 bool get online => _online;
 bool get syncing => _syncing;
+bool get maxOfflineTime => _maxOfflineTime;
 final Connectivity _connectivity = Connectivity();
 ConnectivityResult result;
 //StreamSubscription<ConnectivityResult> _connectivitySubscription = _connectivity.onConnectivityChanged.listen();
@@ -37,6 +38,8 @@ set syncing(bool value) => _syncing = value;
 DatabaseHelper databaseHelper = DatabaseHelper();
 
 final storage = new FlutterSecureStorage();
+
+set maxOfflineTime(bool value) => _maxOfflineTime = value;
 
 
 Future<bool> iniConnection() async {

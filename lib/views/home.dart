@@ -102,14 +102,16 @@ class HomeComponentState extends State<HomeComponent> {
     _timer = new Timer.periodic(
         oneSec,
         (Timer timer) => setState(() {
-          //if (_start >= 21600 || online == true) {  // 6 hours
-          if (_start >= 60 - globals.timeDiff) { // 1 minute
+          if (globals.online == true) {
+            globals.maxOfflineTime = false;
             timer.cancel();
+          } else if (_start >= 60 - globals.timeDiff) { // (60) 1 minute, change to 21600 for 6 hours
             globals.maxOfflineTime = true;
+            timer.cancel();
           } else {
             _start = _start + 1;
-            print(_start);
             globals.maxOfflineTime = false;
+            print(_start);
           }
         }));
   }
