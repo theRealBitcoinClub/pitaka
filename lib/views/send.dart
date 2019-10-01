@@ -163,7 +163,7 @@ class SendComponentState extends State<SendComponent> {
           if (globals.online == true) {
             globals.maxOfflineTime = false;
             timer.cancel();
-          } else if (_start >= 60 - globals.timeDiff) { // (60) 1 minute, change to 21600 for 6 hours
+          } else if (_start >= 21600 - globals.timeDiff) { // (60) 1 minute, change to 21600 for 6 hours
             globals.maxOfflineTime = true;
             timer.cancel();
           } else {
