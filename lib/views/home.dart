@@ -26,8 +26,6 @@ class HomeComponentState extends State<HomeComponent> {
   DatabaseHelper databaseHelper = DatabaseHelper();
   StreamSubscription _connectionChangeStream;
   bool isOffline = false;
-  bool maxOfflineTime = globals.maxOfflineTime;
-  int offlineTime = globals.offlineTime;
   
 
   @override
@@ -52,82 +50,20 @@ class HomeComponentState extends State<HomeComponent> {
   void connectionChanged(dynamic hasConnection) {
     setState(() {
       isOffline = !hasConnection;
-      if (isOffline == false) {
+      if(isOffline == false) {
         online = !online;
         globals.online = online;
         syncing = true;
         globals.syncing = true;
-        globals.maxOfflineTime = false;
         print("Online");
-
-        Future.delayed(Duration(milliseconds: 100), () async {
-          // Set offlineTime to zero
-          globals.offlineTime = 0;
-          _save(globals.offlineTime);
-          var val = await _read();
-          print("It's online, offline timestamp is: $val");
-        });
-
       } else {
         online = false;
         globals.online = online;
         syncing = false;
         globals.syncing = false;
         print("Offline");
-
-        // Wrap arround Future to get the value of previous timestamp
-        Future.delayed(Duration(milliseconds: 100), () async {
-          // Read the previous value of offlineTime
-          var prevTime = await _read();
-          print("Previous offline timestamp is: $prevTime");
-          if (prevTime == 0) {
-            // Get timestamp and save
-            globals.offlineTime = DateTime.now().millisecondsSinceEpoch;
-            _save(globals.offlineTime);
-            var val = await _read();
-            print("Get and save a new timestamp: $val");
-            globals.timeDiff = 0;
-            startTimer();
-          }
-        });
       }
     });
-  }
-
-  // Timer for maximum offline timeout
-  Timer _timer;
-  int _start = 0;
-  void startTimer() {
-    const oneSec = const Duration(seconds: 1);
-    _timer = new Timer.periodic(
-        oneSec,
-        (Timer timer) => setState(() {
-          if (globals.online == true) {
-            globals.maxOfflineTime = false;
-            timer.cancel();
-          } else if (_start >= 60 - globals.timeDiff) { // (60) 1 minute, change to 21600 for 6 hours
-            globals.maxOfflineTime = true;
-            timer.cancel();
-          } else {
-            _start = _start + 1;
-            globals.maxOfflineTime = false;
-            print(_start);
-          }
-        }));
-  }
-
-  _read() async {
-    final prefs = await SharedPreferences.getInstance();
-    final key = 'offlineTimeKey';
-    final value = prefs.getInt(key) ?? 0;
-    return value;
-  }
-
-  _save(val) async {
-    final prefs = await SharedPreferences.getInstance();
-    final key = 'offlineTimeKey';
-    final value = val;
-    prefs.setInt(key, value);
   }
 
   @override
