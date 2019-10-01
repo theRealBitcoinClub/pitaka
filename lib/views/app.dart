@@ -68,7 +68,7 @@ class AppComponentState extends State<AppComponent> with AfterLayoutMixin<AppCom
           globals.timeDiff = ((currentTime - prevTime) / 1000).round();
           print("You've been offline for" + " " + globals.timeDiff.toString() + " " + "seconds");
 
-          if (globals.timeDiff >= 60) {
+          if (globals.timeDiff >= 21600) {
             globals.maxOfflineTime = true;
           } else {
             startTimer();
