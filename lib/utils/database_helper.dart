@@ -239,6 +239,7 @@ class DatabaseHelper {
         "mode":"receive",
         "transactionJson": converted,
         "txnID": payload["transaction_id"],
+        "paymentProof": payload["txn_qrcode"],
         "time": txnTimeStamp
       });
     }
@@ -261,6 +262,7 @@ class DatabaseHelper {
         "mode":"receive",
         "transactionJson": converted,
         "txnID": payload["transaction_id"],
+        "paymentProof": payload["txn_qrcode"],
         "time": instance['timestamp']
       });
     } else {

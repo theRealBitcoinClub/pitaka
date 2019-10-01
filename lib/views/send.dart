@@ -133,7 +133,7 @@ class SendComponentState extends State<SendComponent> {
     var now = new DateTime.now();
     var txnDateTime = DateTime.parse(now.toString());
     var txnhash = "$amount:-:$txnDateTime:-:"
-    "$selectedPaytacaAccount:-:$lBalance:-:$lSignedBalance:-:$lBalanceTimeStamp";
+    "$selectedPaytacaAccount:-:$lBalance:-:$lSignedBalance:-:$lBalanceTimeStamp:-:$txnID";
     var _txnReadableDateTime = DateFormat('MMMM dd, yyyy  h:mm a').format(
       DateTime.parse(now.toString())
     );
@@ -145,7 +145,8 @@ class SendComponentState extends State<SendComponent> {
     prefs.setString("_txnID", txnID.substring(0,8).toUpperCase());
     List<int> stringBytes = utf8.encode(qrcode);
     List<int> gzipBytes = new GZipEncoder().encode(stringBytes);
-    String compressedString = base64.encode(gzipBytes);
+    String proofOfPayment = base64.encode(gzipBytes);
+    prefs.setString("_compCode", proofOfPayment);
     var payload = {
       'from_account': selectedPaytacaAccount,
       'to_account': destinationAccount,
@@ -155,7 +156,7 @@ class SendComponentState extends State<SendComponent> {
       'txn_hash': txnhash,
       'signature': signature,
       'transaction_id': txnID.substring(0,8).toUpperCase(),
-      'txn_qrcode': compressedString
+      'txn_qrcode': proofOfPayment,
     };
     var response = await transferAsset(payload);
     if (response.success == false) {
@@ -163,8 +164,7 @@ class SendComponentState extends State<SendComponent> {
       _errorMessage = response.error;
     } else {
       Application.router.navigateTo(context, "/proofOfPayment");
-      print('QrCode: $qrcode');
-      print(payload);
+
     }
     _submitting = false;
     return response.success;

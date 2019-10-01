@@ -110,10 +110,6 @@ Icon _getModeIcon(String mode) {
 
    SharedPreferences prefs = await SharedPreferences.getInstance();
       print("Qr Code:  ${transaction[transaction.length - index - 1].paymentProof}");
-      print("Qr code: ${prefs.getString("_txnQrCode")}");
-
-
-      int count = transaction.length;
 
       Dialog transacDialog = Dialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.0)), //this right here
@@ -125,7 +121,7 @@ Icon _getModeIcon(String mode) {
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
               QrImage(
-                data: transaction[transaction.length - index - 1].paymentProof,
+                data: transaction[transaction.length - index -1].paymentProof,
                 size: 250.0
               ),
 
@@ -158,7 +154,9 @@ Icon _getModeIcon(String mode) {
         ),
       );
 
-      showDialog(context: context, builder: (BuildContext context) => transacDialog);
+      if(transaction[transaction.length - index - 1].mode == "send") {
+        showDialog(context: context, builder: (BuildContext context) => transacDialog);
+      }
  }
 
    ListView buildTransactionsList(transactions) {
@@ -192,8 +190,7 @@ Icon _getModeIcon(String mode) {
                              const EdgeInsets.fromLTRB(15.0, 4.0, 8.0, 4.0),
                              child: Text(
                                  "${transactions[transactions.length - index -
-                                     1]
-                                     .time}",
+                                     1].time}",
                                  style: TextStyle(fontSize: 16.0)
                              ),
                            ),
@@ -202,8 +199,7 @@ Icon _getModeIcon(String mode) {
                              const EdgeInsets.fromLTRB(15.0, 4.0, 8.0, 15.0),
                              child: Text(
                                  "ID: ${transactions[transactions.length -
-                                     index - 1]
-                                     .txnID}",
+                                     index - 1].txnID}",
                                  style: TextStyle(fontSize: 16.0)
                              ),
                            ),

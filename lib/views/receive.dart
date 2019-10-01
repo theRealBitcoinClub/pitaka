@@ -66,7 +66,7 @@ class ReceiveComponentState extends State<ReceiveComponent> {
     if (qrArr.length == 3) {
       var stringified  = qrArr[1].toString();
       List hashArr = stringified.split(':-:');
-      if(hashArr.length == 6){
+      if(hashArr.length == 7){
         double amount = double.parse(hashArr[0]);
         double lBalance = double.parse(hashArr[3]);
         if(amount <= lBalance) {
@@ -74,6 +74,7 @@ class ReceiveComponentState extends State<ReceiveComponent> {
           String fromAccount = hashArr[2];
           String txnHash = qrArr[1];
           String txnSignature = qrArr[0];
+          String txnID = hashArr[6];
           var signature = HEX.decode(txnSignature);
           var publicKey = HEX.decode(pubKey);
           var firstValidation = await CryptoSign.verify(signature, txnHash, publicKey);
@@ -95,6 +96,7 @@ class ReceiveComponentState extends State<ReceiveComponent> {
                 'public_key': publicKey,
                 'txn_hash': txnHash,
                 'signature': txnSignature,
+                'transaction_id': txnID,
                 'signed_balance':  {
                   'message': hashMessage,
                   'signature': lastSignedBalance,

@@ -130,7 +130,7 @@ class TransactionsResponse {
           transObj.timeslot = DateTime.tryParse(transObj.timestamp).toLocal();
           transObj.time = DateFormat('y/M/d hh:mm a').format(transObj.timeslot).toString();
           transObj.txnID = txn['TransactionID'];
-          transObj.paymentProof = txn['QRCode'];
+          transObj.paymentProof = txn['PaymentProof'];
           _transactions.add(transObj);
 
         }
@@ -147,10 +147,11 @@ class TransactionsResponse {
 
       transObj.mode = txn['mode'];
       transObj.amount = txn['amount'].toDouble();
-      transObj.timestamp = txn['timestamp'];
+      transObj.timestamp = txn['timestamp'].toString();
+      transObj.timeslot = DateTime.tryParse(transObj.timestamp).toLocal();
       transObj.txnID = txn['txnID'];
-      transObj.time = txn['time'];
-      transObj.paymentProof = txn['qrcode'];
+      transObj.time = DateFormat('y/M/d hh:mm a').format(transObj.timeslot).toString();
+      transObj.paymentProof = txn['paymentProof'];
       _trans.add(transObj);
     }
     return TransactionsResponse(
