@@ -11,6 +11,7 @@ import '../utils/database_helper.dart';
 import 'package:connectivity/connectivity.dart';
 import 'package:flutter/services.dart';
 import '../utils/globals.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class HomeComponent extends StatefulWidget {
   @override
@@ -25,7 +26,7 @@ class HomeComponentState extends State<HomeComponent> {
   DatabaseHelper databaseHelper = DatabaseHelper();
   StreamSubscription _connectionChangeStream;
   bool isOffline = false;
-
+  
 
   @override
   void initState()  {
