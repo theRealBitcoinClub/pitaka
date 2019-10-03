@@ -2,28 +2,27 @@ import 'package:flutter/material.dart';
 import '../utils/globals.dart' as globals;
 import '../views/app.dart';
 
-class AddPincodeComponent extends StatelessWidget {
+void main() => runApp(CheckPincodeComponent());
+
+class CheckPincodeComponent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        centerTitle: true,
-        title: Text('Register Pincode'),
-      ),
-      body: AddPincodeForm(), 
+    return MaterialApp(
+      title: 'Retrieve Pincode',
+      home: CheckPincodeForm(),
     );
   }
 }
 
 // Define a custom Form widget.
-class AddPincodeForm extends StatefulWidget {
+class CheckPincodeForm extends StatefulWidget {
   @override
-  _AddPincodeFormState createState() => _AddPincodeFormState();
+  _CheckPincodeFormState createState() => _CheckPincodeFormState();
 }
 
 // Define a corresponding State class.
 // This class holds the data related to the Form.
-class _AddPincodeFormState extends State<AddPincodeForm> {
+class _CheckPincodeFormState extends State<CheckPincodeForm> {
   // Create a text controller and use it to retrieve the current value
   // of the TextField.
   final myController = TextEditingController();
@@ -39,7 +38,7 @@ class _AddPincodeFormState extends State<AddPincodeForm> {
   }
 
   _storePincode() {
-    setState(() async {
+    setState(() async{
       pincode = myController.text;
       await globals.storage.write(key: "pincodeKey", value: pincode);
       // For debug, check if pin code was save
@@ -52,6 +51,9 @@ class _AddPincodeFormState extends State<AddPincodeForm> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+        appBar: AppBar(
+          title: Text('Retrieve Text Input'),
+        ),
         body: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -73,4 +75,11 @@ class _AddPincodeFormState extends State<AddPincodeForm> {
           ),
         ));
   }
+
+  // void initState() {
+  //   super.initState();
+  //   print("Saving pincode...");
+  //   WidgetsBinding.instance.addPostFrameCallback((_) => storePincode());
+  // }
+
 }

@@ -101,5 +101,5 @@ var settingsHandler = new Handler(
 
 var addPinCodeHandler = new Handler(
     handlerFunc: (BuildContext context, Map<String, dynamic> params) {
-      return new AddPinCodeComponent();
+      return new AddPincodeComponent();
 });
