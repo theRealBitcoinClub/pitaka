@@ -74,6 +74,7 @@ class ReceiveComponentState extends State<ReceiveComponent> {
           String fromAccount = hashArr[2];
           String txnHash = qrArr[1];
           String txnSignature = qrArr[0];
+          String txnDateTime = hashArr[1];
           String txnID = hashArr[6];
           var signature = HEX.decode(txnSignature);
           var publicKey = HEX.decode(pubKey);
@@ -97,6 +98,7 @@ class ReceiveComponentState extends State<ReceiveComponent> {
                 'txn_hash': txnHash,
                 'signature': txnSignature,
                 'transaction_id': txnID,
+                'transaction_datetime': txnDateTime,
                 'signed_balance':  {
                   'message': hashMessage,
                   'signature': lastSignedBalance,

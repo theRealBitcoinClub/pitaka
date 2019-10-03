@@ -127,7 +127,7 @@ class SendComponentState extends State<SendComponent> {
     SharedPreferences prefs = await SharedPreferences.getInstance();
 
     var uuid = new Uuid();
-    txnID = uuid.v1();
+    txnID = uuid.v1().substring(0,8).toUpperCase();
 
 
     var now = new DateTime.now();
@@ -155,7 +155,8 @@ class SendComponentState extends State<SendComponent> {
       'public_key': publicKey,
       'txn_hash': txnhash,
       'signature': signature,
-      'transaction_id': txnID.substring(0,8).toUpperCase(),
+      'transaction_id': txnID,
+      'transaction_datetime': txnDateTime,
       'txn_qrcode': proofOfPayment,
     };
     var response = await transferAsset(payload);
