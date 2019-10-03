@@ -30,6 +30,7 @@ class _CheckPincodeFormState extends State<CheckPincodeForm> {
 
   String pincodeKey;
   String pincode;
+  bool pincodeMatch = true;
 
   @override
   void dispose() {
@@ -46,8 +47,10 @@ class _CheckPincodeFormState extends State<CheckPincodeForm> {
       if (readPincode == pincode) {
         print("Success, pincode match!");
         Application.router.navigateTo(context, "/home");
+        pincodeMatch = true;
       } else {
         print("Pincode mismatch!");
+        pincodeMatch = false;
       }
     });
   }
@@ -85,6 +88,23 @@ class _CheckPincodeFormState extends State<CheckPincodeForm> {
                       new SizedBox(
                         height: 30.0,
                       ),
+
+                      // Display text if pincode match or not
+                      pincodeMatch == true ? 
+                        Container(
+                          padding: EdgeInsets.only(top: 5),
+                          child: new Text(
+                            "",
+                            textAlign: TextAlign.center,
+                          ),
+                        )
+                      : Container(
+                          padding: EdgeInsets.only(top: 5),
+                          child: new Text(
+                            "Wrong pincode! Please try again.",
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
                       new RaisedButton(
                         onPressed: _retrievePincode,
                         child: new Text('Submit'),
