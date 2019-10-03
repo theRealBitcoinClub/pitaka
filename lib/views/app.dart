@@ -18,13 +18,14 @@ class Application {
   static Router router;
 }
 
-class AppComponentState extends State<AppComponent> with AfterLayoutMixin<AppComponent>{
+class AppComponentState extends State<AppComponent>
+    with AfterLayoutMixin<AppComponent> {
   static bool debugMode = false;
   bool maxOfflineTime = globals.maxOfflineTime;
   bool online = globals.online;
   int timeDiff = globals.timeDiff;
   int offlineTime = globals.offlineTime;
-  
+
   AppComponentState() {
     final router = new Router();
     Routes.configureRoutes(router);
@@ -46,10 +47,7 @@ class AppComponentState extends State<AppComponent> with AfterLayoutMixin<AppCom
 
   @override
   void afterFirstLayout(BuildContext context) {
-    // Call startTimer function, this will be called once at app startup
-    // startTimer();
-
-    // At app startup check if offline and get timestamp 
+    // At app startup check if offline and get timestamp
     // Add delay to prevent false reading of globals.online default value
     Future.delayed(Duration(milliseconds: 500), () async {
       if (globals.online == false) {
@@ -66,7 +64,11 @@ class AppComponentState extends State<AppComponent> with AfterLayoutMixin<AppCom
           var currentTime = new DateTime.now().millisecondsSinceEpoch;
           // Convert milliseconds time difference to seconds
           globals.timeDiff = ((currentTime - prevTime) / 1000).round();
-          print("You've been offline for" + " " + globals.timeDiff.toString() + " " + "seconds");
+          print("You've been offline for" +
+              " " +
+              globals.timeDiff.toString() +
+              " " +
+              "seconds");
 
           if (globals.timeDiff >= 21600) {
             globals.maxOfflineTime = true;
@@ -92,18 +94,19 @@ class AppComponentState extends State<AppComponent> with AfterLayoutMixin<AppCom
     _timer = new Timer.periodic(
         oneSec,
         (Timer timer) => setState(() {
-          if (globals.online == true) {
-            timer.cancel();
-            globals.maxOfflineTime = false;
-          } else if (_start >= 21600 - globals.timeDiff) { // (60) 1 minute, change to 21600 for 6 hours
-            timer.cancel();
-            globals.maxOfflineTime = true;
-          } else {
-            _start = _start + 1;
-            print(_start);
-            globals.maxOfflineTime = false;
-          }
-        }));
+              if (globals.online == true) {
+                timer.cancel();
+                globals.maxOfflineTime = false;
+              } else if (_start >= 21600 - globals.timeDiff) {
+                // (60) 1 minute, change to 21600 for 6 hours
+                timer.cancel();
+                globals.maxOfflineTime = true;
+              } else {
+                _start = _start + 1;
+                print(_start);
+                globals.maxOfflineTime = false;
+              }
+            }));
   }
 
   _read() async {
@@ -119,5 +122,4 @@ class AppComponentState extends State<AppComponent> with AfterLayoutMixin<AppCom
     final value = val;
     prefs.setInt(key, value);
   }
-
 }

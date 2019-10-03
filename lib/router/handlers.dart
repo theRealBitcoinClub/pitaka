@@ -17,6 +17,7 @@ import '../views/business/businesses.dart';
 import '../views/addAccount.dart';
 import '../views/settings.dart';
 import '../views/addPinCode.dart';
+import '../views/checkPinCode.dart';
 
 var rootHandler = new Handler(
     handlerFunc: (BuildContext context, Map<String, dynamic> params) {
@@ -102,4 +103,9 @@ var settingsHandler = new Handler(
 var addPinCodeHandler = new Handler(
     handlerFunc: (BuildContext context, Map<String, dynamic> params) {
       return new AddPincodeComponent();
+});
+
+var checkPinCodeHandler = new Handler(
+    handlerFunc: (BuildContext context, Map<String, dynamic> params) {
+      return new CheckPincodeComponent();
 });

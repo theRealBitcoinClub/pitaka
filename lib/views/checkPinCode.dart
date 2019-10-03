@@ -2,14 +2,15 @@ import 'package:flutter/material.dart';
 import '../utils/globals.dart' as globals;
 import '../views/app.dart';
 
-void main() => runApp(CheckPincodeComponent());
-
 class CheckPincodeComponent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Retrieve Pincode',
-      home: CheckPincodeForm(),
+    return Scaffold(
+      appBar: AppBar(
+        centerTitle: true,
+        title: Text('Retrieve Pincode'),
+      ),
+      body: CheckPincodeForm(),
     );
   }
 }
@@ -37,49 +38,42 @@ class _CheckPincodeFormState extends State<CheckPincodeForm> {
     super.dispose();
   }
 
-  _storePincode() {
-    setState(() async{
+  _retrievePincode() {
+    setState(() async {
       pincode = myController.text;
-      await globals.storage.write(key: "pincodeKey", value: pincode);
-      // For debug, check if pin code was save
-      final read = await globals.storage.read(key: "pincodeKey");
-      print("The pincode: $read was succesfully save.");
-      Application.router.navigateTo(context, "/account");
+      final readPincode = await globals.storage.read(key: "pincodeKey");
+      print("The pincode retrieve: $readPincode.");
+      if (readPincode == pincode) {
+        print("Success, pincode match!");
+        Application.router.navigateTo(context, "/home");
+      } else {
+        print("Pincode mismatch!");
+      }
     });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(
-          title: Text('Retrieve Text Input'),
-        ),
         body: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            mainAxisSize: MainAxisSize.min,
-            children: <Widget>[
-              Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: TextField(
-                  controller: myController,
-                  autocorrect: true,
-                  decoration: InputDecoration(hintText: 'Enter pincode'),
-                ),
-              ),
-              RaisedButton(
-                onPressed: _storePincode,
-                child: Text("Submit"),
-              )
-            ],
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisSize: MainAxisSize.min,
+        children: <Widget>[
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: TextField(
+              controller: myController,
+              autocorrect: true,
+              decoration: InputDecoration(hintText: 'Enter pincode'),
+            ),
           ),
-        ));
+          RaisedButton(
+            onPressed: _retrievePincode,
+            child: Text("Submit"),
+          )
+        ],
+      ),
+    ));
   }
-
-  // void initState() {
-  //   super.initState();
-  //   print("Saving pincode...");
-  //   WidgetsBinding.instance.addPostFrameCallback((_) => storePincode());
-  // }
-
 }
