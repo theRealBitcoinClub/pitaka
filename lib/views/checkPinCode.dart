@@ -56,24 +56,46 @@ class _CheckPincodeFormState extends State<CheckPincodeForm> {
   Widget build(BuildContext context) {
     return Scaffold(
         body: Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        mainAxisSize: MainAxisSize.min,
-        children: <Widget>[
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: TextField(
-              controller: myController,
-              autocorrect: true,
-              decoration: InputDecoration(hintText: 'Enter pincode'),
-            ),
-          ),
-          RaisedButton(
-            onPressed: _retrievePincode,
-            child: Text("Submit"),
-          )
-        ],
-      ),
-    ));
+            child: Container(
+                alignment: Alignment.center,
+                child: new ListView(
+                    shrinkWrap: true,
+                    padding: const EdgeInsets.all(20.0),
+                    children: <Widget>[
+                      new Center(
+                          child: new Text("Pincode Verification",
+                              style: TextStyle(
+                                fontSize: 24.0,
+                              ))),
+                      new SizedBox(
+                        height: 10.0,
+                      ),
+                      new TextFormField(
+                        controller: myController,
+                        textAlign: TextAlign.center,
+                        keyboardType: TextInputType.phone,
+                        autofocus: true,
+                        maxLength: 4,
+                        style: TextStyle(fontSize: 24.0),
+                        decoration: const InputDecoration(
+                          hintText: 'Enter Pincode',
+                          hintStyle: TextStyle(fontSize: 15.0),
+                        ),
+                      ),
+                      new SizedBox(
+                        height: 30.0,
+                      ),
+                      new RaisedButton(
+                        onPressed: _retrievePincode,
+                        child: new Text('Submit'),
+                      ),
+                      new SizedBox(
+                        height: 97.0,
+                      )
+                    ]
+                )
+            )
+        )
+    );
   }
 }
