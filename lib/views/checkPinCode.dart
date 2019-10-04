@@ -10,7 +10,8 @@ class CheckPincodeComponent extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         centerTitle: true,
-        title: Text('Retrieve Pincode'),
+        title: Text('Pincode Verification'),
+        automaticallyImplyLeading: false,
       ),
       body: CheckPincodeForm(),
     );
@@ -67,14 +68,6 @@ class _CheckPincodeFormState extends State<CheckPincodeForm> {
                     shrinkWrap: true,
                     padding: const EdgeInsets.all(20.0),
                     children: <Widget>[
-                      new Center(
-                          child: new Text("Pincode Verification",
-                              style: TextStyle(
-                                fontSize: 24.0,
-                              ))),
-                      new SizedBox(
-                        height: 10.0,
-                      ),
                       new TextFormField(
                         controller: myController,
                         textAlign: TextAlign.center,
