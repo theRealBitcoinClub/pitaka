@@ -217,8 +217,6 @@ class DatabaseHelper {
     };
     var converted = json.encode(payload);
     var txnTimeStamp = payload['txn_hash'].split(':-:')[1];
-    var txnDateTime = DateTime.tryParse(txnTimeStamp).toLocal();
-    var time = DateFormat('y/M/d hh:mm a').format(txnDateTime).toString();
     await db.insert(table2, {
       "account": instance['accountId'],
       "amount":payload['amount'],
@@ -227,7 +225,7 @@ class DatabaseHelper {
       "transactionJson": converted,
       "txnID": payload["transaction_id"],
       "paymentProof": payload["txn_qrcode"],
-      "time": time
+      "time": payload["transaction_datetime"],
     });
     
     // Check if the recipient(toAccount) is in the user's accounts.
@@ -242,7 +240,7 @@ class DatabaseHelper {
         "transactionJson": converted,
         "txnID": payload["transaction_id"],
         "paymentProof": payload["txn_qrcode"],
-        "time": time
+        "time": payload["transaction_datetime"],
       });
     }
     return 'success';
@@ -265,7 +263,7 @@ class DatabaseHelper {
         "transactionJson": converted,
         "txnID": payload["transaction_id"],
         "paymentProof": payload["txn_qrcode"],
-        "time": instance['timestamp']
+        "time": payload["transaction_datetime"],
       });
     } else {
       return 0;

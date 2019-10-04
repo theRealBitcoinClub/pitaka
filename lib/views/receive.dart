@@ -66,7 +66,7 @@ class ReceiveComponentState extends State<ReceiveComponent> {
     if (qrArr.length == 3) {
       var stringified  = qrArr[1].toString();
       List hashArr = stringified.split(':-:');
-      if(hashArr.length == 7){
+      if(hashArr.length == 8){
         double amount = double.parse(hashArr[0]);
         double lBalance = double.parse(hashArr[3]);
         if(amount <= lBalance) {
@@ -127,26 +127,28 @@ class ReceiveComponentState extends State<ReceiveComponent> {
   }
 
    Future<List> getAccounts() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    var _prefAccounts = prefs.get("accounts");
-    List<Map> _accounts = [];
-    for (final acct in _prefAccounts) {
-      String accountId = acct.split(' | ')[1];
-      var acctObj = new Map();
-      // var onlineBalance = acct.split(' | ')[2];
-      acctObj['accountName'] = acct.split(' | ')[0];
-      acctObj['accountId'] = accountId;
-      // if (globals.online) {
-      //   acctObj['balance'] = onlineBalance;
-      // } else {
-      //   var x = double.tryParse(onlineBalance);
-      //   var resp = await globals.databaseHelper.offlineBalanceAnalyser(accountId, x);
-      //   acctObj['balance'] = resp['computedBalance'].toString();
-      // }
-      _accounts.add(acctObj);
-    }
-    data = _accounts;
-    return _accounts;
+    try {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      var _prefAccounts = prefs.get("accounts");
+      List<Map> _accounts = [];
+      for (final acct in _prefAccounts) {
+        String accountId = acct.split(' | ')[1];
+        var acctObj = new Map();
+        // var onlineBalance = acct.split(' | ')[2];
+        acctObj['accountName'] = acct.split(' | ')[0];
+        acctObj['accountId'] = accountId;
+        // if (globals.online) {
+        //   acctObj['balance'] = onlineBalance;
+        // } else {
+        //   var x = double.tryParse(onlineBalance);
+        //   var resp = await globals.databaseHelper.offlineBalanceAnalyser(accountId, x);
+        //   acctObj['balance'] = resp['computedBalance'].toString();
+        // }
+        _accounts.add(acctObj);
+      }
+      data = _accounts;
+      return _accounts;
+    } catch(e) {}
   }
 
   Future<void> _failedDialog() async {
@@ -264,6 +266,7 @@ class ReceiveComponentState extends State<ReceiveComponent> {
                 decoration: InputDecoration(
                   labelText: 'Select Account',
                 ),
+
                 child: new DropdownButtonHideUnderline(
                   child: new DropdownButton(
                     items: data.map((item) {

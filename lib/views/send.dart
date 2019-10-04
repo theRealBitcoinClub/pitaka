@@ -132,11 +132,13 @@ class SendComponentState extends State<SendComponent> {
 
     var now = new DateTime.now();
     var txnDateTime = DateTime.parse(now.toString());
-    var txnhash = "$amount:-:$txnDateTime:-:"
-    "$selectedPaytacaAccount:-:$lBalance:-:$lSignedBalance:-:$lBalanceTimeStamp:-:$txnID";
     var _txnReadableDateTime = DateFormat('MMMM dd, yyyy  h:mm a').format(
-      DateTime.parse(now.toString())
+        DateTime.parse(now.toString())
     );
+
+    var txnhash = "$amount:-:$txnDateTime:-:"
+    "$selectedPaytacaAccount:-:$lBalance:-:$lSignedBalance:-:$lBalanceTimeStamp:-:$txnID:-:$_txnReadableDateTime";
+
     String signature = await signTransaction(txnhash, privateKey);
     var qrcode = "$signature:wallet:$txnhash:wallet:$publicKey";
     prefs.setString("_txnQrCode", qrcode);
@@ -146,7 +148,6 @@ class SendComponentState extends State<SendComponent> {
     List<int> stringBytes = utf8.encode(qrcode);
     List<int> gzipBytes = new GZipEncoder().encode(stringBytes);
     String proofOfPayment = base64.encode(gzipBytes);
-    prefs.setString("_compCode", proofOfPayment);
     var payload = {
       'from_account': selectedPaytacaAccount,
       'to_account': destinationAccount,
@@ -156,7 +157,7 @@ class SendComponentState extends State<SendComponent> {
       'txn_hash': txnhash,
       'signature': signature,
       'transaction_id': txnID,
-      'transaction_datetime': txnDateTime,
+      'transaction_datetime': _txnReadableDateTime,
       'txn_qrcode': proofOfPayment,
     };
     var response = await transferAsset(payload);

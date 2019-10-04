@@ -141,6 +141,7 @@ class TransactionsResponse {
   }
 
   factory TransactionsResponse.fromDatabase(List transactions) {
+    var formatter = new DateFormat('y/M/d hh:mm a');
     List<Transaction> _trans = [];
     for (final txn in transactions) {
       var transObj = new Transaction();
@@ -148,9 +149,9 @@ class TransactionsResponse {
       transObj.mode = txn['mode'];
       transObj.amount = txn['amount'].toDouble();
       transObj.timestamp = txn['timestamp'].toString();
-      transObj.timeslot = DateTime.tryParse(transObj.timestamp).toLocal();
+     transObj.timeslot = DateTime.tryParse(transObj.timestamp).toLocal();
       transObj.txnID = txn['txnID'];
-      transObj.time = DateFormat('y/M/d hh:mm a').format(transObj.timeslot).toString();
+      transObj.time = txn['time'];
       transObj.paymentProof = txn['paymentProof'];
       _trans.add(transObj);
     }

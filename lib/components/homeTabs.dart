@@ -154,7 +154,7 @@ Icon _getModeIcon(String mode) {
         ),
       );
 
-      if(transaction[transaction.length - index - 1].mode == "send") {
+      if(transaction[transaction.length - index - 1].mode == "send" && globals.online == false) {
         showDialog(context: context, builder: (BuildContext context) => transacDialog);
       }
  }
