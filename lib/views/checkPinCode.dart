@@ -23,7 +23,7 @@ class CheckPincodeComponentState extends State<CheckPincodeComponent> {
   bool _autoValidate = false;
 
   String _pincode;
-  String _pincodeMatch;
+  bool _pincodeMatch;
 
     // Holds the text that user typed.
   String text = '';
@@ -49,16 +49,20 @@ class CheckPincodeComponentState extends State<CheckPincodeComponent> {
       _formKey.currentState.save();
 
       _pincode = _controller.text;
+
       final _readPincode = await globals.storage.read(key: "pincodeKey");
-      // print("The pincode retrieve: $_readPincode.");
-      // print("The pincode input value is: $text");
-      if (text.length == 4) {
-        if (_readPincode == text) {
-          print("Success, pincode match!");
-          Application.router.navigateTo(context, "/home");
-          timer.cancel();
+      setState(() {
+        if (text.length == 4) {
+          if (_readPincode == text) {
+            Application.router.navigateTo(context, "/home");
+            timer.cancel();
+          } else {
+            _pincodeMatch = false;
+          }
+        } else {
+          _pincodeMatch = true;
         }
-      }
+      });
     }
   }
 
@@ -77,7 +81,7 @@ class CheckPincodeComponentState extends State<CheckPincodeComponent> {
               alignment: Alignment.center,
               child: Text(
                 "Enter 4-digit Pincode", 
-                style: TextStyle(fontSize: 22.0,),
+                style: TextStyle(fontSize: 20.0,),
               ),
             ),
 
@@ -89,13 +93,42 @@ class CheckPincodeComponentState extends State<CheckPincodeComponent> {
               alignment: Alignment.center,
               child: Text(
                 text, 
-                style: TextStyle(fontSize: 35.0,),
+                style: TextStyle(
+                  fontSize: 35.0,
+                  letterSpacing: 20.0,
+                ),
               ),
             ),
 
             new SizedBox(
-              height: 60.0,
+              height: 30.0,
             ),
+
+            _pincodeMatch == false ? 
+              Container(
+                alignment: Alignment.center,
+                child: Text(
+                  "Wrong pincode! Please try again.", 
+                  style: TextStyle(
+                    fontSize: 14.0,
+                    color: Colors.red,
+                  ),
+                ),
+              )
+            : Container(
+                alignment: Alignment.center,
+                child: Text(
+                  "", 
+                  style: TextStyle(
+                    fontSize: 18.0,
+                  ),
+                ),
+              ),
+
+            new SizedBox(
+              height: 30.0,
+            ),
+
             Container(
             // Keyboard is transparent
             //color: Colors.red,
@@ -175,7 +208,7 @@ class CheckPincodeComponentState extends State<CheckPincodeComponent> {
   @override
   void initState() {
     super.initState();
-    timer = Timer.periodic(Duration(seconds: 1), (Timer t) => _checkForPincodeChanges());
+    timer = Timer.periodic(Duration(milliseconds: 500), (Timer t) => _checkForPincodeChanges());
   }
 
   @override
