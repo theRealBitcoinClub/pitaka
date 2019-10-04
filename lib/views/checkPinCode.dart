@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import '../utils/globals.dart' as globals;
 import '../views/app.dart';
+import '../utils/virtual_keyboard.dart';
+import 'package:virtual_keyboard/virtual_keyboard.dart';
 
 class CheckPincodeComponent extends StatelessWidget {
   @override
@@ -76,8 +78,8 @@ class _CheckPincodeFormState extends State<CheckPincodeForm> {
                       new TextFormField(
                         controller: myController,
                         textAlign: TextAlign.center,
-                        keyboardType: TextInputType.phone,
-                        autofocus: true,
+                        //keyboardType: TextInputType.phone,
+                        //autofocus: true,
                         maxLength: 4,
                         style: TextStyle(fontSize: 24.0),
                         decoration: const InputDecoration(
@@ -111,7 +113,16 @@ class _CheckPincodeFormState extends State<CheckPincodeForm> {
                       ),
                       new SizedBox(
                         height: 97.0,
-                      )
+                      ),
+                      Container(
+            // Keyboard is transparent
+            color: Colors.red,
+            child: VirtualKeyboard(
+                // [0-9] + .
+                type: VirtualKeyboardType.Numeric,
+                // Callback for key press event
+                onKeyPress: (key) => print(key.text)),
+          )
                     ]
                 )
             )
