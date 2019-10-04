@@ -45,7 +45,6 @@ dependencies:
   uuid: ^2.0.2
   virtual_keyboard: ^0.1.4
 
-
   flutter:
     sdk: flutter
 
