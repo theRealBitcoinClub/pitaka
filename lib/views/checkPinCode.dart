@@ -17,12 +17,10 @@ class CheckPincodeComponent extends StatefulWidget {
 
 class CheckPincodeComponentState extends State<CheckPincodeComponent> {
   final _formKey = GlobalKey<FormState>();
-  final _controller = TextEditingController();
   bool _submitting = false;
   Pincode newPincode = new Pincode();
   bool _autoValidate = false;
 
-  String _pincode;
   bool _pincodeMatch;
 
     // Holds the text that user typed.
@@ -34,21 +32,12 @@ class CheckPincodeComponentState extends State<CheckPincodeComponent> {
   // is true will show the numeric keyboard.
   bool isNumericMode = true;
 
-  String _validatePincode(String value) {
-    if (value.length < 4)
-      return 'Pincode is exactly 4 digits';
-    else
-      return null;
-  }
-
   void _checkForPincodeChanges() async {
     if (_formKey.currentState.validate()) {
       // Close the on-screen keyboard by removing focus from                 labelText: 'Account Name',                labelText: 'Account Name',the form's inputs
       FocusScope.of(context).requestFocus(new FocusNode());
       // Save the form
       _formKey.currentState.save();
-
-      _pincode = _controller.text;
 
       final _readPincode = await globals.storage.read(key: "pincodeKey");
       setState(() {
@@ -179,36 +168,58 @@ class CheckPincodeComponentState extends State<CheckPincodeComponent> {
 
     /// Fired when the virtual keyboard key is pressed.
   _onKeyPress(VirtualKeyboardKey key) {
-    if (key.keyType == VirtualKeyboardKeyType.String) {
-      text = text + (shiftEnabled ? key.capsText : key.text);
-    } else if (key.keyType == VirtualKeyboardKeyType.Action) {
-      switch (key.action) {
-        case VirtualKeyboardKeyAction.Backspace:
-          if (text.length == 0) return;
-          text = text.substring(0, text.length - 1);
-          break;
-        case VirtualKeyboardKeyAction.Return:
-          text = text + '\n';
-          break;
-        case VirtualKeyboardKeyAction.Space:
-          text = text + key.text;
-          break;
-        case VirtualKeyboardKeyAction.Shift:
-          shiftEnabled = !shiftEnabled;
-          break;
-        default:
+    if (text.length < 4) {
+      if (key.keyType == VirtualKeyboardKeyType.String) {
+        text = text + (shiftEnabled ? key.capsText : key.text);
+      } else if (key.keyType == VirtualKeyboardKeyType.Action) {
+        switch (key.action) {
+          case VirtualKeyboardKeyAction.Backspace:
+            if (text.length == 0) return;
+            text = text.substring(0, text.length - 1);
+            break;
+          case VirtualKeyboardKeyAction.Return:
+            text = text + '\n';
+            break;
+          case VirtualKeyboardKeyAction.Space:
+            text = text + key.text;
+            break;
+          case VirtualKeyboardKeyAction.Shift:
+            shiftEnabled = !shiftEnabled;
+            break;
+          default:
+        }
       }
+    // When text length is greater than 4 characters, disable the numeric keys except the backspace
+    } else if (key.keyType == VirtualKeyboardKeyType.Action) {
+        switch (key.action) {
+          case VirtualKeyboardKeyAction.Backspace:
+            if (text.length == 0) return;
+            text = text.substring(0, text.length - 1);
+            break;
+          case VirtualKeyboardKeyAction.Return:
+            text = text + '\n';
+            break;
+          case VirtualKeyboardKeyAction.Space:
+            text = text + key.text;
+            break;
+          case VirtualKeyboardKeyAction.Shift:
+            shiftEnabled = !shiftEnabled;
+            break;
+          default:
+        }
     }
+
     // Update the screen
     setState(() {});
   }
 
+  // Create a timer to watch the text lenght
   Timer timer;
 
   @override
   void initState() {
     super.initState();
-    timer = Timer.periodic(Duration(milliseconds: 500), (Timer t) => _checkForPincodeChanges());
+    timer = Timer.periodic(Duration(milliseconds: 400), (Timer t) => _checkForPincodeChanges());
   }
 
   @override
