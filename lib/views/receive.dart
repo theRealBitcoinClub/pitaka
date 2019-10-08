@@ -34,7 +34,7 @@ class ReceiveComponentState extends State<ReceiveComponent> {
   @override
   void initState()  {
     super.initState();
-    this.getAccounts();
+    getAccounts();
   }
 
   void connectionChanged(dynamic hasConnection) {
@@ -111,7 +111,6 @@ class ReceiveComponentState extends State<ReceiveComponent> {
                 _failedDialog();
               } else {
                 _successDialog();
-                print(payload);
               }
             } else {
               _failedDialog();
@@ -292,9 +291,13 @@ class ReceiveComponentState extends State<ReceiveComponent> {
           new SizedBox(
             height: 20.0,
           ),
-          QrImage(
-            data: _selectedPaytacaAccount != null ? "::paytaca::$_selectedPaytacaAccount::paytaca::": null
+          Visibility(
+            visible: _selectedPaytacaAccount != null ? true: false,
+            child: QrImage(
+              data: _selectedPaytacaAccount != null ? "::paytaca::$_selectedPaytacaAccount::paytaca::": ""
+            ),
           ),
+
           new SizedBox(
             height: 20.0,
           ),

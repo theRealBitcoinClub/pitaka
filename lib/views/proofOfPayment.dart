@@ -21,7 +21,7 @@ class ProofOfPaymentComponentState extends State<ProofOfPaymentComponent> {
     List<int> gzipBytes = new GZipEncoder().encode(stringBytes);
     String compressedString = base64.encode(gzipBytes);
     return {
-      'code': compressedString,
+      'code': prefs.getString("_txnProofCode"),
       'datetime': prefs.getString("_txnDateTime"),
       'amount': prefs.getString("_txnAmount"),
       'txnID': prefs.getString("_txnID")

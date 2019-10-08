@@ -148,6 +148,7 @@ class SendComponentState extends State<SendComponent> {
     List<int> stringBytes = utf8.encode(qrcode);
     List<int> gzipBytes = new GZipEncoder().encode(stringBytes);
     String proofOfPayment = base64.encode(gzipBytes);
+    prefs.setString("_txnProofCode", proofOfPayment);
     var payload = {
       'from_account': selectedPaytacaAccount,
       'to_account': destinationAccount,
