@@ -79,8 +79,8 @@ class CheckPincodeComponentState extends State<CheckPincodeComponent> {
             ),
 
             Container(
-              // decoration: costumeBoxDecoration(),
-              alignment: Alignment.center,
+              margin: const EdgeInsets.only(left: 86.0),
+              alignment: Alignment.centerLeft,
               child: Text(
                 text, 
                 style: TextStyle(
