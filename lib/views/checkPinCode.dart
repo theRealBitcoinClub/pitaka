@@ -266,7 +266,7 @@ class HorizontalLine extends CustomPainter {
     final p1 = Offset(10, 0);
     final p2 = Offset(35, 0);
     final paint = Paint()
-      ..color = Colors.black
+      ..color = Colors.red[900]
       ..strokeWidth = 2;
     canvas.drawLine(p1, p2, paint);
   }
