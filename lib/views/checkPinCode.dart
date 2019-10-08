@@ -79,6 +79,7 @@ class CheckPincodeComponentState extends State<CheckPincodeComponent> {
             ),
 
             Container(
+              // decoration: costumeBoxDecoration(),
               alignment: Alignment.center,
               child: Text(
                 text, 
@@ -89,8 +90,37 @@ class CheckPincodeComponentState extends State<CheckPincodeComponent> {
               ),
             ),
 
-            new SizedBox(
-              height: 30.0,
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
+                Center(
+                  child: CustomPaint( 
+                    size: Size(42, 40),
+                    painter: HorizontalLine(),
+                  ),
+                ),
+
+                Center(
+                  child: CustomPaint( 
+                    size: Size(40, 40),
+                    painter: HorizontalLine(),
+                  ),
+                ),
+
+                Center(
+                  child: CustomPaint( 
+                    size: Size(40, 40),
+                    painter: HorizontalLine(),
+                  ),
+                ),
+
+                Center(
+                  child: CustomPaint( 
+                    size: Size(42, 40),
+                    painter: HorizontalLine(),
+                  ),
+                ),
+              ],
             ),
 
             _pincodeMatch == false ? 
@@ -230,3 +260,19 @@ class CheckPincodeComponentState extends State<CheckPincodeComponent> {
 
 }
 
+class HorizontalLine extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final p1 = Offset(10, 0);
+    final p2 = Offset(35, 0);
+    final paint = Paint()
+      ..color = Colors.black
+      ..strokeWidth = 2;
+    canvas.drawLine(p1, p2, paint);
+  }
+  
+  @override
+  bool shouldRepaint(CustomPainter old) {
+    return false;
+  }
+}
