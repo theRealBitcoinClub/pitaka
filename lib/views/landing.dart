@@ -15,8 +15,7 @@ import 'package:passcode_screen/keyboard.dart';
 import 'package:screen_state/screen_state.dart';
 import '../utils/globals.dart';
 
-
-enum Choice{BIOMETRICS, PIN}
+enum Choice { BIOMETRICS, PIN }
 
 class LandingComponent extends StatefulWidget {
   @override
@@ -25,10 +24,10 @@ class LandingComponent extends StatefulWidget {
 
 class LandingComponentState extends State<LandingComponent>
     with AfterLayoutMixin<LandingComponent> {
-
   // Screen _screen;
   // StreamSubscription<ScreenStateEvent> _subscription;
-  ConnectionStatusSingleton connectionStatus = ConnectionStatusSingleton.getInstance();
+  ConnectionStatusSingleton connectionStatus =
+      ConnectionStatusSingleton.getInstance();
 
   @override
   Widget build(BuildContext context) {
@@ -42,23 +41,23 @@ class LandingComponentState extends State<LandingComponent>
       ),
       child: new Center(
           child: new Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget>[
-              new Container(
-                  width: 160.0,
-                  height: 160.0,
-                  child: new CircularProgressIndicator(
-                      valueColor: new AlwaysStoppedAnimation(Colors.red),
-                      strokeWidth: 4.0),
-                  decoration: new BoxDecoration(
-                      color: Colors.red,
-                      shape: BoxShape.circle,
-                      image: new DecorationImage(
-                          fit: BoxFit.fill,
-                          image: new AssetImage("assets/icon/icon.png"))))
-            ],
-          )),
+        crossAxisAlignment: CrossAxisAlignment.center,
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: <Widget>[
+          new Container(
+              width: 160.0,
+              height: 160.0,
+              child: new CircularProgressIndicator(
+                  valueColor: new AlwaysStoppedAnimation(Colors.red),
+                  strokeWidth: 4.0),
+              decoration: new BoxDecoration(
+                  color: Colors.red,
+                  shape: BoxShape.circle,
+                  image: new DecorationImage(
+                      fit: BoxFit.fill,
+                      image: new AssetImage("assets/icon/icon.png"))))
+        ],
+      )),
     );
   }
 
@@ -85,14 +84,12 @@ class LandingComponentState extends State<LandingComponent>
   //   }
   // }
 
-
   final LocalAuthentication auth = LocalAuthentication();
   bool authenticated = false;
   // final StreamController<bool> _verificationNotifier =
   // StreamController<bool>.broadcast();
 
   Future<Null> _authenticate() async {
-
     try {
       authenticated = await auth.authenticateWithBiometrics(
           localizedReason: 'Scan your fingerprint to authenticate',
@@ -155,7 +152,7 @@ class LandingComponentState extends State<LandingComponent>
   //           pageBuilder: (context, animation, secondaryAnimation) =>
   //               PasscodeScreen(
   //                 title: 'Enter PIN Code',
-  //                 passwordDigits: 6,  
+  //                 passwordDigits: 6,
   //                 circleUIConfig: circleUIConfig,
   //                 keyboardUIConfig: keyboardUIConfig,
   //                 cancelCallback: _onPasscodeCancelled,
@@ -183,13 +180,23 @@ class LandingComponentState extends State<LandingComponent>
     if (installed == null) {
       await globals.storage.deleteAll();
       Application.router.navigateTo(context, "/onboarding/request");
-  //  Application.router.navigateTo(context, "/onboarding/register");
+      //  Application.router.navigateTo(context, "/onboarding/register");
     } else {
       // await askUser();
       await _authenticate();
       if (authenticated == true) {
-        Application.router.navigateTo(context, "/home");
+        //Application.router.navigateTo(context, "/home");
+        print("Checking for pincode...");
+        final readPincode = await globals.storage.read(key: "pincodeKey");
+        if (readPincode == null) {
+          //pass
+          // TODO - create a form for user to register a pincode
+          print("No pincode exist!");
+        } else {
+          print("Pincode exist.");
+          Application.router.navigateTo(context, "/checkpincode");
         }
       }
     }
   }
+}
