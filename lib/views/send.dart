@@ -175,7 +175,7 @@ class SendComponentState extends State<SendComponent> {
 
   void scanBarcode() async {
     allowCamera();
-    String barcode = await FlutterBarcodeScanner.scanBarcode("#ff6666", "Cancel", true, ScanMode.QR);
+    String barcode = await FlutterBarcodeScanner.scanBarcode("#ff6666", "Cancel", true);
     setState(() {
       if (barcode.length > 0) {
         _barcodeString = barcode;

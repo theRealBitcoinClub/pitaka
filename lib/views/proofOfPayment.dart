@@ -75,14 +75,16 @@ class ProofOfPaymentComponentState extends State<ProofOfPaymentComponent> {
                     new SizedBox(
                       height: 30.0,
                     ),
+
                     QrImage(
-                      version: 13,
                       data: snapshot.data['code'],
                       size: 0.5 * bodyHeight,
                     ),
+
                     new SizedBox(
                       height: 10.0,
                     ),
+
                     new RaisedButton(
                       onPressed: () {
                         Application.router.navigateTo(context, '/home');
