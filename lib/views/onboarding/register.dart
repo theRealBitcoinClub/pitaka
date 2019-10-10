@@ -245,7 +245,7 @@ class RegisterComponentState extends State<RegisterComponent> {
 
           SharedPreferences prefs = await SharedPreferences.getInstance();
           await prefs.setBool('installed', true);
-          Application.router.navigateTo(context, "/account");
+          Application.router.navigateTo(context, "/addpincode");
           databaseHelper.initializeDatabase();
 
         }

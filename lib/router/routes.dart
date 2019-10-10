@@ -19,6 +19,8 @@ class Routes {
   static String businesses = "/businesses";
   static String addAccount = "/addAccount";
   static String settings = "/settings";
+  static String addPinCode = "/addpincode";
+  static String checkPinCode = "/checkpincode";
 
   static void configureRoutes(Router router) {
     router.notFoundHandler = new Handler(
@@ -85,6 +87,16 @@ class Routes {
     router.define(
         settings,
         handler: settingsHandler,
+        transitionType: TransitionType.fadeIn
+    );
+    router.define(
+        addPinCode,
+        handler: addPinCodeHandler,
+        transitionType: TransitionType.fadeIn
+    );
+    router.define(
+        checkPinCode,
+        handler: checkPinCodeHandler,
         transitionType: TransitionType.fadeIn
     );
   }
