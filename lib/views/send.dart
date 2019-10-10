@@ -1,4 +1,7 @@
 import 'dart:async';
+import 'dart:convert';
+import 'package:archive/archive.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
 import '../components/bottomNavigation.dart';
@@ -13,7 +16,7 @@ import '../utils/globals.dart' as globals;
 import '../utils/database_helper.dart';
 import 'package:uuid/uuid.dart';
 import '../utils/globals.dart';
-
+import '../views/proofOfPayment.dart';
 
 class SendComponent extends StatefulWidget {
   @override
@@ -189,7 +192,7 @@ class SendComponentState extends State<SendComponent> {
   }
 
   final TextEditingController _accountController = new TextEditingController();
-  
+
 
   Future<bool> sendFunds(
     String toAccount,
@@ -206,23 +209,28 @@ class SendComponentState extends State<SendComponent> {
     SharedPreferences prefs = await SharedPreferences.getInstance();
 
     var uuid = new Uuid();
-    txnID = uuid.v1();
+    txnID = uuid.v1().substring(0,8).toUpperCase();
 
 
     var now = new DateTime.now();
     var txnDateTime = DateTime.parse(now.toString());
-    var txnhash = "$amount:-:$txnDateTime:-:"
-    "$selectedPaytacaAccount:-:$lBalance:-:$lSignedBalance:-:$lBalanceTimeStamp";
     var _txnReadableDateTime = DateFormat('MMMM dd, yyyy  h:mm a').format(
-      DateTime.parse(now.toString())
+        DateTime.parse(now.toString())
     );
-    print(txnhash);
+
+    var txnhash = "$amount:-:$txnDateTime:-:"
+    "$selectedPaytacaAccount:-:$lBalance:-:$lSignedBalance:-:$lBalanceTimeStamp:-:$txnID:-:$_txnReadableDateTime";
+
     String signature = await signTransaction(txnhash, privateKey);
     var qrcode = "$signature:wallet:$txnhash:wallet:$publicKey";
     prefs.setString("_txnQrCode", qrcode);
     prefs.setString("_txnDateTime", _txnReadableDateTime);
     prefs.setString("_txnAmount", amount.toString());
     prefs.setString("_txnID", txnID.substring(0,8).toUpperCase());
+    List<int> stringBytes = utf8.encode(qrcode);
+    List<int> gzipBytes = new GZipEncoder().encode(stringBytes);
+    String proofOfPayment = base64.encode(gzipBytes);
+    prefs.setString("_txnProofCode", proofOfPayment);
     var payload = {
       'from_account': selectedPaytacaAccount,
       'to_account': destinationAccount,
@@ -231,8 +239,9 @@ class SendComponentState extends State<SendComponent> {
       'public_key': publicKey,
       'txn_hash': txnhash,
       'signature': signature,
-      'transaction_id': txnID.substring(0,8).toUpperCase(),
-      'txn_qrcode': qrcode
+      'transaction_id': txnID,
+      'transaction_datetime': _txnReadableDateTime,
+      'txn_qrcode': proofOfPayment,
     };
     var response = await transferAsset(payload);
     if (response.success == false) {
@@ -240,6 +249,7 @@ class SendComponentState extends State<SendComponent> {
       _errorMessage = response.error;
     } else {
       Application.router.navigateTo(context, "/proofOfPayment");
+
     }
     _submitting = false;
     return response.success;
@@ -247,7 +257,7 @@ class SendComponentState extends State<SendComponent> {
 
   void scanBarcode() async {
     allowCamera();
-    String barcode = await FlutterBarcodeScanner.scanBarcode("#ff6666","Cancel", true);
+    String barcode = await FlutterBarcodeScanner.scanBarcode("#ff6666", "Cancel", true);
     setState(() {
       if (barcode.length > 0) {
         _barcodeString = barcode;

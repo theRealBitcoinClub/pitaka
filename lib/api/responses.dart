@@ -1,6 +1,9 @@
 import 'package:dio/dio.dart';
+import 'dart:async';
 
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:intl/intl.dart';
+
 
 class GenericCreateResponse {
   final bool success;
@@ -103,20 +106,22 @@ class Transaction {
   DateTime timeslot;
   String time;
   String txnID;
-  String code;
+  String paymentProof;
 }
 
 class TransactionsResponse {
   final bool success;
   final List<Transaction> transactions;
 
+
   TransactionsResponse({this.success, this.transactions});
 
-  factory TransactionsResponse.fromResponse(Response response) {
+   factory TransactionsResponse.fromResponse(Response response) {
     List<Transaction> _transactions = [];
     if (response.data['transactions'] != null) {
         for (final txn in response.data['transactions']) {
           var transObj = new Transaction();
+
 
           transObj.mode = txn['Mode'];
           transObj.amount = txn['Amount'].toDouble();
@@ -124,9 +129,10 @@ class TransactionsResponse {
           transObj.timestamp = txn['Timestamp'].toString();
           transObj.timeslot = DateTime.tryParse(transObj.timestamp).toLocal();
           transObj.time = DateFormat('y/M/d hh:mm a').format(transObj.timeslot).toString();
-          _transactions.add(transObj);
           transObj.txnID = txn['TransactionID'];
-          transObj.code = txn['code'].toString();
+          transObj.paymentProof = txn['PaymentProof'];
+          _transactions.add(transObj);
+
         }
       }
 
@@ -135,15 +141,18 @@ class TransactionsResponse {
   }
 
   factory TransactionsResponse.fromDatabase(List transactions) {
+    var formatter = new DateFormat('y/M/d hh:mm a');
     List<Transaction> _trans = [];
     for (final txn in transactions) {
       var transObj = new Transaction();
 
       transObj.mode = txn['mode'];
       transObj.amount = txn['amount'].toDouble();
-      transObj.timestamp = txn['timestamp'];
+      transObj.timestamp = txn['timestamp'].toString();
+     transObj.timeslot = DateTime.tryParse(transObj.timestamp).toLocal();
       transObj.txnID = txn['txnID'];
       transObj.time = txn['time'];
+      transObj.paymentProof = txn['paymentProof'];
       _trans.add(transObj);
     }
     return TransactionsResponse(

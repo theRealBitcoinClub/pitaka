@@ -21,7 +21,7 @@ class ProofOfPaymentComponentState extends State<ProofOfPaymentComponent> {
     List<int> gzipBytes = new GZipEncoder().encode(stringBytes);
     String compressedString = base64.encode(gzipBytes);
     return {
-      'code': compressedString,
+      'code': prefs.getString("_txnProofCode"),
       'datetime': prefs.getString("_txnDateTime"),
       'amount': prefs.getString("_txnAmount"),
       'txnID': prefs.getString("_txnID")
@@ -75,14 +75,16 @@ class ProofOfPaymentComponentState extends State<ProofOfPaymentComponent> {
                     new SizedBox(
                       height: 30.0,
                     ),
+
                     QrImage(
-                      version: 13,
                       data: snapshot.data['code'],
                       size: 0.5 * bodyHeight,
                     ),
+
                     new SizedBox(
                       height: 10.0,
                     ),
+
                     new RaisedButton(
                       onPressed: () {
                         Application.router.navigateTo(context, '/home');

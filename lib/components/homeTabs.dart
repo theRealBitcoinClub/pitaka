@@ -106,51 +106,56 @@ Icon _getModeIcon(String mode) {
   return icon;
 }
 
- _showProof(List<Transaction> transaction) {
-      print('WAS PRESSED');
+ _showProof(List<Transaction> transaction, BuildContext context, int index) async {
 
-      List<Widget> _buildAccountForm(BuildContext context) {
-        final bodyHeight = MediaQuery.of(context).size.height -
-            MediaQuery.of(context).viewInsets.bottom;
-        Widget widget = ListView.builder(
-            itemCount: transaction.length,
-            itemBuilder: (BuildContext context, int index) {
-              return Center(
-                child: new ListView(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16.0),
-              children: <Widget>[
-              new SizedBox(
-              height: 30.0,
+   SharedPreferences prefs = await SharedPreferences.getInstance();
+      print("Qr Code:  ${transaction[transaction.length - index - 1].paymentProof}");
+
+      Dialog transacDialog = Dialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.0)), //this right here
+        child: Container(
+          height: 500.0,
+          width: 400.0,
+
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              QrImage(
+                data: transaction[transaction.length - index -1].paymentProof,
+                size: 250.0
               ),
-                Text(
-                    "${formatCurrency.format(transaction[transaction.length - index - 1].amount)}",
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                        fontSize: 35.0,
-                        fontWeight: FontWeight.bold
-                    )
-                ),
-              ])
-              );
-            }
-        );
-        var ws = new List<Widget>();
-        ws.add(widget);
-        return ws;
-      }
-      @override
-      Widget build(BuildContext context) {
 
-        return Scaffold(
-            appBar: AppBar(
-                title: Text('Payment Proof'),
-                centerTitle: true,
-                automaticallyImplyLeading: false
-            ),
-            body: new Builder(builder: (BuildContext context) {
-              return new Stack(children: _buildAccountForm(context));
-            })
-        );
+              Padding(
+                padding:  EdgeInsets.all(10.0),
+                child: Text("${formatCurrency.format(
+                transaction[transaction.length - index - 1]
+                    .amount)}", style: TextStyle(fontSize: 20.0),
+                ),
+              ),
+              Padding(
+                padding: EdgeInsets.all(5.0),
+                child: Text("${transaction[transaction.length - index -
+                    1].time}", style: TextStyle(fontSize: 20.0),
+                ),
+              ),
+              Padding(
+                padding: EdgeInsets.all(5.0),
+                child: Text("ID: ${transaction[transaction.length -
+                    index - 1].txnID}", style: TextStyle(fontSize: 20.0),
+                ),
+              ),
+              Padding(padding: EdgeInsets.only(top: 20.0)),
+              FlatButton(onPressed: (){
+                Navigator.of(context).pop();
+              },
+                  child: Text('Back', style: TextStyle(color: Colors.red, fontSize: 18.0),))
+            ],
+          ),
+        ),
+      );
+
+      if(transaction[transaction.length - index - 1].mode == "send" && globals.online == false) {
+        showDialog(context: context, builder: (BuildContext context) => transacDialog);
       }
  }
 
@@ -159,7 +164,7 @@ Icon _getModeIcon(String mode) {
          itemCount: transactions.length,
          itemBuilder: (BuildContext context, int index) {
            return GestureDetector(
-               onTap: _showProof(transactions),
+               onTap: () => _showProof(transactions, context, index),
                child: Column(
                  children: <Widget>[
                    Row(
@@ -185,8 +190,7 @@ Icon _getModeIcon(String mode) {
                              const EdgeInsets.fromLTRB(15.0, 4.0, 8.0, 4.0),
                              child: Text(
                                  "${transactions[transactions.length - index -
-                                     1]
-                                     .time}",
+                                     1].time}",
                                  style: TextStyle(fontSize: 16.0)
                              ),
                            ),
@@ -195,8 +199,7 @@ Icon _getModeIcon(String mode) {
                              const EdgeInsets.fromLTRB(15.0, 4.0, 8.0, 15.0),
                              child: Text(
                                  "ID: ${transactions[transactions.length -
-                                     index - 1]
-                                     .txnID}",
+                                     index - 1].txnID}",
                                  style: TextStyle(fontSize: 16.0)
                              ),
                            ),

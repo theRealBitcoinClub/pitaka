@@ -11,6 +11,7 @@ import '../utils/database_helper.dart';
 import 'package:connectivity/connectivity.dart';
 import 'package:flutter/services.dart';
 import '../utils/globals.dart';
+import 'receive.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class HomeComponent extends StatefulWidget {
@@ -33,6 +34,8 @@ class HomeComponentState extends State<HomeComponent> {
     super.initState();
     ConnectionStatusSingleton connectionStatus = ConnectionStatusSingleton.getInstance();
     _connectionChangeStream = connectionStatus.connectionChange.listen(connectionChanged);
+    ReceiveComponentState comp = new ReceiveComponentState();
+    comp.getAccounts();
     /*globals.checkConnection().then((status){
       setState(() {
         if (status == false) {

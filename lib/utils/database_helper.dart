@@ -63,6 +63,7 @@ class DatabaseHelper {
       "timestamp TEXT,"
       "mode TEXT,"
       "transactionJson TEXT,"
+      "paymentProof TEXT,"
       "txnID TEXT,"
       "time TEXT"
       ")");
@@ -223,7 +224,8 @@ class DatabaseHelper {
       "mode":"send",
       "transactionJson": converted,
       "txnID": payload["transaction_id"],
-      "time": txnTimeStamp
+      "paymentProof": payload["txn_qrcode"],
+      "time": payload["transaction_datetime"],
     });
     
     // Check if the recipient(toAccount) is in the user's accounts.
@@ -237,7 +239,8 @@ class DatabaseHelper {
         "mode":"receive",
         "transactionJson": converted,
         "txnID": payload["transaction_id"],
-        "time": txnTimeStamp
+        "paymentProof": payload["txn_qrcode"],
+        "time": payload["transaction_datetime"],
       });
     }
     return 'success';
@@ -259,11 +262,11 @@ class DatabaseHelper {
         "mode":"receive",
         "transactionJson": converted,
         "txnID": payload["transaction_id"],
-        "time": instance['timestamp']
+        "paymentProof": payload["txn_qrcode"],
+        "time": payload["transaction_datetime"],
       });
     } else {
       return 0;
     }
   }
-
 }

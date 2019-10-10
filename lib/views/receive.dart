@@ -34,7 +34,7 @@ class ReceiveComponentState extends State<ReceiveComponent> {
   @override
   void initState()  {
     super.initState();
-    this.getAccounts();
+    getAccounts();
   }
 
   void connectionChanged(dynamic hasConnection) {
@@ -52,6 +52,11 @@ class ReceiveComponentState extends State<ReceiveComponent> {
     });
   }
 
+  @override
+  void dispose() {
+    super.dispose();
+  }
+
   void scanQrcode() async {
     String qrcode = await FlutterBarcodeScanner.scanBarcode("#ff6666","Cancel", true);
     var baseDecoded = base64.decode(qrcode);
@@ -61,7 +66,7 @@ class ReceiveComponentState extends State<ReceiveComponent> {
     if (qrArr.length == 3) {
       var stringified  = qrArr[1].toString();
       List hashArr = stringified.split(':-:');
-      if(hashArr.length == 6){
+      if(hashArr.length == 8){
         double amount = double.parse(hashArr[0]);
         double lBalance = double.parse(hashArr[3]);
         if(amount <= lBalance) {
@@ -69,6 +74,8 @@ class ReceiveComponentState extends State<ReceiveComponent> {
           String fromAccount = hashArr[2];
           String txnHash = qrArr[1];
           String txnSignature = qrArr[0];
+          String txnDateTime = hashArr[1];
+          String txnID = hashArr[6];
           var signature = HEX.decode(txnSignature);
           var publicKey = HEX.decode(pubKey);
           var firstValidation = await CryptoSign.verify(signature, txnHash, publicKey);
@@ -90,6 +97,8 @@ class ReceiveComponentState extends State<ReceiveComponent> {
                 'public_key': publicKey,
                 'txn_hash': txnHash,
                 'signature': txnSignature,
+                'transaction_id': txnID,
+                'transaction_datetime': txnDateTime,
                 'signed_balance':  {
                   'message': hashMessage,
                   'signature': lastSignedBalance,
@@ -117,26 +126,28 @@ class ReceiveComponentState extends State<ReceiveComponent> {
   }
 
    Future<List> getAccounts() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    var _prefAccounts = prefs.get("accounts");
-    List<Map> _accounts = [];
-    for (final acct in _prefAccounts) {
-      String accountId = acct.split(' | ')[1];
-      var acctObj = new Map();
-      // var onlineBalance = acct.split(' | ')[2];
-      acctObj['accountName'] = acct.split(' | ')[0];
-      acctObj['accountId'] = accountId;
-      // if (globals.online) {
-      //   acctObj['balance'] = onlineBalance;
-      // } else {
-      //   var x = double.tryParse(onlineBalance);
-      //   var resp = await globals.databaseHelper.offlineBalanceAnalyser(accountId, x);
-      //   acctObj['balance'] = resp['computedBalance'].toString();
-      // }
-      _accounts.add(acctObj);
-    }
-    data = _accounts;
-    return _accounts;
+    try {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      var _prefAccounts = prefs.get("accounts");
+      List<Map> _accounts = [];
+      for (final acct in _prefAccounts) {
+        String accountId = acct.split(' | ')[1];
+        var acctObj = new Map();
+        // var onlineBalance = acct.split(' | ')[2];
+        acctObj['accountName'] = acct.split(' | ')[0];
+        acctObj['accountId'] = accountId;
+        // if (globals.online) {
+        //   acctObj['balance'] = onlineBalance;
+        // } else {
+        //   var x = double.tryParse(onlineBalance);
+        //   var resp = await globals.databaseHelper.offlineBalanceAnalyser(accountId, x);
+        //   acctObj['balance'] = resp['computedBalance'].toString();
+        // }
+        _accounts.add(acctObj);
+      }
+      data = _accounts;
+      return _accounts;
+    } catch(e) {}
   }
 
   Future<void> _failedDialog() async {
@@ -254,6 +265,7 @@ class ReceiveComponentState extends State<ReceiveComponent> {
                 decoration: InputDecoration(
                   labelText: 'Select Account',
                 ),
+
                 child: new DropdownButtonHideUnderline(
                   child: new DropdownButton(
                     items: data.map((item) {
@@ -279,9 +291,13 @@ class ReceiveComponentState extends State<ReceiveComponent> {
           new SizedBox(
             height: 20.0,
           ),
-          QrImage(
-            data: _selectedPaytacaAccount != null ? "::paytaca::$_selectedPaytacaAccount::paytaca::": null
+          Visibility(
+            visible: _selectedPaytacaAccount != null ? true: false,
+            child: QrImage(
+              data: _selectedPaytacaAccount != null ? "::paytaca::$_selectedPaytacaAccount::paytaca::": ""
+            ),
           ),
+
           new SizedBox(
             height: 20.0,
           ),
