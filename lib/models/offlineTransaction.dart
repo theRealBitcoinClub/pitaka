@@ -7,6 +7,7 @@ class OfflineTransaction {
     String _txnID;
     String _time;
     String _qrCode;
+    String _publicKey;
 
     OfflineTransaction(
         this._timestamp,
@@ -15,7 +16,8 @@ class OfflineTransaction {
         this._amount,
         this._txnID,
         this._time,
-        this._qrCode
+        this._qrCode,
+        this._publicKey
     );
 
     OfflineTransaction.withId(
@@ -26,7 +28,8 @@ class OfflineTransaction {
         this._amount,
         this._txnID,
         this._time,
-        this._qrCode
+        this._qrCode,
+        this._publicKey
     );
 
 
@@ -39,6 +42,7 @@ class OfflineTransaction {
     String get txnID => _txnID;
     String get time => _time;
     String get qrcode => _qrCode;
+    String get publicKey => _publicKey;
 
     // (Setters) This can be customized depending on your needs
     set timestamp(String value) => this._timestamp = value;
@@ -48,4 +52,5 @@ class OfflineTransaction {
     set txnID(String value) => this._txnID = value;
     set time(String value) => this._time = value;
     set qrcode(String value) => this._qrCode = value;
+    set publicKey(String value) => this._publicKey = value;
 }

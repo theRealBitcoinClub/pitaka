@@ -10,6 +10,8 @@ import 'responses.dart';
 import '../utils/helpers.dart';
 import '../utils/database_helper.dart';
 import '../utils/globals.dart' as globals;
+import '../utils/print_wrapped.dart';
+
 
 DatabaseHelper databaseHelper = DatabaseHelper();
 
@@ -276,6 +278,10 @@ Future<PlainSuccessResponse> receiveAsset(Map payload) async {
     print('This is not yet working');
     return PlainSuccessResponse.fromResponse(response);
   } else {
+    // Call printWrapped funtion from utils to print very long text
+    // Use only for debugging, comment out when done
+    //printWrapped("The value of payload from receiveAsset() - endpoint.dart is: $payload",);
+
     await databaseHelper.acceptPayment(payload);
     return PlainSuccessResponse.toDatabase();
   }
