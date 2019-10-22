@@ -8,8 +8,8 @@ import '../utils/database_helper.dart';
 import 'package:flutter/services.dart';
 
 //const String baseUrl = 'https://lantaka-dev.paytaca.com';
-const String baseUrl = 'https://a72f3949.ngrok.io';
-const String phpAssetId = 'E0A94D17-3651-46D0-AD50-BFA722BEB2E6';
+const String baseUrl = 'https://ef89fc9e.ngrok.io';
+const String phpAssetId = 'FE26ACB4-72D6-44B5-8A6C-D924F2ED8EAE';
 
 int offlineTime;
 int timeDiff;

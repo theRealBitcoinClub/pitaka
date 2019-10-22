@@ -16,7 +16,7 @@ import '../utils/print_wrapped.dart';
 class DatabaseHelper {
   static DatabaseHelper _databaseHelper;    // Singleton DatabaseHelper
 	static Database _database;                // Singleton Database
-
+  bool synching = globals.syncing;
 
 	DatabaseHelper._createInstance(); // Named constructor to create instance of DatabaseHelper
 
@@ -159,7 +159,6 @@ class DatabaseHelper {
     for (final txn in transactions) {
       var payload = json.decode(txn['transactionJson']);
       currTxnHash = payload['txn_hash'];
-      print("The value of txnHash is: $currTxnHash");
       if (prevTxnHash == currTxnHash) {
         print("Duplicate TxnHas!");
         break;
@@ -169,12 +168,13 @@ class DatabaseHelper {
       }
       // Call printWrapped funtion from utils to print very long text
       // Use only for debugging, comment out when done
-      //printWrapped("The value of payload from synchToServer() - database_helper.dart is: $payload",);
+      printWrapped("The value of payload from synchToServer() - database_helper.dart is: $payload",);
+
       prevTxnHash = payload['txn_hash'];
-      print("The value of txnHash is: $prevTxnHash");
     }
 
     await db.delete('OfflineTransaction');
+    synching = false;
     globals.syncing = false;
     return true;
   }
