@@ -10,12 +10,13 @@ import '../api/responses.dart';
 import '../api/endpoints.dart';
 // import '../utils/helpers.dart';
 import '../utils/globals.dart' as globals;
+import '../utils/print_wrapped.dart';
 
 
 class DatabaseHelper {
   static DatabaseHelper _databaseHelper;    // Singleton DatabaseHelper
 	static Database _database;                // Singleton Database
-
+  bool synching = globals.syncing;
 
 	DatabaseHelper._createInstance(); // Named constructor to create instance of DatabaseHelper
 
@@ -64,8 +65,9 @@ class DatabaseHelper {
       "mode TEXT,"
       "transactionJson TEXT,"
       "paymentProof TEXT,"
-      "txnID TEXT,"
-      "time TEXT"
+      "txnID TEXT NOT NULL UNIQUE,"
+      "time TEXT,"
+      "publicKey TEXT"
       ")");
       print('offlinetransaction done');
 	}
@@ -150,12 +152,31 @@ class DatabaseHelper {
       'OfflineTransaction',
       orderBy: 'id ASC'
     );
+
+    //printWrapped("The value of transactions from synchToServer() - database_helper.dart is: $transactions",);
+
+    var prevTxnHash = "";
+    var currTxnHash = "";
+    
     for (final txn in transactions) {
       var payload = json.decode(txn['transactionJson']);
-      final String url = globals.baseUrl + '/api/assets/transfer';
-      await sendPostRequest(url, payload);
+      currTxnHash = payload['txn_hash'];
+      if (prevTxnHash == currTxnHash) {
+        print("Duplicate TxnHas!");
+        break;
+      } else {
+        final String url = globals.baseUrl + '/api/assets/transfer';
+        await sendPostRequest(url, payload);
+      }
+      // Call printWrapped funtion from utils to print very long text
+      // Use only for debugging, comment out when done
+      //printWrapped("The value of payload from synchToServer() - database_helper.dart is: $payload",);
+
+      prevTxnHash = payload['txn_hash'];
     }
     await db.delete('OfflineTransaction');
+    await db.delete('Balance');
+    synching = false;
     globals.syncing = false;
     return true;
   }
@@ -223,9 +244,10 @@ class DatabaseHelper {
       "timestamp":txnTimeStamp,
       "mode":"send",
       "transactionJson": converted,
-      "txnID": payload["transaction_id"],
       "paymentProof": payload["txn_qrcode"],
+      "txnID": payload["transaction_id"],
       "time": payload["transaction_datetime"],
+      "publicKey":payload['public_key'],
     });
     
     // Check if the recipient(toAccount) is in the user's accounts.
@@ -238,15 +260,20 @@ class DatabaseHelper {
         "timestamp":txnTimeStamp,
         "mode":"receive",
         "transactionJson": converted,
-        "txnID": payload["transaction_id"],
         "paymentProof": payload["txn_qrcode"],
+        "txnID": payload["transaction_id"],
         "time": payload["transaction_datetime"],
+        "publicKey":payload['public_key'],
       });
     }
     return 'success';
   }
 
   Future<int>acceptPayment(Map payload) async {
+    // Call printWrapped funtion from utils to print very long text
+    // Use only for debugging, comment out when done
+    //printWrapped("The value of payload from acceptPayment() - database_helper.dart is: $payload",);
+
     Database db = await this.database;
     String table1 = 'Balance';
     String table2 = 'OfflineTransaction';
@@ -255,15 +282,17 @@ class DatabaseHelper {
       var qs2 = await db.query(table1,where: 'accountId = ?', whereArgs: [payload['to_account']]);
       var instance = qs2[0];
       var converted = json.encode(payload);
+      //print("The converted value is: $converted");
       return db.insert(table2, {
         "account": payload['to_account'],
         "amount":payload['amount'],
         "timestamp":instance['timestamp'],
         "mode":"receive",
         "transactionJson": converted,
-        "txnID": payload["transaction_id"],
         "paymentProof": payload["txn_qrcode"],
+        "txnID": payload["transaction_id"],
         "time": payload["transaction_datetime"],
+        "publicKey":payload['public_key'],
       });
     } else {
       return 0;

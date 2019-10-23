@@ -11,6 +11,7 @@ import 'package:archive/archive.dart';
 
 final formatCurrency = new NumberFormat.currency(symbol: 'PHP ');
 var balanceObj = Balance();
+bool syncing = globals.syncing;
 
 ListView buildBalancesList(balances) {
   return ListView.builder(
@@ -53,7 +54,7 @@ ListView buildBalancesList(balances) {
                     ],
                   ), Column (
                     children: <Widget>[
-                      globals.syncing ? Padding(
+                      globals.syncing == true ? Padding(
                         padding: const EdgeInsets.fromLTRB(8.0, 0, 12.0, 12.0),
                         child:
                           Image.asset(

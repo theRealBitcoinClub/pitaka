@@ -16,7 +16,7 @@ import '../utils/globals.dart' as globals;
 import '../utils/database_helper.dart';
 import 'package:uuid/uuid.dart';
 import '../utils/globals.dart';
-import '../views/proofOfPayment.dart';
+
 
 class SendComponent extends StatefulWidget {
   @override
@@ -205,6 +205,9 @@ class SendComponentState extends State<SendComponent> {
     _submitting = true;
     String destinationAccount = toAccount;
     String publicKey = await globals.storage.read(key: "publicKey");
+
+    print("\nThe value of publicKey is: $publicKey\n");
+
     String privateKey = await globals.storage.read(key: "privateKey");
     SharedPreferences prefs = await SharedPreferences.getInstance();
 
@@ -220,6 +223,8 @@ class SendComponentState extends State<SendComponent> {
 
     var txnhash = "$amount:-:$txnDateTime:-:"
     "$selectedPaytacaAccount:-:$lBalance:-:$lSignedBalance:-:$lBalanceTimeStamp:-:$txnID:-:$_txnReadableDateTime";
+
+    print("The value of txnhash is: $txnhash");
 
     String signature = await signTransaction(txnhash, privateKey);
     var qrcode = "$signature:wallet:$txnhash:wallet:$publicKey";
@@ -314,11 +319,11 @@ class SendComponentState extends State<SendComponent> {
   }
 
    changeAccount(String newVal) {
-    selectedPaytacaAccount = null;
-    sourceAccount = null;
-    lastBalance = null;
-    lBalanceSignature = null;
-    lBalanceTime = null;
+    // selectedPaytacaAccount = null;
+    // sourceAccount = null;
+    // lastBalance = null;
+    // lBalanceSignature = null;
+    // lBalanceTime = null;
 
 
     String accountId = newVal.split('::sep::')[0];
@@ -327,11 +332,11 @@ class SendComponentState extends State<SendComponent> {
     String timestamp = newVal.split('::sep::')[3];
 
     setState(() {
-      selectedPaytacaAccount = null;
-      sourceAccount = null;
-      lastBalance = null;
-      lBalanceSignature = null;
-      lBalanceTime = null;
+      // selectedPaytacaAccount = null;
+      // sourceAccount = null;
+      // lastBalance = null;
+      // lBalanceSignature = null;
+      // lBalanceTime = null;
 
       selectedPaytacaAccount = accountId;
       sourceAccount = newVal;
@@ -438,11 +443,11 @@ List<Widget> _buildForm(BuildContext context) {
                                         String timestamp = newVal.split('::sep::')[3];
 
                                         setState(() {
-                                          selectedPaytacaAccount = null;
-                                          sourceAccount = null;
-                                          lastBalance = null;
-                                          lBalanceSignature = null;
-                                          lBalanceTime = null;
+                                          // selectedPaytacaAccount = null;
+                                          // sourceAccount = null;
+                                          // lastBalance = null;
+                                          // lBalanceSignature = null;
+                                          // lBalanceTime = null;
 
                                           selectedPaytacaAccount = accountId;
                                           sourceAccount = newVal;
