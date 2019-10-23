@@ -65,7 +65,7 @@ class DatabaseHelper {
       "mode TEXT,"
       "transactionJson TEXT,"
       "paymentProof TEXT,"
-      "txnID TEXT,"
+      "txnID TEXT NOT NULL UNIQUE,"
       "time TEXT,"
       "publicKey TEXT"
       ")");
@@ -152,6 +152,9 @@ class DatabaseHelper {
       'OfflineTransaction',
       orderBy: 'id ASC'
     );
+    // Call printWrapped funtion from utils to print very long text
+    // Use only for debugging, comment out when done
+    //printWrapped("The value of transactions from synchToServer() - database_helper.dart is: $transactions",);
 
     var prevTxnHash = "";
     var currTxnHash = "";
@@ -168,7 +171,7 @@ class DatabaseHelper {
       }
       // Call printWrapped funtion from utils to print very long text
       // Use only for debugging, comment out when done
-      printWrapped("The value of payload from synchToServer() - database_helper.dart is: $payload",);
+      //printWrapped("The value of payload from synchToServer() - database_helper.dart is: $payload",);
 
       prevTxnHash = payload['txn_hash'];
     }

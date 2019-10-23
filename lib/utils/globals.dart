@@ -8,8 +8,8 @@ import '../utils/database_helper.dart';
 import 'package:flutter/services.dart';
 
 //const String baseUrl = 'https://lantaka-dev.paytaca.com';
-const String baseUrl = 'https://ef89fc9e.ngrok.io';
-const String phpAssetId = 'FE26ACB4-72D6-44B5-8A6C-D924F2ED8EAE';
+const String baseUrl = 'https://fec9ce80.ngrok.io';
+const String phpAssetId = 'E059A363-74B2-4F26-8E22-8E11B5D8FCA7';
 
 int offlineTime;
 int timeDiff;
@@ -26,9 +26,11 @@ ConnectivityResult result;
 
 set online(bool value) {
   _online = value;
-  if(_online) {
+  if (_online) {
+    if (syncing == false) {
+      databaseHelper.synchToServer();
+    }
     syncing = true;
-    databaseHelper.synchToServer();
   } else {
     syncing = false;
   }
