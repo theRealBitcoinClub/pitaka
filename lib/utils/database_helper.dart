@@ -152,8 +152,7 @@ class DatabaseHelper {
       'OfflineTransaction',
       orderBy: 'id ASC'
     );
-    // Call printWrapped funtion from utils to print very long text
-    // Use only for debugging, comment out when done
+
     //printWrapped("The value of transactions from synchToServer() - database_helper.dart is: $transactions",);
 
     var prevTxnHash = "";
@@ -175,8 +174,8 @@ class DatabaseHelper {
 
       prevTxnHash = payload['txn_hash'];
     }
-
     await db.delete('OfflineTransaction');
+    await db.delete('Balance');
     synching = false;
     globals.syncing = false;
     return true;
