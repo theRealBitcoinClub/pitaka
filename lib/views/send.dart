@@ -205,9 +205,7 @@ class SendComponentState extends State<SendComponent> {
     _submitting = true;
     String destinationAccount = toAccount;
     String publicKey = await globals.storage.read(key: "publicKey");
-
-    print("\nThe value of publicKey is: $publicKey\n");
-
+    //print("\nThe value of publicKey is: $publicKey\n");
     String privateKey = await globals.storage.read(key: "privateKey");
     SharedPreferences prefs = await SharedPreferences.getInstance();
 

@@ -22,7 +22,12 @@ Future<dynamic> sendPostRequest(url, payload) async {
   String tempPath = tempDir.path;
   CookieJar cj = new PersistCookieJar(dir: tempPath);
   dio.interceptors.add(CookieManager(cj));
-  final response = await dio.post(url, data: payload);
+  Response response;
+  try {
+    response = await dio.post(url, data: payload);
+  } catch(e) {
+    print(e);
+  }
   return response;
 }
 

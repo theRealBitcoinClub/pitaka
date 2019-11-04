@@ -16,7 +16,7 @@ import '../utils/print_wrapped.dart';
 class DatabaseHelper {
   static DatabaseHelper _databaseHelper;    // Singleton DatabaseHelper
 	static Database _database;                // Singleton Database
-  bool synching = globals.syncing;
+  bool syncing = globals.syncing;
 
 	DatabaseHelper._createInstance(); // Named constructor to create instance of DatabaseHelper
 
@@ -96,10 +96,14 @@ class DatabaseHelper {
         whereArgs: [idHolder]
       );
       if (idCheck.length == 0 ) {
-        await db.insert(
-          'Balance',
-          values
-        );
+        try {
+          await db.insert(
+            'Balance',
+            values
+          );
+        } catch(e) {
+          print(e);
+        }
       }
       idHolder += 1;
     }
@@ -176,7 +180,6 @@ class DatabaseHelper {
     }
     await db.delete('OfflineTransaction');
     await db.delete('Balance');
-    synching = false;
     globals.syncing = false;
     return true;
   }
