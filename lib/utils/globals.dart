@@ -12,8 +12,8 @@ import 'package:flutter/services.dart';
 // const String phpAssetId = '3A8F594F-D736-4673-945C-5465E0209AF0';
 
 // For local server, testing/debugging
-const String baseUrl = 'https://d024527f.ngrok.io';
-const String phpAssetId = 'D927FBF8-7881-4FFE-BC73-A4F1F46E10A1';
+const String baseUrl = 'https://44de42e2.ngrok.io';
+const String phpAssetId = '58BBBE61-F236-44F3-A849-01AFA6F700DB';
 
 int offlineTime;
 int timeDiff;

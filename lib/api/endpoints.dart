@@ -277,17 +277,21 @@ Future<PlainSuccessResponse> transferAsset(Map payload) async {
   
 }
 
+// This is called in "receive.dart" in scanQrcode() function
 Future<PlainSuccessResponse> receiveAsset(Map payload) async {
-  Response response;
+  // Check if online
   if (globals.online) {
-    print('This is not yet working');
-    return PlainSuccessResponse.fromResponse(response);
+    // If sender is offline, send the scanned QRcode payload to server
+    await transferAsset(payload);
+    return PlainSuccessResponse.toDatabase();
   } else {
+
     // Call printWrapped funtion from utils to print very long text
     // Use only for debugging, comment out when done
     //printWrapped("The value of payload from receiveAsset() - endpoint.dart is: $payload",);
 
-    await databaseHelper.acceptPayment(payload);
+    // If both sender & reciever are offline, save scanned QRcode payload to local database
+    await databaseHelper.acceptOfflinePayment(payload);
     return PlainSuccessResponse.toDatabase();
   }
 }
