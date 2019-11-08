@@ -48,7 +48,7 @@ class SendComponentState extends State<SendComponent> {
   String newVal;
   bool maxOfflineTime = globals.maxOfflineTime;
   int offlineTime = globals.offlineTime;
-
+  bool isSenderOnline;  // Variable for marking if the sender is online or offline
   
   Future<List> getAccounts(destinationAccountId) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -209,6 +209,14 @@ class SendComponentState extends State<SendComponent> {
     String privateKey = await globals.storage.read(key: "privateKey");
     SharedPreferences prefs = await SharedPreferences.getInstance();
 
+    // Mark if the sender is online or offline and include in txnhash and QRcode
+    // This will be used to check in the reciever in scanning QRcode for proof of payment
+    if (globals.online == true) {
+      isSenderOnline = true;
+    } else {
+      isSenderOnline = false;
+    }
+
     var uuid = new Uuid();
     txnID = uuid.v1().substring(0,8).toUpperCase();
 
@@ -220,9 +228,10 @@ class SendComponentState extends State<SendComponent> {
     );
 
     var txnhash = "$amount:-:$txnDateTime:-:"
-    "$selectedPaytacaAccount:-:$lBalance:-:$lSignedBalance:-:$lBalanceTimeStamp:-:$txnID:-:$_txnReadableDateTime";
+    "$selectedPaytacaAccount:-:$lBalance:-:$lSignedBalance:-:$lBalanceTimeStamp:-:$txnID:-:$_txnReadableDateTime:-:$isSenderOnline";
 
-    print("The value of txnhash is: $txnhash");
+    // For debug, comment out when done
+    // print("The value of txnhash is: $txnhash");
 
     String signature = await signTransaction(txnhash, privateKey);
     var qrcode = "$signature:wallet:$txnhash:wallet:$publicKey";

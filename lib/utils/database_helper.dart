@@ -271,9 +271,12 @@ class DatabaseHelper {
     }
     return 'success';
   }
+  
 
-  Future<int>acceptPayment(Map payload) async {
-    // Call printWrapped funtion from utils to print very long text
+  // This is called in "endpoints.dart" in receiveAsset if offline only
+  Future<int>acceptOfflinePayment(Map payload) async {
+
+    // Call printWrapped funtion from utils to print very long   Response response;text
     // Use only for debugging, comment out when done
     //printWrapped("The value of payload from acceptPayment() - database_helper.dart is: $payload",);
 
@@ -285,7 +288,6 @@ class DatabaseHelper {
       var qs2 = await db.query(table1,where: 'accountId = ?', whereArgs: [payload['to_account']]);
       var instance = qs2[0];
       var converted = json.encode(payload);
-      //print("The converted value is: $converted");
       return db.insert(table2, {
         "account": payload['to_account'],
         "amount":payload['amount'],

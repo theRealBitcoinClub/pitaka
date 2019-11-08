@@ -58,35 +58,63 @@ class ReceiveComponentState extends State<ReceiveComponent> {
     super.dispose();
   }
 
+  // Scan QRcode from Payment Proof after Send
   void scanQrcode() async {
     String qrcode = await FlutterBarcodeScanner.scanBarcode("#ff6666","Cancel", true);
+    // Decode and split the QRcode data
     var baseDecoded = base64.decode(qrcode);
     var gzipDecoded = new GZipDecoder().decodeBytes(baseDecoded);
     var utf8Decoded = utf8.decode(gzipDecoded);
     var qrArr = utf8Decoded.split(':wallet:');
-
+    // Check if QRcode data array has all the payload data created from "sender.dart" in sendFunds function
     if (qrArr.length == 3) {
       var stringified  = qrArr[1].toString();
       List hashArr = stringified.split(':-:');
+      String senderOnline = hashArr[8];
       var payload;
-      if(hashArr.length == 8){
-        try {
-          double amount = double.parse(hashArr[0]);
+      double amount = double.parse(hashArr[0]);
+      String pubKey = qrArr[2];
+      String fromAccount = hashArr[2];
+      String txnHash = qrArr[1];
+      String txnSignature = qrArr[0];
+      String txnDateTime = hashArr[1];
+      String txnID = hashArr[6];
+      // Convert signature and public key to bytes for verification
+      var decodedSignature = HEX.decode(txnSignature);
+      var decodedPublicKey = HEX.decode(pubKey);
+
+      if (hashArr.length == 9) {
+        // Check if the sender was online during sending
+        if (senderOnline == "true") {
+          // Create the payload
+          payload = {
+            'from_account': fromAccount,
+            'to_account': _selectedPaytacaAccount,
+            'asset': globals.phpAssetId,
+            'amount': amount,
+            'public_key': HEX.encode(decodedPublicKey), // Convert public key back to string
+            'txn_hash': txnHash,
+            'signature': HEX.encode(decodedSignature),  // Convert signature back to string
+            'transaction_id': txnID,
+            'transaction_datetime': txnDateTime,
+            'signed_balance':  {}
+          };
+          // Call receiveAsset function from "endpoints.dart"
+          var response = await receiveAsset(payload);
+
+          // Check response, pop up a dialog for failed or success 
+          if (response.success == false) {
+            _failedDialog();
+          } else {
+            _successDialog();
+          }
+        } else {
+          // Check if amount sent if less than or equal to last balance
           double lBalance = double.parse(hashArr[3]);
-
-          if(amount <= lBalance) {
-            String pubKey = qrArr[2];
-            String fromAccount = hashArr[2];
-            String txnHash = qrArr[1];
-            String txnSignature = qrArr[0];
-            String txnDateTime = hashArr[1];
-            String txnID = hashArr[6];
-            var decodedSignature = HEX.decode(txnSignature); // Convert signature to bytes for verification
-            var decodedPublicKey = HEX.decode(pubKey);  // Convert public key to bytes for verification
+          if (amount <= lBalance) {
+            // Verify txnHash using signature and public key
             var firstValidation = await CryptoSign.verify(decodedSignature, txnHash, decodedPublicKey);
-
             if (firstValidation) {
-              print("Passed the first validation, $firstValidation");
               var timestamp = hashArr[5];
               var signValue = hashArr[4].toString();
               var lastSignedBalance = HEX.decode(signValue);
@@ -94,8 +122,10 @@ class ReceiveComponentState extends State<ReceiveComponent> {
               var concatenated = "${lBalance.toStringAsFixed(6)}$fromAccount$timestamp";
               List<int> bytes = utf8.encode(concatenated);
               var hashMessage = sha256.convert(bytes).toString();
+              // Verify hashMessage using lastSignedBalance and serverPublicKey
               var secondValidation = await CryptoSign.verify(lastSignedBalance, hashMessage, serverPublicKey);
               if (secondValidation) {
+                // Create the payload
                 payload = {
                   'from_account': fromAccount,
                   'to_account': _selectedPaytacaAccount,
@@ -113,12 +143,14 @@ class ReceiveComponentState extends State<ReceiveComponent> {
                     'timestamp': timestamp,
                   }
                 };
+                // Call receiveAsset function from "endpoints.dart"
                 var response = await receiveAsset(payload);
 
                 // Call printWrapped funtion from utils to print very long text
                 // Use only for debugging, comment out when done
                 //printWrapped("The value of payload from scanQrcode() - receive.dart is: $payload",);
                 
+                // Check response, pop up a dialog for failed or success 
                 if (response.success == false) {
                   _failedDialog();
                 } else {
@@ -130,14 +162,6 @@ class ReceiveComponentState extends State<ReceiveComponent> {
             } else {
               _failedDialog();
             }
-          }
-        } catch(e) {
-          try {
-            print(e);
-            await receiveAsset(payload);
-          } catch(e){
-            print(e);
-            _successDialog();
           }
         }
       }
