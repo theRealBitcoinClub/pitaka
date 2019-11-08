@@ -7,9 +7,13 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../utils/database_helper.dart';
 import 'package:flutter/services.dart';
 
+// For dev server
 const String baseUrl = 'https://lantaka-dev.paytaca.com';
-// const String baseUrl = 'https://3f7c4313.ngrok.io';
 const String phpAssetId = '3A8F594F-D736-4673-945C-5465E0209AF0';
+
+// For local server, testing/debugging
+// const String baseUrl = 'https://d024527f.ngrok.io';
+// const String phpAssetId = 'D927FBF8-7881-4FFE-BC73-A4F1F46E10A1';
 
 int offlineTime;
 int timeDiff;

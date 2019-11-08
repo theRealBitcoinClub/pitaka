@@ -27,7 +27,6 @@ class HomeComponentState extends State<HomeComponent> {
   DatabaseHelper databaseHelper = DatabaseHelper();
   StreamSubscription _connectionChangeStream;
   bool isOffline = false;
-  
 
   @override
   void initState()  {
@@ -87,7 +86,7 @@ class HomeComponentState extends State<HomeComponent> {
             Padding(
               padding: EdgeInsets.only(right: 20.0),
               child: GestureDetector(
-                child: online ? new Icon(Icons.wifi): new Icon(Icons.signal_wifi_off),
+                child: globals.online ? new Icon(Icons.wifi): new Icon(Icons.signal_wifi_off),
              /*   onTap: (){
                   if (globals.syncing == false) {
                     globals.checkConnection().then((status){

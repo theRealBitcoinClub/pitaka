@@ -64,65 +64,80 @@ class ReceiveComponentState extends State<ReceiveComponent> {
     var gzipDecoded = new GZipDecoder().decodeBytes(baseDecoded);
     var utf8Decoded = utf8.decode(gzipDecoded);
     var qrArr = utf8Decoded.split(':wallet:');
+
     if (qrArr.length == 3) {
       var stringified  = qrArr[1].toString();
       List hashArr = stringified.split(':-:');
+      var payload;
       if(hashArr.length == 8){
-        double amount = double.parse(hashArr[0]);
-        double lBalance = double.parse(hashArr[3]);
-        if(amount <= lBalance) {
-          String pubKey = qrArr[2];
-          String fromAccount = hashArr[2];
-          String txnHash = qrArr[1];
-          String txnSignature = qrArr[0];
-          String txnDateTime = hashArr[1];
-          String txnID = hashArr[6];
-          var decodedSignature = HEX.decode(txnSignature); // Convert signature to bytes for verification
-          var decodedPublicKey = HEX.decode(pubKey);  // Convert public key to bytes for verification
-          var firstValidation = await CryptoSign.verify(decodedSignature, txnHash, decodedPublicKey);
-          if (firstValidation) {
-            var timestamp = hashArr[5];
-            var signValue = hashArr[4].toString();
-            var lastSignedBalance = HEX.decode(signValue);
-            var serverPublicKey = HEX.decode(globals.serverPublicKey);
-            var concatenated = "${lBalance.toStringAsFixed(6)}$fromAccount$timestamp";
-            List<int> bytes = utf8.encode(concatenated);
-            var hashMessage = sha256.convert(bytes).toString();
-            var secondValidation = await CryptoSign.verify(lastSignedBalance, hashMessage, serverPublicKey);
-            if (secondValidation) {
-              var payload = {
-                'from_account': fromAccount,
-                'to_account': _selectedPaytacaAccount,
-                'asset': globals.phpAssetId,
-                'amount': amount,
-                'public_key': HEX.encode(decodedPublicKey), // Convert public key back to string
-                'txn_hash': txnHash,
-                'signature': HEX.encode(decodedSignature),  // Convert signature back to string
-                'transaction_id': txnID,
-                'transaction_datetime': txnDateTime,
-                'signed_balance':  {
-                  'message': hashMessage,
-                  'signature': HEX.encode(lastSignedBalance), // Convert signature back to string
-                  'balance': lBalance,
-                  'timestamp': timestamp,
-                }
-              };
-              var response = await receiveAsset(payload);
+        try {
+          double amount = double.parse(hashArr[0]);
+          double lBalance = double.parse(hashArr[3]);
 
-              // Call printWrapped funtion from utils to print very long text
-              // Use only for debugging, comment out when done
-              //printWrapped("The value of payload from scanQrcode() - receive.dart is: $payload",);
-              
-              if (response.success == false) {
-                _failedDialog();
+          if(amount <= lBalance) {
+            String pubKey = qrArr[2];
+            String fromAccount = hashArr[2];
+            String txnHash = qrArr[1];
+            String txnSignature = qrArr[0];
+            String txnDateTime = hashArr[1];
+            String txnID = hashArr[6];
+            var decodedSignature = HEX.decode(txnSignature); // Convert signature to bytes for verification
+            var decodedPublicKey = HEX.decode(pubKey);  // Convert public key to bytes for verification
+            var firstValidation = await CryptoSign.verify(decodedSignature, txnHash, decodedPublicKey);
+
+            if (firstValidation) {
+              print("Passed the first validation, $firstValidation");
+              var timestamp = hashArr[5];
+              var signValue = hashArr[4].toString();
+              var lastSignedBalance = HEX.decode(signValue);
+              var serverPublicKey = HEX.decode(globals.serverPublicKey);
+              var concatenated = "${lBalance.toStringAsFixed(6)}$fromAccount$timestamp";
+              List<int> bytes = utf8.encode(concatenated);
+              var hashMessage = sha256.convert(bytes).toString();
+              var secondValidation = await CryptoSign.verify(lastSignedBalance, hashMessage, serverPublicKey);
+              if (secondValidation) {
+                payload = {
+                  'from_account': fromAccount,
+                  'to_account': _selectedPaytacaAccount,
+                  'asset': globals.phpAssetId,
+                  'amount': amount,
+                  'public_key': HEX.encode(decodedPublicKey), // Convert public key back to string
+                  'txn_hash': txnHash,
+                  'signature': HEX.encode(decodedSignature),  // Convert signature back to string
+                  'transaction_id': txnID,
+                  'transaction_datetime': txnDateTime,
+                  'signed_balance':  {
+                    'message': hashMessage,
+                    'signature': HEX.encode(lastSignedBalance), // Convert signature back to string
+                    'balance': lBalance,
+                    'timestamp': timestamp,
+                  }
+                };
+                var response = await receiveAsset(payload);
+
+                // Call printWrapped funtion from utils to print very long text
+                // Use only for debugging, comment out when done
+                //printWrapped("The value of payload from scanQrcode() - receive.dart is: $payload",);
+                
+                if (response.success == false) {
+                  _failedDialog();
+                } else {
+                  _successDialog();
+                }
               } else {
-                _successDialog();
+                _failedDialog();
               }
             } else {
               _failedDialog();
             }
-          } else {
-            _failedDialog();
+          }
+        } catch(e) {
+          try {
+            print(e);
+            await receiveAsset(payload);
+          } catch(e){
+            print(e);
+            _successDialog();
           }
         }
       }
