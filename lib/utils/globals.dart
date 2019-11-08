@@ -8,12 +8,13 @@ import '../utils/database_helper.dart';
 import 'package:flutter/services.dart';
 
 // For dev server
-// const String baseUrl = 'https://lantaka-dev.paytaca.com';
-// const String phpAssetId = '3A8F594F-D736-4673-945C-5465E0209AF0';
+const String baseUrl = 'https://lantaka-dev.paytaca.com';
+const String phpAssetId = '3A8F594F-D736-4673-945C-5465E0209AF0';
 
 // For local server, testing/debugging
-const String baseUrl = 'https://44de42e2.ngrok.io';
-const String phpAssetId = '58BBBE61-F236-44F3-A849-01AFA6F700DB';
+// const String baseUrl = 'https://44de42e2.ngrok.io';
+// const String phpAssetId = '58BBBE61-F236-44F3-A849-01AFA6F700DB';
+
 
 int offlineTime;
 int timeDiff;
