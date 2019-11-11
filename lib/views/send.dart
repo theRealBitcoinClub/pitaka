@@ -247,13 +247,13 @@ class SendComponentState extends State<SendComponent> {
       'from_account': selectedPaytacaAccount,
       'to_account': destinationAccount,
       'asset': globals.phpAssetId,
-      'amount': amount,
+      'amount': amount.toString(),
       'public_key': publicKey,
       'txn_hash': txnhash,
       'signature': signature,
       'transaction_id': txnID,
       'transaction_datetime': _txnReadableDateTime,
-      'txn_qrcode': proofOfPayment,
+      'proof_of_payment': proofOfPayment,
     };
     var response = await transferAsset(payload);
     if (response.success == false) {
