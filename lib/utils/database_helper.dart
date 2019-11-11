@@ -222,7 +222,6 @@ class DatabaseHelper {
   }
   
   Future<String> offLineTransfer(Map payload) async{
-    
     Database db = await this.database;
     String fromAccount = payload['from_account'];
     String toAccount = payload['to_account'];
@@ -230,15 +229,20 @@ class DatabaseHelper {
     String table2 = 'OfflineTransaction';
     var qs1 = await db.query(table1,where: 'accountId = ?', whereArgs: [fromAccount]);
     var instance = qs1[0];
-    var concatenated = "${instance['balance']}${instance['accountId']}${instance['timestamp']}";
-    var bytes = utf8.encode(concatenated);
-    var hashMessage = sha256.convert(bytes).toString();
-    payload['signed_balance'] =  {
-      'message': hashMessage,
-      'signature': instance['signature'],
-      'balance': instance['balance'],
-      'timestamp': instance['timestamp']
-    };
+    
+    // Commented out below code as it causes error during offline payment
+    // Could not pinpoint the cause of error, it does not send (proof of payment does not display)
+
+    // var concatenated = "${instance['balance']}${instance['accountId']}${instance['timestamp']}";
+    // var bytes = utf8.encode(concatenated);
+    // var hashMessage = sha256.convert(bytes).toString();
+    // payload['signed_balance'] =  {
+    //   'message': hashMessage,
+    //   'signature': instance['signature'],
+    //   'balance': instance['balance'],
+    //   'timestamp': instance['timestamp']
+    // };
+
     var converted = json.encode(payload);
     var txnTimeStamp = payload['txn_hash'].split(':-:')[1];
     await db.insert(table2, {
