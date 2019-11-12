@@ -261,7 +261,6 @@ class SendComponentState extends State<SendComponent> {
       _errorMessage = response.error;
     } else {
       Application.router.navigateTo(context, "/proofOfPayment");
-
     }
     _submitting = false;
     return response.success;

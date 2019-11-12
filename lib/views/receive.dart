@@ -86,26 +86,33 @@ class ReceiveComponentState extends State<ReceiveComponent> {
       if (hashArr.length == 9) {
         // Check if the sender was online during sending
         if (senderOnline == "true") {
-          // Create the payload
-          payload = {
-            'from_account': fromAccount,
-            'to_account': _selectedPaytacaAccount,
-            'asset': globals.phpAssetId,
-            'amount': amount,
-            'public_key': HEX.encode(decodedPublicKey), // Convert public key back to string
-            'txn_hash': txnHash,
-            'signature': HEX.encode(decodedSignature),  // Convert signature back to string
-            'transaction_id': txnID,
-            'transaction_datetime': txnDateTime,
-            'signed_balance':  {}
-          };
-          // Call receiveAsset function from "endpoints.dart"
-          var response = await receiveAsset(payload);
+          // Try catching error and pop up success dialog when there is an error
+          // If both sender and receiver are online they will update balances anyway
+          try {
+            // Create the payload
+            payload = {
+              'from_account': fromAccount,
+              'to_account': _selectedPaytacaAccount,
+              'asset': globals.phpAssetId,
+              'amount': amount.toString(),
+              'public_key': HEX.encode(decodedPublicKey), // Convert public key back to string
+              'txn_hash': txnHash,
+              'signature': HEX.encode(decodedSignature),  // Convert signature back to string
+              'transaction_id': txnID,
+              'transaction_datetime': txnDateTime,
+              'signed_balance':  {}
+            };
+            // Call receiveAsset function from "endpoints.dart"
+            var response = await receiveAsset(payload);
 
-          // Check response, pop up a dialog for failed or success 
-          if (response.success == false) {
-            _failedDialog();
-          } else {
+            // Check response, pop up a dialog for failed or success 
+            if (response.success == false) {
+              _failedDialog();
+            } else {
+              _successDialog();
+            }
+          } catch(e) {
+            print(e);
             _successDialog();
           }
         } else {
@@ -130,7 +137,7 @@ class ReceiveComponentState extends State<ReceiveComponent> {
                   'from_account': fromAccount,
                   'to_account': _selectedPaytacaAccount,
                   'asset': globals.phpAssetId,
-                  'amount': amount,
+                  'amount': amount.toString(),
                   'public_key': HEX.encode(decodedPublicKey), // Convert public key back to string
                   'txn_hash': txnHash,
                   'signature': HEX.encode(decodedSignature),  // Convert signature back to string
