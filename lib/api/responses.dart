@@ -130,7 +130,7 @@ class TransactionsResponse {
           transObj.timeslot = DateTime.tryParse(transObj.timestamp).toLocal();
           transObj.time = DateFormat('y/M/d hh:mm a').format(transObj.timeslot).toString();
           transObj.txnID = txn['TransactionID'];
-          transObj.paymentProof = txn['PaymentProof'];
+          transObj.paymentProof = txn['ProofOfPayment'];
           _transactions.add(transObj);
 
         }

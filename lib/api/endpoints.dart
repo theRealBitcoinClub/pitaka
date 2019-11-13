@@ -233,6 +233,11 @@ Future<TransactionsResponse> getOnlineTransactions() async {
   Response response;
   try {
     response = await sendGetRequest(url);
+
+    // Call printWrapped funtion from utils to print very long text
+    // Use only for debugging, comment out when done
+    // printWrapped("The value of response from getOnlineTransactions() - endpoints.dart is: $response",);
+
     return TransactionsResponse.fromResponse(response);
   } catch (e) {
     // Login before resending the request again

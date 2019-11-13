@@ -109,8 +109,8 @@ Icon _getModeIcon(String mode) {
 
  _showProof(List<Transaction> transaction, BuildContext context, int index) async {
 
-   SharedPreferences prefs = await SharedPreferences.getInstance();
-      print("Qr Code:  ${transaction[transaction.length - index - 1].paymentProof}");
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+      // print("Qr Code:  ${transaction[transaction.length - index - 1].paymentProof}");
 
       Dialog transacDialog = Dialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.0)), //this right here
@@ -155,7 +155,7 @@ Icon _getModeIcon(String mode) {
         ),
       );
 
-      if(transaction[transaction.length - index - 1].mode == "send" && globals.online == false) {
+      if(transaction[transaction.length - index - 1].mode == "send") {
         showDialog(context: context, builder: (BuildContext context) => transacDialog);
       }
  }
