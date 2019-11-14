@@ -83,6 +83,9 @@ class SendComponentState extends State<SendComponent> {
     super.initState();
     ConnectionStatusSingleton connectionStatus = ConnectionStatusSingleton.getInstance();
     _connectionChangeStream = connectionStatus.connectionChange.listen(connectionChanged);
+    // Call this function when
+    _checkInternetConnectionSpeed();
+
   /*  globals.checkConnection().then((status){
       setState(() {
         if (status == false) {
@@ -93,6 +96,13 @@ class SendComponentState extends State<SendComponent> {
         }
       });
     });*/
+  }
+
+  _checkInternetConnectionSpeed() async {
+    bool _isInternetSlow = globals.isInternetSlow;
+    if (_isInternetSlow) {
+      showAlertDialog(context);
+    }
   }
 
   // void connectionChanged(dynamic hasConnection) {
@@ -379,6 +389,51 @@ class SendComponentState extends State<SendComponent> {
 
 bool disableSubmitButton = false;
 
+// Alert dialog for slow internet speed connection
+// 
+showAlertDialog(BuildContext context) {
+  // set up the buttons
+  Widget cancelButton = FlatButton(
+    child: Text("Cancel"),
+    onPressed:  () {
+      Navigator.pop(context);
+      Application.router.navigateTo(context, "/home");
+    }
+  );
+  Widget continueButton = FlatButton(
+    child: Text("Offline Mode"),
+    onPressed:  () {
+      Navigator.pop(context);
+      Application.router.navigateTo(context, "/home");
+      setOfflineMode();
+    }
+  );
+
+  // set up the AlertDialog
+  AlertDialog alert = AlertDialog(
+    title: Text("Slow Internet Connection!"),
+    content: Text("Your internet speed connection is too slow. " 
+                  "Switch to offline mode to continue making transaction."
+    ),
+    actions: [
+      cancelButton,
+      continueButton,
+    ],
+  );
+
+  // show the dialog
+  showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return alert;
+    },
+  );
+}
+
+void setOfflineMode() {
+  globals.online = false;
+}
+
 List<Widget> _buildForm(BuildContext context) {
     Form form = new Form(
       key: _formKey,
@@ -517,6 +572,14 @@ List<Widget> _buildForm(BuildContext context) {
                                       txnID,
                                       lBalanceTime,
                                     );
+                                    // Dismiss keyboard after the Pay Now
+                                    FocusScopeNode currentFocus = FocusScope.of(context);
+                                    if (!currentFocus.hasPrimaryFocus) {
+                                      currentFocus.unfocus();
+                                    }
+
+                                    showAlertDialog(context);
+
                                   }
                                 }
                               )
@@ -546,7 +609,7 @@ List<Widget> _buildForm(BuildContext context) {
             opacity: 0.8,
             child: const ModalBarrier(dismissible: false, color: Colors.grey),
           ),
-          new Center(
+          Center(
             child: new CircularProgressIndicator(),
           ),
         ],

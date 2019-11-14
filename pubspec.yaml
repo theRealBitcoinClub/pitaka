@@ -40,7 +40,6 @@ dependencies:
   screen_state: ^0.1.1
   http: ^0.12.0+2
   uuid: ^2.0.2
-  #virtual_keyboard: ^0.1.4
 
   virtual_keyboard:
     path: ./virtual_keyboard-0.1.4-modified/

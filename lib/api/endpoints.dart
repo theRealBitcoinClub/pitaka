@@ -17,6 +17,7 @@ DatabaseHelper databaseHelper = DatabaseHelper();
 
 Future<dynamic> sendPostRequest(url, payload) async {
   var dio = new Dio();
+  dio.options.connectTimeout = 100;  // Set connection timeout for 5 seconds
   dio.transformer = new FlutterTransformer();
   var tempDir = await getTemporaryDirectory();
   String tempPath = tempDir.path;
@@ -26,7 +27,9 @@ Future<dynamic> sendPostRequest(url, payload) async {
   try {
     response = await dio.post(url, data: payload);
   } catch(e) {
-    print(e);
+    print("Error from sendPostRequest() in enpoints.dart - $e");
+    print("Your internet connection is very slow. Switch to offline mode to continue this transaction.");
+    globals.isInternetSlow = true;
   }
   return response;
 }
