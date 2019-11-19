@@ -49,7 +49,6 @@ class SendComponentState extends State<SendComponent> {
   bool maxOfflineTime = globals.maxOfflineTime;
   int offlineTime = globals.offlineTime;
   bool isSenderOnline;  // Variable for marking if the sender is online or offline
-  bool _isInternetSlow = false;
   
   Future<List> getAccounts(destinationAccountId) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -233,11 +232,9 @@ class SendComponentState extends State<SendComponent> {
     };
     var response = await transferAsset(payload);
     // Check the error response from transferAsset in endpoints.dart
-    // Set _isInternetSlow to true to show alert dialog
+    // Call the function for alert dialog
     if (response.error == "DioErrorType.CONNECT_TIMEOUT") {
-      setState(() {
-        _isInternetSlow = true;
-      });
+      showAlertDialog(context);
     }
     if (response.success == false) {
       _errorFound = true;
@@ -367,10 +364,9 @@ bool disableSubmitButton = false;
 showAlertDialog(BuildContext context) {
   // set up the buttons
   Widget cancelButton = FlatButton(
-    child: Text("Cancel"),
+    child: Text("Continue"),
     onPressed:  () {
       Navigator.pop(context);
-      Application.router.navigateTo(context, "/home");
     }
   );
   Widget continueButton = FlatButton(
@@ -550,10 +546,6 @@ List<Widget> _buildForm(BuildContext context) {
                                     if (!currentFocus.hasPrimaryFocus) {
                                       currentFocus.unfocus();
                                     }
-                                    // After clicking "Pay Now" button show alert dialog if internet connection is slow
-                                    if (_isInternetSlow == true) {
-                                      showAlertDialog(context);
-                                     }
                                   }
                                 }
                               )

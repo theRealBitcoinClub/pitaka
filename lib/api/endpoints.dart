@@ -17,7 +17,7 @@ DatabaseHelper databaseHelper = DatabaseHelper();
 
 Future<dynamic> sendPostRequest(url, payload) async {
   var dio = new Dio();
-  dio.options.connectTimeout = 100;  // Set connection timeout for 10 seconds
+  dio.options.connectTimeout = 10000;  // Set connection timeout for 10 seconds
   dio.transformer = new FlutterTransformer();
   var tempDir = await getTemporaryDirectory();
   String tempPath = tempDir.path;
