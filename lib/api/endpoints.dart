@@ -27,9 +27,13 @@ Future<dynamic> sendPostRequest(url, payload) async {
   try {
     response = await dio.post(url, data: payload);
   } catch(e) {
-    print("Error from sendPostRequest() in enpoints.dart - $e");
-    print("Your internet connection is very slow. Switch to offline mode to continue this transaction.");
-    globals.isInternetSlow = true;
+    // Cast error to string
+    String errorType = e.toString();
+    // Check if "DioErrorType.CONNECT_TIMEOUT" error is in the string
+    if (errorType.contains("DioErrorType.CONNECT_TIMEOUT")) {
+      print("Your internet connection is very slow. Switch to offline mode to continue this transaction.");
+      globals.isInternetSlow = true;
+    }
   }
   return response;
 }

@@ -49,6 +49,7 @@ class SendComponentState extends State<SendComponent> {
   bool maxOfflineTime = globals.maxOfflineTime;
   int offlineTime = globals.offlineTime;
   bool isSenderOnline;  // Variable for marking if the sender is online or offline
+  bool _isInternetSlow = true;
   
   Future<List> getAccounts(destinationAccountId) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -572,14 +573,15 @@ List<Widget> _buildForm(BuildContext context) {
                                       txnID,
                                       lBalanceTime,
                                     );
-                                    // Dismiss keyboard after the Pay Now
+                                    // Dismiss keyboard after the "Pay Now" button is click
                                     FocusScopeNode currentFocus = FocusScope.of(context);
                                     if (!currentFocus.hasPrimaryFocus) {
                                       currentFocus.unfocus();
                                     }
-
-                                    showAlertDialog(context);
-
+                                    // After clicking "Pay Now" button show alert dialog if internet connection is slow
+                                    if (_isInternetSlow) {
+                                      showAlertDialog(context);
+                                    }
                                   }
                                 }
                               )
