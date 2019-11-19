@@ -15,14 +15,12 @@ const String phpAssetId = '3A8F594F-D736-4673-945C-5465E0209AF0';
 // const String baseUrl = 'https://3b494706.ngrok.io';
 // const String phpAssetId = 'C7F4D976-9204-47DC-B998-754C29B043C5';
 
-bool _isInternetSlow;
 int offlineTime;
 int timeDiff;
 bool _maxOfflineTime = false;
 bool _online = false;
 bool _syncing = false;
 const String serverPublicKey = '7aeaa44510a950a9a4537faa2f40351dc4560d6d0d12abc0287dcffdd667d7a2';
-bool get isInternetSlow => _isInternetSlow;
 bool get online => _online;
 bool get syncing => _syncing;
 bool get maxOfflineTime => _maxOfflineTime;
@@ -48,8 +46,6 @@ DatabaseHelper databaseHelper = DatabaseHelper();
 final storage = new FlutterSecureStorage();
 
 set maxOfflineTime(bool value) => _maxOfflineTime = value;
-set isInternetSlow(bool value) => _isInternetSlow = value;
-
 
 Future<bool> iniConnection() async {
   var connectivityResult = await (Connectivity().checkConnectivity());

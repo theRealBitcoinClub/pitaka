@@ -17,7 +17,7 @@ DatabaseHelper databaseHelper = DatabaseHelper();
 
 Future<dynamic> sendPostRequest(url, payload) async {
   var dio = new Dio();
-  dio.options.connectTimeout = 100;  // Set connection timeout for 5 seconds
+  dio.options.connectTimeout = 100;  // Set connection timeout for 10 seconds
   dio.transformer = new FlutterTransformer();
   var tempDir = await getTemporaryDirectory();
   String tempPath = tempDir.path;
@@ -30,9 +30,10 @@ Future<dynamic> sendPostRequest(url, payload) async {
     // Cast error to string
     String errorType = e.toString();
     // Check if "DioErrorType.CONNECT_TIMEOUT" error is in the string
+    // And return the error type
     if (errorType.contains("DioErrorType.CONNECT_TIMEOUT")) {
-      print("Your internet connection is very slow. Switch to offline mode to continue this transaction.");
-      globals.isInternetSlow = true;
+      //print("Your internet connection is very slow. Switch to offline mode to continue this transaction.");
+      return "DioErrorType.CONNECT_TIMEOUT";
     }
   }
   return response;
@@ -276,12 +277,24 @@ Future getBusinesReferences () async {
 Future<PlainSuccessResponse> transferAsset(Map payload) async {
   if (globals.online) {
     final String url = globals.baseUrl + '/api/assets/transfer';
-    final response = await sendPostRequest(url, payload);
-    if (response.statusCode == 200) {
-      return PlainSuccessResponse.fromResponse(response);
-    } else {
-      throw Exception('Failed to transfer asset');
+    var response;
+    // Catch the CONNECT_TIMEOUT error
+    try {
+      response = await sendPostRequest(url, payload);
+      if (response.statusCode == 200) {
+        return PlainSuccessResponse.fromResponse(response);
+      } else {
+        throw Exception('Failed to transfer asset');
+      }
     }
+    catch(e) {
+      if (response == "DioErrorType.CONNECT_TIMEOUT") {
+        // Can't return response, added PlainSuccessResponse in responses.dart
+        return PlainSuccessResponse.connectTimeoutError();
+      }
+      //return response;
+    }
+
   } else {
     await databaseHelper.offLineTransfer(payload);
     return PlainSuccessResponse.toDatabase();

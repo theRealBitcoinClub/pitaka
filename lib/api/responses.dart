@@ -32,6 +32,10 @@ class PlainSuccessResponse {
   factory PlainSuccessResponse.toDatabase(){
     return PlainSuccessResponse(success: true, error: '');
   }
+
+  factory PlainSuccessResponse.connectTimeoutError(){
+    return PlainSuccessResponse(success: false, error: 'DioErrorType.CONNECT_TIMEOUT');
+  }
 }
 
 class OtpVerificationResponse {

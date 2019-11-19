@@ -49,7 +49,7 @@ class SendComponentState extends State<SendComponent> {
   bool maxOfflineTime = globals.maxOfflineTime;
   int offlineTime = globals.offlineTime;
   bool isSenderOnline;  // Variable for marking if the sender is online or offline
-  bool _isInternetSlow = true;
+  bool _isInternetSlow = false;
   
   Future<List> getAccounts(destinationAccountId) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -84,42 +84,7 @@ class SendComponentState extends State<SendComponent> {
     super.initState();
     ConnectionStatusSingleton connectionStatus = ConnectionStatusSingleton.getInstance();
     _connectionChangeStream = connectionStatus.connectionChange.listen(connectionChanged);
-    // Call this function when
-    _checkInternetConnectionSpeed();
-
-  /*  globals.checkConnection().then((status){
-      setState(() {
-        if (status == false) {
-          online = false;  
-          globals.online = online;
-        } else {
-          globals.online = online;
-        }
-      });
-    });*/
   }
-
-  _checkInternetConnectionSpeed() async {
-    bool _isInternetSlow = globals.isInternetSlow;
-    if (_isInternetSlow) {
-      showAlertDialog(context);
-    }
-  }
-
-  // void connectionChanged(dynamic hasConnection) {
-  //   setState(() {
-  //     isOffline = !hasConnection;
-  //     if(isOffline == false) {
-  //       online = !online;
-  //       globals.online = online;
-  //       print("Online");
-  //     } else {
-  //       online = false;
-  //       globals.online = online;
-  //       print("Offline");
-  //     }
-  //   });
-  // }
 
   void connectionChanged(dynamic hasConnection) {
     setState(() {
@@ -267,6 +232,13 @@ class SendComponentState extends State<SendComponent> {
       'proof_of_payment': proofOfPayment,
     };
     var response = await transferAsset(payload);
+    // Check the error response from transferAsset in endpoints.dart
+    // Set _isInternetSlow to true to show alert dialog
+    if (response.error == "DioErrorType.CONNECT_TIMEOUT") {
+      setState(() {
+        _isInternetSlow = true;
+      });
+    }
     if (response.success == false) {
       _errorFound = true;
       _errorMessage = response.error;
@@ -579,9 +551,9 @@ List<Widget> _buildForm(BuildContext context) {
                                       currentFocus.unfocus();
                                     }
                                     // After clicking "Pay Now" button show alert dialog if internet connection is slow
-                                    if (_isInternetSlow) {
+                                    if (_isInternetSlow == true) {
                                       showAlertDialog(context);
-                                    }
+                                     }
                                   }
                                 }
                               )
