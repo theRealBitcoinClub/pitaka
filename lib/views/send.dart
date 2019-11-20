@@ -234,6 +234,9 @@ class SendComponentState extends State<SendComponent> {
     // Call the function for alert dialog
     if (response.error == "DioErrorType.CONNECT_TIMEOUT") {
       showAlertDialog(context);
+      // Return null so the second alert dialog won't show
+      // Weird! Not sure where is that second dialog come from
+      return null;
     }
     if (response.success == false) {
       _errorFound = true;
@@ -353,7 +356,7 @@ showAlertDialog(BuildContext context) {
       Application.router.navigateTo(context, "/send");
     }
   );
-  Widget continueButton = FlatButton(
+  Widget offlineModeButton = FlatButton(
     child: Text("Switch to Offline Mode"),
     onPressed:  () {
       Navigator.pop(context);
@@ -370,7 +373,7 @@ showAlertDialog(BuildContext context) {
     ),
     actions: [
       cancelButton,
-      continueButton,
+      offlineModeButton,
     ],
   );
 
