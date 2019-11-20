@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
 import 'package:archive/archive.dart';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
 import '../components/bottomNavigation.dart';
@@ -266,7 +265,6 @@ class SendComponentState extends State<SendComponent> {
     }
   }
 
-
   Future<String> getBarcode() async {
     if (_barcodeString.contains(new RegExp(r'::paytaca::.*::paytaca::$'))) {
       var destinationAccountId = _barcodeString.split('::paytaca::')[1];
@@ -276,7 +274,6 @@ class SendComponentState extends State<SendComponent> {
       return null;
     }
   }
-
 
   String validateAmount(String value) {
     if (value == null || value == "") {
@@ -298,32 +295,18 @@ class SendComponentState extends State<SendComponent> {
           return 'Max limit of Php 100,000.00 per transaction';
         } else {
           return null;
-        }
-        
+        } 
       }
     }
   }
 
    changeAccount(String newVal) {
-    // selectedPaytacaAccount = null;
-    // sourceAccount = null;
-    // lastBalance = null;
-    // lBalanceSignature = null;
-    // lBalanceTime = null;
-
-
     String accountId = newVal.split('::sep::')[0];
     String balance = newVal.split('::sep::')[1];
     String signature = newVal.split('::sep::')[2];
     String timestamp = newVal.split('::sep::')[3];
 
     setState(() {
-      // selectedPaytacaAccount = null;
-      // sourceAccount = null;
-      // lastBalance = null;
-      // lBalanceSignature = null;
-      // lBalanceTime = null;
-
       selectedPaytacaAccount = accountId;
       sourceAccount = newVal;
       lastBalance = balance;
@@ -332,7 +315,6 @@ class SendComponentState extends State<SendComponent> {
      // state.didChange(newVal);
     });
   }
-  
 
   @override
   Widget build(BuildContext context) {
@@ -360,21 +342,23 @@ class SendComponentState extends State<SendComponent> {
 bool disableSubmitButton = false;
 
 // Alert dialog for slow internet speed connection
-// 
+// This is called in sendFunds() when there is connection timeout error response
+// from transferAsset() in endpoints.dart
 showAlertDialog(BuildContext context) {
   // set up the buttons
   Widget cancelButton = FlatButton(
-    child: Text("Continue"),
+    child: Text("Cancel"),
     onPressed:  () {
       Navigator.pop(context);
+      Application.router.navigateTo(context, "/send");
     }
   );
   Widget continueButton = FlatButton(
-    child: Text("Offline Mode"),
+    child: Text("Switch to Offline Mode"),
     onPressed:  () {
       Navigator.pop(context);
-      Application.router.navigateTo(context, "/home");
       setOfflineMode();
+      Application.router.navigateTo(context, "/send");
     }
   );
 

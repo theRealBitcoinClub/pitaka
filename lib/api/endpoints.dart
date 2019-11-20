@@ -1,5 +1,4 @@
 import 'dart:convert';
-
 import 'package:dio/dio.dart';
 import 'package:cookie_jar/cookie_jar.dart';
 import 'package:dio_flutter_transformer/dio_flutter_transformer.dart';
@@ -10,7 +9,7 @@ import 'responses.dart';
 import '../utils/helpers.dart';
 import '../utils/database_helper.dart';
 import '../utils/globals.dart' as globals;
-import '../utils/print_wrapped.dart';
+//import '../utils/print_wrapped.dart';
 
 
 DatabaseHelper databaseHelper = DatabaseHelper();
@@ -27,7 +26,7 @@ Future<dynamic> sendPostRequest(url, payload) async {
   try {
     response = await dio.post(url, data: payload);
   } catch(e) {
-    // Cast error to string
+    // Cast error to string type
     String errorType = e.toString();
     // Check if "DioErrorType.CONNECT_TIMEOUT" error is in the string
     // And return the error type
@@ -294,12 +293,10 @@ Future<PlainSuccessResponse> transferAsset(Map payload) async {
       }
       //return response;
     }
-
   } else {
     await databaseHelper.offLineTransfer(payload);
     return PlainSuccessResponse.toDatabase();
   }
-  
 }
 
 // This is called in "receive.dart" in scanQrcode() function

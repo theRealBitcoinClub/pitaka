@@ -33,6 +33,7 @@ class PlainSuccessResponse {
     return PlainSuccessResponse(success: true, error: '');
   }
 
+  // Added this response for connect timeout error in transferAsset() in endpoints.dart
   factory PlainSuccessResponse.connectTimeoutError(){
     return PlainSuccessResponse(success: false, error: 'DioErrorType.CONNECT_TIMEOUT');
   }
