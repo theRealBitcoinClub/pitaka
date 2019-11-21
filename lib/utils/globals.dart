@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:io';
-
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:connectivity/connectivity.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -47,7 +46,7 @@ final storage = new FlutterSecureStorage();
 
 set maxOfflineTime(bool value) => _maxOfflineTime = value;
 
-Future<bool> iniConnection() async {
+Future<bool> initConnection() async {
   var connectivityResult = await (Connectivity().checkConnectivity());
   final result = await InternetAddress.lookup('google.com');
   try {
@@ -57,15 +56,16 @@ Future<bool> iniConnection() async {
     } else {
         online = false;
       }
-
   }on PlatformException catch (e) {
     print(e);
   }
 return online;
 }
 
+// This function is called in initState() in landing.dart
+// This will check for internet connection at the satrt of the app
 void checkInternet () async {
-  iniConnection().then((status) async{
+  initConnection().then((status) async{
     SharedPreferences prefs = await SharedPreferences.getInstance();
     prefs.setBool("online", status);
   });
