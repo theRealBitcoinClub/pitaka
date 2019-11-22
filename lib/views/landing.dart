@@ -5,17 +5,10 @@ import 'package:after_layout/after_layout.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/services.dart';
 import 'package:local_auth/local_auth.dart';
-import 'package:local_auth/error_codes.dart' as auth_error;
 import '../views/app.dart';
 import '../utils/globals.dart' as globals;
-import 'package:passcode_screen/passcode_screen.dart';
-import 'package:passcode_screen/circle.dart';
-import 'package:passcode_screen/keyboard.dart';
-import 'package:screen_state/screen_state.dart';
 import '../utils/globals.dart';
 
-
-enum Choice { BIOMETRICS, PIN }
 
 class LandingComponent extends StatefulWidget {
   @override
