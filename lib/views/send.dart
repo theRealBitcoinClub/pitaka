@@ -80,6 +80,7 @@ class SendComponentState extends State<SendComponent> {
   @override
   void initState() {
     super.initState();
+    // Fires whenever connectivity state changes
     ConnectionStatusSingleton connectionStatus = ConnectionStatusSingleton.getInstance();
     _connectionChangeStream = connectionStatus.connectionChange.listen(connectionChanged);
   }

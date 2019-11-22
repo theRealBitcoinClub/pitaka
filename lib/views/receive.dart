@@ -30,10 +30,15 @@ class ReceiveComponentState extends State<ReceiveComponent> {
   static List data = List(); //edited line
   bool online = globals.online;
   bool isOffline = false;
+  StreamSubscription _connectionChangeStream;
 
   @override
   void initState()  {
     super.initState();
+    // Fires whenever connectivity state changes
+    ConnectionStatusSingleton connectionStatus = ConnectionStatusSingleton.getInstance();
+    _connectionChangeStream = connectionStatus.connectionChange.listen(connectionChanged);
+
     getAccounts();
   }
 

@@ -31,22 +31,13 @@ class HomeComponentState extends State<HomeComponent> {
   @override
   void initState()  {
     super.initState();
+    // Fires whenever connectivity state changes
     ConnectionStatusSingleton connectionStatus = ConnectionStatusSingleton.getInstance();
     _connectionChangeStream = connectionStatus.connectionChange.listen(connectionChanged);
+
     ReceiveComponentState comp = new ReceiveComponentState();
+    
     comp.getAccounts();
-    /*globals.checkConnection().then((status){
-      setState(() {
-        if (status == false) {
-          online = false;  
-          globals.online = online;
-          print('Offline');
-        } else {
-          globals.online = online;
-          print('Online');
-        }
-      });
-    });*/
   }
 
   void connectionChanged(dynamic hasConnection) {
