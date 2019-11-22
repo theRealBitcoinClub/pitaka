@@ -71,18 +71,12 @@ Drawer buildDrawer(BuildContext context) {
             onTap: () {
               Application.router.navigateTo(context, "/addAccount");
             }),
-        // ListTile(
-        //     title: Text('Business Tools'),
-        //     trailing: Icon(Icons.build),
-        //     onTap: () {
-        //       Application.router.navigateTo(context, "/businesstools");
-        //     }),
-        // ListTile(
-        //   title: Text('Settings'),
-        //   trailing: Icon(Icons.settings),
-        //   onTap: (){
-        //     Application.router.navigateTo(context, "/settings");
-        //   }),
+        ListTile(
+            title: Text('Aunthenticate'),
+            trailing: Icon(Icons.person_pin),
+            onTap: () {
+              Application.router.navigateTo(context, "/authenticate");
+            }),
       ],
     ),
   );

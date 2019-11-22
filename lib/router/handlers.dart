@@ -8,6 +8,7 @@ import '../views/onboarding/account.dart';
 import '../views/terms.dart';
 import '../views/home.dart';
 import '../views/send.dart';
+import '../views/authenticate.dart';
 import '../views/receive.dart';
 import '../views/business/register.dart';
 import '../views/business/tools.dart';
@@ -57,6 +58,11 @@ var homeHandler = new Handler(
 var sendHandler = new Handler(
     handlerFunc: (BuildContext context, Map<String, dynamic> params) {
   return new SendComponent();
+});
+
+var authenticateHandler = new Handler(
+    handlerFunc: (BuildContext context, Map<String, dynamic> params) {
+  return new AuthenticateComponent();
 });
 
 var receiveHandler = new Handler(
