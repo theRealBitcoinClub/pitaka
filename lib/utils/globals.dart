@@ -1,10 +1,8 @@
 import 'dart:async';
 import 'dart:io';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:connectivity/connectivity.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../utils/database_helper.dart';
-import 'package:flutter/services.dart';
 
 // For dev server
 const String baseUrl = 'https://lantaka-dev.paytaca.com';
@@ -19,14 +17,16 @@ int timeDiff;
 bool _maxOfflineTime = false;
 bool _online = false;
 bool _syncing = false;
+ConnectivityResult result;
+final storage = new FlutterSecureStorage();
 const String serverPublicKey = '7aeaa44510a950a9a4537faa2f40351dc4560d6d0d12abc0287dcffdd667d7a2';
+
+// Get global variables
 bool get online => _online;
 bool get syncing => _syncing;
 bool get maxOfflineTime => _maxOfflineTime;
-final Connectivity _connectivity = Connectivity();
-ConnectivityResult result;
-//StreamSubscription<ConnectivityResult> _connectivitySubscription = _connectivity.onConnectivityChanged.listen();
 
+// Set global variables
 set online(bool value) {
   _online = value;
   if (_online) {
@@ -39,39 +39,14 @@ set online(bool value) {
   }
 }
 
-set syncing(bool value) => _syncing = value;
 DatabaseHelper databaseHelper = DatabaseHelper();
 
-final storage = new FlutterSecureStorage();
+set syncing(bool value) => _syncing = value;
 
 set maxOfflineTime(bool value) => _maxOfflineTime = value;
 
-Future<bool> initConnection() async {
-  var connectivityResult = await (Connectivity().checkConnectivity());
-  final result = await InternetAddress.lookup('google.com');
-  try {
-    if (connectivityResult == ConnectivityResult.mobile && result.isNotEmpty && result[0].rawAddress.isNotEmpty ||
-        connectivityResult == ConnectivityResult.wifi && result.isNotEmpty && result[0].rawAddress.isNotEmpty ) {
-      online = true;
-    } else {
-        online = false;
-      }
-  }on PlatformException catch (e) {
-    print(e);
-  }
-return online;
-}
 
-// This function is called in initState() in landing.dart
-// This will check for internet connection at the satrt of the app
-void checkInternet () async {
-  initConnection().then((status) async{
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    prefs.setBool("online", status);
-  });
-}
-
-
+// Connection Status Notifier
 class ConnectionStatusSingleton {
   // This creates the single instance by calling the `_internal` constructor specified below
   static final ConnectionStatusSingleton _singleton = new ConnectionStatusSingleton._internal();
@@ -132,5 +107,4 @@ class ConnectionStatusSingleton {
 
     return hasConnection;
   }
-
 }

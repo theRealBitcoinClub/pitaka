@@ -35,6 +35,7 @@ class ReceiveComponentState extends State<ReceiveComponent> {
   @override
   void initState()  {
     super.initState();
+    // Subscribe to Notifier Stream from ConnectionStatusSingleton class in globals.dart
     // Fires whenever connectivity state changes
     ConnectionStatusSingleton connectionStatus = ConnectionStatusSingleton.getInstance();
     _connectionChangeStream = connectionStatus.connectionChange.listen(connectionChanged);
