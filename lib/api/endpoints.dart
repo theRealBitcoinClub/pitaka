@@ -278,8 +278,23 @@ Future<PlainSuccessResponse> transferAsset(Map payload) async {
   } else {
     await databaseHelper.offLineTransfer(payload);
     return PlainSuccessResponse.toDatabase();
-  }
-  
+  } 
+}
+
+// This is called in "authenticate.dart" in sendAuthentication()
+Future<PlainSuccessResponse> authWebApp(Map payload) async {
+  // Check if online
+  if (globals.online) {
+    final String url = globals.baseUrl + '/api/auth-reports/authenticate';
+    final response = await sendPostRequest(url, payload);
+    if (response.statusCode == 200) {
+      return PlainSuccessResponse.fromResponse(response);
+    } else {
+      throw Exception('Failed to authenticate');
+    }
+  } else {
+    return PlainSuccessResponse.toDatabase();
+  } 
 }
 
 // This is called in "receive.dart" in scanQrcode() function

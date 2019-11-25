@@ -1,6 +1,4 @@
 import 'dart:async';
-import 'dart:convert';
-import 'package:archive/archive.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
 import '../components/bottomNavigation.dart';
@@ -8,12 +6,9 @@ import '../components/drawer.dart';
 import '../api/endpoints.dart';
 import '../views/app.dart';
 import '../utils/helpers.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:intl/intl.dart';
 import 'package:permission_handler/permission_handler.dart';
 import '../utils/globals.dart' as globals;
 import '../utils/database_helper.dart';
-import 'package:uuid/uuid.dart';
 import '../utils/globals.dart';
 
 
@@ -23,7 +18,6 @@ class AuthenticateComponent extends StatefulWidget {
 }
 
 class AuthenticateComponentState extends State<AuthenticateComponent> {
-  String _barcodeString = '';
   String path = '/send';
   bool _submitting = false;
   final _formKey = GlobalKey<FormState>();
@@ -70,30 +64,29 @@ class AuthenticateComponentState extends State<AuthenticateComponent> {
 
   final TextEditingController _accountController = new TextEditingController();
 
-  Future<bool> sendFunds(
-    BuildContext context,
-    String lBalanceTimeStamp) async {
-
+  Future<bool> sendAuthentication() async {
+    // Set _submitting to true for progress indicator to display while sending the request
     _submitting = true;
-
+    // Get private and public key
     String publicKey = await globals.storage.read(key: "publicKey");
     String privateKey = await globals.storage.read(key: "privateKey");
-
+    // Sign the sessionKey scanned from barcode with the private key
     String signature = await signTransaction(sessionKey, privateKey);
-
+    // Create the payload
     var payload = {
       'session_key': sessionKey,
       'public_key': publicKey,
       'signature': signature,
     };
-
-    var response = await transferAsset(payload);
+    // Call authWebApp() from endpoints.dart
+    var response = await authWebApp(payload);
     if (response.success == false) {
       _errorFound = true;
       _errorMessage = response.error;
     } else {
       Application.router.navigateTo(context, "/home");
     }
+    // Set _submitting to false after sending the request and return the response
     _submitting = false;
     return response.success;
   }
@@ -103,10 +96,9 @@ class AuthenticateComponentState extends State<AuthenticateComponent> {
     String barcode = await FlutterBarcodeScanner.scanBarcode("#ff6666", "Cancel", true);
     setState(() {
       if (barcode.length > 0) {
-        _barcodeString = barcode;
-      } else {
-        _barcodeString = '';
-      }  
+        sessionKey = barcode;
+        sendAuthentication();
+      }
     });
   }
 
@@ -115,15 +107,6 @@ class AuthenticateComponentState extends State<AuthenticateComponent> {
     PermissionStatus cameraStatus = await permission.checkPermissionStatus(PermissionGroup.camera);
     if (cameraStatus == PermissionStatus.denied) {
       await permission.requestPermissions([PermissionGroup.camera]);
-    }
-  }
-
-  Future<String> getBarcode() async {
-    if (_barcodeString != '') {
-      sessionKey = _barcodeString;
-      return sessionKey;
-    } else {
-      return null;
     }
   }
 
@@ -200,6 +183,34 @@ List<Widget> _buildForm(BuildContext context) {
             child: new CircularProgressIndicator(),
           ),
         ],
+      );
+      ws.add(modal);
+    }
+    if (_errorFound) {
+      var modal = new Stack(
+        children: [
+          AlertDialog(
+            title: Text('Success'),
+            content: SingleChildScrollView(
+              child: ListBody(
+                children: <Widget>[
+                  Text('$_errorMessage')
+                ],
+              ),
+            ),
+            actions: <Widget>[
+              FlatButton(
+                child: Text('Got it!'),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                  Application.router.navigateTo(context, "/send");
+                  _errorMessage = '';
+                  _errorFound = false;
+                },
+              ),
+            ],
+          )
+        ]
       );
       ws.add(modal);
     }
