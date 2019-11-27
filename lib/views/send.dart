@@ -351,31 +351,21 @@ bool disableSubmitButton = false;
 // from transferAsset() in endpoints.dart
 showAlertDialog(BuildContext context) {
   // set up the buttons
-  Widget cancelButton = FlatButton(
-    child: Text("Cancel"),
+  Widget okButton = FlatButton(
+    child: Text("Ok"),
     onPressed:  () {
       Navigator.pop(context);
       Application.router.navigateTo(context, "/send");
     }
   );
-  Widget offlineModeButton = FlatButton(
-    child: Text("Switch to Offline Mode"),
-    onPressed:  () {
-      Navigator.pop(context);
-      setOfflineMode();
-      Application.router.navigateTo(context, "/send");
-    }
-  );
-
   // set up the AlertDialog
   AlertDialog alert = AlertDialog(
     title: Text("Slow Internet Connection!"),
     content: Text("Your internet speed connection is too slow. " 
-                  "Switch to offline mode to continue making transaction."
+                  "Switch to Airplane mode to continue making transaction."
     ),
     actions: [
-      cancelButton,
-      offlineModeButton,
+      okButton,
     ],
   );
 
@@ -386,10 +376,6 @@ showAlertDialog(BuildContext context) {
       return alert;
     },
   );
-}
-
-void setOfflineMode() {
-  globals.online = false;
 }
 
 List<Widget> _buildForm(BuildContext context) {
