@@ -32,6 +32,11 @@ class PlainSuccessResponse {
   factory PlainSuccessResponse.toDatabase(){
     return PlainSuccessResponse(success: true, error: '');
   }
+
+  // Added this response for request error in authWebApp() in endpoints.dart
+  factory PlainSuccessResponse.requestFailedError(){
+    return PlainSuccessResponse(success: false, error: 'request_error');
+  }
 }
 
 class OtpVerificationResponse {

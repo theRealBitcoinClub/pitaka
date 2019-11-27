@@ -80,6 +80,13 @@ class AuthenticateComponentState extends State<AuthenticateComponent> {
     };
     // Call authWebApp() from endpoints.dart
     var response = await authWebApp(payload);
+    // Check the error response from authWebApp in endpoints.dart
+    // Call the function for alert dialog
+    if (response.error == "request_error") {
+      showAlertDialog(context);
+      // Return null so the second alert dialog won't show
+      return null;
+    }
     if (response.success == false) {
       _errorFound = true;
       _errorMessage = response.error;
@@ -134,6 +141,39 @@ class AuthenticateComponentState extends State<AuthenticateComponent> {
   }
 
 bool disableSubmitButton = false;
+
+
+// Alert dialog for slow internet speed connection
+// This is called in sendFunds() when there is connection timeout error response
+// from transferAsset() in endpoints.dart
+showAlertDialog(BuildContext context) {
+  // set up the buttons
+  Widget okButton = FlatButton(
+    child: Text("Try again"),
+    onPressed:  () {
+      Navigator.pop(context);
+      Application.router.navigateTo(context, "/authenticate");
+    }
+  );
+
+  // set up the AlertDialog
+  AlertDialog alert = AlertDialog(
+    title: Text("Request Failure!"),
+    content: Text("There was an error in sending the request!"
+    ),
+    actions: [
+      okButton,
+    ],
+  );
+
+  // show the dialog
+  showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return alert;
+    },
+  );
+}
 
 List<Widget> _buildForm(BuildContext context) {
     Form form = new Form(

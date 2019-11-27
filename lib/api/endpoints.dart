@@ -26,7 +26,16 @@ Future<dynamic> sendPostRequest(url, payload) async {
   try {
     response = await dio.post(url, data: payload);
   } catch(e) {
-    print(e);
+    // Cast error to string type
+    String errorType = e.toString();
+    // Check if "DioErrorType.CONNECT_TIMEOUT" error is in the string
+    // And return the error type
+    if (errorType.contains("DioErrorType.CONNECT_TIMEOUT")) {
+      //print("Your internet connection is very slow. Switch to offline mode to continue this transaction.");
+      return "DioErrorType.CONNECT_TIMEOUT";
+    } else {
+      return errorType;
+    }
   }
   return response;
 }
@@ -286,11 +295,18 @@ Future<PlainSuccessResponse> authWebApp(Map payload) async {
   // Check if online
   if (globals.online) {
     final String url = globals.baseUrl + '/api/auth-reports/authenticate';
-    final response = await sendPostRequest(url, payload);
-    if (response.statusCode == 200) {
-      return PlainSuccessResponse.fromResponse(response);
-    } else {
-      throw Exception('Failed to authenticate');
+    var response;
+    try {
+      response = await sendPostRequest(url, payload);
+      if (response.statusCode == 200) {
+        return PlainSuccessResponse.fromResponse(response);
+      } else {
+        throw Exception('Failed to transfer asset');
+      }
+    }
+    catch(e) {
+      // Can't return response, added PlainSuccessResponse in responses.dart
+      return PlainSuccessResponse.requestFailedError();
     }
   } else {
     return PlainSuccessResponse.toDatabase();
