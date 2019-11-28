@@ -1,5 +1,4 @@
 import 'dart:async';
-
 import 'package:flutter/material.dart';
 import '../components/drawer.dart';
 import '../components/bottomNavigation.dart';
@@ -8,11 +7,9 @@ import 'package:intl/intl.dart';
 import '../api/endpoints.dart';
 import '../utils/globals.dart' as globals;
 import '../utils/database_helper.dart';
-import 'package:connectivity/connectivity.dart';
-import 'package:flutter/services.dart';
 import '../utils/globals.dart';
 import 'receive.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+
 
 class HomeComponent extends StatefulWidget {
   @override
@@ -79,28 +76,6 @@ class HomeComponentState extends State<HomeComponent> {
               padding: EdgeInsets.only(right: 20.0),
               child: GestureDetector(
                 child: globals.online ? new Icon(Icons.wifi): new Icon(Icons.signal_wifi_off),
-             /*   onTap: (){
-                  if (globals.syncing == false) {
-                    globals.checkConnection().then((status){
-                      setState(() {
-                        if (status == true) {
-                          online = !online;  
-                          globals.online = online;
-                          syncing = true;
-                          globals.syncing = true;
-                          print('Online mode');
-
-                        } else {
-                          online = false;  
-                          globals.online = online;
-                          syncing = false;
-                          globals.syncing = false;
-                          print('Offline mode');
-                        }
-                      });
-                    });
-                  }
-                }*/
               )
             )
           ],
@@ -120,7 +95,7 @@ class HomeComponentState extends State<HomeComponent> {
               return new Container(
                 alignment: Alignment.center,
                 child: new FutureBuilder(
-                  future: globals.online == false ? getOffLineBalances() :  getOnlineBalances(),
+                  future: globals.online == false ? getOffLineBalances() : getOnlineBalances(),
                   builder: (BuildContext context, AsyncSnapshot snapshot) {
                     if (snapshot.hasData) {
                       if (snapshot.data != null) {

@@ -231,7 +231,6 @@ Future<BalancesResponse> getOnlineBalances() async {
     var resp = await databaseHelper.offLineBalances();
     
     return BalancesResponse.fromDatabase(resp);
-    
   }
 }
 
