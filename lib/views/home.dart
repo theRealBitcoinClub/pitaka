@@ -63,6 +63,36 @@ class HomeComponentState extends State<HomeComponent> {
     super.dispose();
   }
 
+  // Alert dialog for slow internet speed connection
+  // This is called during build and when there is connection timeout error response
+  showAlertDialog(BuildContext context) {
+    // set up the buttons
+    Widget okButton = FlatButton(
+      child: Text("Ok"),
+      onPressed:  () {
+        Navigator.pop(context);
+      }
+    );
+    // set up the AlertDialog
+    AlertDialog alert = AlertDialog(
+      title: Text("Slow Internet Connection!"),
+      content: Text("Your internet speed connection is too slow. " 
+                    "Switch to Airplane mode to continue making transaction."
+      ),
+      actions: [
+        okButton,
+      ],
+    );
+
+    // show the dialog
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return alert;
+      },
+    );
+  }
+
   @override
   build(BuildContext context) {
     return DefaultTabController (
@@ -97,13 +127,18 @@ class HomeComponentState extends State<HomeComponent> {
                 child: new FutureBuilder(
                   future: globals.online == false ? getOffLineBalances() : getOnlineBalances(),
                   builder: (BuildContext context, AsyncSnapshot snapshot) {
+                    print("${snapshot.data.success} %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%");
                     if (snapshot.hasData) {
                       if (snapshot.data != null) {
                         if (snapshot.data.success) {
                           var balances = snapshot.data.balances;
                           return hometabs.buildBalancesList(balances);
                         } else {
-                          return new CircularProgressIndicator();
+                          //return new CircularProgressIndicator();
+                          Future.delayed(Duration(milliseconds: 100), () async {
+                            showAlertDialog(context);
+                            return Container();
+                          });
                         }
                       } else {
                         return new CircularProgressIndicator();

@@ -101,6 +101,24 @@ class BalancesResponse {
     );
   }
 
+    factory BalancesResponse.connectTimeoutError(List accounts) {
+    List<Balance> _balances = [];
+    for (final account in accounts) {
+      var balanceObj = new Balance();
+      balanceObj.accountName = account['accountName'];
+      var balance = double.tryParse(account['balance']);
+      balanceObj.balance = balance;
+      balanceObj.accountId = account['accountId'];
+      balanceObj.timestamp = account['timestamp'];
+      balanceObj.signature = account['signature'];
+      balanceObj.date = account['datetime'];
+      _balances.add(balanceObj);
+    }
+    return BalancesResponse(
+      success: false, balances: _balances
+    );
+  }
+
 }
 
 class Transaction {

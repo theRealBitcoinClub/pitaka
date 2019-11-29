@@ -43,11 +43,26 @@ Future<dynamic> sendGetRequest(url) async {
     'public_key': globals.serverPublicKey
   };
   var dio = new Dio();
+  dio.options.connectTimeout = 15000;  // Set connection timeout for 15 seconds
   var tempDir = await getTemporaryDirectory();
   String tempPath = tempDir.path;
   CookieJar cj = new PersistCookieJar(dir: tempPath);
   dio.interceptors.add(CookieManager(cj));
-  final response = await dio.get(url, queryParameters:payload);
+  Response response;
+  try {
+    response = await dio.get(url, queryParameters:payload);
+  } catch(e) {
+    // Cast error to string type
+    String errorType = e.toString();
+    // Check if "DioErrorType.CONNECT_TIMEOUT" error is in the string
+    // And return the error type
+    if (errorType.contains("DioErrorType.CONNECT_TIMEOUT")) {
+      //print("Your internet connection is very slow. Switch to offline mode to continue this transaction.");
+      return "DioErrorType.CONNECT_TIMEOUT";
+    } else {
+      return errorType;
+    }
+  }
   return response;
 }
 
@@ -94,7 +109,6 @@ Future<GenericCreateResponse> linkBusinessToAccount(payload) async {
     throw Exception(e);
   }
 }
-
 
 Future<GenericCreateResponse> createAccount(payload) async {
   try {
@@ -199,7 +213,7 @@ Future<BalancesResponse> getOffLineBalances() async {
 
 Future<BalancesResponse> getOnlineBalances() async {
   final String url = globals.baseUrl + '/api/wallet/balance';
-  Response response;
+  var response;
   try {
     response = await sendGetRequest(url);
     // Store account details in keychain
@@ -223,14 +237,15 @@ Future<BalancesResponse> getOnlineBalances() async {
     await prefs.setStringList('accounts', _accounts);
     await databaseHelper.updateOfflineBalances(_balances);
     // Parse response into BalanceResponse
+
+    print("$response ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+
     return BalancesResponse.fromResponse(response);
   } catch (e) {
-    // Login before resending the request again
     print(e);
-    print(response);
+    print("$response xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
     var resp = await databaseHelper.offLineBalances();
-    
-    return BalancesResponse.fromDatabase(resp);
+    return BalancesResponse.connectTimeoutError(resp);
   }
 }
 
