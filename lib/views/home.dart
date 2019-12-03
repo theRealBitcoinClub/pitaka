@@ -127,18 +127,22 @@ class HomeComponentState extends State<HomeComponent> {
                 child: new FutureBuilder(
                   future: globals.online == false ? getOffLineBalances() : getOnlineBalances(),
                   builder: (BuildContext context, AsyncSnapshot snapshot) {
-                    print("${snapshot.data.success} %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%");
                     if (snapshot.hasData) {
                       if (snapshot.data != null) {
                         if (snapshot.data.success) {
                           var balances = snapshot.data.balances;
                           return hometabs.buildBalancesList(balances);
-                        } else {
-                          //return new CircularProgressIndicator();
+                          // When connect timeout error, show dialog
+                          // ANDing with globals.online prevents showing the dialog 
+                          // during manually swithing to airplane mode
+                        } else if (snapshot.data.error == 'connect_timeout' && globals.online) {
                           Future.delayed(Duration(milliseconds: 100), () async {
                             showAlertDialog(context);
-                            return Container();
                           });
+                          // Will throw an error if no return
+                          return new Container();
+                        } else {
+                          return new CircularProgressIndicator();
                         }
                       } else {
                         return new CircularProgressIndicator();

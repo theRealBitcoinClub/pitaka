@@ -1,6 +1,4 @@
 import 'dart:convert';
-
-import 'package:crypto/crypto.dart';
 import 'package:intl/intl.dart';
 import 'package:sqflite/sqflite.dart';
 import 'dart:async';
@@ -8,9 +6,7 @@ import 'dart:io';
 import 'package:path_provider/path_provider.dart';
 import '../api/responses.dart';
 import '../api/endpoints.dart';
-// import '../utils/helpers.dart';
 import '../utils/globals.dart' as globals;
-import '../utils/print_wrapped.dart';
 
 
 class DatabaseHelper {
@@ -44,7 +40,6 @@ class DatabaseHelper {
 		var pitakaDatabase = await openDatabase(path, version: 1, onCreate: _createDb);
 		return pitakaDatabase;
 	}
-
 
 	void _createDb(Database db, int newVersion) async {
     await db.execute("CREATE TABLE Balance ("
@@ -109,7 +104,6 @@ class DatabaseHelper {
     }
 		return 'success';
   }
-
   
   Future <Map<String, dynamic>> offlineBalanceAnalyser(String accountId, double onlineBalance) async {
     Database db = await this.database;
@@ -205,13 +199,11 @@ class DatabaseHelper {
         'signature': account['signature'],
         'datetime': account['datetime']
       };
-
       if (result.indexOf(info) == -1) {
         result.add(info);
-      }
-      
+      } 
     }
-    
+    print("$result RRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR");
 		return result;
 	}
 

@@ -233,20 +233,23 @@ Future<BalancesResponse> getOnlineBalances() async {
       balanceObj.signature = bal['Signature'];
       _balances.add(balanceObj);
     }
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.setStringList('accounts', _accounts);
-    await databaseHelper.updateOfflineBalances(_balances);
-    // Parse response into BalanceResponse
-
-    print("$response ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
-
-    return BalancesResponse.fromResponse(response);
+    print("${response.data['success']} !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+    // Update balances only if response is success
+    if (response.data['success']) {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      await prefs.setStringList('accounts', _accounts);
+      await databaseHelper.updateOfflineBalances(_balances);
+      return BalancesResponse.fromResponse(response);
+    }
   } catch (e) {
     print(e);
     print("$response xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
     var resp = await databaseHelper.offLineBalances();
+    print("$resp yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy");
+    //var result = ['error_found'];
     return BalancesResponse.connectTimeoutError(resp);
   }
+  return response;
 }
 
 Future<TransactionsResponse> getOnlineTransactions() async {

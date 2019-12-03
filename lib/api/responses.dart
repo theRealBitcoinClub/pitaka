@@ -1,7 +1,4 @@
 import 'package:dio/dio.dart';
-import 'dart:async';
-
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:intl/intl.dart';
 
 
@@ -62,8 +59,9 @@ class Balance {
 class BalancesResponse {
   final bool success;
   final List<Balance> balances;
+  final String error;
 
-  BalancesResponse({this.success, this.balances});
+  BalancesResponse({this.success, this.balances, this.error});
 
   factory BalancesResponse.fromResponse(Response response) {
     List<Balance> _balances = [];
@@ -80,7 +78,7 @@ class BalancesResponse {
       }
     }
     return BalancesResponse(
-        success: response.data['success'], balances: _balances);
+        success: response.data['success'], balances: _balances, error: '');
   }
 
   factory BalancesResponse.fromDatabase(List accounts) {
@@ -97,7 +95,7 @@ class BalancesResponse {
       _balances.add(balanceObj);
     }
     return BalancesResponse(
-      success: true, balances: _balances
+      success: true, balances: _balances, error: ''
     );
   }
 
@@ -115,7 +113,7 @@ class BalancesResponse {
       _balances.add(balanceObj);
     }
     return BalancesResponse(
-      success: false, balances: _balances
+      success: false, balances: _balances, error: 'connect_timeout'
     );
   }
 
@@ -164,7 +162,6 @@ class TransactionsResponse {
   }
 
   factory TransactionsResponse.fromDatabase(List transactions) {
-    var formatter = new DateFormat('y/M/d hh:mm a');
     List<Transaction> _trans = [];
     for (final txn in transactions) {
       var transObj = new Transaction();
