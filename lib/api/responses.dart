@@ -99,7 +99,8 @@ class BalancesResponse {
     );
   }
 
-    factory BalancesResponse.connectTimeoutError(List accounts) {
+  // Added this response for connect timeout error
+  factory BalancesResponse.connectTimeoutError(List accounts) {
     List<Balance> _balances = [];
     for (final account in accounts) {
       var balanceObj = new Balance();
@@ -133,17 +134,15 @@ class Transaction {
 class TransactionsResponse {
   final bool success;
   final List<Transaction> transactions;
+  final String error;
 
-
-  TransactionsResponse({this.success, this.transactions});
+  TransactionsResponse({this.success, this.transactions, this.error});
 
    factory TransactionsResponse.fromResponse(Response response) {
     List<Transaction> _transactions = [];
     if (response.data['transactions'] != null) {
         for (final txn in response.data['transactions']) {
           var transObj = new Transaction();
-
-
           transObj.mode = txn['Mode'];
           transObj.amount = txn['Amount'].toDouble();
           transObj.accountID = txn['AccountID'];
@@ -153,19 +152,16 @@ class TransactionsResponse {
           transObj.txnID = txn['TransactionID'];
           transObj.paymentProof = txn['ProofOfPayment'];
           _transactions.add(transObj);
-
         }
       }
-
     return TransactionsResponse(
-        success: response.data['success'], transactions: _transactions);
+      success: response.data['success'], transactions: _transactions);
   }
 
   factory TransactionsResponse.fromDatabase(List transactions) {
     List<Transaction> _trans = [];
     for (final txn in transactions) {
       var transObj = new Transaction();
-
       transObj.mode = txn['mode'];
       transObj.amount = txn['amount'].toDouble();
       transObj.timestamp = txn['timestamp'].toString();
@@ -176,7 +172,26 @@ class TransactionsResponse {
       _trans.add(transObj);
     }
     return TransactionsResponse(
-        success: true, transactions: _trans);
+      success: true, transactions: _trans);
+  }
+
+  // Added this response for connect timeout error
+  factory TransactionsResponse.connectTimeoutError(List transactions) {
+    List<Transaction> _trans = [];
+    for (final txn in transactions) {
+      var transObj = new Transaction();
+      transObj.mode = txn['mode'];
+      transObj.amount = txn['amount'].toDouble();
+      transObj.timestamp = txn['timestamp'].toString();
+     transObj.timeslot = DateTime.tryParse(transObj.timestamp).toLocal();
+      transObj.txnID = txn['txnID'];
+      transObj.time = txn['time'];
+      transObj.paymentProof = txn['paymentProof'];
+      _trans.add(transObj);
+    }
+    return TransactionsResponse(
+      success: false, transactions: _trans, error: 'connect_timeout'
+    );
   }
 }
 

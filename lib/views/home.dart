@@ -86,6 +86,7 @@ class HomeComponentState extends State<HomeComponent> {
 
     // show the dialog
     showDialog(
+      barrierDismissible: false,
       context: context,
       builder: (BuildContext context) {
         return alert;
@@ -129,8 +130,8 @@ class HomeComponentState extends State<HomeComponent> {
                   builder: (BuildContext context, AsyncSnapshot snapshot) {
                     if (snapshot.hasData) {
                       if (snapshot.data != null) {
+                        var balances = snapshot.data.balances;
                         if (snapshot.data.success) {
-                          var balances = snapshot.data.balances;
                           return hometabs.buildBalancesList(balances);
                           // When connect timeout error, show dialog
                           // ANDing with globals.online prevents showing the dialog 
@@ -139,8 +140,8 @@ class HomeComponentState extends State<HomeComponent> {
                           Future.delayed(Duration(milliseconds: 100), () async {
                             showAlertDialog(context);
                           });
-                          // Will throw an error if no return
-                          return new Container();
+                          // Return hometabs to show the balance 
+                          return hometabs.buildBalancesList(balances);
                         } else {
                           return new CircularProgressIndicator();
                         }
@@ -165,7 +166,17 @@ class HomeComponentState extends State<HomeComponent> {
                       if (snapshot.data != null) {
                         if (snapshot.data.transactions.length > 0) {
                           return hometabs.buildTransactionsList(snapshot.data.transactions);
-                        } else {
+                          // When connect timeout error, show dialog
+                          // ANDing with globals.online prevents showing the dialog 
+                          // during manually swithing to airplane mode
+                        } else if (snapshot.data.error == 'connect_timeout' && globals.online) {
+                          Future.delayed(Duration(milliseconds: 100), () async {
+                            showAlertDialog(context);
+                          });
+                          // Return hometabs to show the balance 
+                          return hometabs.buildTransactionsList(snapshot.data.transactions);
+                        } 
+                        else {
                           return Text('No transactions to display');
                         }
                       } else {

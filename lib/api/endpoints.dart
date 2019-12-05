@@ -233,7 +233,6 @@ Future<BalancesResponse> getOnlineBalances() async {
       balanceObj.signature = bal['Signature'];
       _balances.add(balanceObj);
     }
-    print("${response.data['success']} !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
     // Update balances only if response is success
     if (response.data['success']) {
       SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -242,11 +241,7 @@ Future<BalancesResponse> getOnlineBalances() async {
       return BalancesResponse.fromResponse(response);
     }
   } catch (e) {
-    print(e);
-    print("$response xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
     var resp = await databaseHelper.offLineBalances();
-    print("$resp yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy");
-    //var result = ['error_found'];
     return BalancesResponse.connectTimeoutError(resp);
   }
   return response;
@@ -254,20 +249,21 @@ Future<BalancesResponse> getOnlineBalances() async {
 
 Future<TransactionsResponse> getOnlineTransactions() async {
   final String url = globals.baseUrl + '/api/wallet/transactions';
-  Response response;
+  var response;
   try {
     response = await sendGetRequest(url);
 
     // Call printWrapped funtion from utils to print very long text
     // Use only for debugging, comment out when done
     // printWrapped("The value of response from getOnlineTransactions() - endpoints.dart is: $response",);
-
-    return TransactionsResponse.fromResponse(response);
-  } catch (e) {
-    // Login before resending the request again
-    await sendLoginRequest();
-    return await getOnlineTransactions();
+    if (response.data['success']) {
+      return TransactionsResponse.fromResponse(response);
+    }
+  } catch(e) {
+    var resp = await databaseHelper.offLineTransactions();
+    return TransactionsResponse.connectTimeoutError(resp);
   }
+  return response;
 }
 
 Future<TransactionsResponse> getOffLineTransactions() async {
@@ -285,15 +281,15 @@ Future<AccountsResponse> getAccounts() async {
   }
 }
 
-Future getBusinesReferences () async {
+Future getBusinesReferences() async {
   await getBusinessList(['all', 'false']);
   await getAccountsList();
 }
 
 Future<PlainSuccessResponse> transferAsset(Map payload) async {
+  var response;
   if (globals.online) {
     final String url = globals.baseUrl + '/api/assets/transfer';
-    var response;
     // Catch the CONNECT_TIMEOUT error
     try {
       response = await sendPostRequest(url, payload);
@@ -314,6 +310,7 @@ Future<PlainSuccessResponse> transferAsset(Map payload) async {
     await databaseHelper.offLineTransfer(payload);
     return PlainSuccessResponse.toDatabase();
   }
+  return response;
 }
 
 // This is called in "receive.dart" in scanQrcode() function

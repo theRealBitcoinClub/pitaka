@@ -68,7 +68,7 @@ class DatabaseHelper {
 	}
 
   // Update latest balance of balance objects in database
-  Future<String> updateOfflineBalances (List<Balance> balances) async {
+  Future<String> updateOfflineBalances(List<Balance> balances) async {
     Database db = await this.database;
     await db.delete('Balance');
     await db.delete('OfflineTransaction');
@@ -131,7 +131,7 @@ class DatabaseHelper {
     };
   }
 
-  Future <bool> ifCleanDB () async {
+  Future <bool> ifCleanDB() async {
     Database db = await this.database;
     var transactions = await db.query(
       'OfflineTransaction',
@@ -144,7 +144,7 @@ class DatabaseHelper {
     }
   }
 
-  Future <bool> synchToServer () async {
+  Future <bool> synchToServer() async {
     Database db = await this.database;
     var transactions = await db.query(
       'OfflineTransaction',
@@ -172,8 +172,9 @@ class DatabaseHelper {
 
       prevTxnHash = payload['txn_hash'];
     }
-    await db.delete('OfflineTransaction');
-    await db.delete('Balance');
+    // Don't delete database during synching
+    //await db.delete('OfflineTransaction');
+    //await db.delete('Balance');
     globals.syncing = false;
     return true;
   }
@@ -203,17 +204,16 @@ class DatabaseHelper {
         result.add(info);
       } 
     }
-    print("$result RRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR");
 		return result;
 	}
 
-  Future <List<Map <String, dynamic>>> offLineTransactions () async {
+  Future <List<Map <String, dynamic>>> offLineTransactions() async {
     Database db = await this.database;
 		List<Map<String, dynamic>> qs = await db.query('OfflineTransaction');
     return qs;
   }
   
-  Future<String> offLineTransfer(Map payload) async{
+  Future<String> offLineTransfer(Map payload) async {
     Database db = await this.database;
     String fromAccount = payload['from_account'];
     String toAccount = payload['to_account'];
@@ -248,7 +248,7 @@ class DatabaseHelper {
       "time": payload["transaction_datetime"],
       "publicKey":payload['public_key'],
     });
-    
+
     // Check if the recipient(toAccount) is in the user's accounts.
     var qs2 = await db.query(table1,where: 'accountId = ?', whereArgs: [toAccount]);
     if (qs2.length == 1) {
@@ -268,7 +268,6 @@ class DatabaseHelper {
     return 'success';
   }
   
-
   // This is called in "endpoints.dart" in receiveAsset if offline only
   Future<int>acceptOfflinePayment(Map payload) async {
 
