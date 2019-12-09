@@ -17,9 +17,6 @@ class LandingComponent extends StatefulWidget {
 
 class LandingComponentState extends State<LandingComponent>
   with AfterLayoutMixin<LandingComponent> {
-  
-  StreamSubscription _connectionChangeStream;
-  bool isOffline = false;
 
   @override
   Widget build(BuildContext context) {
@@ -61,29 +58,7 @@ class LandingComponentState extends State<LandingComponent>
   @override
   void initState() {
     super.initState();
-    // Subscribe to Notifier Stream from ConnectionStatusSingleton class in globals.dart
-    // Fires whenever connectivity state changes
-    ConnectionStatusSingleton connectionStatus = ConnectionStatusSingleton.getInstance();
-    _connectionChangeStream = connectionStatus.connectionChange.listen(connectionChanged);
-  }
-  // Handle's internet connection On/Off state
-  void connectionChanged(dynamic hasConnection) {
-    setState(() {
-      isOffline = !hasConnection;
-      if(isOffline == false) {
-        online = !online;
-        globals.online = online;
-        syncing = true;
-        globals.syncing = true;
-        print("Online");
-      } else {
-        online = false;
-        globals.online = online;
-        syncing = false;
-        globals.syncing = false;
-        print("Offline");
-      }
-    });
+    globals.checkInternet();
   }
 
   final LocalAuthentication auth = LocalAuthentication();

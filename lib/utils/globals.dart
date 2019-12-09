@@ -3,6 +3,8 @@ import 'dart:io';
 import 'package:connectivity/connectivity.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../utils/database_helper.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter/services.dart';
 
 // For dev server
 const String baseUrl = 'https://lantaka-dev.paytaca.com';
@@ -45,6 +47,29 @@ set syncing(bool value) => _syncing = value;
 
 set maxOfflineTime(bool value) => _maxOfflineTime = value;
 
+Future<bool> iniConnection() async {
+  var connectivityResult = await (Connectivity().checkConnectivity());
+  final result = await InternetAddress.lookup('google.com');
+  try {
+    if (connectivityResult == ConnectivityResult.mobile && result.isNotEmpty && result[0].rawAddress.isNotEmpty ||
+        connectivityResult == ConnectivityResult.wifi && result.isNotEmpty && result[0].rawAddress.isNotEmpty ) {
+      online = true;
+    } else {
+        online = false;
+      }
+
+  }on PlatformException catch (e) {
+    print(e);
+  }
+return online;
+}
+
+void checkInternet() async {
+  iniConnection().then((status) async{
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    prefs.setBool("online", status);
+  });
+}
 
 // Connection Status Notifier
 class ConnectionStatusSingleton {
