@@ -24,6 +24,8 @@ class HomeComponentState extends State<HomeComponent> {
   DatabaseHelper databaseHelper = DatabaseHelper();
   StreamSubscription _connectionChangeStream;
   bool isOffline = false;
+  bool _executeFuture = false;
+
 
   @override
   void initState()  {
@@ -53,6 +55,9 @@ class HomeComponentState extends State<HomeComponent> {
         syncing = false;
         globals.syncing = false;
         print("Offline");
+        // For dismissing the dialog
+        _executeFuture = false; // Kill or stop the future
+        Navigator.of(context).pop();
       }
     });
   }
@@ -66,22 +71,12 @@ class HomeComponentState extends State<HomeComponent> {
   // Alert dialog for slow internet speed connection
   // This is called during build and when there is connection timeout error response
   showAlertDialog(BuildContext context) {
-    // set up the buttons
-    Widget okButton = FlatButton(
-      child: Text("Ok"),
-      onPressed:  () {
-        Navigator.pop(context);
-      }
-    );
     // set up the AlertDialog
     AlertDialog alert = AlertDialog(
       title: Text("Slow Internet Connection!"),
       content: Text("Your internet speed connection is too slow. " 
                     "Switch to Airplane mode to continue making transaction."
       ),
-      actions: [
-        okButton,
-      ],
     );
 
     // show the dialog
@@ -133,16 +128,21 @@ class HomeComponentState extends State<HomeComponent> {
                         var balances = snapshot.data.balances;
                         if (snapshot.data.success) {
                           return hometabs.buildBalancesList(balances);
-                          // When connect timeout error, show dialog
-                          // ANDing with globals.online prevents showing the dialog 
-                          // during manually swithing to airplane mode
-                        } else if (snapshot.data.error == 'connect_timeout' && globals.online) {
+                        } 
+                        // When connect timeout error, show dialog
+                        // ANDing with globals.online prevents showing the dialog 
+                        // during manually swithing to airplane mode
+                        else if (snapshot.data.error == 'connect_timeout' && globals.online) {
                           Future.delayed(Duration(milliseconds: 100), () async {
-                            showAlertDialog(context);
+                            _executeFuture = true;
+                            if(_executeFuture){
+                              showAlertDialog(context);
+                            }
                           });
                           // Return hometabs to show the balance 
                           return hometabs.buildBalancesList(balances);
-                        } else {
+                        } 
+                        else {
                           return new CircularProgressIndicator();
                         }
                       } else {
@@ -166,12 +166,16 @@ class HomeComponentState extends State<HomeComponent> {
                       if (snapshot.data != null) {
                         if (snapshot.data.transactions.length > 0) {
                           return hometabs.buildTransactionsList(snapshot.data.transactions);
-                          // When connect timeout error, show dialog
-                          // ANDing with globals.online prevents showing the dialog 
-                          // during manually swithing to airplane mode
-                        } else if (snapshot.data.error == 'connect_timeout' && globals.online) {
+                        }
+                        // When connect timeout error, show dialog
+                        // ANDing with globals.online prevents showing the dialog 
+                        // during manually swithing to airplane mode 
+                        else if (snapshot.data.error == 'connect_timeout' && globals.online) {
                           Future.delayed(Duration(milliseconds: 100), () async {
-                            showAlertDialog(context);
+                            _executeFuture = true;
+                            if(_executeFuture){
+                              showAlertDialog(context);
+                            }
                           });
                           // Return hometabs to show the balance 
                           return hometabs.buildTransactionsList(snapshot.data.transactions);

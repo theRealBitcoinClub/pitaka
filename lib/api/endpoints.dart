@@ -234,12 +234,12 @@ Future<BalancesResponse> getOnlineBalances() async {
       _balances.add(balanceObj);
     }
     // Update balances only if response is success
-    if (response.data['success']) {
+    // if (response.data['success']) {
       SharedPreferences prefs = await SharedPreferences.getInstance();
       await prefs.setStringList('accounts', _accounts);
       await databaseHelper.updateOfflineBalances(_balances);
       return BalancesResponse.fromResponse(response);
-    }
+    // }
   } catch (e) {
     var resp = await databaseHelper.offLineBalances();
     return BalancesResponse.connectTimeoutError(resp);

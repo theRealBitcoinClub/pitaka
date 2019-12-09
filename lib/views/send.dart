@@ -350,27 +350,17 @@ bool disableSubmitButton = false;
 // This is called in sendFunds() when there is connection timeout error response
 // from transferAsset() in endpoints.dart
 showAlertDialog(BuildContext context) {
-  // set up the buttons
-  Widget okButton = FlatButton(
-    child: Text("Ok"),
-    onPressed:  () {
-      Navigator.pop(context);
-      Application.router.navigateTo(context, "/send");
-    }
-  );
   // set up the AlertDialog
   AlertDialog alert = AlertDialog(
     title: Text("Slow Internet Connection!"),
     content: Text("Your internet speed connection is too slow. " 
                   "Switch to Airplane mode to continue making transaction."
     ),
-    actions: [
-      okButton,
-    ],
   );
 
   // show the dialog
   showDialog(
+    barrierDismissible: false,
     context: context,
     builder: (BuildContext context) {
       return alert;
