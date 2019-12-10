@@ -52,6 +52,7 @@ Future<dynamic> sendGetRequest(url) async {
   try {
     response = await dio.get(url, queryParameters:payload);
   } catch(e) {
+    print("$e !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
     // Cast error to string type
     String errorType = e.toString();
     // Check if "DioErrorType.CONNECT_TIMEOUT" error is in the string
@@ -234,12 +235,13 @@ Future<BalancesResponse> getOnlineBalances() async {
       _balances.add(balanceObj);
     }
     // Update balances only if response is success
-    // if (response.data['success']) {
+    if (response.data['success']) {
       SharedPreferences prefs = await SharedPreferences.getInstance();
       await prefs.setStringList('accounts', _accounts);
       await databaseHelper.updateOfflineBalances(_balances);
+      // Parse response into BalanceResponse
       return BalancesResponse.fromResponse(response);
-    // }
+    }
   } catch (e) {
     var resp = await databaseHelper.offLineBalances();
     return BalancesResponse.connectTimeoutError(resp);
@@ -248,6 +250,24 @@ Future<BalancesResponse> getOnlineBalances() async {
 }
 
 Future<TransactionsResponse> getOnlineTransactions() async {
+  // final String url = globals.baseUrl + '/api/wallet/transactions';
+  // var response;
+  // try {
+  //   response = await sendGetRequest(url);
+
+  //   // Call printWrapped funtion from utils to print very long text
+  //   // Use only for debugging, comment out when done
+  //   // printWrapped("The value of response from getOnlineTransactions() - endpoints.dart is: $response",);
+  //   if (response.data['success']) {
+  //     return TransactionsResponse.fromResponse(response);
+  //   }
+  // } catch(e) {
+  //   var resp = await databaseHelper.offLineTransactions();
+  //   return TransactionsResponse.connectTimeoutError(resp);
+  // }
+  // return response;
+
+
   final String url = globals.baseUrl + '/api/wallet/transactions';
   var response;
   try {
@@ -256,10 +276,11 @@ Future<TransactionsResponse> getOnlineTransactions() async {
     // Call printWrapped funtion from utils to print very long text
     // Use only for debugging, comment out when done
     // printWrapped("The value of response from getOnlineTransactions() - endpoints.dart is: $response",);
+
     if (response.data['success']) {
       return TransactionsResponse.fromResponse(response);
     }
-  } catch(e) {
+  } catch (e) {
     var resp = await databaseHelper.offLineTransactions();
     return TransactionsResponse.connectTimeoutError(resp);
   }
