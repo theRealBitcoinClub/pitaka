@@ -11,6 +11,7 @@ class Routes {
   static String terms = "/terms";
   static String home = "/home";
   static String send = "/send";
+  static String authenticate = "/authenticate";
   static String receive = "/receive";
   static String businessRegistration = "/registerbusiness";
   static String setBusinessAccount = '/setbusinessaccount';
@@ -53,6 +54,11 @@ class Routes {
     router.define(
         send,
         handler: sendHandler,
+        transitionType: TransitionType.fadeIn
+    );
+    router.define(
+        authenticate,
+        handler: authenticateHandler,
         transitionType: TransitionType.fadeIn
     );
     router.define(
