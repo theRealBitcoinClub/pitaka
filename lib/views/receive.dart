@@ -1,5 +1,4 @@
 import 'dart:convert';
-
 import 'package:crypto/crypto.dart';
 import 'package:flutter/material.dart';
 import 'package:qr_flutter/qr_flutter.dart';
@@ -31,10 +30,16 @@ class ReceiveComponentState extends State<ReceiveComponent> {
   static List data = List(); //edited line
   bool online = globals.online;
   bool isOffline = false;
+  StreamSubscription _connectionChangeStream;
 
   @override
   void initState()  {
     super.initState();
+    // Subscribe to Notifier Stream from ConnectionStatusSingleton class in globals.dart
+    // Fires whenever connectivity state changes
+    ConnectionStatusSingleton connectionStatus = ConnectionStatusSingleton.getInstance();
+    _connectionChangeStream = connectionStatus.connectionChange.listen(connectionChanged);
+
     getAccounts();
   }
 
