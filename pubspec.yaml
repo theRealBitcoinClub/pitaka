@@ -72,7 +72,6 @@ flutter:
     - assets/images/background1.png
     - assets/images/loading.gif
     - assets/texts/terms_and_conditions.txt
-    - assets/images/rsz_airplane_mode.png
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
   # the material Icons class.

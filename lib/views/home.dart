@@ -57,8 +57,10 @@ class HomeComponentState extends State<HomeComponent> {
         globals.syncing = false;
         print("Offline");
         // For dismissing the dialog
-        _executeFuture = false; // Kill or stop the future
-        Navigator.of(context).pop();
+        if (_executeFuture) {
+          _executeFuture = false; // Kill or stop the future
+          Navigator.of(context).pop();
+        }
       }
     });
   }
