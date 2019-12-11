@@ -1,5 +1,4 @@
 import 'dart:convert';
-
 import 'package:dio/dio.dart';
 import 'package:cookie_jar/cookie_jar.dart';
 import 'package:dio_flutter_transformer/dio_flutter_transformer.dart';
@@ -10,13 +9,14 @@ import 'responses.dart';
 import '../utils/helpers.dart';
 import '../utils/database_helper.dart';
 import '../utils/globals.dart' as globals;
-import '../utils/print_wrapped.dart';
+//import '../utils/print_wrapped.dart';
 
 
 DatabaseHelper databaseHelper = DatabaseHelper();
 
 Future<dynamic> sendPostRequest(url, payload) async {
   var dio = new Dio();
+  dio.options.connectTimeout = 10000;  // Set connection timeout for 10 seconds
   dio.transformer = new FlutterTransformer();
   var tempDir = await getTemporaryDirectory();
   String tempPath = tempDir.path;
@@ -45,11 +45,26 @@ Future<dynamic> sendGetRequest(url) async {
     'public_key': globals.serverPublicKey
   };
   var dio = new Dio();
+  dio.options.connectTimeout = 10000;  // Set connection timeout for 10 seconds
   var tempDir = await getTemporaryDirectory();
   String tempPath = tempDir.path;
   CookieJar cj = new PersistCookieJar(dir: tempPath);
   dio.interceptors.add(CookieManager(cj));
-  final response = await dio.get(url, queryParameters:payload);
+  Response response;
+  try {
+    response = await dio.get(url, queryParameters:payload);
+  } catch(e) {
+    // Cast error to string type
+    String errorType = e.toString();
+    // Check if "DioErrorType.CONNECT_TIMEOUT" error is in the string
+    // And return the error type
+    if (errorType.contains("DioErrorType.CONNECT_TIMEOUT")) {
+      //print("Your internet connection is very slow. Switch to offline mode to continue this transaction.");
+      return "DioErrorType.CONNECT_TIMEOUT";
+    } else {
+      return errorType;
+    }
+  }
   return response;
 }
 
@@ -96,7 +111,6 @@ Future<GenericCreateResponse> linkBusinessToAccount(payload) async {
     throw Exception(e);
   }
 }
-
 
 Future<GenericCreateResponse> createAccount(payload) async {
   try {
@@ -201,7 +215,7 @@ Future<BalancesResponse> getOffLineBalances() async {
 
 Future<BalancesResponse> getOnlineBalances() async {
   final String url = globals.baseUrl + '/api/wallet/balance';
-  Response response;
+  var response;
   try {
     response = await sendGetRequest(url);
     // Store account details in keychain
@@ -221,25 +235,24 @@ Future<BalancesResponse> getOnlineBalances() async {
       balanceObj.signature = bal['Signature'];
       _balances.add(balanceObj);
     }
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.setStringList('accounts', _accounts);
-    await databaseHelper.updateOfflineBalances(_balances);
-    // Parse response into BalanceResponse
-    return BalancesResponse.fromResponse(response);
+    // Update balances only if response is success
+    if (response.data['success']) {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      await prefs.setStringList('accounts', _accounts);
+      await databaseHelper.updateOfflineBalances(_balances);
+      // Parse response into BalanceResponse
+      return BalancesResponse.fromResponse(response);
+    }
   } catch (e) {
-    // Login before resending the request again
-    print(e);
-    print(response);
     var resp = await databaseHelper.offLineBalances();
-    
-    return BalancesResponse.fromDatabase(resp);
-    
+    return BalancesResponse.connectTimeoutError(resp);
   }
+  return response;
 }
 
 Future<TransactionsResponse> getOnlineTransactions() async {
   final String url = globals.baseUrl + '/api/wallet/transactions';
-  Response response;
+  var response;
   try {
     response = await sendGetRequest(url);
 
@@ -247,12 +260,14 @@ Future<TransactionsResponse> getOnlineTransactions() async {
     // Use only for debugging, comment out when done
     // printWrapped("The value of response from getOnlineTransactions() - endpoints.dart is: $response",);
 
-    return TransactionsResponse.fromResponse(response);
+    if (response.data['success']) {
+      return TransactionsResponse.fromResponse(response);
+    }
   } catch (e) {
-    // Login before resending the request again
-    await sendLoginRequest();
-    return await getOnlineTransactions();
+    var resp = await databaseHelper.offLineTransactions();
+    return TransactionsResponse.connectTimeoutError(resp);
   }
+  return response;
 }
 
 Future<TransactionsResponse> getOffLineTransactions() async {
@@ -270,19 +285,30 @@ Future<AccountsResponse> getAccounts() async {
   }
 }
 
-Future getBusinesReferences () async {
+Future getBusinesReferences() async {
   await getBusinessList(['all', 'false']);
   await getAccountsList();
 }
 
 Future<PlainSuccessResponse> transferAsset(Map payload) async {
+  var response;
   if (globals.online) {
     final String url = globals.baseUrl + '/api/assets/transfer';
-    final response = await sendPostRequest(url, payload);
-    if (response.statusCode == 200) {
-      return PlainSuccessResponse.fromResponse(response);
-    } else {
-      throw Exception('Failed to transfer asset');
+    // Catch the CONNECT_TIMEOUT error
+    try {
+      response = await sendPostRequest(url, payload);
+      if (response.statusCode == 200) {
+        return PlainSuccessResponse.fromResponse(response);
+      } else {
+        throw Exception('Failed to transfer asset');
+      }
+    }
+    catch(e) {
+      if (response == "DioErrorType.CONNECT_TIMEOUT") {
+        // Can't return response, added PlainSuccessResponse in responses.dart
+        return PlainSuccessResponse.connectTimeoutError();
+      }
+      //return response;
     }
   } else {
     await databaseHelper.offLineTransfer(payload);

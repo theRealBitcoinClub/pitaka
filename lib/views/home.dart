@@ -1,5 +1,4 @@
 import 'dart:async';
-
 import 'package:flutter/material.dart';
 import '../components/drawer.dart';
 import '../components/bottomNavigation.dart';
@@ -8,11 +7,10 @@ import 'package:intl/intl.dart';
 import '../api/endpoints.dart';
 import '../utils/globals.dart' as globals;
 import '../utils/database_helper.dart';
-import 'package:connectivity/connectivity.dart';
-import 'package:flutter/services.dart';
 import '../utils/globals.dart';
 import 'receive.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:easy_dialog/easy_dialog.dart';
+
 
 class HomeComponent extends StatefulWidget {
   @override
@@ -27,26 +25,20 @@ class HomeComponentState extends State<HomeComponent> {
   DatabaseHelper databaseHelper = DatabaseHelper();
   StreamSubscription _connectionChangeStream;
   bool isOffline = false;
+  bool _executeFuture = false;
+
 
   @override
   void initState()  {
     super.initState();
+    // Subscribe to Notifier Stream from ConnectionStatusSingleton class in globals.dart
+    // Fires whenever connectivity state changes
     ConnectionStatusSingleton connectionStatus = ConnectionStatusSingleton.getInstance();
     _connectionChangeStream = connectionStatus.connectionChange.listen(connectionChanged);
+
     ReceiveComponentState comp = new ReceiveComponentState();
+
     comp.getAccounts();
-    /*globals.checkConnection().then((status){
-      setState(() {
-        if (status == false) {
-          online = false;  
-          globals.online = online;
-          print('Offline');
-        } else {
-          globals.online = online;
-          print('Online');
-        }
-      });
-    });*/
   }
 
   void connectionChanged(dynamic hasConnection) {
@@ -64,6 +56,11 @@ class HomeComponentState extends State<HomeComponent> {
         syncing = false;
         globals.syncing = false;
         print("Offline");
+        // For dismissing the dialog
+        if (_executeFuture) {
+          _executeFuture = false; // Kill or stop the future
+          Navigator.of(context).pop();
+        }
       }
     });
   }
@@ -72,6 +69,24 @@ class HomeComponentState extends State<HomeComponent> {
   void dispose() {
    // _connectivitySubscription.cancel();
     super.dispose();
+  }
+
+  // Alert dialog for slow internet speed connection
+  // This is called during build and when there is connection timeout error response
+  showAlertDialog() {
+    EasyDialog(
+      title: Text(
+        "Connection Failure!",
+        style: TextStyle(fontWeight: FontWeight.bold),
+        textScaleFactor: 1.2,
+      ),
+      description: Text(
+        "You don't seem to have internet connection, or it's too slow. Switch your phone to Airplane mode to keep using the app in offline mode.",
+        textScaleFactor: 1.1,
+        textAlign: TextAlign.center,
+      ),
+      height: 150,
+    ).show(context);
   }
 
   @override
@@ -87,28 +102,6 @@ class HomeComponentState extends State<HomeComponent> {
               padding: EdgeInsets.only(right: 20.0),
               child: GestureDetector(
                 child: globals.online ? new Icon(Icons.wifi): new Icon(Icons.signal_wifi_off),
-             /*   onTap: (){
-                  if (globals.syncing == false) {
-                    globals.checkConnection().then((status){
-                      setState(() {
-                        if (status == true) {
-                          online = !online;  
-                          globals.online = online;
-                          syncing = true;
-                          globals.syncing = true;
-                          print('Online mode');
-
-                        } else {
-                          online = false;  
-                          globals.online = online;
-                          syncing = false;
-                          globals.syncing = false;
-                          print('Offline mode');
-                        }
-                      });
-                    });
-                  }
-                }*/
               )
             )
           ],
@@ -128,14 +121,28 @@ class HomeComponentState extends State<HomeComponent> {
               return new Container(
                 alignment: Alignment.center,
                 child: new FutureBuilder(
-                  future: globals.online == false ? getOffLineBalances() :  getOnlineBalances(),
+                  future: globals.online == false ? getOffLineBalances() : getOnlineBalances(),
                   builder: (BuildContext context, AsyncSnapshot snapshot) {
                     if (snapshot.hasData) {
                       if (snapshot.data != null) {
+                        var balances = snapshot.data.balances;
                         if (snapshot.data.success) {
-                          var balances = snapshot.data.balances;
                           return hometabs.buildBalancesList(balances);
-                        } else {
+                        } 
+                        // When connect timeout error, show dialog
+                        // ANDing with globals.online prevents showing the dialog 
+                        // during manually swithing to airplane mode
+                        else if (snapshot.data.error == 'connect_timeout' && globals.online) {
+                          Future.delayed(Duration(milliseconds: 100), () async {
+                            _executeFuture = true;
+                            if(_executeFuture){
+                              showAlertDialog();
+                            }
+                          });
+                          // Return hometabs to show the balance 
+                          return hometabs.buildBalancesList(balances);
+                        } 
+                        else {
                           return new CircularProgressIndicator();
                         }
                       } else {
@@ -159,7 +166,21 @@ class HomeComponentState extends State<HomeComponent> {
                       if (snapshot.data != null) {
                         if (snapshot.data.transactions.length > 0) {
                           return hometabs.buildTransactionsList(snapshot.data.transactions);
-                        } else {
+                        }
+                        // When connect timeout error, show dialog
+                        // ANDing with globals.online prevents showing the dialog 
+                        // during manually swithing to airplane mode 
+                        else if (snapshot.data.error == 'connect_timeout' && globals.online) {
+                          Future.delayed(Duration(milliseconds: 100), () async {
+                            _executeFuture = true;
+                            if(_executeFuture){
+                              showAlertDialog();
+                            }
+                          });
+                          // Return hometabs to show the balance 
+                          return hometabs.buildTransactionsList(snapshot.data.transactions);
+                        } 
+                        else {
                           return Text('No transactions to display');
                         }
                       } else {

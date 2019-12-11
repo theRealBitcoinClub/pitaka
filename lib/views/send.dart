@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
 import 'package:archive/archive.dart';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
 import '../components/bottomNavigation.dart';
@@ -81,34 +80,11 @@ class SendComponentState extends State<SendComponent> {
   @override
   void initState() {
     super.initState();
+    // Subscribe to Notifier Stream from ConnectionStatusSingleton class in globals.dart
+    // Fires whenever connectivity state changes
     ConnectionStatusSingleton connectionStatus = ConnectionStatusSingleton.getInstance();
     _connectionChangeStream = connectionStatus.connectionChange.listen(connectionChanged);
-  /*  globals.checkConnection().then((status){
-      setState(() {
-        if (status == false) {
-          online = false;  
-          globals.online = online;
-        } else {
-          globals.online = online;
-        }
-      });
-    });*/
   }
-
-  // void connectionChanged(dynamic hasConnection) {
-  //   setState(() {
-  //     isOffline = !hasConnection;
-  //     if(isOffline == false) {
-  //       online = !online;
-  //       globals.online = online;
-  //       print("Online");
-  //     } else {
-  //       online = false;
-  //       globals.online = online;
-  //       print("Offline");
-  //     }
-  //   });
-  // }
 
   void connectionChanged(dynamic hasConnection) {
     setState(() {
@@ -135,6 +111,8 @@ class SendComponentState extends State<SendComponent> {
         syncing = false;
         globals.syncing = false;
         print("Offline");
+        // For dismissing the dialog
+        Navigator.of(context).pop();
 
         // Wrap arround Future to get the value of previous timestamp
         Future.delayed(Duration(milliseconds: 100), () async {
@@ -256,6 +234,14 @@ class SendComponentState extends State<SendComponent> {
       'proof_of_payment': proofOfPayment,
     };
     var response = await transferAsset(payload);
+    // Check the error response from transferAsset in endpoints.dart
+    // Call the function for alert dialog
+    if (response.error == "DioErrorType.CONNECT_TIMEOUT") {
+      showAlertDialog(context);
+      // Return null so the second alert dialog won't show
+      // Weird! Not sure where is that second dialog come from
+      return null;
+    }
     if (response.success == false) {
       _errorFound = true;
       _errorMessage = response.error;
@@ -286,7 +272,6 @@ class SendComponentState extends State<SendComponent> {
     }
   }
 
-
   Future<String> getBarcode() async {
     if (_barcodeString.contains(new RegExp(r'::paytaca::.*::paytaca::$'))) {
       var destinationAccountId = _barcodeString.split('::paytaca::')[1];
@@ -296,7 +281,6 @@ class SendComponentState extends State<SendComponent> {
       return null;
     }
   }
-
 
   String validateAmount(String value) {
     if (value == null || value == "") {
@@ -318,32 +302,18 @@ class SendComponentState extends State<SendComponent> {
           return 'Max limit of Php 100,000.00 per transaction';
         } else {
           return null;
-        }
-        
+        } 
       }
     }
   }
 
    changeAccount(String newVal) {
-    // selectedPaytacaAccount = null;
-    // sourceAccount = null;
-    // lastBalance = null;
-    // lBalanceSignature = null;
-    // lBalanceTime = null;
-
-
     String accountId = newVal.split('::sep::')[0];
     String balance = newVal.split('::sep::')[1];
     String signature = newVal.split('::sep::')[2];
     String timestamp = newVal.split('::sep::')[3];
 
     setState(() {
-      // selectedPaytacaAccount = null;
-      // sourceAccount = null;
-      // lastBalance = null;
-      // lBalanceSignature = null;
-      // lBalanceTime = null;
-
       selectedPaytacaAccount = accountId;
       sourceAccount = newVal;
       lastBalance = balance;
@@ -352,7 +322,6 @@ class SendComponentState extends State<SendComponent> {
      // state.didChange(newVal);
     });
   }
-  
 
   @override
   Widget build(BuildContext context) {
@@ -378,6 +347,28 @@ class SendComponentState extends State<SendComponent> {
   }
 
 bool disableSubmitButton = false;
+
+// Alert dialog for slow internet speed connection
+// This is called in sendFunds() when there is connection timeout error response
+// from transferAsset() in endpoints.dart
+showAlertDialog(BuildContext context) {
+  // set up the AlertDialog
+  AlertDialog alert = AlertDialog(
+    title: Text("Slow Internet Connection!"),
+    content: Text("Your internet speed connection is too slow. " 
+                  "Switch to Airplane mode to continue making transaction."
+    ),
+  );
+
+  // show the dialog
+  showDialog(
+    barrierDismissible: false,
+    context: context,
+    builder: (BuildContext context) {
+      return alert;
+    },
+  );
+}
 
 List<Widget> _buildForm(BuildContext context) {
     Form form = new Form(
@@ -517,6 +508,11 @@ List<Widget> _buildForm(BuildContext context) {
                                       txnID,
                                       lBalanceTime,
                                     );
+                                    // Dismiss keyboard after the "Pay Now" button is click
+                                    FocusScopeNode currentFocus = FocusScope.of(context);
+                                    if (!currentFocus.hasPrimaryFocus) {
+                                      currentFocus.unfocus();
+                                    }
                                   }
                                 }
                               )
@@ -546,7 +542,7 @@ List<Widget> _buildForm(BuildContext context) {
             opacity: 0.8,
             child: const ModalBarrier(dismissible: false, color: Colors.grey),
           ),
-          new Center(
+          Center(
             child: new CircularProgressIndicator(),
           ),
         ],
