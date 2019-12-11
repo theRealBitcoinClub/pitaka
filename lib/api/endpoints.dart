@@ -332,7 +332,7 @@ Future<PlainSuccessResponse> authWebApp(Map payload) async {
     }
     catch(e) {
       // Can't return response, added PlainSuccessResponse in responses.dart
-      return PlainSuccessResponse.requestFailedError();
+      return PlainSuccessResponse.connectTimeoutError();
     }
   } else {
     return PlainSuccessResponse.toDatabase();
