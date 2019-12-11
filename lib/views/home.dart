@@ -9,6 +9,7 @@ import '../utils/globals.dart' as globals;
 import '../utils/database_helper.dart';
 import '../utils/globals.dart';
 import 'receive.dart';
+import 'package:easy_dialog/easy_dialog.dart';
 
 
 class HomeComponent extends StatefulWidget {
@@ -70,23 +71,21 @@ class HomeComponentState extends State<HomeComponent> {
 
   // Alert dialog for slow internet speed connection
   // This is called during build and when there is connection timeout error response
-  showAlertDialog(BuildContext context) {
-    // set up the AlertDialog
-    AlertDialog alert = AlertDialog(
-      title: Text("Slow Internet Connection!"),
-      content: Text("Your internet speed connection is too slow. " 
-                    "Switch to Airplane mode to continue making transaction."
+  showAlertDialog() {
+    EasyDialog(
+      title: Text(
+        "Slow Internet Connection!",
+        style: TextStyle(fontWeight: FontWeight.bold),
+        textScaleFactor: 1.2,
       ),
-    );
-
-    // show the dialog
-    showDialog(
-      barrierDismissible: false,
-      context: context,
-      builder: (BuildContext context) {
-        return alert;
-      },
-    );
+      description: Text(
+        "Your internet speed connection is too slow. Switch to Airplane mode to continue making transaction.",
+        textScaleFactor: 1.1,
+        textAlign: TextAlign.center,
+      ),
+      height: 120,
+      closeButton: false,  
+    ).show(context);
   }
 
   @override
@@ -136,7 +135,7 @@ class HomeComponentState extends State<HomeComponent> {
                           Future.delayed(Duration(milliseconds: 100), () async {
                             _executeFuture = true;
                             if(_executeFuture){
-                              showAlertDialog(context);
+                              showAlertDialog();
                             }
                           });
                           // Return hometabs to show the balance 
@@ -174,7 +173,7 @@ class HomeComponentState extends State<HomeComponent> {
                           Future.delayed(Duration(milliseconds: 100), () async {
                             _executeFuture = true;
                             if(_executeFuture){
-                              showAlertDialog(context);
+                              showAlertDialog();
                             }
                           });
                           // Return hometabs to show the balance 
