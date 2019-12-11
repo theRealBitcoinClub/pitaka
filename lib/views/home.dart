@@ -76,17 +76,16 @@ class HomeComponentState extends State<HomeComponent> {
   showAlertDialog() {
     EasyDialog(
       title: Text(
-        "Slow Internet Connection!",
+        "Connection Failure!",
         style: TextStyle(fontWeight: FontWeight.bold),
         textScaleFactor: 1.2,
       ),
       description: Text(
-        "Your internet speed connection is too slow. Switch to Airplane mode to continue making transaction.",
+        "You don't seem to have internet connection, or it's too slow. Switch your phone to Airplane mode to keep using the app in offline mode.",
         textScaleFactor: 1.1,
         textAlign: TextAlign.center,
       ),
-      height: 120,
-      closeButton: false,  
+      height: 150,
     ).show(context);
   }
 

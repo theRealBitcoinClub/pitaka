@@ -43,7 +43,7 @@ Future<dynamic> sendGetRequest(url) async {
     'public_key': globals.serverPublicKey
   };
   var dio = new Dio();
-  dio.options.connectTimeout = 15000;  // Set connection timeout for 15 seconds
+  dio.options.connectTimeout = 10000;  // Set connection timeout for 10 seconds
   var tempDir = await getTemporaryDirectory();
   String tempPath = tempDir.path;
   CookieJar cj = new PersistCookieJar(dir: tempPath);
@@ -52,7 +52,6 @@ Future<dynamic> sendGetRequest(url) async {
   try {
     response = await dio.get(url, queryParameters:payload);
   } catch(e) {
-    print("$e !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
     // Cast error to string type
     String errorType = e.toString();
     // Check if "DioErrorType.CONNECT_TIMEOUT" error is in the string
@@ -250,24 +249,6 @@ Future<BalancesResponse> getOnlineBalances() async {
 }
 
 Future<TransactionsResponse> getOnlineTransactions() async {
-  // final String url = globals.baseUrl + '/api/wallet/transactions';
-  // var response;
-  // try {
-  //   response = await sendGetRequest(url);
-
-  //   // Call printWrapped funtion from utils to print very long text
-  //   // Use only for debugging, comment out when done
-  //   // printWrapped("The value of response from getOnlineTransactions() - endpoints.dart is: $response",);
-  //   if (response.data['success']) {
-  //     return TransactionsResponse.fromResponse(response);
-  //   }
-  // } catch(e) {
-  //   var resp = await databaseHelper.offLineTransactions();
-  //   return TransactionsResponse.connectTimeoutError(resp);
-  // }
-  // return response;
-
-
   final String url = globals.baseUrl + '/api/wallet/transactions';
   var response;
   try {
