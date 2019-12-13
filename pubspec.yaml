@@ -40,10 +40,12 @@ dependencies:
   screen_state: ^0.1.1
   http: ^0.12.0+2
   uuid: ^2.0.2
-  easy_dialog: ^1.0.5
 
   virtual_keyboard:
     path: ./virtual_keyboard-0.1.4-modified/
+
+  easy_dialog:
+    path: ./easy_dialog-1.0.5-modified/
 
   flutter:
     sdk: flutter
