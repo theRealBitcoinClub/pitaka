@@ -27,7 +27,6 @@ class HomeComponentState extends State<HomeComponent> {
   bool isOffline = false;
   bool _executeFuture = false;
   bool _popDialog = false;
-  bool isCloseButtonClose = false;
 
   void initState()  {
     super.initState();

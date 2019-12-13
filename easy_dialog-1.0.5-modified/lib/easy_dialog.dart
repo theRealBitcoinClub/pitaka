@@ -16,7 +16,6 @@ class EasyDialog {
   EdgeInsets contentPadding;
   EdgeInsets titlePadding;
   EdgeInsets descriptionPadding;
-  bool isCloseButtonClose = false;
 
   EasyDialog( {
     Key key,
@@ -45,6 +44,7 @@ class EasyDialog {
         ));
   }
 
+  // Added function argument for close button callback
   show(BuildContext context, Function onDialogClose) {
     ClipRRect image;
     if (topImage != null) {
@@ -120,6 +120,7 @@ class EasyDialog {
                                   alignment: Alignment.topRight,
                                   child: FloatingActionButton(
                                     onPressed: () {
+                                      // On dialog closed, execute the function callback
                                       onDialogClose();
                                       Navigator.pop(context);
                                     },
