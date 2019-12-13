@@ -45,7 +45,9 @@ dependencies:
     path: ./virtual_keyboard-0.1.4-modified/
 
   easy_dialog:
-    path: ./easy_dialog-1.0.5-modified/
+    git:
+      url: git@github.com:paytaca/easy_dialog.git
+      ref: master
 
   flutter:
     sdk: flutter
