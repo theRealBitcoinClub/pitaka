@@ -49,6 +49,11 @@ dependencies:
       url: git@github.com:paytaca/easy_dialog.git
       ref: master
 
+  # virtual_keyboard:
+  #   git:
+  #     url: git@github.com:paytaca/virtual_keyboard.git
+  #     ref: master
+
   flutter:
     sdk: flutter
 

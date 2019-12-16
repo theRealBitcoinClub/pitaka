@@ -86,6 +86,7 @@ class CheckPincodeComponentState extends State<CheckPincodeComponent> {
                 style: TextStyle(
                   fontSize: 35.0,
                   letterSpacing: 20.0,
+                  decorationStyle: TextDecorationStyle.dashed,
                 ),
               ),
             ),
