@@ -23,8 +23,10 @@ class CheckPincodeComponentState extends State<CheckPincodeComponent> {
 
   bool _pincodeMatch;
 
-    // Holds the text that user typed.
+  // Holds the text that user typed.
   String text = '';
+  // Displays the "*" as the pincode is type
+  String textDisplay = '';
 
   // True if shift enabled.
   bool shiftEnabled = false;
@@ -79,48 +81,15 @@ class CheckPincodeComponentState extends State<CheckPincodeComponent> {
             ),
 
             Container(
-              margin: const EdgeInsets.only(left: 86.0),
-              alignment: Alignment.centerLeft,
-              child: Text(
-                text, 
-                style: TextStyle(
-                  fontSize: 35.0,
-                  letterSpacing: 20.0,
-                ),
-              ),
-            ),
-
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: <Widget>[
-                Center(
-                  child: CustomPaint( 
-                    size: Size(42, 40),
-                    painter: HorizontalLine(),
+              alignment: Alignment.center,
+                child: Text(
+                  textDisplay,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 35.0,
+                    letterSpacing: 20.0,
                   ),
                 ),
-
-                Center(
-                  child: CustomPaint( 
-                    size: Size(40, 40),
-                    painter: HorizontalLine(),
-                  ),
-                ),
-
-                Center(
-                  child: CustomPaint( 
-                    size: Size(40, 40),
-                    painter: HorizontalLine(),
-                  ),
-                ),
-
-                Center(
-                  child: CustomPaint( 
-                    size: Size(42, 40),
-                    painter: HorizontalLine(),
-                  ),
-                ),
-              ],
             ),
 
             _pincodeMatch == false ? 
@@ -201,11 +170,21 @@ class CheckPincodeComponentState extends State<CheckPincodeComponent> {
     if (text.length < 4) {
       if (key.keyType == VirtualKeyboardKeyType.String) {
         text = text + (shiftEnabled ? key.capsText : key.text);
+        // For the "*" display
+        textDisplay = "";
+        for (int i=0; i<text.length; i++) {
+          textDisplay = textDisplay + "*";
+        }
       } else if (key.keyType == VirtualKeyboardKeyType.Action) {
         switch (key.action) {
           case VirtualKeyboardKeyAction.Backspace:
             if (text.length == 0) return;
-            text = text.substring(0, text.length - 1);
+              text = text.substring(0, text.length - 1);
+              // For the "*" display
+              textDisplay = "";
+              for (int i=0; i<text.length; i++) {
+                textDisplay = textDisplay + "*";
+              }          
             break;
           case VirtualKeyboardKeyAction.Return:
             text = text + '\n';
@@ -225,6 +204,11 @@ class CheckPincodeComponentState extends State<CheckPincodeComponent> {
           case VirtualKeyboardKeyAction.Backspace:
             if (text.length == 0) return;
             text = text.substring(0, text.length - 1);
+            // For the "*" display
+            textDisplay = "";
+            for (int i=0; i<text.length; i++) {
+              textDisplay = textDisplay + "*";
+            }
             break;
           case VirtualKeyboardKeyAction.Return:
             text = text + '\n';
@@ -258,21 +242,4 @@ class CheckPincodeComponentState extends State<CheckPincodeComponent> {
     super.dispose();
   }
 
-}
-
-class HorizontalLine extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    final p1 = Offset(10, 0);
-    final p2 = Offset(35, 0);
-    final paint = Paint()
-      ..color = Colors.red[900]
-      ..strokeWidth = 2;
-    canvas.drawLine(p1, p2, paint);
-  }
-  
-  @override
-  bool shouldRepaint(CustomPainter old) {
-    return false;
-  }
 }
