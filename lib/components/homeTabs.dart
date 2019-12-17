@@ -50,7 +50,8 @@ ListView buildBalancesList(balances) {
                     ],
                   ), Column (
                     children: <Widget>[
-                      globals.syncing == true ? Padding(
+                      !globals.loading | !globals.online ? Container() :
+                      Padding(
                         padding: const EdgeInsets.fromLTRB(8.0, 0, 12.0, 12.0),
                         child:
                           Image.asset(
@@ -58,7 +59,7 @@ ListView buildBalancesList(balances) {
                           height: 30.0,
                           width: 30.0,
                         )
-                      ): Container()
+                      ),
                     ],
                   )
                 ],

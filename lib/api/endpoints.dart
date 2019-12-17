@@ -41,6 +41,7 @@ Future<dynamic> sendPostRequest(url, payload) async {
 }
 
 Future<dynamic> sendGetRequest(url) async {
+  globals.loading = true;
   var payload = {
     'public_key': globals.serverPublicKey
   };
@@ -65,6 +66,7 @@ Future<dynamic> sendGetRequest(url) async {
       return errorType;
     }
   }
+  globals.loading = false;
   return response;
 }
 

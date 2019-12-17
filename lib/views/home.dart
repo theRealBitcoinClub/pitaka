@@ -26,9 +26,8 @@ class HomeComponentState extends State<HomeComponent> {
   StreamSubscription _connectionChangeStream;
   bool isOffline = false;
   bool _executeFuture = false;
+  bool _popDialog = false;
 
-
-  @override
   void initState()  {
     super.initState();
     // Subscribe to Notifier Stream from ConnectionStatusSingleton class in globals.dart
@@ -59,7 +58,10 @@ class HomeComponentState extends State<HomeComponent> {
         // For dismissing the dialog
         if (_executeFuture) {
           _executeFuture = false; // Kill or stop the future
-          Navigator.of(context).pop();
+          if (_popDialog) {
+            _popDialog = false;
+            Navigator.of(context,).pop();
+          } 
         }
       }
     });
@@ -69,6 +71,10 @@ class HomeComponentState extends State<HomeComponent> {
   void dispose() {
    // _connectivitySubscription.cancel();
     super.dispose();
+  }
+
+  onDialogClose() {
+    _popDialog = false;
   }
 
   // Alert dialog for slow internet speed connection
@@ -85,8 +91,9 @@ class HomeComponentState extends State<HomeComponent> {
         textScaleFactor: 1.1,
         textAlign: TextAlign.center,
       ),
-      height: 150,
-    ).show(context);
+      height: 150, 
+    ).show(context, onDialogClose);
+    _popDialog = true;
   }
 
   @override
