@@ -20,7 +20,6 @@ import 'package:passcode_screen/circle.dart';
 import 'package:passcode_screen/keyboard.dart';
 
 
-
 class User {
   String firstName;
   String lastName;
@@ -79,65 +78,6 @@ class RegisterComponentState extends State<RegisterComponent> {
     }
     if (!mounted) return;
   }
-
-  // void askPin() async {
-  //   checkBiometrics = await auth.canCheckBiometrics;
-  //   if(checkBiometrics == false) {
-  //     Navigator.push(
-  //         context,
-  //         PageRouteBuilder(
-  //             opaque: false,
-  //             pageBuilder: (context, animation, secondaryAnimation) =>
-  //                 PasscodeScreen(
-  //                   title: 'Enter Desired PIN Code',
-  //                   passwordDigits: 6,
-  //                   circleUIConfig: circleUIConfig,
-  //                   keyboardUIConfig: keyboardUIConfig,
-  //                   passwordEnteredCallback: _onPassCodeEntered,
-  //                   cancelLocalizedText: 'Cancel',
-  //                   deleteLocalizedText: 'Delete',
-  //                   shouldTriggerVerification: _verificationNotifier.stream,
-  //                   //     cancelCallback: _onPasscodeCancelled,
-  //                 )
-  //         ));
-  //   } else {
-  //     _validateInputs(context);
-  // }
-
-  // void _onPassCodeEntered(String enteredPassCode) {
-  //   iniPasscode = enteredPassCode;
-  //   Navigator.push(
-  //       context,
-  //       PageRouteBuilder(
-  //           opaque: true,
-  //           pageBuilder: (context, animation, secondaryAnimation) =>
-  //               PasscodeScreen(
-  //                 title: 'Re-enter PIN Code',
-  //                 passwordDigits: 6,
-  //               //  backgroundColor: ,
-  //                 circleUIConfig: circleUIConfig,
-  //                 keyboardUIConfig: keyboardUIConfig,
-  //                 passwordEnteredCallback: validatePin,
-  //                 cancelLocalizedText: 'Cancel',
-  //                 deleteLocalizedText: 'Delete',
-  //                 shouldTriggerVerification: _verificationNotifier.stream,
-  //               //  cancelCallback: _onPasscodeCancelled,
-  //               )
-  //       ));
-  // //  validatePin(iniPasscode);
-  // }
-
-  // void validatePin(String enteredPassCode) async{
-
-  //   if(enteredPassCode == iniPasscode) {
-  //     await globals.storage.write(key: "pinCode", value: iniPasscode);
-  //     final read = await globals.storage.read(key: "pinCode");
-  //     Application.router.navigateTo(context, "/account");
-  //   }
-
-  //   else if(enteredPassCode != iniPasscode)
-  //     return null;
-  // }
 
   String publicKey;
   String privateKey;
