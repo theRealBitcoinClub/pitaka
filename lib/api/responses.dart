@@ -5,13 +5,15 @@ import 'package:intl/intl.dart';
 class GenericCreateResponse {
   final bool success;
   final String id;
+  final String error; // Added to catch error in duplicate email address
 
-  GenericCreateResponse({this.success, this.id});
+  GenericCreateResponse({this.success, this.id, this.error});
 
   factory GenericCreateResponse.fromResponse(Response response) {
     return GenericCreateResponse(
       success: response.data['success'],
       id: response.data['id'],
+      error: response.data['error'], // Added to catch error in duplicate email address
     );
   }
 }
