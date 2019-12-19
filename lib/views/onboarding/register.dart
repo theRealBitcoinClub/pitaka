@@ -18,6 +18,7 @@ import '../../utils/globals.dart' as globals;
 import 'package:passcode_screen/passcode_screen.dart';
 import 'package:passcode_screen/circle.dart';
 import 'package:passcode_screen/keyboard.dart';
+import 'package:easy_dialog/easy_dialog.dart';
 
 
 class User {
@@ -142,6 +143,45 @@ class RegisterComponentState extends State<RegisterComponent> {
   var circleUIConfig = new CircleUIConfig();
   var keyboardUIConfig = new KeyboardUIConfig();
 
+  onDialogClose() {
+    // Not use
+  }
+
+  // Alert dialog for duplicate email address
+  showAlertDialog() {
+    EasyDialog(
+      title: Text(
+        "Duplicate Email Address!",
+        style: TextStyle(fontWeight: FontWeight.bold),
+        textScaleFactor: 1.2,
+      ),
+      description: Text(
+        "The email address is already registered. Please use other email address",
+        textScaleFactor: 1.1,
+        textAlign: TextAlign.center,
+      ),
+      height: 160,
+      closeButton: false,
+      contentList: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            new FlatButton(
+              padding: EdgeInsets.all(8),
+              textColor: Colors.lightBlue,
+              onPressed: () {
+                Navigator.of(context).pop();
+                Application.router.navigateTo(context, "/account");
+              },
+              child: new Text("Ok",
+                textScaleFactor: 1.2,
+                textAlign: TextAlign.center,
+              ),),
+           ],)
+      ]
+    ).show(context, onDialogClose);
+  }
+
   void _validateInputs(BuildContext context) async {
     if (_formKey.currentState.validate()) {
       // Close the on-screen keyboard by removing focus from the form's inputs
@@ -172,6 +212,14 @@ class RegisterComponentState extends State<RegisterComponent> {
           userPayload["txn_hash"] = txnHash;
           userPayload["signature"] = signature;
           var user = await createUser(userPayload);
+          
+          print("${user.error} %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%");
+          
+          // Catch duplicate email address in the error
+          if (user.error == "duplicate_email") {
+            showAlertDialog();
+          }
+          
           await globals.storage.write(key: "userId", value: user.id);
           // Login
           String loginSignature =

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:back_button_interceptor/back_button_interceptor.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_masked_text/flutter_masked_text.dart';
 import '../../api/endpoints.dart';
 import '../app.dart';
 import 'package:easy_dialog/easy_dialog.dart';
@@ -55,11 +54,10 @@ class RequestComponentState extends State<RequestComponent> {
   bool _submitting = false;
 
   onDialogClose() {
-    Application.router.navigateTo(context, "/onboarding/request");
+    // Not use
   }
 
-  // Alert dialog for slow internet speed connection
-  // This is called during build and when there is connection timeout error response
+  // Alert dialog for duplicate mobile number
   showAlertDialog() {
     EasyDialog(
       title: Text(
@@ -76,12 +74,11 @@ class RequestComponentState extends State<RequestComponent> {
       closeButton: false,
       contentList: [
         Row(
-          mainAxisAlignment: MainAxisAlignment.end,
+          mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
             new FlatButton(
               padding: EdgeInsets.all(8),
               textColor: Colors.lightBlue,
-
               onPressed: () {
                 Navigator.of(context).pop();
                 Application.router.navigateTo(context, "/onboarding/request");
@@ -111,10 +108,11 @@ class RequestComponentState extends State<RequestComponent> {
         newMobile.number = "+63" + newMobile.number.substring(1).replaceAll(" - ", "");
         var numberPayload = {"mobile_number": newMobile.number};
         var resp = await requestOtpCode(numberPayload);
-
+        
+        // Catch duplicate mobile number in the error
         if (resp.success) {
           proceed = true;
-        } else {
+        } else if(resp.error == "duplicate_mobile_number") {
           showAlertDialog();
         }
       }
