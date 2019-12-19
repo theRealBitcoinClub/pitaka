@@ -322,7 +322,7 @@ Future<PlainSuccessResponse> transferAsset(Map payload) async {
 Future<PlainSuccessResponse> authWebApp(Map payload) async {
   // Check if online
   if (globals.online) {
-    final String url = globals.baseUrl + '/api/auth-reports/authenticate';
+    final String url = globals.baseUrl + '/api/web-wallet/authenticate';
     var response;
     try {
       response = await sendPostRequest(url, payload);
