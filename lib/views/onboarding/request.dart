@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:back_button_interceptor/back_button_interceptor.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_masked_text/flutter_masked_text.dart';
 import '../../api/endpoints.dart';
 import '../app.dart';
+import 'package:easy_dialog/easy_dialog.dart';
+
 
 class Mobile {
   String number;
@@ -52,6 +53,45 @@ class RequestComponentState extends State<RequestComponent> {
   FocusNode focusNode = FocusNode();
   bool _submitting = false;
 
+  onDialogClose() {
+    // Not use
+  }
+
+  // Alert dialog for duplicate mobile number
+  showAlertDialog() {
+    EasyDialog(
+      title: Text(
+        "Duplicate Mobile Number!",
+        style: TextStyle(fontWeight: FontWeight.bold),
+        textScaleFactor: 1.2,
+      ),
+      description: Text(
+        "The mobile number is already registered. Please use other mobile number",
+        textScaleFactor: 1.1,
+        textAlign: TextAlign.center,
+      ),
+      height: 160,
+      closeButton: false,
+      contentList: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            new FlatButton(
+              padding: EdgeInsets.all(8),
+              textColor: Colors.lightBlue,
+              onPressed: () {
+                Navigator.of(context).pop();
+                Application.router.navigateTo(context, "/onboarding/request");
+              },
+              child: new Text("OK",
+                textScaleFactor: 1.2,
+                textAlign: TextAlign.center,
+              ),),
+           ],)
+      ]
+    ).show(context, onDialogClose);
+  }
+
   void _validateInputs(BuildContext context) async {
     bool proceed = false;
     if (_formKey.currentState.validate()) {
@@ -68,9 +108,13 @@ class RequestComponentState extends State<RequestComponent> {
         newMobile.number = "+63" + newMobile.number.substring(1).replaceAll(" - ", "");
         var numberPayload = {"mobile_number": newMobile.number};
         var resp = await requestOtpCode(numberPayload);
-
+        
         if (resp.success) {
           proceed = true;
+        } 
+        // Catch duplicate mobile number in the error
+        else if(resp.error == "duplicate_mobile_number") {
+          showAlertDialog();
         }
       }
 

@@ -18,7 +18,7 @@ import '../../utils/globals.dart' as globals;
 import 'package:passcode_screen/passcode_screen.dart';
 import 'package:passcode_screen/circle.dart';
 import 'package:passcode_screen/keyboard.dart';
-
+import 'package:easy_dialog/easy_dialog.dart';
 
 
 class User {
@@ -41,6 +41,7 @@ class RegisterComponentState extends State<RegisterComponent> {
 
   String iniPasscode = '';
   bool checkBiometrics = false;
+  String mobileNumber = "";
 
   @override
   void initState() {
@@ -79,65 +80,6 @@ class RegisterComponentState extends State<RegisterComponent> {
     }
     if (!mounted) return;
   }
-
-  // void askPin() async {
-  //   checkBiometrics = await auth.canCheckBiometrics;
-  //   if(checkBiometrics == false) {
-  //     Navigator.push(
-  //         context,
-  //         PageRouteBuilder(
-  //             opaque: false,
-  //             pageBuilder: (context, animation, secondaryAnimation) =>
-  //                 PasscodeScreen(
-  //                   title: 'Enter Desired PIN Code',
-  //                   passwordDigits: 6,
-  //                   circleUIConfig: circleUIConfig,
-  //                   keyboardUIConfig: keyboardUIConfig,
-  //                   passwordEnteredCallback: _onPassCodeEntered,
-  //                   cancelLocalizedText: 'Cancel',
-  //                   deleteLocalizedText: 'Delete',
-  //                   shouldTriggerVerification: _verificationNotifier.stream,
-  //                   //     cancelCallback: _onPasscodeCancelled,
-  //                 )
-  //         ));
-  //   } else {
-  //     _validateInputs(context);
-  // }
-
-  // void _onPassCodeEntered(String enteredPassCode) {
-  //   iniPasscode = enteredPassCode;
-  //   Navigator.push(
-  //       context,
-  //       PageRouteBuilder(
-  //           opaque: true,
-  //           pageBuilder: (context, animation, secondaryAnimation) =>
-  //               PasscodeScreen(
-  //                 title: 'Re-enter PIN Code',
-  //                 passwordDigits: 6,
-  //               //  backgroundColor: ,
-  //                 circleUIConfig: circleUIConfig,
-  //                 keyboardUIConfig: keyboardUIConfig,
-  //                 passwordEnteredCallback: validatePin,
-  //                 cancelLocalizedText: 'Cancel',
-  //                 deleteLocalizedText: 'Delete',
-  //                 shouldTriggerVerification: _verificationNotifier.stream,
-  //               //  cancelCallback: _onPasscodeCancelled,
-  //               )
-  //       ));
-  // //  validatePin(iniPasscode);
-  // }
-
-  // void validatePin(String enteredPassCode) async{
-
-  //   if(enteredPassCode == iniPasscode) {
-  //     await globals.storage.write(key: "pinCode", value: iniPasscode);
-  //     final read = await globals.storage.read(key: "pinCode");
-  //     Application.router.navigateTo(context, "/account");
-  //   }
-
-  //   else if(enteredPassCode != iniPasscode)
-  //     return null;
-  // }
 
   String publicKey;
   String privateKey;
@@ -202,6 +144,46 @@ class RegisterComponentState extends State<RegisterComponent> {
   var circleUIConfig = new CircleUIConfig();
   var keyboardUIConfig = new KeyboardUIConfig();
 
+  onDialogClose() {
+    // Not use
+  }
+
+  // Alert dialog for duplicate email address
+  showAlertDialog() {
+    EasyDialog(
+      title: Text(
+        "Duplicate Email Address!",
+        style: TextStyle(fontWeight: FontWeight.bold),
+        textScaleFactor: 1.2,
+      ),
+      description: Text(
+        "The email address is already registered. Please use other email address",
+        textScaleFactor: 1.1,
+        textAlign: TextAlign.center,
+      ),
+      height: 160,
+      closeButton: false,
+      contentList: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            new FlatButton(
+              padding: EdgeInsets.all(8),
+              textColor: Colors.lightBlue,
+              onPressed: () {
+                Navigator.of(context).pop();
+                // Use same mobile number after retry on duplicate email 
+                Application.router.navigateTo(context, "/onboarding/register/$mobileNumber");
+              },
+              child: new Text("OK",
+                textScaleFactor: 1.2,
+                textAlign: TextAlign.center,
+              ),),
+           ],)
+      ]
+    ).show(context, onDialogClose);
+  }
+
   void _validateInputs(BuildContext context) async {
     if (_formKey.currentState.validate()) {
       // Close the on-screen keyboard by removing focus from the form's inputs
@@ -216,13 +198,16 @@ class RegisterComponentState extends State<RegisterComponent> {
           setState(() {
             _submitting = true;
           });
+          
+          // Get the mobile number from previous route parameter
+          mobileNumber = "${widget.mobileNumber}";
 
           var userPayload = {
             "firstname": newUser.firstName,
             "lastname": newUser.lastName,
             "birthday": "2006-01-02",
             "email": newUser.emailAddress,
-            "mobile_number": "${widget.mobileNumber}",
+            "mobile_number": mobileNumber,
           };
           String txnHash = generateTransactionHash(userPayload);
           print(txnHash);
@@ -232,6 +217,12 @@ class RegisterComponentState extends State<RegisterComponent> {
           userPayload["txn_hash"] = txnHash;
           userPayload["signature"] = signature;
           var user = await createUser(userPayload);
+          
+          // Catch duplicate email address in the error
+          if (user.error == "duplicate_email") {
+            showAlertDialog();
+          }
+          
           await globals.storage.write(key: "userId", value: user.id);
           // Login
           String loginSignature =
