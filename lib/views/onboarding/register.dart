@@ -41,6 +41,7 @@ class RegisterComponentState extends State<RegisterComponent> {
 
   String iniPasscode = '';
   bool checkBiometrics = false;
+  String mobileNumber = "";
 
   @override
   void initState() {
@@ -171,9 +172,10 @@ class RegisterComponentState extends State<RegisterComponent> {
               textColor: Colors.lightBlue,
               onPressed: () {
                 Navigator.of(context).pop();
-                Application.router.navigateTo(context, "/account");
+                // Use same mobile number after retry on duplicate email 
+                Application.router.navigateTo(context, "/onboarding/register/$mobileNumber");
               },
-              child: new Text("Ok",
+              child: new Text("OK",
                 textScaleFactor: 1.2,
                 textAlign: TextAlign.center,
               ),),
@@ -196,13 +198,16 @@ class RegisterComponentState extends State<RegisterComponent> {
           setState(() {
             _submitting = true;
           });
+          
+          // Get the mobile number from previous route parameter
+          mobileNumber = "${widget.mobileNumber}";
 
           var userPayload = {
             "firstname": newUser.firstName,
             "lastname": newUser.lastName,
             "birthday": "2006-01-02",
             "email": newUser.emailAddress,
-            "mobile_number": "${widget.mobileNumber}",
+            "mobile_number": mobileNumber,
           };
           String txnHash = generateTransactionHash(userPayload);
           print(txnHash);
@@ -212,8 +217,6 @@ class RegisterComponentState extends State<RegisterComponent> {
           userPayload["txn_hash"] = txnHash;
           userPayload["signature"] = signature;
           var user = await createUser(userPayload);
-          
-          print("${user.error} %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%");
           
           // Catch duplicate email address in the error
           if (user.error == "duplicate_email") {

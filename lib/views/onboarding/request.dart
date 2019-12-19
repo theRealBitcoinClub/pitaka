@@ -83,7 +83,7 @@ class RequestComponentState extends State<RequestComponent> {
                 Navigator.of(context).pop();
                 Application.router.navigateTo(context, "/onboarding/request");
               },
-              child: new Text("Ok",
+              child: new Text("OK",
                 textScaleFactor: 1.2,
                 textAlign: TextAlign.center,
               ),),
@@ -109,10 +109,11 @@ class RequestComponentState extends State<RequestComponent> {
         var numberPayload = {"mobile_number": newMobile.number};
         var resp = await requestOtpCode(numberPayload);
         
-        // Catch duplicate mobile number in the error
         if (resp.success) {
           proceed = true;
-        } else if(resp.error == "duplicate_mobile_number") {
+        } 
+        // Catch duplicate mobile number in the error
+        else if(resp.error == "duplicate_mobile_number") {
           showAlertDialog();
         }
       }
