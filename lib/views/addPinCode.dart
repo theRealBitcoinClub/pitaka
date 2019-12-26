@@ -4,119 +4,6 @@ import '../views/app.dart';
 import 'package:virtual_keyboard/virtual_keyboard.dart';
 import 'dart:async';
 
-// class Pincode {
-//   String pincode;
-// }
-
-// class AddPincodeComponent extends StatefulWidget {
-//   @override
-//   AddPincodeComponentState createState() => new AddPincodeComponentState();
-// }
-
-// class AddPincodeComponentState extends State<AddPincodeComponent> {
-//   final _formKey = GlobalKey<FormState>();
-//   final _controller = TextEditingController();
-//   bool _submitting = false;
-//   Pincode newPincode = new Pincode();
-//   bool _autoValidate = false;
-
-//   String _pincode;
-
-//   String validatePincode(String value) {
-//     if (value.length < 4)
-//       return 'Pincode must be exactly 4 digits';
-//     else
-//       return null;
-//   }
-
-//   void _validateInputs(BuildContext context) async {
-//     if (_formKey.currentState.validate()) {
-//       // Close the on-screen keyboard by removing focus from                 labelText: 'Account Name',                labelText: 'Account Name',the form's inputs
-//       FocusScope.of(context).requestFocus(new FocusNode());
-//       // Save the form
-//       _formKey.currentState.save();
-
-//       setState(() {
-//         _submitting = true;
-//       });
-//       _pincode = _controller.text;
-//       await globals.storage.write(key: "pincodeKey", value: _pincode);
-//       // For debug, check if pin code was save
-//       final read = await globals.storage.read(key: "pincodeKey");
-//       print("The pincode: $read was succesfully save.");
-//       Application.router.navigateTo(context, "/account");
-//     }
-//   }
-
-//   List<Widget> _buildAccountForm(BuildContext context) {
-//     Form form = new Form(
-//         key: _formKey,
-//         autovalidate: _autoValidate,
-//         child: new ListView(
-//           padding: const EdgeInsets.symmetric(horizontal: 16.0),
-//           children: <Widget>[
-//             new SizedBox(
-//               height: 30.0,
-//             ),
-//             new TextFormField(
-//               controller: _controller,
-//               keyboardType: TextInputType.phone,
-//               validator: validatePincode,
-//               maxLength: 4,
-//               autofocus: true,
-//               onSaved: (value) {
-//                 newPincode.pincode = value;
-//               },
-//               decoration: const InputDecoration(
-//                 icon: const Icon(Icons.vpn_key),
-//                 hintText: 'Enter pincode',
-//               ),
-//             ),
-//             new SizedBox(
-//               height: 30.0,
-//             ),
-//             new RaisedButton(
-//               onPressed: () {
-//                 _validateInputs(context);
-//               },
-//               child: new Text('Submit'),
-//             )
-//           ],
-//         ));
-//     var ws = new List<Widget>();
-//     ws.add(form);
-//     if (_submitting) {
-//       var modal = new Stack(
-//         children: [
-//           new Opacity(
-//             opacity: 0.8,
-//             child: const ModalBarrier(dismissible: false, color: Colors.grey),
-//           ),
-//           new Center(
-//             child: new CircularProgressIndicator(),
-//           ),
-//         ],
-//       );
-//       ws.add(modal);
-//     }
-//     return ws;
-//   }
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return Scaffold(
-//         appBar: AppBar(
-//           title: Text('Register Pincode'),
-//           automaticallyImplyLeading: false,
-//           centerTitle: true,
-//         ),
-//         body: new Builder(builder: (BuildContext context) {
-//           return new Stack(children: _buildAccountForm(context));
-//         }));
-//   }
-// }
-
-
 
 class Pincode {
   String pincode;
@@ -132,15 +19,14 @@ class AddPincodeComponentState extends State<AddPincodeComponent> {
   bool _submitting = false;
   Pincode newPincode = new Pincode();
   bool _autoValidate = false;
-
   bool _pincodeMatch;
 
-  String _pincode;
-
   // Holds the text that user typed.
-  String text = '';
+  String text1 = '';
+  String text2 = '';
   // Displays the "*" as the pincode is type
-  String textDisplay = '';
+  String textDisplay1 = '';
+  String textDisplay2 = '';
 
   // True if shift enabled.
   bool shiftEnabled = false;
@@ -148,51 +34,52 @@ class AddPincodeComponentState extends State<AddPincodeComponent> {
   // is true will show the numeric keyboard.
   bool isNumericMode = true;
 
-  // void _checkForPincodeChanges() async {
-  //   if (_formKey.currentState.validate()) {
-  //     // Close the on-screen keyboard by removing focus from                 labelText: 'Account Name',                labelText: 'Account Name',the form's inputs
-  //     FocusScope.of(context).requestFocus(new FocusNode());
-  //     // Save the form
-  //     _formKey.currentState.save();
+  // Sets the two virtual keyboard, default is the first virtual keyboard
+  bool virtualKeyboard1 = true;
 
-  //     final _readPincode = await globals.storage.read(key: "pincodeKey");
-  //     setState(() {
-  //       if (text.length == 4) {
-  //         if (_readPincode == text) {
-  //           Application.router.navigateTo(context, "/home");
-  //           timer.cancel();
-  //         } else {
-  //           _pincodeMatch = false;
-  //         }
-  //       } else {
-  //         _pincodeMatch = true;
-  //       }
-  //     });
-  //   }
-  // }
-
-
-  void _validateInputs(BuildContext context) async {
+  void _checkForPincodeChanges() async {
     if (_formKey.currentState.validate()) {
       // Close the on-screen keyboard by removing focus from                 labelText: 'Account Name',                labelText: 'Account Name',the form's inputs
       FocusScope.of(context).requestFocus(new FocusNode());
       // Save the form
       _formKey.currentState.save();
 
+      // final _readPincode = await globals.storage.read(key: "pincodeKey");
       setState(() {
-        _submitting = true;
-      });
-      _pincode = text;
-      await globals.storage.write(key: "pincodeKey", value: _pincode);
-      // For debug, check if pin code was save
-      final read = await globals.storage.read(key: "pincodeKey");
-      print("The pincode: $read was succesfully save.");
-      Application.router.navigateTo(context, "/account");
-    }
-  }
+        if (text1.length == 4) {
+          // For debug
+          //print("The value of text1 is: $text1 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+          // Switch to second virtual keyboard
+          virtualKeyboard1 = false;
 
-  void _checkForPincodeChanges() async {
-    
+          if (text2.length == 4) {
+            // For debug
+            //print("The value of text2 is: $text2 ##########################################################");
+
+            if (text1 == text2) {
+              _pincodeMatch = true;
+              globals.storage.write(key: "pincodeKey", value: text1);
+              // For debug, check if pin code was save
+              final read = globals.storage.read(key: "pincodeKey");
+              print("The pincode: $read was succesfully save.");
+              Application.router.navigateTo(context, "/account");
+              timer.cancel();
+            } else {
+              _pincodeMatch = false;
+              virtualKeyboard1 = true;
+              text1 = text2 = '';
+              textDisplay1 = textDisplay2 = '';
+            }
+          } else {
+            // Stay in second virtual keyboard
+            virtualKeyboard1 = false;
+          }
+        } else {
+          // Stay in first virtual keyboard
+          virtualKeyboard1 = true;
+        }
+      });
+    }
   }
 
   List<Widget> _buildAccountForm(BuildContext context) {
@@ -221,7 +108,31 @@ class AddPincodeComponentState extends State<AddPincodeComponent> {
             Container(
               alignment: Alignment.center,
                 child: Text(
-                  textDisplay,
+                  textDisplay1,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 35.0,
+                    letterSpacing: 20.0,
+                  ),
+                ),
+            ),
+
+            Container(
+              alignment: Alignment.center,
+              child: Text(
+                "Re-enter pincode", 
+                style: TextStyle(fontSize: 20.0,),
+              ),
+            ),
+
+            new SizedBox(
+              height: 30.0,
+            ),
+
+            Container(
+              alignment: Alignment.center,
+                child: Text(
+                  textDisplay2,
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontSize: 35.0,
@@ -254,30 +165,35 @@ class AddPincodeComponentState extends State<AddPincodeComponent> {
             new SizedBox(
               height: 30.0,
             ),
-            new RaisedButton(
-              onPressed: () {
-                _validateInputs(context);
-              },
-              child: new Text('Submit'),
-            ),
 
-            new SizedBox(
-              height: 30.0,
-            ),
-
+            virtualKeyboard1 ?
             Container(
-            // Keyboard is transparent
-            //color: Colors.red,
-            child: VirtualKeyboard(
-                fontSize: 28,
-                // [0-9] + .
-                type: VirtualKeyboardType.Numeric,
-                // Callback for key press event
-                onKeyPress: (key) {
-                  _onKeyPress(key);
-                }
-            ),
-          )
+              // Keyboard is transparent
+              //color: Colors.red,
+              child: VirtualKeyboard(
+                  fontSize: 28,
+                  // [0-9] + .
+                  type: VirtualKeyboardType.Numeric,
+                  // Callback for key press event
+                  onKeyPress: (key1) {
+                    _onKeyPress1(key1);
+                  }
+              ),
+            )
+            :
+            Container(
+              // Keyboard is transparent
+              //color: Colors.red,
+              child: VirtualKeyboard(
+                  fontSize: 28,
+                  // [0-9] + .
+                  type: VirtualKeyboardType.Numeric,
+                  // Callback for key press event
+                  onKeyPress: (key2) {
+                    _onKeyPress2(key2);
+                  }
+              ),
+            )
           ],
         )
     );
@@ -313,32 +229,32 @@ class AddPincodeComponentState extends State<AddPincodeComponent> {
         }));
   }
 
-    /// Fired when the virtual keyboard key is pressed.
-  _onKeyPress(VirtualKeyboardKey key) {
-    if (text.length < 4) {
-      if (key.keyType == VirtualKeyboardKeyType.String) {
-        text = text + (shiftEnabled ? key.capsText : key.text);
+  // Fired when the virtual keyboard key is pressed.
+  _onKeyPress1(VirtualKeyboardKey key1) {
+    if (text1.length < 4) {
+      if (key1.keyType == VirtualKeyboardKeyType.String) {
+        text1 = text1 + (shiftEnabled ? key1.capsText : key1.text);
         // For the "*" display
-        textDisplay = "";
-        for (int i=0; i<text.length; i++) {
-          textDisplay = textDisplay + "*";
+        textDisplay1 = "";
+        for (int i=0; i<text1.length; i++) {
+          textDisplay1 = textDisplay1 + "*";
         }
-      } else if (key.keyType == VirtualKeyboardKeyType.Action) {
-        switch (key.action) {
+      } else if (key1.keyType == VirtualKeyboardKeyType.Action) {
+        switch (key1.action) {
           case VirtualKeyboardKeyAction.Backspace:
-            if (text.length == 0) return;
-              text = text.substring(0, text.length - 1);
+            if (text1.length == 0) return;
+              text1 = text1.substring(0, text1.length - 1);
               // For the "*" display
-              textDisplay = "";
-              for (int i=0; i<text.length; i++) {
-                textDisplay = textDisplay + "*";
+              textDisplay1 = "";
+              for (int i=0; i<text1.length; i++) {
+                textDisplay1 = textDisplay1 + "*";
               }          
             break;
           case VirtualKeyboardKeyAction.Return:
-            text = text + '\n';
+            text1 = text1 + '\n';
             break;
           case VirtualKeyboardKeyAction.Space:
-            text = text + key.text;
+            text1 = text1 + key1.text;
             break;
           case VirtualKeyboardKeyAction.Shift:
             shiftEnabled = !shiftEnabled;
@@ -347,22 +263,84 @@ class AddPincodeComponentState extends State<AddPincodeComponent> {
         }
       }
     // When text length is greater than 4 characters, disable the numeric keys except the backspace
-    } else if (key.keyType == VirtualKeyboardKeyType.Action) {
-        switch (key.action) {
+    } else if (key1.keyType == VirtualKeyboardKeyType.Action) {
+        switch (key1.action) {
           case VirtualKeyboardKeyAction.Backspace:
-            if (text.length == 0) return;
-            text = text.substring(0, text.length - 1);
+            if (text1.length == 0) return;
+            text1 = text1.substring(0, text1.length - 1);
             // For the "*" display
-            textDisplay = "";
-            for (int i=0; i<text.length; i++) {
-              textDisplay = textDisplay + "*";
+            textDisplay1 = "";
+            for (int i=0; i<text1.length; i++) {
+              textDisplay1 = textDisplay1 + "*";
             }
             break;
           case VirtualKeyboardKeyAction.Return:
-            text = text + '\n';
+            text1 = text1 + '\n';
             break;
           case VirtualKeyboardKeyAction.Space:
-            text = text + key.text;
+            text1 = text1 + key1.text;
+            break;
+          case VirtualKeyboardKeyAction.Shift:
+            shiftEnabled = !shiftEnabled;
+            break;
+          default:
+        }
+    }
+
+    // Update the screen
+    setState(() {});
+  }
+
+  // Fired when the virtual keyboard key is pressed.
+  _onKeyPress2(VirtualKeyboardKey key2) {
+    if (text2.length < 4) {
+      if (key2.keyType == VirtualKeyboardKeyType.String) {
+        text2 = text2 + (shiftEnabled ? key2.capsText : key2.text);
+        // For the "*" display
+        textDisplay2 = "";
+        for (int i=0; i<text2.length; i++) {
+          textDisplay2 = textDisplay2 + "*";
+        }
+      } else if (key2.keyType == VirtualKeyboardKeyType.Action) {
+        switch (key2.action) {
+          case VirtualKeyboardKeyAction.Backspace:
+            if (text2.length == 0) return;
+              text2 = text2.substring(0, text2.length - 1);
+              // For the "*" display
+              textDisplay2 = "";
+              for (int i=0; i<text2.length; i++) {
+                textDisplay2 = textDisplay2 + "*";
+              }          
+            break;
+          case VirtualKeyboardKeyAction.Return:
+            text2 = text2 + '\n';
+            break;
+          case VirtualKeyboardKeyAction.Space:
+            text2 = text2 + key2.text;
+            break;
+          case VirtualKeyboardKeyAction.Shift:
+            shiftEnabled = !shiftEnabled;
+            break;
+          default:
+        }
+      }
+    // When text length is greater than 4 characters, disable the numeric keys except the backspace
+    } else if (key2.keyType == VirtualKeyboardKeyType.Action) {
+        switch (key2.action) {
+          case VirtualKeyboardKeyAction.Backspace:
+            if (text2.length == 0) return;
+            text2 = text2.substring(0, text2.length - 1);
+            // For the "*" display
+            textDisplay2 = "";
+            for (int i=0; i<text2.length; i++) {
+              textDisplay2 = textDisplay2 + "*";
+            }
+            break;
+          case VirtualKeyboardKeyAction.Return:
+            text2 = text2 + '\n';
+            break;
+          case VirtualKeyboardKeyAction.Space:
+            text2 = text2 + key2.text;
             break;
           case VirtualKeyboardKeyAction.Shift:
             shiftEnabled = !shiftEnabled;

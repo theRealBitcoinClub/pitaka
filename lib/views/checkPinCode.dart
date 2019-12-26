@@ -36,7 +36,7 @@ class CheckPincodeComponentState extends State<CheckPincodeComponent> {
 
   void _checkForPincodeChanges() async {
     if (_formKey.currentState.validate()) {
-      // Close the on-screen keyboard by removing focus from                 labelText: 'Account Name',                labelText: 'Account Name',the form's inputs
+      // Close the on-screen keyboard by removing focus from the form's inputs
       FocusScope.of(context).requestFocus(new FocusNode());
       // Save the form
       _formKey.currentState.save();
