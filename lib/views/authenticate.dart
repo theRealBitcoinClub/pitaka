@@ -77,6 +77,7 @@ class AuthenticateComponentState extends State<AuthenticateComponent> {
       'session_key': sessionKey,
       'public_key': publicKey,
       'signature': signature,
+      'app_version': globals.appVersion,
     };
     // Call authWebApp() from endpoints.dart
     var response = await authWebApp(payload);

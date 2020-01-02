@@ -2,9 +2,10 @@
 import 'package:flutter/material.dart';
 import 'package:back_button_interceptor/back_button_interceptor.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_masked_text/flutter_masked_text.dart';
 import '../../api/endpoints.dart';
 import '../app.dart';
+import '../../utils/globals.dart' as globals;
+
 
 class Code {
   String value;
@@ -66,7 +67,8 @@ class VerifyComponentState extends State<VerifyComponent> {
       } else {
         var codePayload = {
           "mobile_number": "${widget.mobileNumber}",
-          "code": newCode.value
+          "code": newCode.value,
+          "app_version": globals.appVersion,
         };
         var resp = await verifyOtpCode(codePayload);
         if (resp.verified) {

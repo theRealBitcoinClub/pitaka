@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import '../../api/endpoints.dart';
 import '../app.dart';
 import 'package:easy_dialog/easy_dialog.dart';
+import '../../utils/globals.dart' as globals;
 
 
 class Mobile {
@@ -106,7 +107,10 @@ class RequestComponentState extends State<RequestComponent> {
         proceed = true;
       } else {
         newMobile.number = "+63" + newMobile.number.substring(1).replaceAll(" - ", "");
-        var numberPayload = {"mobile_number": newMobile.number};
+        var numberPayload = {
+          "mobile_number": newMobile.number,
+          "app_version": globals.appVersion,
+        };
         var resp = await requestOtpCode(numberPayload);
         
         if (resp.success) {

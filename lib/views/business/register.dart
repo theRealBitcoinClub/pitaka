@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../api/endpoints.dart';
 import '../../views/app.dart';
 import 'package:flutter_masked_text/flutter_masked_text.dart';
+import '../../utils/globals.dart' as globals;
 
 class BusinessAccount {
   String name;
@@ -99,7 +100,7 @@ class BusinessRegistrationComponentState extends State<BusinessRegistrationCompo
         "name": businessInfo.name,
         "address": businessInfo.address,
         "type": _selectedType,
-        
+        "app_version": globals.appVersion,
       };
       setState(() {
         _submitting = true;

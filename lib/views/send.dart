@@ -232,6 +232,7 @@ class SendComponentState extends State<SendComponent> {
       'transaction_id': txnID,
       'transaction_datetime': _txnReadableDateTime,
       'proof_of_payment': proofOfPayment,
+      'app_version': globals.appVersion,
     };
     var response = await transferAsset(payload);
     // Check the error response from transferAsset in endpoints.dart

@@ -50,7 +50,8 @@ class AddAccountComponentState extends State<AddAccountComponent> {
         "name": newAccount.name,
         "public_key": publicKey,
         "txn_hash": "helloworld",
-        "signature": signature
+        "signature": signature,
+        "app_version": globals.appVersion,
       };
       setState(() {
         _submitting = true;

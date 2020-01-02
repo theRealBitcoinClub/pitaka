@@ -153,7 +153,8 @@ class ReceiveComponentState extends State<ReceiveComponent> {
                     'signature': HEX.encode(lastSignedBalance), // Convert signature back to string
                     'balance': lBalance,
                     'timestamp': timestamp,
-                  }
+                  },
+                  'app_version': globals.appVersion,
                 };
                 // Call receiveAsset function from "endpoints.dart"
                 var response = await receiveAsset(payload);
