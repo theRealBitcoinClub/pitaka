@@ -3,6 +3,8 @@ import '../../api/endpoints.dart';
 import '../../views/app.dart';
 import 'package:flutter_masked_text/flutter_masked_text.dart';
 import '../../utils/globals.dart' as globals;
+import '../../utils/dialog.dart';
+
 
 class BusinessAccount {
   String name;
@@ -106,6 +108,12 @@ class BusinessRegistrationComponentState extends State<BusinessRegistrationCompo
         _submitting = true;
       });
       var response = await registerBusiness(businessToRegister);
+
+      // Catch app version compatibility
+      if (response.error == "app_version_outdated") {
+        showOutdatedAppVersionDialog(context);
+      }
+
       if(response != null) {
         setState(() {
           _submitting = false;

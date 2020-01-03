@@ -19,6 +19,7 @@ import 'package:passcode_screen/passcode_screen.dart';
 import 'package:passcode_screen/circle.dart';
 import 'package:passcode_screen/keyboard.dart';
 import 'package:easy_dialog/easy_dialog.dart';
+import '../../utils/dialog.dart';
 
 
 class User {
@@ -222,6 +223,11 @@ class RegisterComponentState extends State<RegisterComponent> {
           // Catch duplicate email address in the error
           if (user.error == "duplicate_email") {
             showAlertDialog();
+          }
+
+          // Catch app version compatibility
+          if (user.error == "app_version_outdated") {
+            showOutdatedAppVersionDialog(context);
           }
           
           await globals.storage.write(key: "userId", value: user.id);

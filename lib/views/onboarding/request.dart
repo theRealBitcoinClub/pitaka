@@ -5,6 +5,7 @@ import '../../api/endpoints.dart';
 import '../app.dart';
 import 'package:easy_dialog/easy_dialog.dart';
 import '../../utils/globals.dart' as globals;
+import '../../utils/dialog.dart';
 
 
 class Mobile {
@@ -112,6 +113,11 @@ class RequestComponentState extends State<RequestComponent> {
           "app_version": globals.appVersion,
         };
         var resp = await requestOtpCode(numberPayload);
+
+        // Catch app version compatibility
+        if (resp.error == "app_version_outdated") {
+          showOutdatedAppVersionDialog(context);
+        }
         
         if (resp.success) {
           proceed = true;

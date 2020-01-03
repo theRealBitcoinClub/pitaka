@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import '../../api/endpoints.dart';
 import '../app.dart';
 import '../../utils/globals.dart' as globals;
+import '../../utils/dialog.dart';
 
 
 class Code {
@@ -71,6 +72,12 @@ class VerifyComponentState extends State<VerifyComponent> {
           "app_version": globals.appVersion,
         };
         var resp = await verifyOtpCode(codePayload);
+
+        // Catch app version compatibility
+        if (resp.error == "app_version_outdated") {
+          showOutdatedAppVersionDialog(context);
+        }
+
         if (resp.verified) {
           proceed = true;
         }

@@ -6,6 +6,8 @@ import '../components/drawer.dart';
 import '../utils/globals.dart' as globals;
 import '../utils/globals.dart';
 import 'dart:async';
+import '../utils/dialog.dart';
+
 
 class AddAccount {
   String name;
@@ -57,6 +59,12 @@ class AddAccountComponentState extends State<AddAccountComponent> {
         _submitting = true;
       });
       var response = await createAccount(accountPayload);
+
+      // Catch app version compatibility
+      if (response.error == "app_version_outdated") {
+        showOutdatedAppVersionDialog(context);
+      }
+
       if(response != null) {
         setState(() {
           _submitting = false;
