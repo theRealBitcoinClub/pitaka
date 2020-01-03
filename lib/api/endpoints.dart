@@ -43,7 +43,8 @@ Future<dynamic> sendPostRequest(url, payload) async {
 Future<dynamic> sendGetRequest(url) async {
   globals.loading = true;
   var payload = {
-    'public_key': globals.serverPublicKey
+    'public_key': globals.serverPublicKey,
+    'app_version': globals.appVersion,
   };
   var dio = new Dio();
   dio.options.connectTimeout = 10000;  // Set connection timeout for 10 seconds
@@ -159,6 +160,7 @@ Future<void> sendLoginRequest() async {
     "public_key": publicKey,
     "session_key": "hello world",
     "signature": loginSignature,
+    "app_version": globals.appVersion,
   };
   await loginUser(loginPayload);
 }
