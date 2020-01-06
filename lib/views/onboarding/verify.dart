@@ -74,7 +74,7 @@ class VerifyComponentState extends State<VerifyComponent> {
         var resp = await verifyOtpCode(codePayload);
 
         // Catch app version compatibility
-        if (resp.error == "app_version_outdated") {
+        if (resp.error == "outdated_app_version") {
           showOutdatedAppVersionDialog(context);
         }
 

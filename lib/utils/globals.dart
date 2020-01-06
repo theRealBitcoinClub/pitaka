@@ -15,7 +15,7 @@ const String phpAssetId = '3A8F594F-D736-4673-945C-5465E0209AF0';
 // const String phpAssetId = 'C7F4D976-9204-47DC-B998-754C29B043C5';
 
 // App version
-const String appVersion = 'v0.2';
+const String appVersion = 'v0.2.0';
 
 int offlineTime;
 int timeDiff;

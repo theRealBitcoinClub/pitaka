@@ -115,7 +115,7 @@ class RequestComponentState extends State<RequestComponent> {
         var resp = await requestOtpCode(numberPayload);
 
         // Catch app version compatibility
-        if (resp.error == "app_version_outdated") {
+        if (resp.error == "outdated_app_version") {
           showOutdatedAppVersionDialog(context);
         }
         

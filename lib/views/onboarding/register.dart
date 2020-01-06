@@ -226,7 +226,7 @@ class RegisterComponentState extends State<RegisterComponent> {
           }
 
           // Catch app version compatibility
-          if (user.error == "app_version_outdated") {
+          if (user.error == "outdated_app_version") {
             showOutdatedAppVersionDialog(context);
           }
           

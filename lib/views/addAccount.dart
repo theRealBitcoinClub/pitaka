@@ -61,7 +61,7 @@ class AddAccountComponentState extends State<AddAccountComponent> {
       var response = await createAccount(accountPayload);
 
       // Catch app version compatibility
-      if (response.error == "app_version_outdated") {
+      if (response.error == "outdated_app_version") {
         showOutdatedAppVersionDialog(context);
       }
 
