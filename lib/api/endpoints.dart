@@ -125,6 +125,8 @@ Future<GenericCreateResponse> createAccount(payload) async {
   }
 }
 
+// Nowhere to found where this function is called
+// Not yet deleted for reference
 Future<GenericCreateResponse> addAccount(payload) async {
   try {
     final String url = globals.baseUrl + '/api/accounts/create';
@@ -152,6 +154,8 @@ Future<PlainSuccessResponse> loginUser(payload) async {
   }
 }
 
+// Nowhere to found where this function is called
+// Not yet deleted for reference
 Future<void> sendLoginRequest() async {
   String publicKey = await globals.storage.read(key: "publicKey");
   String privateKey = await globals.storage.read(key: "privateKey");

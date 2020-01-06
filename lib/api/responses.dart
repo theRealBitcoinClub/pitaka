@@ -81,7 +81,8 @@ class BalancesResponse {
       }
     }
     return BalancesResponse(
-        success: response.data['success'], balances: _balances, error: '');
+      success: response.data['success'], balances: _balances, error: ''
+    );
   }
 
   factory BalancesResponse.fromDatabase(List accounts) {

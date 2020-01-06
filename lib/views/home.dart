@@ -10,6 +10,7 @@ import '../utils/database_helper.dart';
 import '../utils/globals.dart';
 import 'receive.dart';
 import 'package:easy_dialog/easy_dialog.dart';
+import '../utils/dialog.dart';
 
 
 class HomeComponent extends StatefulWidget {
@@ -148,6 +149,17 @@ class HomeComponentState extends State<HomeComponent> {
                           });
                           // Return hometabs to show the balance 
                           return hometabs.buildBalancesList(balances);
+                        }
+                        // When app version error, show dialog
+                        // ANDing with globals.online prevents showing the dialog 
+                        // during manually swithing to airplane mode
+                        else if (snapshot.data.error == 'outdated_app_version' && globals.online) {
+                          Future.delayed(Duration(milliseconds: 100), () async {
+                            _executeFuture = true;
+                            if(_executeFuture){
+                              showOutdatedAppVersionDialog(context);
+                            }
+                          });
                         } 
                         else {
                           return new CircularProgressIndicator();
@@ -186,6 +198,17 @@ class HomeComponentState extends State<HomeComponent> {
                           });
                           // Return hometabs to show the balance 
                           return hometabs.buildTransactionsList(snapshot.data.transactions);
+                        }
+                        // When app version error, show dialog
+                        // ANDing with globals.online prevents showing the dialog 
+                        // during manually swithing to airplane mode
+                        else if (snapshot.data.error == 'outdated_app_version' && globals.online) {
+                          Future.delayed(Duration(milliseconds: 100), () async {
+                            _executeFuture = true;
+                            if(_executeFuture){
+                              showOutdatedAppVersionDialog(context);
+                            }
+                          });
                         } 
                         else {
                           return Text('No transactions to display');
