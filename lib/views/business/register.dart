@@ -102,7 +102,6 @@ class BusinessRegistrationComponentState extends State<BusinessRegistrationCompo
         "name": businessInfo.name,
         "address": businessInfo.address,
         "type": _selectedType,
-        "app_version": globals.appVersion,
       };
       setState(() {
         _submitting = true;

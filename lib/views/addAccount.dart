@@ -53,7 +53,6 @@ class AddAccountComponentState extends State<AddAccountComponent> {
         "public_key": publicKey,
         "txn_hash": "helloworld",
         "signature": signature,
-        "app_version": globals.appVersion,
       };
       setState(() {
         _submitting = true;

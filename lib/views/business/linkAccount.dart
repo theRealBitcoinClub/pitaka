@@ -96,7 +96,6 @@ class SetBusinessAccountComponentState extends State<SetBusinessAccountComponent
       var info = {
         "account": formInfo.account,
         "business": formInfo.business,
-        "app_version": globals.appVersion,
       };
       setState(() {
         _submitting = true;

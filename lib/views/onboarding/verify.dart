@@ -69,7 +69,6 @@ class VerifyComponentState extends State<VerifyComponent> {
         var codePayload = {
           "mobile_number": "${widget.mobileNumber}",
           "code": newCode.value,
-          "app_version": globals.appVersion,
         };
         var resp = await verifyOtpCode(codePayload);
 

@@ -110,7 +110,6 @@ class RequestComponentState extends State<RequestComponent> {
         newMobile.number = "+63" + newMobile.number.substring(1).replaceAll(" - ", "");
         var numberPayload = {
           "mobile_number": newMobile.number,
-          "app_version": globals.appVersion,
         };
         var resp = await requestOtpCode(numberPayload);
 

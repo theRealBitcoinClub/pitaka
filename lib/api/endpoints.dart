@@ -24,7 +24,13 @@ Future<dynamic> sendPostRequest(url, payload) async {
   dio.interceptors.add(CookieManager(cj));
   Response response;
   try {
-    response = await dio.post(url, data: payload);
+    response = await dio.post(
+      url, 
+      data: payload, 
+      options: Options(
+        headers: {"Version": "${globals.appVersion}"}
+      ),
+    );
   } catch(e) {
     // Cast error to string type
     String errorType = e.toString();
@@ -44,7 +50,6 @@ Future<dynamic> sendGetRequest(url) async {
   globals.loading = true;
   var payload = {
     'public_key': globals.serverPublicKey,
-    'app_version': globals.appVersion,
   };
   var dio = new Dio();
   dio.options.connectTimeout = 10000;  // Set connection timeout for 10 seconds
@@ -54,7 +59,13 @@ Future<dynamic> sendGetRequest(url) async {
   dio.interceptors.add(CookieManager(cj));
   Response response;
   try {
-    response = await dio.get(url, queryParameters:payload);
+    response = await dio.get(
+      url, 
+      queryParameters:payload,
+      options: Options(
+        headers: {"Version": "${globals.appVersion}"}
+      ),
+    );
   } catch(e) {
     // Cast error to string type
     String errorType = e.toString();
@@ -164,7 +175,6 @@ Future<void> sendLoginRequest() async {
     "public_key": publicKey,
     "session_key": "hello world",
     "signature": loginSignature,
-    "app_version": globals.appVersion,
   };
   await loginUser(loginPayload);
 }

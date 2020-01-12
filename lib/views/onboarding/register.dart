@@ -209,7 +209,6 @@ class RegisterComponentState extends State<RegisterComponent> {
             "birthday": "2006-01-02",
             "email": newUser.emailAddress,
             "mobile_number": mobileNumber,
-            "app_version": globals.appVersion,
           };
           String txnHash = generateTransactionHash(userPayload);
           print(txnHash);
@@ -238,7 +237,6 @@ class RegisterComponentState extends State<RegisterComponent> {
             "public_key": publicKey,
             "session_key": "hello world",
             "signature": loginSignature,
-            "app_version": globals.appVersion,
           };
           await loginUser(loginPayload);
 
