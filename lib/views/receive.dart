@@ -65,7 +65,7 @@ class ReceiveComponentState extends State<ReceiveComponent> {
 
   // Scan QRcode from Payment Proof after Send
   void scanQrcode() async {
-    String qrcode = await FlutterBarcodeScanner.scanBarcode("#ff6666","Cancel", true);
+    String qrcode = await FlutterBarcodeScanner.scanBarcode("#ff6666","Cancel", true,  ScanMode.DEFAULT);
     // Decode and split the QRcode data
     var baseDecoded = base64.decode(qrcode);
     var gzipDecoded = new GZipDecoder().decodeBytes(baseDecoded);
