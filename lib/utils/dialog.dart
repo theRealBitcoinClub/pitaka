@@ -31,8 +31,20 @@ showOutdatedAppVersionDialog(context) {
             textColor: Colors.lightBlue,
             onPressed: () {
               Navigator.of(context).pop();
+              Navigator.of(context).pop();
             },
-            child: new Text("OK",
+            child: new Text("Ok",
+              textScaleFactor: 1.2,
+              textAlign: TextAlign.center,
+            ),),
+          new FlatButton(
+            padding: EdgeInsets.all(8),
+            textColor: Colors.lightBlue,
+            onPressed: () {
+              Navigator.of(context).pop();
+              Navigator.of(context).pop();
+            },
+            child: new Text("Cancel",
               textScaleFactor: 1.2,
               textAlign: TextAlign.center,
             ),),

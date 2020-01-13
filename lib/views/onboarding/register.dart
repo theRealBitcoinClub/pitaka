@@ -211,7 +211,7 @@ class RegisterComponentState extends State<RegisterComponent> {
             "mobile_number": mobileNumber,
           };
           String txnHash = generateTransactionHash(userPayload);
-          print(txnHash);
+          print("The value of txnHash is: $txnHash");
           String signature = await signTransaction(txnHash, privateKey);
 
           userPayload["public_key"] = publicKey;
@@ -232,7 +232,7 @@ class RegisterComponentState extends State<RegisterComponent> {
           await globals.storage.write(key: "userId", value: user.id);
           // Login
           String loginSignature =
-              await signTransaction("hello world", privateKey);
+            await signTransaction("hello world", privateKey);
           var loginPayload = {
             "public_key": publicKey,
             "session_key": "hello world",

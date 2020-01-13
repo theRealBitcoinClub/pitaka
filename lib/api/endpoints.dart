@@ -153,6 +153,7 @@ Future<PlainSuccessResponse> loginUser(payload) async {
   try {
     Response response;
     response = await sendPostRequest(url, payload);
+    print("From endpoints.dart loginUser() - The value of response is $response");
     // Save user details in shared preferences
     SharedPreferences prefs = await SharedPreferences.getInstance();
     var user = response.data['user'];
@@ -161,6 +162,7 @@ Future<PlainSuccessResponse> loginUser(payload) async {
     await prefs.setString('email', user['Email']);
     return PlainSuccessResponse.fromResponse(response);
   } catch (e) {
+    print("The error value is: $e");
     throw Exception(e);
   }
 }
