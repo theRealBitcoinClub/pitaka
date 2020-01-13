@@ -100,7 +100,7 @@ class AuthenticateComponentState extends State<AuthenticateComponent> {
 
   void scanBarcode() async {
     allowCamera();
-    String barcode = await FlutterBarcodeScanner.scanBarcode("#ff6666", "Cancel", true);
+    String barcode = await FlutterBarcodeScanner.scanBarcode("#ff6666", "Cancel", true, ScanMode.DEFAULT);
     setState(() {
       if (barcode.length > 0) {
         sessionKey = barcode;
