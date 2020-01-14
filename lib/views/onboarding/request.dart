@@ -6,6 +6,7 @@ import '../app.dart';
 import 'package:easy_dialog/easy_dialog.dart';
 import '../../utils/globals.dart' as globals;
 import '../../utils/dialog.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 
 class Mobile {
@@ -54,6 +55,17 @@ class RequestComponentState extends State<RequestComponent> {
   BuildContext _scaffoldContext;
   FocusNode focusNode = FocusNode();
   bool _submitting = false;
+
+  bool showOutdatedAppVersionMsg = false;
+
+  _urlLauncher() async {
+    const url = 'https://play.google.com/store/apps/details?id=com.paytaca.app&hl=en';
+    if (await canLaunch(url)) {
+      await launch(url, forceSafariVC: false);
+    } else {
+      throw 'Could not launch $url';
+    }
+  }
 
   onDialogClose() {
     // Not use
@@ -113,9 +125,18 @@ class RequestComponentState extends State<RequestComponent> {
         };
         var resp = await requestOtpCode(numberPayload);
 
+        // // Catch app version compatibility
+        // if (resp.error == "outdated_app_version") {
+        //   showOutdatedAppVersionDialog(context);
+        // }
+
         // Catch app version compatibility
         if (resp.error == "outdated_app_version") {
-          showOutdatedAppVersionDialog(context);
+          setState(() {
+            showOutdatedAppVersionMsg = true;
+            _submitting = false;
+          });
+          
         }
         
         if (resp.success) {
@@ -153,7 +174,19 @@ class RequestComponentState extends State<RequestComponent> {
                 shrinkWrap: true,
                 padding: const EdgeInsets.all(20.0),
                 children: <Widget>[
-                  new Center(
+
+                  showOutdatedAppVersionMsg ?
+                  new Container(
+                    child: ListTile(
+                      title: Text("Update App"),
+                      onTap: () {
+                        _urlLauncher();
+                      },
+                    ),
+                  )
+
+                 : Column( children: <Widget>[
+                 new Center(
                     child: new Text(
                       "Mobile Number Verification",
                       style: TextStyle(
@@ -196,6 +229,8 @@ class RequestComponentState extends State<RequestComponent> {
                   new SizedBox(
                     height: 97.0,
                   )
+                 ]
+                 )
                 ]
               )
             )
@@ -218,8 +253,7 @@ class RequestComponentState extends State<RequestComponent> {
         ],
       );
       ws.add(modal);
-    }
-
+    } 
     return ws;
   }
 

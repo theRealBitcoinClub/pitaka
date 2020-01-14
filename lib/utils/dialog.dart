@@ -1,7 +1,17 @@
   
 import 'package:flutter/material.dart';
-import 'package:easy_dialog/easy_dialog.dart';  
+import 'package:easy_dialog/easy_dialog.dart'; 
+import 'package:url_launcher/url_launcher.dart'; 
 
+
+_launchURL() async {
+  const url = 'https://play.google.com/store/apps/details?id=com.paytaca.app&hl=en';
+  if (await canLaunch(url)) {
+    await launch(url, forceSafariVC: false);
+  } else {
+    throw 'Could not launch $url';
+  }
+}
 
 onDialogClose() {
   // Not use
@@ -20,7 +30,7 @@ showOutdatedAppVersionDialog(context) {
       textScaleFactor: 1.1,
       textAlign: TextAlign.center,
     ),
-    height: 160,
+    height: 460,
     closeButton: false,
     contentList: [
       Row(
@@ -30,8 +40,7 @@ showOutdatedAppVersionDialog(context) {
             padding: EdgeInsets.all(8),
             textColor: Colors.lightBlue,
             onPressed: () {
-              Navigator.of(context).pop();
-              Navigator.of(context).pop();
+              _launchURL();
             },
             child: new Text("Ok",
               textScaleFactor: 1.2,
