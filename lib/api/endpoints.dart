@@ -16,7 +16,7 @@ DatabaseHelper databaseHelper = DatabaseHelper();
 
 Future<dynamic> sendPostRequest(url, payload) async {
   var dio = new Dio();
-  dio.options.connectTimeout = 10000;  // Set connection timeout for 10 seconds
+  dio.options.connectTimeout = 30000;  // Set connection timeout for 30 seconds
   dio.transformer = new FlutterTransformer();
   var tempDir = await getTemporaryDirectory();
   String tempPath = tempDir.path;
@@ -24,7 +24,13 @@ Future<dynamic> sendPostRequest(url, payload) async {
   dio.interceptors.add(CookieManager(cj));
   Response response;
   try {
-    response = await dio.post(url, data: payload);
+    response = await dio.post(
+      url, 
+      data: payload, 
+      options: Options(
+        headers: {"Version": "${globals.appVersion}"}
+      ),
+    );
   } catch(e) {
     // Cast error to string type
     String errorType = e.toString();
@@ -46,14 +52,20 @@ Future<dynamic> sendGetRequest(url) async {
     'public_key': globals.serverPublicKey
   };
   var dio = new Dio();
-  dio.options.connectTimeout = 10000;  // Set connection timeout for 10 seconds
+  dio.options.connectTimeout = 30000;  // Set connection timeout for 30 seconds
   var tempDir = await getTemporaryDirectory();
   String tempPath = tempDir.path;
   CookieJar cj = new PersistCookieJar(dir: tempPath);
   dio.interceptors.add(CookieManager(cj));
   Response response;
   try {
-    response = await dio.get(url, queryParameters:payload);
+    response = await dio.get(
+      url, 
+      queryParameters:payload,
+      options: Options(
+        headers: {"Version": "${globals.appVersion}"}
+      ),
+    );
   } catch(e) {
     // Cast error to string type
     String errorType = e.toString();
