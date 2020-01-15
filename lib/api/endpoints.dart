@@ -16,7 +16,7 @@ DatabaseHelper databaseHelper = DatabaseHelper();
 
 Future<dynamic> sendPostRequest(url, payload) async {
   var dio = new Dio();
-  dio.options.connectTimeout = 10000;  // Set connection timeout for 10 seconds
+  dio.options.connectTimeout = 30000;  // Set connection timeout for 30 seconds
   dio.transformer = new FlutterTransformer();
   var tempDir = await getTemporaryDirectory();
   String tempPath = tempDir.path;
@@ -52,7 +52,7 @@ Future<dynamic> sendGetRequest(url) async {
     'public_key': globals.serverPublicKey,
   };
   var dio = new Dio();
-  dio.options.connectTimeout = 10000;  // Set connection timeout for 10 seconds
+  dio.options.connectTimeout = 30000;  // Set connection timeout for 30 seconds
   var tempDir = await getTemporaryDirectory();
   String tempPath = tempDir.path;
   CookieJar cj = new PersistCookieJar(dir: tempPath);
