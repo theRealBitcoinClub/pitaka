@@ -41,11 +41,12 @@ class PlainSuccessResponse {
 class OtpVerificationResponse {
   final bool success;
   final bool verified;
+  final String error;
 
-  OtpVerificationResponse({this.success, this.verified});
+  OtpVerificationResponse({this.success, this.verified, this.error});
 
   factory OtpVerificationResponse.fromResponse(Response response) {
-    return OtpVerificationResponse(success: response.data['success'], verified: response.data['verified']);
+    return OtpVerificationResponse(success: response.data['success'], verified: response.data['verified'], error: '');
   }
 }
 
@@ -80,7 +81,8 @@ class BalancesResponse {
       }
     }
     return BalancesResponse(
-        success: response.data['success'], balances: _balances, error: '');
+      success: response.data['success'], balances: _balances, error: ''
+    );
   }
 
   factory BalancesResponse.fromDatabase(List accounts) {

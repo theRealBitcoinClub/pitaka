@@ -10,6 +10,7 @@ import 'package:permission_handler/permission_handler.dart';
 import '../utils/globals.dart' as globals;
 import '../utils/database_helper.dart';
 import '../utils/globals.dart';
+import '../utils/dialog.dart';
 
 
 class AuthenticateComponent extends StatefulWidget {
@@ -77,9 +78,16 @@ class AuthenticateComponentState extends State<AuthenticateComponent> {
       'session_key': sessionKey,
       'public_key': publicKey,
       'signature': signature,
+      'app_version': globals.appVersion,
     };
     // Call authWebApp() from endpoints.dart
     var response = await authWebApp(payload);
+
+    // Catch app version compatibility
+    if (response.error == "outdated_app_version") {
+      showOutdatedAppVersionDialog(context);
+    }
+
     // Check the error response from authWebApp in endpoints.dart
     // Call the function for alert dialog
     if (response.error == "request_error") {
@@ -100,7 +108,7 @@ class AuthenticateComponentState extends State<AuthenticateComponent> {
 
   void scanBarcode() async {
     allowCamera();
-    String barcode = await FlutterBarcodeScanner.scanBarcode("#ff6666", "Cancel", true, ScanMode.DEFAULT);
+    String barcode = await FlutterBarcodeScanner.scanBarcode("#ff6666", "Cancel", true,  ScanMode.DEFAULT);
     setState(() {
       if (barcode.length > 0) {
         sessionKey = barcode;

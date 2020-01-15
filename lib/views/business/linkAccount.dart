@@ -1,11 +1,10 @@
-// SetBusinessAccountComponent
-
 import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../api/endpoints.dart';
 import '../../views/app.dart';
+import '../../utils/globals.dart' as globals;
+import '../../utils/dialog.dart';
 
 // business/connect-account
 
@@ -96,12 +95,18 @@ class SetBusinessAccountComponentState extends State<SetBusinessAccountComponent
       _formKey.currentState.save();
       var info = {
         "account": formInfo.account,
-        "business": formInfo.business
+        "business": formInfo.business,
       };
       setState(() {
         _submitting = true;
         });
       var response = await linkBusinessToAccount(info);
+
+      // Catch app version compatibility
+      if (response.error == "outdated_app_version") {
+        showOutdatedAppVersionDialog(context);
+      }
+
       if(response.success) {
         setState(() {
           _submitting = false;

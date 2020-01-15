@@ -2,9 +2,11 @@
 import 'package:flutter/material.dart';
 import 'package:back_button_interceptor/back_button_interceptor.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_masked_text/flutter_masked_text.dart';
 import '../../api/endpoints.dart';
 import '../app.dart';
+import '../../utils/globals.dart' as globals;
+import '../../utils/dialog.dart';
+
 
 class Code {
   String value;
@@ -66,9 +68,15 @@ class VerifyComponentState extends State<VerifyComponent> {
       } else {
         var codePayload = {
           "mobile_number": "${widget.mobileNumber}",
-          "code": newCode.value
+          "code": newCode.value,
         };
         var resp = await verifyOtpCode(codePayload);
+
+        // Catch app version compatibility
+        if (resp.error == "outdated_app_version") {
+          showOutdatedAppVersionDialog(context);
+        }
+
         if (resp.verified) {
           proceed = true;
         }

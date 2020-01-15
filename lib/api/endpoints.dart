@@ -49,7 +49,7 @@ Future<dynamic> sendPostRequest(url, payload) async {
 Future<dynamic> sendGetRequest(url) async {
   globals.loading = true;
   var payload = {
-    'public_key': globals.serverPublicKey
+    'public_key': globals.serverPublicKey,
   };
   var dio = new Dio();
   dio.options.connectTimeout = 30000;  // Set connection timeout for 30 seconds
@@ -136,6 +136,8 @@ Future<GenericCreateResponse> createAccount(payload) async {
   }
 }
 
+// Nowhere to found where this function is called
+// Not yet deleted for reference
 Future<GenericCreateResponse> addAccount(payload) async {
   try {
     final String url = globals.baseUrl + '/api/accounts/create';
@@ -151,6 +153,7 @@ Future<PlainSuccessResponse> loginUser(payload) async {
   try {
     Response response;
     response = await sendPostRequest(url, payload);
+    print("From endpoints.dart loginUser() - The value of response is $response");
     // Save user details in shared preferences
     SharedPreferences prefs = await SharedPreferences.getInstance();
     var user = response.data['user'];
@@ -159,10 +162,13 @@ Future<PlainSuccessResponse> loginUser(payload) async {
     await prefs.setString('email', user['Email']);
     return PlainSuccessResponse.fromResponse(response);
   } catch (e) {
+    print("The error value is: $e");
     throw Exception(e);
   }
 }
 
+// Nowhere to found where this function is called
+// Not yet deleted for reference
 Future<void> sendLoginRequest() async {
   String publicKey = await globals.storage.read(key: "publicKey");
   String privateKey = await globals.storage.read(key: "privateKey");

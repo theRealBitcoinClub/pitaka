@@ -19,6 +19,7 @@ import 'package:passcode_screen/passcode_screen.dart';
 import 'package:passcode_screen/circle.dart';
 import 'package:passcode_screen/keyboard.dart';
 import 'package:easy_dialog/easy_dialog.dart';
+import '../../utils/dialog.dart';
 
 
 class User {
@@ -210,7 +211,7 @@ class RegisterComponentState extends State<RegisterComponent> {
             "mobile_number": mobileNumber,
           };
           String txnHash = generateTransactionHash(userPayload);
-          print(txnHash);
+          print("The value of txnHash is: $txnHash");
           String signature = await signTransaction(txnHash, privateKey);
 
           userPayload["public_key"] = publicKey;
@@ -222,11 +223,16 @@ class RegisterComponentState extends State<RegisterComponent> {
           if (user.error == "duplicate_email") {
             showAlertDialog();
           }
+
+          // Catch app version compatibility
+          if (user.error == "outdated_app_version") {
+            showOutdatedAppVersionDialog(context);
+          }
           
           await globals.storage.write(key: "userId", value: user.id);
           // Login
           String loginSignature =
-              await signTransaction("hello world", privateKey);
+            await signTransaction("hello world", privateKey);
           var loginPayload = {
             "public_key": publicKey,
             "session_key": "hello world",

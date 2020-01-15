@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import '../../api/endpoints.dart';
 import '../app.dart';
 import 'package:easy_dialog/easy_dialog.dart';
+import '../../utils/dialog.dart';
 
 
 class Mobile {
@@ -106,8 +107,15 @@ class RequestComponentState extends State<RequestComponent> {
         proceed = true;
       } else {
         newMobile.number = "+63" + newMobile.number.substring(1).replaceAll(" - ", "");
-        var numberPayload = {"mobile_number": newMobile.number};
+        var numberPayload = {
+          "mobile_number": newMobile.number,
+        };
         var resp = await requestOtpCode(numberPayload);
+
+        // Catch app version compatibility
+        if (resp.error == "outdated_app_version") {
+          showOutdatedAppVersionDialog(context);
+        }
         
         if (resp.success) {
           proceed = true;
@@ -144,7 +152,7 @@ class RequestComponentState extends State<RequestComponent> {
                 shrinkWrap: true,
                 padding: const EdgeInsets.all(20.0),
                 children: <Widget>[
-                  new Center(
+                 new Center(
                     child: new Text(
                       "Mobile Number Verification",
                       style: TextStyle(
@@ -209,8 +217,7 @@ class RequestComponentState extends State<RequestComponent> {
         ],
       );
       ws.add(modal);
-    }
-
+    } 
     return ws;
   }
 

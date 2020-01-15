@@ -6,6 +6,8 @@ import '../components/drawer.dart';
 import '../utils/globals.dart' as globals;
 import '../utils/globals.dart';
 import 'dart:async';
+import '../utils/dialog.dart';
+
 
 class AddAccount {
   String name;
@@ -50,12 +52,18 @@ class AddAccountComponentState extends State<AddAccountComponent> {
         "name": newAccount.name,
         "public_key": publicKey,
         "txn_hash": "helloworld",
-        "signature": signature
+        "signature": signature,
       };
       setState(() {
         _submitting = true;
       });
       var response = await createAccount(accountPayload);
+
+      // Catch app version compatibility
+      if (response.error == "outdated_app_version") {
+        showOutdatedAppVersionDialog(context);
+      }
+
       if(response != null) {
         setState(() {
           _submitting = false;

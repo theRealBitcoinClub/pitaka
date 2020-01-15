@@ -3,6 +3,8 @@ import '../../api/endpoints.dart';
 import '../../views/app.dart';
 import '../../utils/helpers.dart';
 import '../../utils/globals.dart' as globals;
+import '../../utils/dialog.dart';
+
 
 class Account {
   String name;
@@ -48,6 +50,12 @@ class AccountComponentState extends State<AccountComponent> {
         _submitting = true;
       });
       var response = await createAccount(accountPayload);
+      
+      // Catch app version compatibility
+      if (response.error == "outdated_app_version") {
+        showOutdatedAppVersionDialog(context);
+      }
+
       if(response != null) {
         setState(() {
           _submitting = false;
