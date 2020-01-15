@@ -69,6 +69,7 @@ class AccountComponentState extends State<AccountComponent> {
               height: 30.0,
             ),
             new TextFormField(
+              initialValue: 'Personal',
               keyboardType: TextInputType.text,
               validator: validateName,
               onSaved: (value) {
