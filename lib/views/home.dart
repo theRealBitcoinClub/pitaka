@@ -1,17 +1,14 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:sqflite/utils/utils.dart';
 import '../components/drawer.dart';
 import '../components/bottomNavigation.dart';
 import '../components/homeTabs.dart' as hometabs;
-import '../components/slowInternetWarning.dart' as slow;
 import 'package:intl/intl.dart';
 import '../api/endpoints.dart';
 import '../utils/globals.dart' as globals;
 import '../utils/database_helper.dart';
 import '../utils/globals.dart';
 import 'receive.dart';
-import 'package:easy_dialog/easy_dialog.dart';
 import '../utils/dialog.dart';
 
 
@@ -74,29 +71,6 @@ class HomeComponentState extends State<HomeComponent> {
   void dispose() {
    // _connectivitySubscription.cancel();
     super.dispose();
-  }
-
-  onDialogClose() {
-    _popDialog = false;
-  }
-
-  // Alert dialog for slow internet speed connection
-  // This is called during build and when there is connection timeout error response
-  showAlertDialog() {
-    EasyDialog(
-      title: Text(
-        "Connection Failure!",
-        style: TextStyle(fontWeight: FontWeight.bold),
-        textScaleFactor: 1.2,
-      ),
-      description: Text(
-        "You don't seem to have internet connection, or it's too slow. Switch your phone to Airplane mode to keep using the app in offline mode.",
-        textScaleFactor: 1.1,
-        textAlign: TextAlign.center,
-      ),
-      height: 150, 
-    ).show(context, onDialogClose);
-    _popDialog = true;
   }
 
   @override
