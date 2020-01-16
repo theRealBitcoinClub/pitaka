@@ -1,8 +1,10 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:sqflite/utils/utils.dart';
 import '../components/drawer.dart';
 import '../components/bottomNavigation.dart';
 import '../components/homeTabs.dart' as hometabs;
+import '../components/slowInternetWarning.dart' as slow;
 import 'package:intl/intl.dart';
 import '../api/endpoints.dart';
 import '../utils/globals.dart' as globals;
@@ -141,14 +143,14 @@ class HomeComponentState extends State<HomeComponent> {
                         // ANDing with globals.online prevents showing the dialog 
                         // during manually swithing to airplane mode
                         else if (snapshot.data.error == 'connect_timeout' && globals.online) {
-                          Future.delayed(Duration(milliseconds: 100), () async {
-                            _executeFuture = true;
-                            if(_executeFuture){
-                              showAlertDialog();
-                            }
-                          });
-                          // Return hometabs to show the balance 
-                          return hometabs.buildBalancesList(balances);
+                          return Padding(
+                            padding: EdgeInsets.all(16.0),
+                            child: Text(
+                              "You don't seem to have internet connection, or it's too slow. " 
+                              "Switch your phone to Airplane mode to keep using the app in offline mode.",
+                              textAlign: TextAlign.center,
+                            ),
+                          );
                         }
                         // When app version error, show dialog
                         // ANDing with globals.online prevents showing the dialog 
@@ -190,14 +192,14 @@ class HomeComponentState extends State<HomeComponent> {
                         // ANDing with globals.online prevents showing the dialog 
                         // during manually swithing to airplane mode 
                         else if (snapshot.data.error == 'connect_timeout' && globals.online) {
-                          Future.delayed(Duration(milliseconds: 100), () async {
-                            _executeFuture = true;
-                            if(_executeFuture){
-                              showAlertDialog();
-                            }
-                          });
-                          // Return hometabs to show the balance 
-                          return hometabs.buildTransactionsList(snapshot.data.transactions);
+                          return Padding(
+                            padding: EdgeInsets.all(16.0),
+                            child: Text(
+                              "You don't seem to have internet connection, or it's too slow. " 
+                              "Switch your phone to Airplane mode to keep using the app in offline mode.",
+                              textAlign: TextAlign.center,
+                            ),
+                          );
                         }
                         // When app version error, show dialog
                         // ANDing with globals.online prevents showing the dialog 
