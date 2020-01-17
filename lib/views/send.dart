@@ -361,28 +361,6 @@ class SendComponentState extends State<SendComponent> {
 
 bool disableSubmitButton = false;
 
-// Alert dialog for slow internet speed connection
-// This is called in sendFunds() when there is connection timeout error response
-// from transferAsset() in endpoints.dart
-showAlertDialog(BuildContext context) {
-  // set up the AlertDialog
-  AlertDialog alert = AlertDialog(
-    title: Text("Slow Internet Connection!"),
-    content: Text("Your internet speed connection is too slow. " 
-                  "Switch to Airplane mode to continue making transaction."
-    ),
-  );
-
-  // show the dialog
-  showDialog(
-    barrierDismissible: false,
-    context: context,
-    builder: (BuildContext context) {
-      return alert;
-    },
-  );
-}
-
 List<Widget> _buildForm(BuildContext context) {
     Form form = new Form(
       key: _formKey,
@@ -393,8 +371,19 @@ List<Widget> _buildForm(BuildContext context) {
             height: 30.0,
           ),
           _isInternetSlow ?
+          // Center(
+          //   child: Align(
+          //     alignment: Alignment.center,
+          //     child: Text(
+          //       "You don't seem to have internet connection, or it's too slow. " 
+          //       "Switch your phone to Airplane mode to keep using the app in offline mode.",
+          //       textAlign: TextAlign.center,
+          //     ),
+          //   )
+          // )
             Container(
-              padding: EdgeInsets.all(16.0),
+              alignment: Alignment.center,
+              padding: EdgeInsets.only(top: 250),
               child: Text(
                 "You don't seem to have internet connection, or it's too slow. " 
                 "Switch your phone to Airplane mode to keep using the app in offline mode.",
