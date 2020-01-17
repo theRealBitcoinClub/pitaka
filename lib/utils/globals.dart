@@ -23,6 +23,7 @@ bool _maxOfflineTime = false;
 bool _loading = false;
 bool _online = false;
 bool _syncing = false;
+bool _syncDone = false;
 ConnectivityResult result;
 final storage = new FlutterSecureStorage();
 const String serverPublicKey = '7aeaa44510a950a9a4537faa2f40351dc4560d6d0d12abc0287dcffdd667d7a2';
@@ -32,6 +33,7 @@ bool get online => _online;
 bool get syncing => _syncing;
 bool get maxOfflineTime => _maxOfflineTime;
 bool get loading => _loading;
+bool get syncDone => _syncDone;
 
 // Set global variables
 set online(bool value) {
@@ -49,10 +51,9 @@ set online(bool value) {
 DatabaseHelper databaseHelper = DatabaseHelper();
 
 set syncing(bool value) => _syncing = value;
-
 set maxOfflineTime(bool value) => _maxOfflineTime = value;
-
 set loading(bool value) => _loading = value;
+set syncDone(bool value) => _syncDone = value;
 
 Future<bool> iniConnection() async {
   var connectivityResult = await (Connectivity().checkConnectivity());

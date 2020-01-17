@@ -151,8 +151,6 @@ class DatabaseHelper {
       orderBy: 'id ASC'
     );
 
-    //printWrapped("The value of transactions from synchToServer() - database_helper.dart is: $transactions",);
-
     var prevTxnHash = "";
     var currTxnHash = "";
     
@@ -166,9 +164,6 @@ class DatabaseHelper {
         final String url = globals.baseUrl + '/api/assets/transfer';
         await sendPostRequest(url, payload);
       }
-      // Call printWrapped funtion from utils to print very long text
-      // Use only for debugging, comment out when done
-      //printWrapped("The value of payload from synchToServer() - database_helper.dart is: $payload",);
 
       prevTxnHash = payload['txn_hash'];
     }
@@ -270,11 +265,6 @@ class DatabaseHelper {
   
   // This is called in "endpoints.dart" in receiveAsset if offline only
   Future<int>acceptOfflinePayment(Map payload) async {
-
-    // Call printWrapped funtion from utils to print very long   Response response;text
-    // Use only for debugging, comment out when done
-    //printWrapped("The value of payload from acceptPayment() - database_helper.dart is: $payload",);
-
     Database db = await this.database;
     String table1 = 'Balance';
     String table2 = 'OfflineTransaction';

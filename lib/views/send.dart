@@ -371,16 +371,6 @@ List<Widget> _buildForm(BuildContext context) {
             height: 30.0,
           ),
           _isInternetSlow ?
-          // Center(
-          //   child: Align(
-          //     alignment: Alignment.center,
-          //     child: Text(
-          //       "You don't seem to have internet connection, or it's too slow. " 
-          //       "Switch your phone to Airplane mode to keep using the app in offline mode.",
-          //       textAlign: TextAlign.center,
-          //     ),
-          //   )
-          // )
             Container(
               alignment: Alignment.center,
               padding: EdgeInsets.only(top: 250),

@@ -9,7 +9,6 @@ import 'responses.dart';
 import '../utils/helpers.dart';
 import '../utils/database_helper.dart';
 import '../utils/globals.dart' as globals;
-//import '../utils/print_wrapped.dart';
 
 
 DatabaseHelper databaseHelper = DatabaseHelper();
@@ -275,11 +274,6 @@ Future<TransactionsResponse> getOnlineTransactions() async {
   var response;
   try {
     response = await sendGetRequest(url);
-
-    // Call printWrapped funtion from utils to print very long text
-    // Use only for debugging, comment out when done
-    // printWrapped("The value of response from getOnlineTransactions() - endpoints.dart is: $response",);
-
     if (response.data['success']) {
       return TransactionsResponse.fromResponse(response);
     }
@@ -367,10 +361,6 @@ Future<PlainSuccessResponse> receiveAsset(Map payload) async {
     await transferAsset(payload);
     return PlainSuccessResponse.toDatabase();
   } else {
-
-    // Call printWrapped funtion from utils to print very long text
-    // Use only for debugging, comment out when done
-    //printWrapped("The value of payload from receiveAsset() - endpoint.dart is: $payload",);
 
     // If both sender & reciever are offline, save scanned QRcode payload to local database
     await databaseHelper.acceptOfflinePayment(payload);
