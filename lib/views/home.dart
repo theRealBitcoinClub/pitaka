@@ -48,12 +48,14 @@ class HomeComponentState extends State<HomeComponent> {
         globals.online = online;
         syncing = true;
         globals.syncing = true;
+        globals.syncing = true;
         print("Online");
       } else {
         online = false;
         globals.online = online;
         syncing = false;
         globals.syncing = false;
+        globals.loading = false;
         print("Offline");
         // For dismissing the dialog
         if (_executeFuture) {
@@ -105,7 +107,8 @@ class HomeComponentState extends State<HomeComponent> {
               return new Container(
                 alignment: Alignment.center,
                 child: new FutureBuilder(
-                  future: globals.online == false ? getOffLineBalances() : getOnlineBalances(),
+                  // Added condition, when both syncing and online are true get offline balances
+                  future: globals.syncing && globals.online ? getOffLineBalances() : globals.online == false ? getOffLineBalances() : getOnlineBalances(),
                   builder: (BuildContext context, AsyncSnapshot snapshot) {
                     if (snapshot.hasData) {
                       if (snapshot.data != null) {

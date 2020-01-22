@@ -31,7 +31,9 @@ BottomNavigationBar buildBottomNavigation(BuildContext context, String path) {
         title: Text('Pay'),
       ),
       new BottomNavigationBarItem(
-          icon: Icon(Icons.inbox), title: Text('QR Code'))
+        icon: Icon(Icons.inbox),
+        title: Text('QR Code'),
+      )
     ],
   );
 }

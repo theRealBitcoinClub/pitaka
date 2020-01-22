@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:sqflite/sqflite.dart';
 import 'dart:async';
@@ -145,15 +146,14 @@ class DatabaseHelper {
   }
 
   Future <bool> synchToServer() async {
+    globals.syncing = true;
     Database db = await this.database;
     var transactions = await db.query(
       'OfflineTransaction',
       orderBy: 'id ASC'
     );
-
     var prevTxnHash = "";
-    var currTxnHash = "";
-    
+    var currTxnHash = "";  
     for (final txn in transactions) {
       var payload = json.decode(txn['transactionJson']);
       currTxnHash = payload['txn_hash'];
@@ -164,9 +164,9 @@ class DatabaseHelper {
         final String url = globals.baseUrl + '/api/assets/transfer';
         await sendPostRequest(url, payload);
       }
-
       prevTxnHash = payload['txn_hash'];
     }
+
     // Don't delete database during synching
     //await db.delete('OfflineTransaction');
     //await db.delete('Balance');
