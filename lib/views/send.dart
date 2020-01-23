@@ -437,17 +437,19 @@ List<Widget> _buildForm(BuildContext context) {
                                         value: sourceAccount,
                                         isDense: true,
                                         onChanged: (newVal){
+                                          // Set values to null to prevent error when button is 
+                                          // accidentally tap for second time
                                           String accountId = newVal.split('::sep::')[0];
                                           String balance = newVal.split('::sep::')[1];
                                           String signature = newVal.split('::sep::')[2];
                                           String timestamp = newVal.split('::sep::')[3];
 
                                           setState(() {
-                                            // selectedPaytacaAccount = null;
-                                            // sourceAccount = null;
-                                            // lastBalance = null;
-                                            // lBalanceSignature = null;
-                                            // lBalanceTime = null;
+                                            selectedPaytacaAccount = null;
+                                            sourceAccount = null;
+                                            lastBalance = null;
+                                            lBalanceSignature = null;
+                                            lBalanceTime = null;
 
                                             selectedPaytacaAccount = accountId;
                                             sourceAccount = newVal;
