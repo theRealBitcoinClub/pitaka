@@ -31,7 +31,7 @@ class SendComponentState extends State<SendComponent> {
   static double sendAmount;
   final _formKey = GlobalKey<FormState>();
   String selectedPaytacaAccount;
-  String sourceAccount;
+  String _sourceAccount;
   String lastBalance;
   String lBalanceSignature;
   String lBalanceTime;
@@ -50,11 +50,13 @@ class SendComponentState extends State<SendComponent> {
   int offlineTime = globals.offlineTime;
   bool isSenderOnline;  // Variable for marking if the sender is online or offline
   bool _isInternetSlow = false;
+  bool _showForm = false;
   
-  Future<List> getAccounts(destinationAccountId) async {
+  Future<List> getAccounts() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     var _prefAccounts = prefs.get("accounts");
     List<Map> _accounts = [];
+    var destinationAccountId = _barcodeString.split('::paytaca::')[0];
     for (final acct in _prefAccounts) {
       String accountId = acct.split(' | ')[1];
       if(accountId != destinationAccountId) {
@@ -86,9 +88,11 @@ class SendComponentState extends State<SendComponent> {
     // Fires whenever connectivity state changes
     ConnectionStatusSingleton connectionStatus = ConnectionStatusSingleton.getInstance();
     _connectionChangeStream = connectionStatus.connectionChange.listen(connectionChanged);
+
+    getAccounts();
   }
 
-  void connectionChanged(dynamic hasConnection) {
+  void connectionChanged(dynamic hasConnection) {var destinationAccountId = _barcodeString.split('::paytaca::')[1];
     setState(() {
       isOffline = !hasConnection;
       if (isOffline == false) {
@@ -266,8 +270,10 @@ class SendComponentState extends State<SendComponent> {
   }
 
   void scanBarcode() async {
+    _showForm = true;
     allowCamera();
     String barcode = await FlutterBarcodeScanner.scanBarcode("#ff6666", "Cancel", true, ScanMode.DEFAULT);
+    print("########################### The value of barcode is: $barcode #############################");
     setState(() {
       if (barcode.length > 0) {
         _barcodeString = barcode;
@@ -285,15 +291,15 @@ class SendComponentState extends State<SendComponent> {
     }
   }
 
-  Future<String> getBarcode() async {
-    if (_barcodeString.contains(new RegExp(r'::paytaca::.*::paytaca::$'))) {
-      var destinationAccountId = _barcodeString.split('::paytaca::')[1];
-      await getAccounts(destinationAccountId);
-      return destinationAccountId;
-    } else {
-      return null;
-    }
-  }
+  // Future<String> getBarcode() async {
+  //   if (_barcodeString.contains(new RegExp(r'::paytaca::.*::paytaca::$'))) {
+  //     var destinationAccountId = _barcodeString.split('::paytaca::')[1];
+  //     await getAccounts(destinationAccountId);
+  //     return destinationAccountId;
+  //   } else {
+  //     return null;
+  //   }
+  // }
 
   String validateAmount(String value) {
     if (value == null || value == "") {
@@ -320,21 +326,21 @@ class SendComponentState extends State<SendComponent> {
     }
   }
 
-   changeAccount(String newVal) {
-    String accountId = newVal.split('::sep::')[0];
-    String balance = newVal.split('::sep::')[1];
-    String signature = newVal.split('::sep::')[2];
-    String timestamp = newVal.split('::sep::')[3];
+  // changeAccount(String newVal) {
+  //   String accountId = newVal.split('::sep::')[0];
+  //   String balance = newVal.split('::sep::')[1];
+  //   String signature = newVal.split('::sep::')[2];
+  //   String timestamp = newVal.split('::sep::')[3];
 
-    setState(() {
-      selectedPaytacaAccount = accountId;
-      sourceAccount = newVal;
-      lastBalance = balance;
-      lBalanceSignature = signature;
-      lBalanceTime = timestamp;
-     // state.didChange(newVal);
-    });
-  }
+  //   setState(() {
+  //     selectedPaytacaAccount = accountId;
+  //     sourceAccount = newVal;
+  //     lastBalance = balance;
+  //     lBalanceSignature = signature;
+  //     lBalanceTime = timestamp;
+  //    // state.didChange(newVal);
+  //   });
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -404,141 +410,118 @@ List<Widget> _buildForm(BuildContext context) {
                 )
               )
             ),
-          new FutureBuilder<String>(
-            future: getBarcode(),
-            builder: (BuildContext context, AsyncSnapshot<String> snapshot) {
-              if(snapshot.hasData) {
-                if (snapshot.data != null) {
-                  if (snapshot.data.length > 0 ) {
-                    if (!_isInternetSlow) {
-                      return Column(
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: <Widget>[
-                          new SizedBox(
-                            height: 20.0,
-                          ),
-                          Visibility(
-                            child:  new FormField(
-                                validator: (value){
-                                  if (value == null) {
-                                    return 'This field is required.';
-                                  } else {
-                                    return null;
-                                  }
+         
+            _showForm ?
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: <Widget>[
+                  new SizedBox(
+                    height: 20.0,
+                  ),
+                  Visibility(
+                    child:  new FormField(
+                        validator: (value){
+                          if (value == null) {
+                            return 'This field is required.';
+                          } else {
+                            return null;
+                          }
+                        },
+                        builder: (FormFieldState state) {
+                          return InputDecorator(
+                            decoration: InputDecoration(
+                              errorText: state.errorText,
+                              labelText: 'Select Account',
+                            ),
+                            child: new DropdownButtonHideUnderline(
+                              child: new DropdownButton(
+                                iconEnabledColor: Colors.red,
+                                value: _sourceAccount,
+                                isDense: true,
+                                onChanged: (newVal){
+                                  String accountId = newVal.split('::sep::')[0];
+                                  String balance = newVal.split('::sep::')[1];
+                                  String signature = newVal.split('::sep::')[2];
+                                  String timestamp = newVal.split('::sep::')[3];
+                                  setState(() {
+                                    selectedPaytacaAccount = accountId;
+                                    lastBalance = balance;
+                                    lBalanceSignature = signature;
+                                    lBalanceTime = timestamp;
+                                    _sourceAccount = newVal;
+                                    state.didChange(newVal);
+                                  });
                                 },
-                                builder: (FormFieldState state) {
-                                  return InputDecorator(
-                                    decoration: InputDecoration(
-                                      errorText: state.errorText,
-                                      labelText: 'Select Account',
-                                    ),
-                                    child: new DropdownButtonHideUnderline(
-                                      child: new DropdownButton(
-                                        value: sourceAccount,
-                                        isDense: true,
-                                        onChanged: (newVal){
-                                          // Set values to null to prevent error when button is 
-                                          // accidentally tap for second time
-                                          String accountId = newVal.split('::sep::')[0];
-                                          String balance = newVal.split('::sep::')[1];
-                                          String signature = newVal.split('::sep::')[2];
-                                          String timestamp = newVal.split('::sep::')[3];
-
-                                          setState(() {
-                                            selectedPaytacaAccount = null;
-                                            sourceAccount = null;
-                                            lastBalance = null;
-                                            lBalanceSignature = null;
-                                            lBalanceTime = null;
-
-                                            selectedPaytacaAccount = accountId;
-                                            sourceAccount = newVal;
-                                            lastBalance = balance;
-                                            lBalanceSignature = signature;
-                                            lBalanceTime = timestamp;
-                                            state.didChange(newVal);
-                                          });
-                                        },
-                                        items: data.length < 0 ? null : data.map((item) {
-                                          return DropdownMenuItem(
-                                            value: "${item['accountId']}::sep::${item['lastBalance']}::sep::${item['balanceSignature']}::sep::${item['timestamp']}",
-                                            child: new Text("${item['accountName']} ( ${double.parse(item['computedBalance']).toStringAsFixed(2)} )"),
-                                          );
-                                        }).toList()
-                                      ),
-                                    )
+                                items: data.map((item) {
+                                  return DropdownMenuItem(
+                                    value: "${item['accountId']}::sep::${item['lastBalance']}::sep::${item['balanceSignature']}::sep::${item['timestamp']}",
+                                    child: new Text("${item['accountName']} ( ${double.parse(item['computedBalance']).toStringAsFixed(2)} )"),
                                   );
-                                },
+                                }).toList()
                               ),
-                            visible: snapshot.data != null,
+                            )
+                          );
+                        },
+                      ),
+                    visible: data != null,
+                  ),
+                  Visibility(
+                    child: new TextFormField(
+                      validator: validateAmount,
+                      decoration: new InputDecoration(labelText: "Enter the amount"),
+                      keyboardType: TextInputType.number,
+                      onSaved: (value) {
+                        sendAmount = null;
+                        sendAmount = double.parse(value);
+                      },
+                    ),
+                    visible: data != null,
+                  ),
+                  new SizedBox(
+                    height: 20.0,
+                  ),
+                  Visibility(
+                    child: Container(
+                      child: new ButtonTheme(
+                        height: 50,
+                        buttonColor: Colors.white,
+                        child: new OutlineButton(
+                          borderSide: BorderSide(
+                            color: Colors.black
                           ),
-                          Visibility(
-                            child: new TextFormField(
-                              validator: validateAmount,
-                              decoration: new InputDecoration(labelText: "Enter the amount"),
-                              keyboardType: TextInputType.number,
-                              onSaved: (value) {
-                                sendAmount = null;
-                                sendAmount = double.parse(value);
-                              },
-                            ),
-                            visible: snapshot.data != null
-                          ),
-                          new SizedBox(
-                            height: 20.0,
-                          ),
-                          Visibility(
-                            child: Container(
-                              child: new ButtonTheme(
-                                height: 50,
-                                buttonColor: Colors.white,
-                                child: new OutlineButton(
-                                  borderSide: BorderSide(
-                                    color: Colors.black
-                                  ),
-                                  child: const Text("Pay Now", style: TextStyle(fontSize: 18)),
-                                  onPressed: disableSubmitButton ? null : () {
-                                    var valid = _formKey.currentState.validate();
-                                    if (valid) {
-                                      setState(() {
-                                        disableSubmitButton = true;
-                                      });
-                                      _formKey.currentState.save();
-                                      sendFunds(
-                                        snapshot.data,
-                                        sendAmount,
-                                        context,
-                                        lastBalance,
-                                        lBalanceSignature,
-                                        txnID,
-                                        lBalanceTime,
-                                      );
-                                      // Dismiss keyboard after the "Pay Now" button is click
-                                      FocusScopeNode currentFocus = FocusScope.of(context);
-                                      if (!currentFocus.hasPrimaryFocus) {
-                                        currentFocus.unfocus();
-                                      }
-                                    }
-                                  }
-                                )
-                              )
-                            ),
-                            visible: snapshot.data != null)
-                        ],
-                      );
-                    } 
-                    else {
-                      return Container();
-                    }
-                  } else {
-                    return Container();
-                  }
-                }
-              } else {
-                return Container();
-              }
-            }
-          ),
+                          child: const Text("Pay Now", style: TextStyle(fontSize: 18)),
+                          onPressed: disableSubmitButton ? null : () {
+                            var valid = _formKey.currentState.validate();
+                            if (valid) {
+                              setState(() {
+                                disableSubmitButton = true;
+                              });
+                              _formKey.currentState.save();
+                              sendFunds(
+                                data.toString(),
+                                sendAmount,
+                                context,
+                                lastBalance,
+                                lBalanceSignature,
+                                txnID,
+                                lBalanceTime,
+                              );
+                              // Dismiss keyboard after the "Pay Now" button is click
+                              FocusScopeNode currentFocus = FocusScope.of(context);
+                              if (!currentFocus.hasPrimaryFocus) {
+                                currentFocus.unfocus();
+                              }
+                            }
+                          }
+                        )
+                      )
+                    ),
+                    visible: data != null,
+                  )
+                ]
+              )
+              :
+              Container()
         ],
       )
     );
