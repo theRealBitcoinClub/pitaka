@@ -291,16 +291,6 @@ class SendComponentState extends State<SendComponent> {
     }
   }
 
-  // Future<String> getBarcode() async {
-  //   if (_barcodeString.contains(new RegExp(r'::paytaca::.*::paytaca::$'))) {
-  //     var destinationAccountId = _barcodeString.split('::paytaca::')[1];
-  //     await getAccounts(destinationAccountId);
-  //     return destinationAccountId;
-  //   } else {
-  //     return null;
-  //   }
-  // }
-
   String validateAmount(String value) {
     if (value == null || value == "") {
       return 'This field is required.';
@@ -325,22 +315,6 @@ class SendComponentState extends State<SendComponent> {
       }
     }
   }
-
-  // changeAccount(String newVal) {
-  //   String accountId = newVal.split('::sep::')[0];
-  //   String balance = newVal.split('::sep::')[1];
-  //   String signature = newVal.split('::sep::')[2];
-  //   String timestamp = newVal.split('::sep::')[3];
-
-  //   setState(() {
-  //     selectedPaytacaAccount = accountId;
-  //     sourceAccount = newVal;
-  //     lastBalance = balance;
-  //     lBalanceSignature = signature;
-  //     lBalanceTime = timestamp;
-  //    // state.didChange(newVal);
-  //   });
-  // }
 
   @override
   Widget build(BuildContext context) {
