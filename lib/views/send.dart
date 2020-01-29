@@ -16,6 +16,7 @@ import '../utils/database_helper.dart';
 import 'package:uuid/uuid.dart';
 import '../utils/globals.dart';
 import '../utils/dialog.dart';
+import 'package:crypto/crypto.dart';
 
 
 class SendComponent extends StatefulWidget {
@@ -208,9 +209,13 @@ class SendComponentState extends State<SendComponent> {
         DateTime.parse(now.toString())
     );
 
-    var txnhash = "$amount:-:$txnDateTime:-:"
+    var txnhashstr = "$amount:-:$txnDateTime:-:"
     "$selectedPaytacaAccount:-:$lBalance:-:$lSignedBalance:-:$lBalanceTimeStamp:-:$txnID:-:$_txnReadableDateTime:-:$isSenderOnline";
 
+    var bytes = utf8.encode(txnhashstr);
+    var txnhash = sha256.convert(bytes).toString();         
+    print("The value of txnhash is: $txnhash");
+     
     String signature = await signTransaction(txnhash, privateKey);
     var qrcode = "$signature:wallet:$txnhash:wallet:$publicKey";
     prefs.setString("_txnQrCode", qrcode);
