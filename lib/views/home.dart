@@ -9,7 +9,6 @@ import '../utils/globals.dart' as globals;
 import '../utils/database_helper.dart';
 import '../utils/globals.dart';
 import 'receive.dart';
-import 'package:easy_dialog/easy_dialog.dart';
 import '../utils/dialog.dart';
 
 
@@ -49,12 +48,14 @@ class HomeComponentState extends State<HomeComponent> {
         globals.online = online;
         syncing = true;
         globals.syncing = true;
+        globals.syncing = true;
         print("Online");
       } else {
         online = false;
         globals.online = online;
         syncing = false;
         globals.syncing = false;
+        globals.loading = false;
         print("Offline");
         // For dismissing the dialog
         if (_executeFuture) {
@@ -72,29 +73,6 @@ class HomeComponentState extends State<HomeComponent> {
   void dispose() {
    // _connectivitySubscription.cancel();
     super.dispose();
-  }
-
-  onDialogClose() {
-    _popDialog = false;
-  }
-
-  // Alert dialog for slow internet speed connection
-  // This is called during build and when there is connection timeout error response
-  showAlertDialog() {
-    EasyDialog(
-      title: Text(
-        "Connection Failure!",
-        style: TextStyle(fontWeight: FontWeight.bold),
-        textScaleFactor: 1.2,
-      ),
-      description: Text(
-        "You don't seem to have internet connection, or it's too slow. Switch your phone to Airplane mode to keep using the app in offline mode.",
-        textScaleFactor: 1.1,
-        textAlign: TextAlign.center,
-      ),
-      height: 150, 
-    ).show(context, onDialogClose);
-    _popDialog = true;
   }
 
   @override
@@ -129,7 +107,8 @@ class HomeComponentState extends State<HomeComponent> {
               return new Container(
                 alignment: Alignment.center,
                 child: new FutureBuilder(
-                  future: globals.online == false ? getOffLineBalances() : getOnlineBalances(),
+                  // Added condition, when both syncing and online are true get offline balances
+                  future: globals.syncing && globals.online ? getOffLineBalances() : globals.online == false ? getOffLineBalances() : getOnlineBalances(),
                   builder: (BuildContext context, AsyncSnapshot snapshot) {
                     if (snapshot.hasData) {
                       if (snapshot.data != null) {
@@ -141,14 +120,14 @@ class HomeComponentState extends State<HomeComponent> {
                         // ANDing with globals.online prevents showing the dialog 
                         // during manually swithing to airplane mode
                         else if (snapshot.data.error == 'connect_timeout' && globals.online) {
-                          Future.delayed(Duration(milliseconds: 100), () async {
-                            _executeFuture = true;
-                            if(_executeFuture){
-                              showAlertDialog();
-                            }
-                          });
-                          // Return hometabs to show the balance 
-                          return hometabs.buildBalancesList(balances);
+                          return Padding(
+                            padding: EdgeInsets.all(16.0),
+                            child: Text(
+                              "You don't seem to have internet connection, or it's too slow. " 
+                              "Switch your phone to Airplane mode to keep using the app in offline mode.",
+                              textAlign: TextAlign.center,
+                            ),
+                          );
                         }
                         // When app version error, show dialog
                         // ANDing with globals.online prevents showing the dialog 
@@ -190,14 +169,14 @@ class HomeComponentState extends State<HomeComponent> {
                         // ANDing with globals.online prevents showing the dialog 
                         // during manually swithing to airplane mode 
                         else if (snapshot.data.error == 'connect_timeout' && globals.online) {
-                          Future.delayed(Duration(milliseconds: 100), () async {
-                            _executeFuture = true;
-                            if(_executeFuture){
-                              showAlertDialog();
-                            }
-                          });
-                          // Return hometabs to show the balance 
-                          return hometabs.buildTransactionsList(snapshot.data.transactions);
+                          return Padding(
+                            padding: EdgeInsets.all(16.0),
+                            child: Text(
+                              "You don't seem to have internet connection, or it's too slow. " 
+                              "Switch your phone to Airplane mode to keep using the app in offline mode.",
+                              textAlign: TextAlign.center,
+                            ),
+                          );
                         }
                         // When app version error, show dialog
                         // ANDing with globals.online prevents showing the dialog 

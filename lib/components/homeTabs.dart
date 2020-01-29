@@ -50,7 +50,7 @@ ListView buildBalancesList(balances) {
                     ],
                   ), Column (
                     children: <Widget>[
-                      !globals.loading | !globals.online ? Container() :
+                      !globals.loading? Container() :
                       Padding(
                         padding: const EdgeInsets.fromLTRB(8.0, 0, 12.0, 12.0),
                         child:
@@ -72,7 +72,6 @@ ListView buildBalancesList(balances) {
           );
       });
 }
-
 
 String _formatMode(String mode) {
   String formattedMode;

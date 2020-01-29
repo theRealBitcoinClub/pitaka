@@ -16,6 +16,7 @@ import '../utils/database_helper.dart';
 import 'package:uuid/uuid.dart';
 import '../utils/globals.dart';
 import '../utils/dialog.dart';
+import 'package:crypto/crypto.dart';
 
 
 class SendComponent extends StatefulWidget {
@@ -31,12 +32,13 @@ class SendComponentState extends State<SendComponent> {
   static double sendAmount;
   final _formKey = GlobalKey<FormState>();
   String selectedPaytacaAccount;
-  String sourceAccount;
+  String _sourceAccount;
   String lastBalance;
   String lBalanceSignature;
   String lBalanceTime;
   String txnID;
   String qrCode;
+  String toAccount;
   static List data = List();
   bool validCode = false;
   static bool _errorFound = false;
@@ -49,11 +51,16 @@ class SendComponentState extends State<SendComponent> {
   bool maxOfflineTime = globals.maxOfflineTime;
   int offlineTime = globals.offlineTime;
   bool isSenderOnline;  // Variable for marking if the sender is online or offline
+  bool _isInternetSlow = false;
+  bool _showForm = false;
+  String destinationAccountId;
   
-  Future<List> getAccounts(destinationAccountId) async {
+  Future<List> getAccounts() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     var _prefAccounts = prefs.get("accounts");
     List<Map> _accounts = [];
+    destinationAccountId = _barcodeString.split('::paytaca::')[1];
+
     for (final acct in _prefAccounts) {
       String accountId = acct.split(' | ')[1];
       if(accountId != destinationAccountId) {
@@ -170,9 +177,6 @@ class SendComponentState extends State<SendComponent> {
     prefs.setInt(key, value);
   }
 
-  final TextEditingController _accountController = new TextEditingController();
-
-
   Future<bool> sendFunds(
     String toAccount,
     double amount,
@@ -182,11 +186,10 @@ class SendComponentState extends State<SendComponent> {
     String txnID,
     String lBalanceTimeStamp) async {
     _submitting = true;
-    String destinationAccount = toAccount;
     String publicKey = await globals.storage.read(key: "publicKey");
-    //print("\nThe value of publicKey is: $publicKey\n");
     String privateKey = await globals.storage.read(key: "privateKey");
     SharedPreferences prefs = await SharedPreferences.getInstance();
+    toAccount = destinationAccountId;
 
     // Mark if the sender is online or offline and include in txnhash and QRcode
     // This will be used to check in the reciever in scanning QRcode for proof of payment
@@ -206,12 +209,13 @@ class SendComponentState extends State<SendComponent> {
         DateTime.parse(now.toString())
     );
 
-    var txnhash = "$amount:-:$txnDateTime:-:"
+    var txnhashstr = "$amount:-:$txnDateTime:-:"
     "$selectedPaytacaAccount:-:$lBalance:-:$lSignedBalance:-:$lBalanceTimeStamp:-:$txnID:-:$_txnReadableDateTime:-:$isSenderOnline";
 
-    // For debug, comment out when done
-    // print("The value of txnhash is: $txnhash");
-
+    var bytes = utf8.encode(txnhashstr);
+    var txnhash = sha256.convert(bytes).toString();         
+    print("The value of txnhash is: $txnhash");
+     
     String signature = await signTransaction(txnhash, privateKey);
     var qrcode = "$signature:wallet:$txnhash:wallet:$publicKey";
     prefs.setString("_txnQrCode", qrcode);
@@ -224,7 +228,7 @@ class SendComponentState extends State<SendComponent> {
     prefs.setString("_txnProofCode", proofOfPayment);
     var payload = {
       'from_account': selectedPaytacaAccount,
-      'to_account': destinationAccount,
+      'to_account': toAccount,
       'asset': globals.phpAssetId,
       'amount': amount.toString(),
       'public_key': publicKey,
@@ -233,19 +237,21 @@ class SendComponentState extends State<SendComponent> {
       'transaction_id': txnID,
       'transaction_datetime': _txnReadableDateTime,
       'proof_of_payment': proofOfPayment,
-      'app_version': globals.appVersion,
     };
+    print("The value of payload is: $payload");
     var response = await transferAsset(payload);
-
       // Catch app version compatibility
     if (response.error == "outdated_app_version") {
       showOutdatedAppVersionDialog(context);
     }
-
     // Check the error response from transferAsset in endpoints.dart
     // Call the function for alert dialog
     if (response.error == "DioErrorType.CONNECT_TIMEOUT") {
-      showAlertDialog(context);
+      setState(() {
+        _isInternetSlow = true;
+        _submitting = false;
+      });
+      // showAlertDialog(context);
       // Return null so the second alert dialog won't show
       // Weird! Not sure where is that second dialog come from
       return null;
@@ -263,13 +269,22 @@ class SendComponentState extends State<SendComponent> {
   void scanBarcode() async {
     allowCamera();
     String barcode = await FlutterBarcodeScanner.scanBarcode("#ff6666", "Cancel", true, ScanMode.DEFAULT);
+    print("------------------------- The barcode value is $barcode ----------------------------");
     setState(() {
       if (barcode.length > 0) {
         _barcodeString = barcode;
+        _showForm = true;
       } else {
         _barcodeString = '';
       }  
     });
+
+    // Don't show form if barcode sacnner is cancelled
+    if (barcode == "-1") {
+      _showForm = false;
+    }
+    
+    getAccounts();
   }
 
   void allowCamera() async {
@@ -277,16 +292,6 @@ class SendComponentState extends State<SendComponent> {
     PermissionStatus cameraStatus = await permission.checkPermissionStatus(PermissionGroup.camera);
     if (cameraStatus == PermissionStatus.denied) {
           await permission.requestPermissions([PermissionGroup.camera]);
-    }
-  }
-
-  Future<String> getBarcode() async {
-    if (_barcodeString.contains(new RegExp(r'::paytaca::.*::paytaca::$'))) {
-      var destinationAccountId = _barcodeString.split('::paytaca::')[1];
-      await getAccounts(destinationAccountId);
-      return destinationAccountId;
-    } else {
-      return null;
     }
   }
 
@@ -315,22 +320,6 @@ class SendComponentState extends State<SendComponent> {
     }
   }
 
-   changeAccount(String newVal) {
-    String accountId = newVal.split('::sep::')[0];
-    String balance = newVal.split('::sep::')[1];
-    String signature = newVal.split('::sep::')[2];
-    String timestamp = newVal.split('::sep::')[3];
-
-    setState(() {
-      selectedPaytacaAccount = accountId;
-      sourceAccount = newVal;
-      lastBalance = balance;
-      lBalanceSignature = signature;
-      lBalanceTime = timestamp;
-     // state.didChange(newVal);
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -356,28 +345,6 @@ class SendComponentState extends State<SendComponent> {
 
 bool disableSubmitButton = false;
 
-// Alert dialog for slow internet speed connection
-// This is called in sendFunds() when there is connection timeout error response
-// from transferAsset() in endpoints.dart
-showAlertDialog(BuildContext context) {
-  // set up the AlertDialog
-  AlertDialog alert = AlertDialog(
-    title: Text("Slow Internet Connection!"),
-    content: Text("Your internet speed connection is too slow. " 
-                  "Switch to Airplane mode to continue making transaction."
-    ),
-  );
-
-  // show the dialog
-  showDialog(
-    barrierDismissible: false,
-    context: context,
-    builder: (BuildContext context) {
-      return alert;
-    },
-  );
-}
-
 List<Widget> _buildForm(BuildContext context) {
     Form form = new Form(
       key: _formKey,
@@ -387,6 +354,17 @@ List<Widget> _buildForm(BuildContext context) {
           new SizedBox(
             height: 30.0,
           ),
+          _isInternetSlow ?
+            Container(
+              alignment: Alignment.center,
+              padding: EdgeInsets.only(top: 250),
+              child: Text(
+                "You don't seem to have internet connection, or it's too slow. " 
+                "Switch your phone to Airplane mode to keep using the app in offline mode.",
+                textAlign: TextAlign.center,
+              ), 
+            )
+          : // Another condition
           // When maximum offline timeout (6 hours) is true show message transaction not allowed
           globals.maxOfflineTime == true ? 
             Container(
@@ -410,134 +388,118 @@ List<Widget> _buildForm(BuildContext context) {
                 )
               )
             ),
-          new FutureBuilder<String>(
-            future: getBarcode(),
-            builder: (BuildContext context, AsyncSnapshot<String> snapshot) {
-              if(snapshot.hasData) {
-                if (snapshot.data != null) {
-                  if (snapshot.data.length > 0 ) {
-                    return Column(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: <Widget>[
-                        new SizedBox(
-                          height: 20.0,
-                        ),
-                        Visibility(
-                          child:  new FormField(
-                              validator: (value){
-                                if (value == null) {
-                                  return 'This field is required.';
-                                } else {
-                                  return null;
-                                }
-                              },
-                              builder: (FormFieldState state) {
-                                return InputDecorator(
-                                  decoration: InputDecoration(
-                                    errorText: state.errorText,
-                                    labelText: 'Select Account',
-                                  ),
-                                  child: new DropdownButtonHideUnderline(
-                                    child: new DropdownButton(
-                                      value: sourceAccount,
-                                      isDense: true,
-                                      onChanged: (newVal){
-                                        String accountId = newVal.split('::sep::')[0];
-                                        String balance = newVal.split('::sep::')[1];
-                                        String signature = newVal.split('::sep::')[2];
-                                        String timestamp = newVal.split('::sep::')[3];
-
-                                        setState(() {
-                                          // selectedPaytacaAccount = null;
-                                          // sourceAccount = null;
-                                          // lastBalance = null;
-                                          // lBalanceSignature = null;
-                                          // lBalanceTime = null;
-
-                                          selectedPaytacaAccount = accountId;
-                                          sourceAccount = newVal;
-                                          lastBalance = balance;
-                                          lBalanceSignature = signature;
-                                          lBalanceTime = timestamp;
-                                          state.didChange(newVal);
-                                        });
-                                      },
-                                      items: data.length < 0 ? null : data.map((item) {
-                                        return DropdownMenuItem(
-                                          value: "${item['accountId']}::sep::${item['lastBalance']}::sep::${item['balanceSignature']}::sep::${item['timestamp']}",
-                                          child: new Text("${item['accountName']} ( ${double.parse(item['computedBalance']).toStringAsFixed(2)} )"),
-                                        );
-                                      }).toList()
-                                    ),
-                                  )
-                                );
-                              },
+         
+            _showForm ?
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: <Widget>[
+                  new SizedBox(
+                    height: 20.0,
+                  ),
+                  Visibility(
+                    child:  new FormField(
+                        validator: (value){
+                          if (value == null) {
+                            return 'This field is required.';
+                          } else {
+                            return null;
+                          }
+                        },
+                        builder: (FormFieldState state) {
+                          return InputDecorator(
+                            decoration: InputDecoration(
+                              errorText: state.errorText,
+                              labelText: 'Select Account',
                             ),
-                          visible: snapshot.data != null,
-                        ),
-                        Visibility(
-                          child: new TextFormField(
-                            validator: validateAmount,
-                            decoration: new InputDecoration(labelText: "Enter the amount"),
-                            keyboardType: TextInputType.number,
-                            onSaved: (value) {
-                              sendAmount = null;
-                              sendAmount = double.parse(value);
-                            },
-                          ),
-                          visible: snapshot.data != null
-                        ),
-                        new SizedBox(
-                          height: 20.0,
-                        ),
-                        Visibility(
-                          child: Container(
-                            child: new ButtonTheme(
-                              height: 50,
-                              buttonColor: Colors.white,
-                              child: new OutlineButton(
-                                borderSide: BorderSide(
-                                  color: Colors.black
-                                ),
-                                child: const Text("Pay Now", style: TextStyle(fontSize: 18)),
-                                onPressed: disableSubmitButton ? null : () {
-                                  var valid = _formKey.currentState.validate();
-                                  if (valid) {
-                                    setState(() {
-                                      disableSubmitButton = true;
-                                    });
-                                    _formKey.currentState.save();
-                                    sendFunds(
-                                      snapshot.data,
-                                      sendAmount,
-                                      context,
-                                      lastBalance,
-                                      lBalanceSignature,
-                                      txnID,
-                                      lBalanceTime,
-                                    );
-                                    // Dismiss keyboard after the "Pay Now" button is click
-                                    FocusScopeNode currentFocus = FocusScope.of(context);
-                                    if (!currentFocus.hasPrimaryFocus) {
-                                      currentFocus.unfocus();
-                                    }
-                                  }
-                                }
-                              )
+                            child: new DropdownButtonHideUnderline(
+                              child: new DropdownButton(
+                                iconEnabledColor: Colors.red,
+                                value: _sourceAccount,
+                                isDense: true,
+                                onChanged: (newVal){
+                                  String accountId = newVal.split('::sep::')[0];
+                                  String balance = newVal.split('::sep::')[1];
+                                  String signature = newVal.split('::sep::')[2];
+                                  String timestamp = newVal.split('::sep::')[3];
+                                  setState(() {
+                                    selectedPaytacaAccount = accountId;
+                                    lastBalance = balance;
+                                    lBalanceSignature = signature;
+                                    lBalanceTime = timestamp;
+                                    _sourceAccount = newVal;
+                                    state.didChange(newVal);
+                                  });
+                                },
+                                items: data.map((item) {
+                                  return DropdownMenuItem(
+                                    value: "${item['accountId']}::sep::${item['lastBalance']}::sep::${item['balanceSignature']}::sep::${item['timestamp']}",
+                                    child: new Text("${item['accountName']} ( ${double.parse(item['computedBalance']).toStringAsFixed(2)} )"),
+                                  );
+                                }).toList()
+                              ),
                             )
+                          );
+                        },
+                      ),
+                    visible: data != null,
+                  ),
+                  Visibility(
+                    child: new TextFormField(
+                      validator: validateAmount,
+                      decoration: new InputDecoration(labelText: "Enter the amount"),
+                      keyboardType: TextInputType.number,
+                      onSaved: (value) {
+                        sendAmount = null;
+                        sendAmount = double.parse(value);
+                      },
+                    ),
+                    visible: data != null,
+                  ),
+                  new SizedBox(
+                    height: 20.0,
+                  ),
+                  Visibility(
+                    child: Container(
+                      child: new ButtonTheme(
+                        height: 50,
+                        buttonColor: Colors.white,
+                        child: new OutlineButton(
+                          borderSide: BorderSide(
+                            color: Colors.black
                           ),
-                          visible: snapshot.data != null)
-                      ],
-                    );
-                  } else {
-                    return Container();
-                  }
-                }
-              } else {
-                return Container();
-              }
-            }
-          ),
+                          child: const Text("Pay Now", style: TextStyle(fontSize: 18)),
+                          onPressed: disableSubmitButton ? null : () {
+                            var valid = _formKey.currentState.validate();
+                            if (valid) {
+                              setState(() {
+                                disableSubmitButton = true;
+                              });
+                              _formKey.currentState.save();
+                              sendFunds(
+                                toAccount,
+                                sendAmount,
+                                context,
+                                lastBalance,
+                                lBalanceSignature,
+                                txnID,
+                                lBalanceTime,
+                              );
+                              // Dismiss keyboard after the "Pay Now" button is click
+                              FocusScopeNode currentFocus = FocusScope.of(context);
+                              if (!currentFocus.hasPrimaryFocus) {
+                                currentFocus.unfocus();
+                              }
+                            }
+                          }
+                        )
+                      )
+                    ),
+                    visible: data != null,
+                  )
+                ]
+              )
+              :
+              Container()
         ],
       )
     );

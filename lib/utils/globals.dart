@@ -49,9 +49,7 @@ set online(bool value) {
 DatabaseHelper databaseHelper = DatabaseHelper();
 
 set syncing(bool value) => _syncing = value;
-
 set maxOfflineTime(bool value) => _maxOfflineTime = value;
-
 set loading(bool value) => _loading = value;
 
 Future<bool> iniConnection() async {
