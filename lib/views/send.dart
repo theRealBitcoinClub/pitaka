@@ -37,6 +37,7 @@ class SendComponentState extends State<SendComponent> {
   String lBalanceTime;
   String txnID;
   String qrCode;
+  String toAccount;
   static List data = List();
   bool validCode = false;
   static bool _errorFound = false;
@@ -51,15 +52,13 @@ class SendComponentState extends State<SendComponent> {
   bool isSenderOnline;  // Variable for marking if the sender is online or offline
   bool _isInternetSlow = false;
   bool _showForm = false;
+  String destinationAccountId;
   
   Future<List> getAccounts() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     var _prefAccounts = prefs.get("accounts");
     List<Map> _accounts = [];
-
-    var destinationAccountId = _barcodeString.split('::paytaca::')[1];
-    print("########## The value of _barcodeString is: $_barcodeString ##########");
-    print("@@@@@@@@@@ The value of destinationAccountId is: $destinationAccountId @@@@@@@@@@");
+    destinationAccountId = _barcodeString.split('::paytaca::')[1];
 
     for (final acct in _prefAccounts) {
       String accountId = acct.split(' | ')[1];
@@ -177,8 +176,6 @@ class SendComponentState extends State<SendComponent> {
     prefs.setInt(key, value);
   }
 
-  final TextEditingController _accountController = new TextEditingController();
-
   Future<bool> sendFunds(
     String toAccount,
     double amount,
@@ -188,11 +185,10 @@ class SendComponentState extends State<SendComponent> {
     String txnID,
     String lBalanceTimeStamp) async {
     _submitting = true;
-    String destinationAccount = toAccount;
     String publicKey = await globals.storage.read(key: "publicKey");
-    //print("\nThe value of publicKey is: $publicKey\n");
     String privateKey = await globals.storage.read(key: "privateKey");
     SharedPreferences prefs = await SharedPreferences.getInstance();
+    toAccount = destinationAccountId;
 
     // Mark if the sender is online or offline and include in txnhash and QRcode
     // This will be used to check in the reciever in scanning QRcode for proof of payment
@@ -215,9 +211,6 @@ class SendComponentState extends State<SendComponent> {
     var txnhash = "$amount:-:$txnDateTime:-:"
     "$selectedPaytacaAccount:-:$lBalance:-:$lSignedBalance:-:$lBalanceTimeStamp:-:$txnID:-:$_txnReadableDateTime:-:$isSenderOnline";
 
-    // For debug, comment out when done
-    // print("The value of txnhash is: $txnhash");
-
     String signature = await signTransaction(txnhash, privateKey);
     var qrcode = "$signature:wallet:$txnhash:wallet:$publicKey";
     prefs.setString("_txnQrCode", qrcode);
@@ -230,7 +223,7 @@ class SendComponentState extends State<SendComponent> {
     prefs.setString("_txnProofCode", proofOfPayment);
     var payload = {
       'from_account': selectedPaytacaAccount,
-      'to_account': destinationAccount,
+      'to_account': toAccount,
       'asset': globals.phpAssetId,
       'amount': amount.toString(),
       'public_key': publicKey,
@@ -239,18 +232,13 @@ class SendComponentState extends State<SendComponent> {
       'transaction_id': txnID,
       'transaction_datetime': _txnReadableDateTime,
       'proof_of_payment': proofOfPayment,
-      'app_version': globals.appVersion,
     };
-
-    print("%%%%%%%%%% The value of payload is $payload %%%%%%%%%%");
-
+    print("The value of payload is: $payload");
     var response = await transferAsset(payload);
-
       // Catch app version compatibility
     if (response.error == "outdated_app_version") {
       showOutdatedAppVersionDialog(context);
     }
-
     // Check the error response from transferAsset in endpoints.dart
     // Call the function for alert dialog
     if (response.error == "DioErrorType.CONNECT_TIMEOUT") {
@@ -476,7 +464,7 @@ List<Widget> _buildForm(BuildContext context) {
                               });
                               _formKey.currentState.save();
                               sendFunds(
-                                data.toString(),
+                                toAccount,
                                 sendAmount,
                                 context,
                                 lastBalance,
