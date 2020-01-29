@@ -267,16 +267,23 @@ class SendComponentState extends State<SendComponent> {
   }
 
   void scanBarcode() async {
-    _showForm = true;
     allowCamera();
     String barcode = await FlutterBarcodeScanner.scanBarcode("#ff6666", "Cancel", true, ScanMode.DEFAULT);
+    print("------------------------- The barcode value is $barcode ----------------------------");
     setState(() {
       if (barcode.length > 0) {
         _barcodeString = barcode;
+        _showForm = true;
       } else {
         _barcodeString = '';
       }  
     });
+
+    // Don't show form if barcode sacnner is cancelled
+    if (barcode == "-1") {
+      _showForm = false;
+    }
+    
     getAccounts();
   }
 
