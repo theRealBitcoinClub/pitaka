@@ -56,7 +56,11 @@ class SendComponentState extends State<SendComponent> {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     var _prefAccounts = prefs.get("accounts");
     List<Map> _accounts = [];
-    var destinationAccountId = _barcodeString.split('::paytaca::')[0];
+
+    var destinationAccountId = _barcodeString.split('::paytaca::')[1];
+    print("########## The value of _barcodeString is: $_barcodeString ##########");
+    print("@@@@@@@@@@ The value of destinationAccountId is: $destinationAccountId @@@@@@@@@@");
+
     for (final acct in _prefAccounts) {
       String accountId = acct.split(' | ')[1];
       if(accountId != destinationAccountId) {
@@ -88,11 +92,9 @@ class SendComponentState extends State<SendComponent> {
     // Fires whenever connectivity state changes
     ConnectionStatusSingleton connectionStatus = ConnectionStatusSingleton.getInstance();
     _connectionChangeStream = connectionStatus.connectionChange.listen(connectionChanged);
-
-    getAccounts();
   }
 
-  void connectionChanged(dynamic hasConnection) {var destinationAccountId = _barcodeString.split('::paytaca::')[1];
+  void connectionChanged(dynamic hasConnection) {
     setState(() {
       isOffline = !hasConnection;
       if (isOffline == false) {
@@ -177,7 +179,6 @@ class SendComponentState extends State<SendComponent> {
 
   final TextEditingController _accountController = new TextEditingController();
 
-
   Future<bool> sendFunds(
     String toAccount,
     double amount,
@@ -240,6 +241,9 @@ class SendComponentState extends State<SendComponent> {
       'proof_of_payment': proofOfPayment,
       'app_version': globals.appVersion,
     };
+
+    print("%%%%%%%%%% The value of payload is $payload %%%%%%%%%%");
+
     var response = await transferAsset(payload);
 
       // Catch app version compatibility
@@ -273,7 +277,6 @@ class SendComponentState extends State<SendComponent> {
     _showForm = true;
     allowCamera();
     String barcode = await FlutterBarcodeScanner.scanBarcode("#ff6666", "Cancel", true, ScanMode.DEFAULT);
-    print("########################### The value of barcode is: $barcode #############################");
     setState(() {
       if (barcode.length > 0) {
         _barcodeString = barcode;
@@ -281,6 +284,7 @@ class SendComponentState extends State<SendComponent> {
         _barcodeString = '';
       }  
     });
+    getAccounts();
   }
 
   void allowCamera() async {
