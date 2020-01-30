@@ -175,7 +175,7 @@ class ReceiveComponentState extends State<ReceiveComponent> {
     }
   }
 
-   Future<List> getAccounts() async {
+  Future<List> getAccounts() async {
     try {
       SharedPreferences prefs = await SharedPreferences.getInstance();
       var _prefAccounts = prefs.get("accounts");
@@ -189,7 +189,10 @@ class ReceiveComponentState extends State<ReceiveComponent> {
       }
       data = _accounts;
       return _accounts;
-    } catch(e) {}
+    } catch(e) {
+      print("Error in getAccounts(): $e");
+    }
+    return data;
   }
 
   Future<void> _failedDialog() async {

@@ -199,6 +199,7 @@ class HomeComponentState extends State<HomeComponent> {
                       // return new Container();
                       return new CircularProgressIndicator();
                     }
+                    return hometabs.buildTransactionsList(snapshot.data.transactions);
                   }
                 )
               );
