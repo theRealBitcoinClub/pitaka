@@ -209,15 +209,16 @@ class SendComponentState extends State<SendComponent> {
         DateTime.parse(now.toString())
     );
 
-    var txnhashstr = "$amount:-:$txnDateTime:-:"
+    var txnstr = "$amount:-:$txnDateTime:-:"
     "$selectedPaytacaAccount:-:$lBalance:-:$lSignedBalance:-:$lBalanceTimeStamp:-:$txnID:-:$_txnReadableDateTime:-:$isSenderOnline";
 
-    var bytes = utf8.encode(txnhashstr);
+    var bytes = utf8.encode(txnstr);
     var txnhash = sha256.convert(bytes).toString();         
     print("The value of txnhash is: $txnhash");
-     
+    
     String signature = await signTransaction(txnhash, privateKey);
-    var qrcode = "$signature:wallet:$txnhash:wallet:$publicKey";
+    String signatureForQR = await signTransaction(txnstr, privateKey);
+    var qrcode = "$txnhash||$signatureForQR||$txnstr||$publicKey";
     prefs.setString("_txnQrCode", qrcode);
     prefs.setString("_txnDateTime", _txnReadableDateTime);
     prefs.setString("_txnAmount", amount.toString());
@@ -237,6 +238,7 @@ class SendComponentState extends State<SendComponent> {
       'transaction_id': txnID,
       'transaction_datetime': _txnReadableDateTime,
       'proof_of_payment': proofOfPayment,
+      'txn_str' : txnstr,
     };
     print("The value of payload is: $payload");
     var response = await transferAsset(payload);
@@ -267,13 +269,12 @@ class SendComponentState extends State<SendComponent> {
   }
 
   void scanBarcode() async {
+    _showForm = true;
     allowCamera();
     String barcode = await FlutterBarcodeScanner.scanBarcode("#ff6666", "Cancel", true, ScanMode.DEFAULT);
-    print("------------------------- The barcode value is $barcode ----------------------------");
     setState(() {
       if (barcode.length > 0) {
         _barcodeString = barcode;
-        _showForm = true;
       } else {
         _barcodeString = '';
       }  
@@ -388,7 +389,6 @@ List<Widget> _buildForm(BuildContext context) {
                 )
               )
             ),
-         
             _showForm ?
               Column(
                 crossAxisAlignment: CrossAxisAlignment.center,

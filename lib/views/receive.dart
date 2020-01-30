@@ -69,18 +69,18 @@ class ReceiveComponentState extends State<ReceiveComponent> {
     var baseDecoded = base64.decode(qrcode);
     var gzipDecoded = new GZipDecoder().decodeBytes(baseDecoded);
     var utf8Decoded = utf8.decode(gzipDecoded);
-    var qrArr = utf8Decoded.split(':wallet:');
+    var qrArr = utf8Decoded.split('||');
     // Check if QRcode data array has all the payload data created from "sender.dart" in sendFunds function
-    if (qrArr.length == 3) {
-      var stringified  = qrArr[1].toString();
+    if (qrArr.length == 4) {
+      var stringified  = qrArr[2].toString();
       List hashArr = stringified.split(':-:');
       String senderOnline = hashArr[8];
       var payload;
       double amount = double.parse(hashArr[0]);
-      String pubKey = qrArr[2];
+      String pubKey = qrArr[3];
       String fromAccount = hashArr[2];
-      String txnHash = qrArr[1];
-      String txnSignature = qrArr[0];
+      String txnHash = qrArr[2];
+      String txnSignature = qrArr[1];
       String txnDateTime = hashArr[1];
       String txnID = hashArr[6];
       // Convert signature and public key to bytes for verification
@@ -108,7 +108,6 @@ class ReceiveComponentState extends State<ReceiveComponent> {
             };
             // Call receiveAsset function from "endpoints.dart"
             var response = await receiveAsset(payload);
-
             // Check response, pop up a dialog for failed or success 
             if (response.success == false) {
               _failedDialog();
@@ -153,15 +152,9 @@ class ReceiveComponentState extends State<ReceiveComponent> {
                     'balance': lBalance,
                     'timestamp': timestamp,
                   },
-                  'app_version': globals.appVersion,
                 };
                 // Call receiveAsset function from "endpoints.dart"
                 var response = await receiveAsset(payload);
-
-                // Call printWrapped funtion from utils to print very long text
-                // Use only for debugging, comment out when done
-                //printWrapped("The value of payload from scanQrcode() - receive.dart is: $payload",);
-                
                 // Check response, pop up a dialog for failed or success 
                 if (response.success == false) {
                   _failedDialog();
@@ -190,16 +183,8 @@ class ReceiveComponentState extends State<ReceiveComponent> {
       for (final acct in _prefAccounts) {
         String accountId = acct.split(' | ')[1];
         var acctObj = new Map();
-        // var onlineBalance = acct.split(' | ')[2];
         acctObj['accountName'] = acct.split(' | ')[0];
         acctObj['accountId'] = accountId;
-        // if (globals.online) {
-        //   acctObj['balance'] = onlineBalance;
-        // } else {
-        //   var x = double.tryParse(onlineBalance);
-        //   var resp = await globals.databaseHelper.offlineBalanceAnalyser(accountId, x);
-        //   acctObj['balance'] = resp['computedBalance'].toString();
-        // }
         _accounts.add(acctObj);
       }
       data = _accounts;
@@ -262,7 +247,6 @@ class ReceiveComponentState extends State<ReceiveComponent> {
       },
     );
   }
-
 
   @override
   Widget build(BuildContext context) {
