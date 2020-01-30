@@ -12,6 +12,8 @@ import 'receive.dart';
 import '../utils/dialog.dart';
 
 
+// Just added comment to commit and push
+
 class HomeComponent extends StatefulWidget {
   @override
   State createState() => new HomeComponentState();
