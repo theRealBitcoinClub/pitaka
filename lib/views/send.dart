@@ -83,7 +83,6 @@ class SendComponentState extends State<SendComponent> {
       }
     }
     data = _accounts;
-    print("********************** data: $data *************************");
     return _accounts;
   }
 
@@ -248,7 +247,7 @@ class SendComponentState extends State<SendComponent> {
     if (response.error == "outdated_app_version") {
       showOutdatedAppVersionDialog(context);
     }
-      // Check if server is in maintenance mode
+    // Check if server is in maintenance mode
     if (response.error == "maintenance_mode") {
       _isMaintenanceMode = true;
     }
@@ -353,6 +352,7 @@ class SendComponentState extends State<SendComponent> {
 bool disableSubmitButton = false;
 
 List<Widget> _buildForm(BuildContext context) {
+  getAccounts();
     Form form = new Form(
       key: _formKey,
       child: new ListView(
