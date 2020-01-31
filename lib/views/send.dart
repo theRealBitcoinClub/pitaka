@@ -54,6 +54,7 @@ class SendComponentState extends State<SendComponent> {
   bool _isInternetSlow = false;
   bool _showForm = false;
   String destinationAccountId;
+  bool _isMaintenanceMode = false;
   
   Future<List> getAccounts() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -82,7 +83,7 @@ class SendComponentState extends State<SendComponent> {
       }
     }
     data = _accounts;
-    print("data: $data");
+    print("********************** data: $data *************************");
     return _accounts;
   }
 
@@ -247,6 +248,10 @@ class SendComponentState extends State<SendComponent> {
     if (response.error == "outdated_app_version") {
       showOutdatedAppVersionDialog(context);
     }
+      // Check if server is in maintenance mode
+    if (response.error == "maintenance_mode") {
+      _isMaintenanceMode = true;
+    }
     // Check the error response from transferAsset in endpoints.dart
     // Call the function for alert dialog
     if (response.error == "DioErrorType.CONNECT_TIMEOUT") {
@@ -356,6 +361,7 @@ List<Widget> _buildForm(BuildContext context) {
           new SizedBox(
             height: 30.0,
           ),
+          // When slow or no internet connection show this message
           _isInternetSlow ?
             Container(
               alignment: Alignment.center,
@@ -363,6 +369,18 @@ List<Widget> _buildForm(BuildContext context) {
               child: Text(
                 "You don't seem to have internet connection, or it's too slow. " 
                 "Switch your phone to Airplane mode to keep using the app in offline mode.",
+                textAlign: TextAlign.center,
+              ), 
+            )
+          : // Another condition
+          // When server is under maintenance show this message
+          _isMaintenanceMode ?
+            Container(
+              alignment: Alignment.center,
+              padding: EdgeInsets.only(top: 250),
+              child: Text(
+                "Server is down for maintenance. " 
+                "Please try again later or switch your phone to Airplane mode to keep using the app in offline mode.",
                 textAlign: TextAlign.center,
               ), 
             )
