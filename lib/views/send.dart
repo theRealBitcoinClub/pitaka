@@ -54,6 +54,7 @@ class SendComponentState extends State<SendComponent> {
   bool _isInternetSlow = false;
   bool _showForm = false;
   String destinationAccountId;
+  bool _isMaintenanceMode = false;
   
   Future<List> getAccounts() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -209,15 +210,16 @@ class SendComponentState extends State<SendComponent> {
         DateTime.parse(now.toString())
     );
 
-    var txnhashstr = "$amount:-:$txnDateTime:-:"
+    var txnstr = "$amount:-:$txnDateTime:-:"
     "$selectedPaytacaAccount:-:$lBalance:-:$lSignedBalance:-:$lBalanceTimeStamp:-:$txnID:-:$_txnReadableDateTime:-:$isSenderOnline";
 
-    var bytes = utf8.encode(txnhashstr);
+    var bytes = utf8.encode(txnstr);
     var txnhash = sha256.convert(bytes).toString();         
     print("The value of txnhash is: $txnhash");
-     
+    
     String signature = await signTransaction(txnhash, privateKey);
-    var qrcode = "$signature:wallet:$txnhash:wallet:$publicKey";
+    String signatureForQR = await signTransaction(txnstr, privateKey);
+    var qrcode = "$txnhash||$signatureForQR||$txnstr||$publicKey";
     prefs.setString("_txnQrCode", qrcode);
     prefs.setString("_txnDateTime", _txnReadableDateTime);
     prefs.setString("_txnAmount", amount.toString());
@@ -237,12 +239,17 @@ class SendComponentState extends State<SendComponent> {
       'transaction_id': txnID,
       'transaction_datetime': _txnReadableDateTime,
       'proof_of_payment': proofOfPayment,
+      'txn_str' : txnstr,
     };
     print("The value of payload is: $payload");
     var response = await transferAsset(payload);
       // Catch app version compatibility
     if (response.error == "outdated_app_version") {
       showOutdatedAppVersionDialog(context);
+    }
+    // Check if server is in maintenance mode
+    if (response.error == "maintenance_mode") {
+      _isMaintenanceMode = true;
     }
     // Check the error response from transferAsset in endpoints.dart
     // Call the function for alert dialog
@@ -267,13 +274,12 @@ class SendComponentState extends State<SendComponent> {
   }
 
   void scanBarcode() async {
+    _showForm = true;
     allowCamera();
     String barcode = await FlutterBarcodeScanner.scanBarcode("#ff6666", "Cancel", true, ScanMode.DEFAULT);
-    print("------------------------- The barcode value is $barcode ----------------------------");
     setState(() {
       if (barcode.length > 0) {
         _barcodeString = barcode;
-        _showForm = true;
       } else {
         _barcodeString = '';
       }  
@@ -346,6 +352,10 @@ class SendComponentState extends State<SendComponent> {
 bool disableSubmitButton = false;
 
 List<Widget> _buildForm(BuildContext context) {
+  // Added the code below for the display error during sending offline
+  if (!globals.online) {
+    getAccounts();
+  }
     Form form = new Form(
       key: _formKey,
       child: new ListView(
@@ -354,6 +364,7 @@ List<Widget> _buildForm(BuildContext context) {
           new SizedBox(
             height: 30.0,
           ),
+          // When slow or no internet connection show this message
           _isInternetSlow ?
             Container(
               alignment: Alignment.center,
@@ -361,6 +372,18 @@ List<Widget> _buildForm(BuildContext context) {
               child: Text(
                 "You don't seem to have internet connection, or it's too slow. " 
                 "Switch your phone to Airplane mode to keep using the app in offline mode.",
+                textAlign: TextAlign.center,
+              ), 
+            )
+          : // Another condition
+          // When server is under maintenance show this message
+          _isMaintenanceMode ?
+            Container(
+              alignment: Alignment.center,
+              padding: EdgeInsets.only(top: 250),
+              child: Text(
+                "Server is down for maintenance. " 
+                "Please try again later or switch your phone to Airplane mode to keep using the app in offline mode.",
                 textAlign: TextAlign.center,
               ), 
             )
@@ -388,7 +411,6 @@ List<Widget> _buildForm(BuildContext context) {
                 )
               )
             ),
-         
             _showForm ?
               Column(
                 crossAxisAlignment: CrossAxisAlignment.center,

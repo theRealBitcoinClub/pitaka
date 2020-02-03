@@ -12,8 +12,6 @@ import 'receive.dart';
 import '../utils/dialog.dart';
 
 
-// Just added comment to commit and push
-
 class HomeComponent extends StatefulWidget {
   @override
   State createState() => new HomeComponentState();
@@ -118,7 +116,7 @@ class HomeComponentState extends State<HomeComponent> {
                         if (snapshot.data.success) {
                           return hometabs.buildBalancesList(balances);
                         } 
-                        // When connect timeout error, show dialog
+                        // When connect timeout error, show message
                         // ANDing with globals.online prevents showing the dialog 
                         // during manually swithing to airplane mode
                         else if (snapshot.data.error == 'connect_timeout' && globals.online) {
@@ -127,6 +125,19 @@ class HomeComponentState extends State<HomeComponent> {
                             child: Text(
                               "You don't seem to have internet connection, or it's too slow. " 
                               "Switch your phone to Airplane mode to keep using the app in offline mode.",
+                              textAlign: TextAlign.center,
+                            ),
+                          );
+                        }
+                        // When maintainance mode error, show message
+                        // ANDing with globals.online prevents showing the dialog 
+                        // during manually swithing to airplane mode
+                        else if (snapshot.data.error == 'maintenance_mode' && globals.online) {
+                          return Padding(
+                            padding: EdgeInsets.all(16.0),
+                            child: Text(
+                              "Server is down for maintenance. " 
+                              "Please try again later or switch your phone to Airplane mode to keep using the app in offline mode.",
                               textAlign: TextAlign.center,
                             ),
                           );
@@ -167,7 +178,7 @@ class HomeComponentState extends State<HomeComponent> {
                         if (snapshot.data.transactions.length > 0) {
                           return hometabs.buildTransactionsList(snapshot.data.transactions);
                         }
-                        // When connect timeout error, show dialog
+                        // When connect timeout error, show message
                         // ANDing with globals.online prevents showing the dialog 
                         // during manually swithing to airplane mode 
                         else if (snapshot.data.error == 'connect_timeout' && globals.online) {
@@ -176,6 +187,19 @@ class HomeComponentState extends State<HomeComponent> {
                             child: Text(
                               "You don't seem to have internet connection, or it's too slow. " 
                               "Switch your phone to Airplane mode to keep using the app in offline mode.",
+                              textAlign: TextAlign.center,
+                            ),
+                          );
+                        }
+                        // When maintainance mode error, show message
+                        // ANDing with globals.online prevents showing the dialog 
+                        // during manually swithing to airplane mode
+                        else if (snapshot.data.error == 'maintenance_mode' && globals.online) {
+                          return Padding(
+                            padding: EdgeInsets.all(16.0),
+                            child: Text(
+                              "Server is down for maintenance. " 
+                              "Please try again later or switch your phone to Airplane mode to keep using the app in offline mode.",
                               textAlign: TextAlign.center,
                             ),
                           );
@@ -201,6 +225,7 @@ class HomeComponentState extends State<HomeComponent> {
                       // return new Container();
                       return new CircularProgressIndicator();
                     }
+                    return hometabs.buildTransactionsList(snapshot.data.transactions);
                   }
                 )
               );

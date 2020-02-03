@@ -169,7 +169,7 @@ class TransactionsResponse {
       transObj.mode = txn['mode'];
       transObj.amount = txn['amount'].toDouble();
       transObj.timestamp = txn['timestamp'].toString();
-     transObj.timeslot = DateTime.tryParse(transObj.timestamp).toLocal();
+     //transObj.timeslot = DateTime.tryParse(transObj.timestamp).toLocal();
       transObj.txnID = txn['txnID'];
       transObj.time = txn['time'];
       transObj.paymentProof = txn['paymentProof'];

@@ -231,7 +231,7 @@ class DatabaseHelper {
     // };
 
     var converted = json.encode(payload);
-    var txnTimeStamp = payload['txn_hash'].split(':-:')[1];
+    var txnTimeStamp = payload['txn_str'].split(':-:')[2];
     await db.insert(table2, {
       "account": instance['accountId'],
       "amount":payload['amount'],
