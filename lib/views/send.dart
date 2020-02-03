@@ -218,8 +218,8 @@ class SendComponentState extends State<SendComponent> {
     print("The value of txnhash is: $txnhash");
     
     String signature = await signTransaction(txnhash, privateKey);
-    String signatureForQR = await signTransaction(txnstr, privateKey);
-    var qrcode = "$txnhash||$signatureForQR||$txnstr||$publicKey";
+    //String signatureForQR = await signTransaction(txnstr, privateKey);
+    var qrcode = "$txnhash||$signature||$txnstr||$publicKey";
     prefs.setString("_txnQrCode", qrcode);
     prefs.setString("_txnDateTime", _txnReadableDateTime);
     prefs.setString("_txnAmount", amount.toString());

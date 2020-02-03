@@ -79,7 +79,7 @@ class ReceiveComponentState extends State<ReceiveComponent> {
       double amount = double.parse(hashArr[0]);
       String pubKey = qrArr[3];
       String fromAccount = hashArr[2];
-      String txnHash = qrArr[2];
+      String txnHash = qrArr[0];
       String txnSignature = qrArr[1];
       String txnDateTime = hashArr[1];
       String txnID = hashArr[6];
@@ -124,6 +124,7 @@ class ReceiveComponentState extends State<ReceiveComponent> {
           if (amount <= lBalance) {
             // Verify txnHash using signature and public key
             var firstValidation = await CryptoSign.verify(decodedSignature, txnHash, decodedPublicKey);
+            print("The value of firstValidation during offline is: $firstValidation");
             if (firstValidation) {
               var timestamp = hashArr[5];
               var signValue = hashArr[4].toString();
@@ -134,6 +135,7 @@ class ReceiveComponentState extends State<ReceiveComponent> {
               var hashMessage = sha256.convert(bytes).toString();
               // Verify hashMessage using lastSignedBalance and serverPublicKey
               var secondValidation = await CryptoSign.verify(lastSignedBalance, hashMessage, serverPublicKey);
+              print("The value of secondtValidation during offline is: $secondValidation");
               if (secondValidation) {
                 // Create the payload
                 payload = {
