@@ -352,7 +352,10 @@ class SendComponentState extends State<SendComponent> {
 bool disableSubmitButton = false;
 
 List<Widget> _buildForm(BuildContext context) {
-  getAccounts();
+  // Added the code below for the display error during sending offline
+  if (!globals.online) {
+    getAccounts();
+  }
     Form form = new Form(
       key: _formKey,
       child: new ListView(
