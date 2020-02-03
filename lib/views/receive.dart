@@ -30,6 +30,7 @@ class ReceiveComponentState extends State<ReceiveComponent> {
   bool online = globals.online;
   bool isOffline = false;
   StreamSubscription _connectionChangeStream;
+  bool _loading = false;   // For CircularProgressIndicator
 
   @override
   void initState()  {
@@ -64,7 +65,7 @@ class ReceiveComponentState extends State<ReceiveComponent> {
 
   // Scan QRcode from Payment Proof after Send
   void scanQrcode() async {
-    String qrcode = await FlutterBarcodeScanner.scanBarcode("#ff6666","Cancel", true, ScanMode.DEFAULT);
+    String qrcode = await FlutterBarcodeScanner.scanBarcode("#ff6666","Cancel", true, ScanMode.DEFAULT);  
     // Decode and split the QRcode data
     var baseDecoded = base64.decode(qrcode);
     var gzipDecoded = new GZipDecoder().decodeBytes(baseDecoded);
@@ -86,10 +87,13 @@ class ReceiveComponentState extends State<ReceiveComponent> {
       // Convert signature and public key to bytes for verification
       var decodedSignature = HEX.decode(txnSignature);
       var decodedPublicKey = HEX.decode(pubKey);
-
       if (hashArr.length == 9) {
         // Check if the sender was online during sending
         if (senderOnline == "true") {
+          // Set _loading to true to show circular progress bar
+          setState(() {
+            _loading = true;
+          });
           // Try catching error and pop up success dialog when there is an error
           // If both sender and receiver are online they will update balances anyway
           try {
@@ -108,10 +112,15 @@ class ReceiveComponentState extends State<ReceiveComponent> {
             };
             // Call receiveAsset function from "endpoints.dart"
             var response = await receiveAsset(payload);
+            // Set _loading to false to hide circular progress bar
+            setState(() {
+              _loading = false;
+            });
             // Check response, pop up a dialog for failed or success 
             if (response.success == false) {
               _failedDialog();
             } else {
+             // _loading = false;
               _successDialog();
             }
           } catch(e) {
@@ -119,6 +128,10 @@ class ReceiveComponentState extends State<ReceiveComponent> {
             _successDialog();
           }
         } else {
+          // Set _loading to true to show circular progress bar
+          setState(() {
+            _loading = true;
+          });
           // Check if amount sent if less than or equal to last balance
           double lBalance = double.parse(hashArr[3]);
           if (amount <= lBalance) {
@@ -157,6 +170,10 @@ class ReceiveComponentState extends State<ReceiveComponent> {
                 };
                 // Call receiveAsset function from "endpoints.dart"
                 var response = await receiveAsset(payload);
+                // Set _loading to false to hide circular progress bar
+                setState(() {
+                  _loading = true;
+                });
                 // Check response, pop up a dialog for failed or success 
                 if (response.success == false) {
                   _failedDialog();
@@ -337,17 +354,34 @@ class ReceiveComponentState extends State<ReceiveComponent> {
           new SizedBox(
             height: 20.0,
           ),
-          Visibility(
-            visible: _selectedPaytacaAccount != null ? true: false,
-            child: QrImage(
-              data: _selectedPaytacaAccount != null ? "::paytaca::$_selectedPaytacaAccount::paytaca::": ""
-            ),
+          // Put qrcode and circular progress indicator inside stack
+          // so they can overlap each other
+          new Stack(
+            children: <Widget>[
+              Visibility(
+                visible: _selectedPaytacaAccount != null ? true: false,
+                child: QrImage(
+                  data: _selectedPaytacaAccount != null ? "::paytaca::$_selectedPaytacaAccount::paytaca::": ""
+                ),
+              ),
+              new Positioned(
+                top: 150.0,
+                left: 150.0,
+                child: Visibility(
+                  visible: _loading,
+                  child: Container(
+                    alignment: Alignment.center,
+                    padding: EdgeInsets.only(bottom: 150),
+                    child: new CircularProgressIndicator()
+                  ),
+                ),
+              )
+            ]
           ),
-
           new SizedBox(
             height: 20.0,
           ),
-          buildButton()
+          buildButton(),
         ],
       )
     );
