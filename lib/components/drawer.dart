@@ -81,7 +81,7 @@ Drawer buildDrawer(BuildContext context) {
           title: Text('Contact List'),
           trailing: Icon(Icons.contacts),
           onTap: () {
-            Application.router.navigateTo(context, "/contactList");
+            Application.router.navigateTo(context, "/contactlist");
         }),
       ],
     ),
