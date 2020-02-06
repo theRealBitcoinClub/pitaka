@@ -48,35 +48,41 @@ Drawer buildDrawer(BuildContext context) {
               }
             }),
         ListTile(
-            title: Text('Accounts'),
-            trailing: Icon(Icons.account_balance_wallet),
-            onTap: () {
-              Application.router.navigateTo(context, "/home");
-            }),
+          title: Text('Accounts'),
+          trailing: Icon(Icons.account_balance_wallet),
+          onTap: () {
+            Application.router.navigateTo(context, "/home");
+        }),
         ListTile(
-            title: Text('Pay'),
-            trailing: Icon(Icons.send),
-            onTap: () {
-              Application.router.navigateTo(context, "/send");
-            }),
+          title: Text('Pay'),
+          trailing: Icon(Icons.send),
+          onTap: () {
+            Application.router.navigateTo(context, "/send");
+        }),
         ListTile(
-            title: Text('QR Code'),
-            trailing: Icon(Icons.inbox),
-            onTap: () {
-              Application.router.navigateTo(context, "/receive");
-            }),
+          title: Text('QR Code'),
+          trailing: Icon(Icons.inbox),
+          onTap: () {
+            Application.router.navigateTo(context, "/receive");
+        }),
         ListTile(
-            title: Text('Create Account'),
-            trailing: Icon(Icons.person_outline),
-            onTap: () {
-              Application.router.navigateTo(context, "/addAccount");
-            }),
+          title: Text('Create Account'),
+          trailing: Icon(Icons.person_outline),
+          onTap: () {
+            Application.router.navigateTo(context, "/addAccount");
+        }),
         ListTile(
-            title: Text('Aunthenticate'),
-            trailing: Icon(Icons.person_pin),
-            onTap: () {
-              Application.router.navigateTo(context, "/authenticate");
-            }),
+          title: Text('Aunthenticate'),
+          trailing: Icon(Icons.person_pin),
+          onTap: () {
+            Application.router.navigateTo(context, "/authenticate");
+        }),
+        ListTile(
+          title: Text('Contact List'),
+          trailing: Icon(Icons.contacts),
+          onTap: () {
+            Application.router.navigateTo(context, "/contactList");
+        }),
       ],
     ),
   );
