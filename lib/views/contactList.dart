@@ -322,66 +322,79 @@ class ContactListComponentState extends State<ContactListComponent> {
           new SizedBox(
             height: 20.0,
           ),
-          new FormField(
-            builder: (FormFieldState state) {
-              return InputDecorator(
-                decoration: InputDecoration(
-                  labelText: 'Select Account',
-                ),
+          // new FormField(
+          //   builder: (FormFieldState state) {
+          //     return InputDecorator(
+          //       decoration: InputDecoration(
+          //         labelText: 'Select Account',
+          //       ),
 
-                child: new DropdownButtonHideUnderline(
-                  child: new DropdownButton(
-                    items: data.map((item) {
-                      return DropdownMenuItem(
-                        value: item['accountId'],
-                        child: new Text("${item['accountName']}"),
-                      );
-                    }).toList(),
-                    iconEnabledColor: Colors.red,
-                    value: _selectedPaytacaAccount,
-                    isDense: true,
-                    onChanged: (newVal) {
-                        setState(() {
-                          _selectedPaytacaAccount = newVal;
-                          state.didChange(newVal);
-                        });
-                    },
-                  ),
-                )
-              );
-            },
-          ),
+          //       child: new DropdownButtonHideUnderline(
+          //         child: new DropdownButton(
+          //           items: data.map((item) {
+          //             return DropdownMenuItem(
+          //               value: item['accountId'],
+          //               child: new Text("${item['accountName']}"),
+          //             );
+          //           }).toList(),
+          //           iconEnabledColor: Colors.red,
+          //           value: _selectedPaytacaAccount,
+          //           isDense: true,
+          //           onChanged: (newVal) {
+          //               setState(() {
+          //                 _selectedPaytacaAccount = newVal;
+          //                 state.didChange(newVal);
+          //               });
+          //           },
+          //         ),
+          //       )
+          //     );
+          //   },
+          // ),
           new SizedBox(
             height: 20.0,
           ),
           // Put qrcode and circular progress indicator inside stack
           // so they can overlap each other
-          new Stack(
-            children: <Widget>[
-              Visibility(
-                visible: _selectedPaytacaAccount != null ? true: false,
-                child: QrImage(
-                  data: _selectedPaytacaAccount != null ? "::paytaca::$_selectedPaytacaAccount::paytaca::": ""
-                ),
-              ),
-              new Positioned(
-                top: 150.0,
-                left: 150.0,
-                child: Visibility(
-                  visible: _loading,
-                  child: Container(
-                    alignment: Alignment.center,
-                    padding: EdgeInsets.only(bottom: 150),
-                    child: new CircularProgressIndicator()
-                  ),
-                ),
-              )
-            ]
+          // new Stack(
+          //   children: <Widget>[
+          //     Visibility(
+          //       visible: true,
+          //       child: QrImage(
+          //         data: _selectedPaytacaAccount != null ? "::paytaca::$_selectedPaytacaAccount::paytaca::": ""
+          //       ),
+          //     ),
+          //     new Positioned(
+          //       top: 150.0,
+          //       left: 150.0,
+          //       child: Visibility(
+          //         visible: _loading,
+          //         child: Container(
+          //           alignment: Alignment.center,
+          //           padding: EdgeInsets.only(bottom: 150),
+          //           child: new CircularProgressIndicator()
+          //         ),
+          //       ),
+          //     )
+          //   ]
+          // ),
+          Container(
+            alignment: Alignment.center,
+            child: const Text(
+              "You're contact list is empty. Create by tapping the '+' sign button.",
+            textAlign: TextAlign.center,
+            )
           ),
-          new SizedBox(
-            height: 20.0,
+
+          // Button for adding contact
+          FloatingActionButton(
+            onPressed: () {
+              // Add your onPressed code here!
+            },
+            child: Icon(Icons.add),
+            backgroundColor: Colors.red,
           ),
-          buildButton(),
+
         ],
       )
     );
