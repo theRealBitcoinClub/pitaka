@@ -47,10 +47,11 @@ Future<dynamic> sendPostRequest(url, payload) async {
 
 Future<dynamic> sendGetRequest(url) async {
   // Read public and private key from global storage
-  // To be use to login user when session expires
+  // To be use to re-login user when session expires
   String publicKey = await globals.storage.read(key: "publicKey");
   String privateKey = await globals.storage.read(key: "privateKey");
 
+  // For CircularProgressIndicator
   globals.loading = true;
 
   var payload = {
@@ -81,8 +82,9 @@ Future<dynamic> sendGetRequest(url) async {
       //print("Your internet connection is very slow. Switch to offline mode to continue this transaction.");
       return "DioErrorType.CONNECT_TIMEOUT";
     }
+    // Check if the error is 401, it means unauthorized and the user's session has expired
     else if (errorType.contains("Http status error [401]")) {
-      // Login
+      // Re-login
       String loginSignature =
         await signTransaction("hello world", privateKey);
       var loginPayload = {
@@ -171,7 +173,6 @@ Future<PlainSuccessResponse> loginUser(payload) async {
   try {
     Response response;
     response = await sendPostRequest(url, payload);
-    print("From endpoints.dart loginUser() - The value of response is $response");
     // Save user details in shared preferences
     SharedPreferences prefs = await SharedPreferences.getInstance();
     var user = response.data['user'];
