@@ -12,6 +12,7 @@ import '../utils/globals.dart' as globals;
 
 
 DatabaseHelper databaseHelper = DatabaseHelper();
+String respErrorType = "";
 
 Future<dynamic> sendPostRequest(url, payload) async {
   var dio = new Dio();
@@ -79,11 +80,13 @@ Future<dynamic> sendGetRequest(url) async {
     // Check if "DioErrorType.CONNECT_TIMEOUT" error is in the string
     // And return the error type
     if (errorType.contains("DioErrorType.CONNECT_TIMEOUT")) {
+      respErrorType = "connect_timeout";
       //print("Your internet connection is very slow. Switch to offline mode to continue this transaction.");
       return "DioErrorType.CONNECT_TIMEOUT";
     }
     // Check if the error is 401, it means unauthorized and the user's session has expired
     else if (errorType.contains("Http status error [401]")) {
+      respErrorType = "unauthorized";
       // Re-login
       String loginSignature =
         await signTransaction("hello world", privateKey);
@@ -287,7 +290,15 @@ Future<BalancesResponse> getOnlineBalances() async {
     String errorType = e.toString();
     print("The value of errorType in getOnlineBalances() is $errorType");
     var resp = await databaseHelper.offLineBalances();
-    return BalancesResponse.connectTimeoutError(resp);
+    // Check response error type
+    if (respErrorType == "connect_timeout") {
+      // Parse response into BalanceResponse
+      return BalancesResponse.connectTimeoutError(resp);
+    }
+    else if (respErrorType == "unauthorized") {
+      // Parse response into BalanceResponse
+      return BalancesResponse.unauthorizedError(resp);
+    }
   }
   return response;
 }
@@ -302,7 +313,15 @@ Future<TransactionsResponse> getOnlineTransactions() async {
     }
   } catch (e) {
     var resp = await databaseHelper.offLineTransactions();
-    return TransactionsResponse.connectTimeoutError(resp);
+    // Check response error type
+    if (respErrorType == "connect_timeout") {
+      // Parse response into BalanceResponse
+      return TransactionsResponse.connectTimeoutError(resp);
+    }
+    else if (respErrorType == "unauthorized") {
+      // Parse response into BalanceResponse
+      return TransactionsResponse.unauthorizedError(resp);
+    }
   }
   return response;
 }
