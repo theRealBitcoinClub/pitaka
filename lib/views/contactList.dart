@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'dart:async';
 import '../components/drawer.dart';
@@ -6,14 +5,17 @@ import '../components/bottomNavigation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../utils/globals.dart' as globals;
 import '../utils/globals.dart';
+import 'package:passcode_screen/circle.dart';
+import 'package:passcode_screen/keyboard.dart';
+import 'package:easy_dialog/easy_dialog.dart';
+import '../views/app.dart';
 
 
 class Contact {
   String firstName;
   String lastName;
   String emailAddress;
-  DateTime birthDate;
-  String imei;
+  String mobileNumber;
 }
 
 class ContactListComponent extends StatefulWidget {
@@ -159,7 +161,7 @@ class ContactListComponentState extends State<ContactListComponent> {
   //   return ws;
   // }
 
-  User newUser = new User();
+  Contact newContact = new Contact();
 
   String validateName(String value) {
     if (value.length < 2)
@@ -176,6 +178,54 @@ class ContactListComponentState extends State<ContactListComponent> {
       return 'Enter Valid Email';
     else
       return null;
+  }
+
+  BuildContext _scaffoldContext;
+  FocusNode focusNode = FocusNode();
+  bool _termsChecked = false;
+  bool _submitting = false;
+
+  var circleUIConfig = new CircleUIConfig();
+  var keyboardUIConfig = new KeyboardUIConfig();
+
+  onDialogClose() {
+    // Not use
+  }
+
+  // Alert dialog for duplicate email address
+  showAlertDialog() {
+    EasyDialog(
+      title: Text(
+        "Duplicate Email Address!",
+        style: TextStyle(fontWeight: FontWeight.bold),
+        textScaleFactor: 1.2,
+      ),
+      description: Text(
+        "The email address is already registered. Please use other email address",
+        textScaleFactor: 1.1,
+        textAlign: TextAlign.center,
+      ),
+      height: 160,
+      closeButton: false,
+      contentList: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            new FlatButton(
+              padding: EdgeInsets.all(8),
+              textColor: Colors.lightBlue,
+              onPressed: () {
+                Navigator.of(context).pop();
+                // Use same mobile number after retry on duplicate email 
+                Application.router.navigateTo(context, "/contactlist");
+              },
+              child: new Text("OK",
+                textScaleFactor: 1.2,
+                textAlign: TextAlign.center,
+              ),),
+           ],)
+      ]
+    ).show(context, onDialogClose);
   }
 
  void _validateInputs(BuildContext context) async {
@@ -197,10 +247,9 @@ class ContactListComponentState extends State<ContactListComponent> {
           mobileNumber = "${widget.mobileNumber}";
 
           var userPayload = {
-            "firstname": newUser.firstName,
-            "lastname": newUser.lastName,
-            "birthday": "2006-01-02",
-            "email": newUser.emailAddress,
+            "firstname": newContact.firstName,
+            "lastname": newContact.lastName,
+            "email": newContact.emailAddress,
             "mobile_number": mobileNumber,
           };
           String txnHash = generateTransactionHash(userPayload);
@@ -275,11 +324,11 @@ class ContactListComponentState extends State<ContactListComponent> {
                 keyboardType: TextInputType.text,
                 validator: validateName,
                 onSaved: (value) {
-                  newUser.firstName = value;
+                  newContact.firstName = value;
                 },
                 decoration: const InputDecoration(
                   icon: const Icon(Icons.person_outline),
-                  hintText: 'Enter your first name',
+                  hintText: 'Enter first name',
                   labelText: 'First Name',
                 ),
               ),
@@ -287,11 +336,11 @@ class ContactListComponentState extends State<ContactListComponent> {
                 keyboardType: TextInputType.text,
                 validator: validateName,
                 onSaved: (value) {
-                  newUser.lastName = value;
+                  newContact.lastName = value;
                 },
                 decoration: const InputDecoration(
                   icon: const Icon(Icons.person),
-                  hintText: 'Enter your last name',
+                  hintText: 'Enter last name',
                   labelText: 'Last Name',
                 ),
               ),
@@ -299,11 +348,11 @@ class ContactListComponentState extends State<ContactListComponent> {
                 keyboardType: TextInputType.emailAddress,
                 validator: validateEmail,
                 onSaved: (value) {
-                  newUser.emailAddress = value;
+                  newContact.emailAddress = value;
                 },
                 decoration: const InputDecoration(
                   icon: const Icon(Icons.email),
-                  hintText: 'Enter your email address',
+                  hintText: 'Enter email address',
                   labelText: 'Email address',
                 ),
               ),
