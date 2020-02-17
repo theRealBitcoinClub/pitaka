@@ -91,6 +91,20 @@ Future<GenericCreateResponse> createUser(payload) async {
   }
 }
 
+// Endpoint for creating contact list
+// This is called in contactList.dart
+Future<GenericCreateResponse> createContact(payload) async {
+  print("This is debug print from createContact() in endpoints.dart");
+  print("The value of payload is: $payload");
+  try {
+    final String url = globals.baseUrl + '/api/contacts/create';
+    final response = await sendPostRequest(url, payload);
+    return GenericCreateResponse.fromResponse(response);
+  } catch (e) {
+    throw Exception(e);
+  }
+}
+
 Future<GenericCreateResponse> registerBusiness(payload) async {
   try {
     String publicKey = await globals.storage.read(key:"publicKey");

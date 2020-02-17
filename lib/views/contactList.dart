@@ -9,13 +9,13 @@ import 'package:passcode_screen/circle.dart';
 import 'package:passcode_screen/keyboard.dart';
 import 'package:easy_dialog/easy_dialog.dart';
 import '../views/app.dart';
+import '../utils/dialog.dart';
+import '../api/endpoints.dart';
 
 
 class Contact {
-  String firstName;
-  String lastName;
-  String emailAddress;
   String mobileNumber;
+  String emailAddress;
 }
 
 class ContactListComponent extends StatefulWidget {
@@ -34,6 +34,7 @@ class ContactListComponentState extends State<ContactListComponent> {
   StreamSubscription _connectionChangeStream;
   bool _loading = false;   // For CircularProgressIndicator
   bool _isContactListEmpty = true;
+  bool _showContactForm = false;
 
   @override
   void initState()  {
@@ -42,8 +43,6 @@ class ContactListComponentState extends State<ContactListComponent> {
     // Fires whenever connectivity state changes
     ConnectionStatusSingleton connectionStatus = ConnectionStatusSingleton.getInstance();
     _connectionChangeStream = connectionStatus.connectionChange.listen(connectionChanged);
-
-    getAccounts();
   }
 
   void connectionChanged(dynamic hasConnection) {
@@ -64,26 +63,6 @@ class ContactListComponentState extends State<ContactListComponent> {
   @override
   void dispose() {
     super.dispose();
-  }
-
-  Future<List> getAccounts() async {
-    try {
-      SharedPreferences prefs = await SharedPreferences.getInstance();
-      var _prefAccounts = prefs.get("accounts");
-      List<Map> _accounts = [];
-      for (final acct in _prefAccounts) {
-        String accountId = acct.split(' | ')[1];
-        var acctObj = new Map();
-        acctObj['accountName'] = acct.split(' | ')[0];
-        acctObj['accountId'] = accountId;
-        _accounts.add(acctObj);
-      }
-      data = _accounts;
-      return _accounts;
-    } catch(e) {
-      print("Error in getAccounts(): $e");
-    }
-    return data;
   }
 
   @override
@@ -116,12 +95,25 @@ class ContactListComponentState extends State<ContactListComponent> {
             );
           }
           else {
-            return new Stack(children: _buildContactListForm(context));
+            if (_showContactForm) {
+              return new Stack(children: _buildContactListForm(context));
+            }
+            else {
+              return new Container();
+            }
           }
         }),
         floatingActionButton: FloatingActionButton(
           onPressed: () {
-            // Add your onPressed code here!
+            setState(() {
+              if (!_showContactForm) {
+                _showContactForm = true;
+                _isContactListEmpty = false;
+              }
+              else {
+                _showContactForm = false;
+              }
+            }); 
           },
           child: Icon(Icons.person_add),
           backgroundColor: Colors.red,
@@ -131,43 +123,18 @@ class ContactListComponentState extends State<ContactListComponent> {
       );
   }
 
-  Widget addContactdButton (){
-    return FloatingActionButton(
-      onPressed: () {
-        // Add your onPressed code here!
-      },
-      child: Icon(Icons.add),
-      backgroundColor: Colors.red,
-    );
-  }
-
-  // List<Widget> _buildForm(BuildContext context) {
-  //   Form form = new Form(
-  //     key: _formKey,
-  //     child: new ListView(
-  //       padding: const EdgeInsets.symmetric(horizontal: 16.0),
-  //       children: <Widget>[
-  //         new SizedBox(
-  //           height: 20.0,
-  //         ),
-  //         new SizedBox(
-  //           height: 20.0,
-  //         ),
-  //       ],
-  //     )
-  //   );
-  //   var ws = new List<Widget>();
-  //   ws.add(form);
-  //   return ws;
-  // }
-
   Contact newContact = new Contact();
 
-  String validateName(String value) {
-    if (value.length < 2)
-      return 'Name must be at least 2 characters';
-    else
+  String validateMobile(String value) {
+    if (value == '0000 - 000 - 0000') {
       return null;
+    } else {
+      if (value.startsWith('09')){
+        return null;
+      } else {
+        return 'Invalid phone number';
+      }
+    }
   }
 
   String validateEmail(String value) {
@@ -182,7 +149,6 @@ class ContactListComponentState extends State<ContactListComponent> {
 
   BuildContext _scaffoldContext;
   FocusNode focusNode = FocusNode();
-  bool _termsChecked = false;
   bool _submitting = false;
 
   var circleUIConfig = new CircleUIConfig();
@@ -233,68 +199,42 @@ class ContactListComponentState extends State<ContactListComponent> {
       // Close the on-screen keyboard by removing focus from the form's inputs
       FocusScope.of(context).requestFocus(new FocusNode());
 
-      if (_termsChecked) {
         // If all data are correct then save data to out variables
         _formKey.currentState.save();
-        await generateKeyPair(context);
-
-        if (authenticated == true) {
           setState(() {
             _submitting = true;
           });
-          
-          // Get the mobile number from previous route parameter
-          mobileNumber = "${widget.mobileNumber}";
 
-          var userPayload = {
-            "firstname": newContact.firstName,
-            "lastname": newContact.lastName,
+          // Read the user ID from globals.storage and include in the payload
+          String userId = await globals.storage.read(key: "userId");
+
+          // Create contact payload
+          var contactPayload = {
+            "mobile_number": newContact.mobileNumber,
             "email": newContact.emailAddress,
-            "mobile_number": mobileNumber,
+            "user_id": userId,
           };
-          String txnHash = generateTransactionHash(userPayload);
-          print("The value of txnHash is: $txnHash");
-          String signature = await signTransaction(txnHash, privateKey);
 
-          userPayload["public_key"] = publicKey;
-          userPayload["txn_hash"] = txnHash;
-          userPayload["signature"] = signature;
-          var user = await createUser(userPayload);
+          var contact = await createContact(contactPayload);
+
+          print("The value of contact.error is: ${contact.error}");
+          print("The value of contact.success is: ${contact.success}");
           
           // Catch duplicate email address in the error
-          if (user.error == "duplicate_email") {
+          if (contact.error == "duplicate_email") {
             showAlertDialog();
           }
 
           // Catch app version compatibility
-          if (user.error == "outdated_app_version") {
+          if (contact.error == "outdated_app_version") {
             showOutdatedAppVersionDialog(context);
           }
-          
-          await globals.storage.write(key: "userId", value: user.id);
-          // Login
-          String loginSignature =
-            await signTransaction("hello world", privateKey);
-          var loginPayload = {
-            "public_key": publicKey,
-            "session_key": "hello world",
-            "signature": loginSignature,
-          };
-          await loginUser(loginPayload);
 
           SharedPreferences prefs = await SharedPreferences.getInstance();
           await prefs.setBool('installed', true);
-          Application.router.navigateTo(context, "/addpincode");
-          databaseHelper.initializeDatabase();
-
-        }
-      } else {
-        _showSnackBar("Please agree to our Terms and Conditions");
-      }
-    } else {
-      _showSnackBar("Please correct errors in the form");
-    }
+          Application.router.navigateTo(context, "/contactlist");
   }
+ }
 
   void _showSnackBar(String message) {
     final snackBar =
@@ -313,7 +253,7 @@ class ContactListComponentState extends State<ContactListComponent> {
                 height: 30.0,
               ),
               new Center(
-                  child: new Text("Sign up to create your wallet",
+                  child: new Text("Create contact",
                       style: TextStyle(
                         fontSize: 20.0,
                       ))),
@@ -322,26 +262,15 @@ class ContactListComponentState extends State<ContactListComponent> {
               ),
               new TextFormField(
                 keyboardType: TextInputType.text,
-                validator: validateName,
+                validator: validateMobile,
                 onSaved: (value) {
-                  newContact.firstName = value;
+                  newContact.mobileNumber = value;
                 },
+                maxLength: 11,
                 decoration: const InputDecoration(
-                  icon: const Icon(Icons.person_outline),
-                  hintText: 'Enter first name',
-                  labelText: 'First Name',
-                ),
-              ),
-              new TextFormField(
-                keyboardType: TextInputType.text,
-                validator: validateName,
-                onSaved: (value) {
-                  newContact.lastName = value;
-                },
-                decoration: const InputDecoration(
-                  icon: const Icon(Icons.person),
-                  hintText: 'Enter last name',
-                  labelText: 'Last Name',
+                  icon: const Icon(Icons.phone_android),
+                  hintText: '09** - *** - ****',
+                  labelText: 'Mobile Number',
                 ),
               ),
               new TextFormField(
@@ -352,7 +281,7 @@ class ContactListComponentState extends State<ContactListComponent> {
                 },
                 decoration: const InputDecoration(
                   icon: const Icon(Icons.email),
-                  hintText: 'Enter email address',
+                  hintText: 'example@email.com',
                   labelText: 'Email address',
                 ),
               ),
@@ -392,5 +321,4 @@ class ContactListComponentState extends State<ContactListComponent> {
   }
 
 }
-
 
