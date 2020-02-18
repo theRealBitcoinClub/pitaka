@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:sqflite/sqflite.dart';
 import 'dart:async';
@@ -52,7 +51,8 @@ class DatabaseHelper {
       "signature TEXT,"
       "datetime TEXT"
       ")");
-    print('balance done');
+    print('Balance table done!');
+
     await db.execute("CREATE TABLE OfflineTransaction ("
       "id INTEGER NOT NULL PRIMARY KEY,"
       "account TEXT,"
@@ -65,8 +65,74 @@ class DatabaseHelper {
       "time TEXT,"
       "publicKey TEXT"
       ")");
-      print('offlinetransaction done');
+      print('OfflineTransaction table done!');
+
+    // Added table for contact list
+    await db.execute("CREATE TABLE Contact ("
+      "id INTEGER NOT NULL PRIMARY KEY,"
+      "accountName TEXT,"
+      "accountId TEXT"
+      ")");
+    print('Contact table done!');
 	}
+
+	// Get latest contact of contact objects in database
+	Future <List<Map<String, dynamic>>> contactList() async {
+		Database db = await this.database;
+    List<Map<String, dynamic>> result = [];
+		List<Map<String, dynamic>> qs = await db.query('Contact');
+    for (var account in qs) {
+      double onlineBalance = account['balance'];
+      var timestamp = account['timestamp'];
+      String accountId = account['accountId'].toString();
+      var resp = await offlineBalanceAnalyser(accountId, onlineBalance);
+      if (resp['latestTimeStamp'] != '') {
+        timestamp = resp['latestTimeStamp'];
+      }
+      var info = {
+        'balance': resp['computedBalance'].toString(),
+        'timestamp': timestamp,
+        'accountName': account['accountName'],
+        'accountId': accountId,
+        'signature': account['signature'],
+        'datetime': account['datetime']
+      };
+      if (result.indexOf(info) == -1) {
+        result.add(info);
+      } 
+    }
+		return result;
+	}
+
+  // Update ContactList table
+  Future<String> updateContactList(List<Contact> contacts) async {
+    Database db = await this.database;
+    int idHolder = 1;
+    for (final contact in contacts) {
+      var values = {
+        'id': idHolder,
+        'accountName': contact.accountName,
+        'accountId': contact.accountId
+      };
+      var idCheck = await db.query(
+        'ContactList',
+        where: 'id = ?',
+        whereArgs: [idHolder]
+      );
+      if (idCheck.length == 0 ) {
+        try {
+          await db.insert(
+            'ContactList',
+            values
+          );
+        } catch(e) {
+          print("The error value in updateContactList() is: $e");
+        }
+      }
+      idHolder += 1;
+    }
+		return 'success';
+  }
 
   // Update latest balance of balance objects in database
   Future<String> updateOfflineBalances(List<Balance> balances) async {

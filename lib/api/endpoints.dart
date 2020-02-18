@@ -246,6 +246,13 @@ Future<BalancesResponse> getOffLineBalances() async {
   return BalancesResponse.fromDatabase(resp);
 }
 
+// Endpoint for getting contact list
+// This is called in contactList.dart
+Future<BalancesResponse> getContactList() async {
+  var resp = await databaseHelper.contactList();
+  return BalancesResponse.fromDatabase(resp);
+}
+
 Future<BalancesResponse> getOnlineBalances() async {
   final String url = globals.baseUrl + '/api/wallet/balance';
   var response;

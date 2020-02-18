@@ -7,15 +7,14 @@ import '../utils/globals.dart' as globals;
 import '../utils/globals.dart';
 import 'package:passcode_screen/circle.dart';
 import 'package:passcode_screen/keyboard.dart';
-import 'package:easy_dialog/easy_dialog.dart';
 import '../views/app.dart';
 import '../utils/dialog.dart';
 import '../api/endpoints.dart';
+import '../components/contactListView.dart' as listview;
 
 
 class Contact {
   String mobileNumber;
-  String emailAddress;
 }
 
 class ContactListComponent extends StatefulWidget {
@@ -35,6 +34,8 @@ class ContactListComponentState extends State<ContactListComponent> {
   bool _loading = false;   // For CircularProgressIndicator
   bool _isContactListEmpty = true;
   bool _showContactForm = false;
+  bool _executeFuture = false;
+  bool _popDialog = false;
 
   @override
   void initState()  {
@@ -56,6 +57,14 @@ class ContactListComponentState extends State<ContactListComponent> {
         online = false;
         globals.online = online;
         print("Offline");
+        // For dismissing the dialog
+        if (_executeFuture) {
+          _executeFuture = false; // Kill or stop the future
+          if (_popDialog) {
+            _popDialog = false;
+            Navigator.of(context,).pop();
+          } 
+        }
       }
     });
   }
@@ -99,7 +108,69 @@ class ContactListComponentState extends State<ContactListComponent> {
               return new Stack(children: _buildContactListForm(context));
             }
             else {
-              return new Container();
+              new Builder(builder: (BuildContext context) {
+                return new Container(
+                  alignment: Alignment.center,
+                  child: new FutureBuilder(
+                    // Added condition, when both syncing and online are true get offline balances
+                    future: getContactList(),
+                    builder: (BuildContext context, AsyncSnapshot snapshot) {
+                      if (snapshot.hasData) {
+                        if (snapshot.data != null) {
+                          var contacts = snapshot.data.contacts;
+                          if (snapshot.data.success) {
+                            return listview.buildContactList(contacts);
+                          } 
+                          // When connect timeout error, show message
+                          // ANDing with globals.online prevents showing the dialog 
+                          // during manually swithing to airplane mode
+                          else if (snapshot.data.error == 'connect_timeout' && globals.online) {
+                            return Padding(
+                              padding: EdgeInsets.all(16.0),
+                              child: Text(
+                                "You don't seem to have internet connection, or it's too slow. " 
+                                "Switch your phone to Airplane mode to keep using the app in offline mode.",
+                                textAlign: TextAlign.center,
+                              ),
+                            );
+                          }
+                          // When maintainance mode error, show message
+                          // ANDing with globals.online prevents showing the dialog 
+                          // during manually swithing to airplane mode
+                          else if (snapshot.data.error == 'maintenance_mode' && globals.online) {
+                            return Padding(
+                              padding: EdgeInsets.all(16.0),
+                              child: Text(
+                                "Server is down for maintenance. " 
+                                "Please try again later or switch your phone to Airplane mode to keep using the app in offline mode.",
+                                textAlign: TextAlign.center,
+                              ),
+                            );
+                          }
+                          // When app version error, show dialog
+                          // ANDing with globals.online prevents showing the dialog 
+                          // during manually swithing to airplane mode
+                          else if (snapshot.data.error == 'outdated_app_version' && globals.online) {
+                            Future.delayed(Duration(milliseconds: 100), () async {
+                              _executeFuture = true;
+                              if(_executeFuture){
+                                showOutdatedAppVersionDialog(context);
+                              }
+                            });
+                          } 
+                          else {
+                            return new CircularProgressIndicator();
+                          }
+                        } else {
+                          return new CircularProgressIndicator();
+                        }
+                      } else {
+                        return new CircularProgressIndicator();
+                      }
+                    }
+                  )
+                );
+              });
             }
           }
         }),
@@ -137,62 +208,12 @@ class ContactListComponentState extends State<ContactListComponent> {
     }
   }
 
-  String validateEmail(String value) {
-    Pattern pattern =
-        r'^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$';
-    RegExp regex = new RegExp(pattern);
-    if (!regex.hasMatch(value))
-      return 'Enter Valid Email';
-    else
-      return null;
-  }
-
   BuildContext _scaffoldContext;
   FocusNode focusNode = FocusNode();
   bool _submitting = false;
 
   var circleUIConfig = new CircleUIConfig();
   var keyboardUIConfig = new KeyboardUIConfig();
-
-  onDialogClose() {
-    // Not use
-  }
-
-  // Alert dialog for duplicate email address
-  showAlertDialog() {
-    EasyDialog(
-      title: Text(
-        "Duplicate Email Address!",
-        style: TextStyle(fontWeight: FontWeight.bold),
-        textScaleFactor: 1.2,
-      ),
-      description: Text(
-        "The email address is already registered. Please use other email address",
-        textScaleFactor: 1.1,
-        textAlign: TextAlign.center,
-      ),
-      height: 160,
-      closeButton: false,
-      contentList: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            new FlatButton(
-              padding: EdgeInsets.all(8),
-              textColor: Colors.lightBlue,
-              onPressed: () {
-                Navigator.of(context).pop();
-                // Use same mobile number after retry on duplicate email 
-                Application.router.navigateTo(context, "/contactlist");
-              },
-              child: new Text("OK",
-                textScaleFactor: 1.2,
-                textAlign: TextAlign.center,
-              ),),
-           ],)
-      ]
-    ).show(context, onDialogClose);
-  }
 
  void _validateInputs(BuildContext context) async {
     if (_formKey.currentState.validate()) {
@@ -205,25 +226,15 @@ class ContactListComponentState extends State<ContactListComponent> {
             _submitting = true;
           });
 
-          // Read the user ID from globals.storage and include in the payload
-          String userId = await globals.storage.read(key: "userId");
-
           // Create contact payload
           var contactPayload = {
             "mobile_number": newContact.mobileNumber,
-            "email": newContact.emailAddress,
-            "user_id": userId,
           };
 
           var contact = await createContact(contactPayload);
 
           print("The value of contact.error is: ${contact.error}");
           print("The value of contact.success is: ${contact.success}");
-          
-          // Catch duplicate email address in the error
-          if (contact.error == "duplicate_email") {
-            showAlertDialog();
-          }
 
           // Catch app version compatibility
           if (contact.error == "outdated_app_version") {
@@ -235,12 +246,6 @@ class ContactListComponentState extends State<ContactListComponent> {
           Application.router.navigateTo(context, "/contactlist");
   }
  }
-
-  void _showSnackBar(String message) {
-    final snackBar =
-        new SnackBar(content: new Text(message), backgroundColor: Colors.red);
-    Scaffold.of(_scaffoldContext).showSnackBar(snackBar);
-  }
 
   List<Widget> _buildContactListForm(BuildContext context) {
     Form form = new Form(
@@ -268,25 +273,10 @@ class ContactListComponentState extends State<ContactListComponent> {
                 },
                 maxLength: 11,
                 decoration: const InputDecoration(
-                  icon: const Icon(Icons.phone_android),
+                  icon: const Icon(Icons.search),
                   hintText: '09** - *** - ****',
                   labelText: 'Mobile Number',
                 ),
-              ),
-              new TextFormField(
-                keyboardType: TextInputType.emailAddress,
-                validator: validateEmail,
-                onSaved: (value) {
-                  newContact.emailAddress = value;
-                },
-                decoration: const InputDecoration(
-                  icon: const Icon(Icons.email),
-                  hintText: 'example@email.com',
-                  labelText: 'Email address',
-                ),
-              ),
-              new SizedBox(
-                height: 20.0,
               ),
               new SizedBox(
                 height: 15.0,
@@ -316,9 +306,133 @@ class ContactListComponentState extends State<ContactListComponent> {
       );
       ws.add(modal);
     }
-
     return ws;
   }
 
 }
 
+
+
+
+
+
+// import 'package:flutter/material.dart';
+// import 'package:dio/dio.dart';
+
+
+// class ContactListComponent extends StatefulWidget {
+//   // ExamplePage({ Key key }) : super(key: key);
+//   @override
+//   ContactListComponentState createState() => new ContactListComponentState();
+// }
+
+// class ContactListComponentState extends State<ContactListComponent> {
+//  // final formKey = new GlobalKey<FormState>();
+//  // final key = new GlobalKey<ScaffoldState>();
+//   final TextEditingController _filter = new TextEditingController();
+//   final dio = new Dio();
+//   String _searchText = "";
+//   List names = new List();
+//   List filteredNames = new List();
+//   Icon _searchIcon = new Icon(Icons.search);
+//   Widget _appBarTitle = new Text( 'Search Example' );
+
+//   ExamplePageState() {
+//     _filter.addListener(() {
+//       if (_filter.text.isEmpty) {
+//         setState(() {
+//           _searchText = "";
+//           filteredNames = names;
+//         });
+//       } else {
+//         setState(() {
+//           _searchText = _filter.text;
+//         });
+//       }
+//     });
+//   }
+
+//   @override
+//   void initState() {
+//     this._getNames();
+//     super.initState();
+//   }
+
+//   Widget build(BuildContext context) {
+//     return Scaffold(
+//       appBar: _buildBar(context),
+//       body: Container(
+//         child: _buildList(),
+//       ),
+//       resizeToAvoidBottomPadding: false,
+//     );
+//   }
+
+//   Widget _buildBar(BuildContext context) {
+//     return new AppBar(
+//       centerTitle: true,
+//       title: _appBarTitle,
+//       leading: new IconButton(
+//         icon: _searchIcon,
+//         onPressed: _searchPressed,
+
+//       ),
+//     );
+//   }
+
+//   Widget _buildList() {
+//     if (!(_searchText.isNotEmpty)) {
+//       List tempList = new List();
+//       for (int i = 0; i < filteredNames.length; i++) {
+//         if (filteredNames[i]['name'].toLowerCase().contains(_searchText.toLowerCase())) {
+//           tempList.add(filteredNames[i]);
+//         }
+//       }
+//       filteredNames = tempList;
+//     }
+//     return ListView.builder(
+//       itemCount: names == null ? 0 : filteredNames.length,
+//       itemBuilder: (BuildContext context, int index) {
+//         return new ListTile(
+//           title: Text(filteredNames[index]['name']),
+//           onTap: () => print(filteredNames[index]['name']),
+//         );
+//       },
+//     );
+//   }
+
+//   void _searchPressed() {
+//     setState(() {
+//       if (this._searchIcon.icon == Icons.search) {
+//         this._searchIcon = new Icon(Icons.close);
+//         this._appBarTitle = new TextField(
+//           controller: _filter,
+//           decoration: new InputDecoration(
+//             prefixIcon: new Icon(Icons.search),
+//             hintText: 'Search...'
+//           ),
+//         );
+//       } else {
+//         this._searchIcon = new Icon(Icons.search);
+//         this._appBarTitle = new Text( 'Search Example' );
+//         filteredNames = names;
+//         _filter.clear();
+//       }
+//     });
+//   }
+
+//   void _getNames() async {
+//     final response = await dio.get('https://swapi.co/api/people');
+//     List tempList = new List();
+//     for (int i = 0; i < response.data['results'].length; i++) {
+//       tempList.add(response.data['results'][i]);
+//     }
+//     setState(() {
+//       names = tempList;
+//       names.shuffle();
+//       filteredNames = names;
+//     });
+//   }
+
+
+// }

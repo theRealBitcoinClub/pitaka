@@ -121,8 +121,65 @@ class BalancesResponse {
       success: false, balances: _balances, error: 'connect_timeout'
     );
   }
-
 }
+
+
+// For contact list
+class Contact {
+  String accountName;
+  String accountId;
+}
+
+class ContactsResponse {
+  final bool success;
+  final List<Contact> contacts;
+  final String error;
+
+  ContactsResponse({this.success, this.contacts, this.error});
+
+  factory ContactsResponse.fromResponse(Response response) {
+    List<Contact> _contacts = [];
+    if (response.data['contacts'] != null) {
+      for (final cont in response.data['contacts']) {
+        var contactObj = new Contact();
+        contactObj.accountName = cont['AccountName'];
+        contactObj.accountId = cont['AccountID'];
+        _contacts.add(contactObj);
+      }
+    }
+    return ContactsResponse(
+      success: response.data['success'], contacts: _contacts, error: ''
+    );
+  }
+
+  factory ContactsResponse.fromDatabase(List accounts) {
+    List<Contact> _contacts = [];
+    for (final account in accounts) {
+      var contactObj = new Contact();
+      contactObj.accountName = account['accountName'];
+      contactObj.accountId = account['accountId'];
+      _contacts.add(contactObj);
+    }
+    return ContactsResponse(
+      success: true, contacts: _contacts, error: ''
+    );
+  }
+
+  // Added this response for connect timeout error
+  factory ContactsResponse.connectTimeoutError(List accounts) {
+    List<Contact> _contacts = [];
+    for (final account in accounts) {
+      var contactObj = new Contact();
+      contactObj.accountName = account['accountName'];
+      contactObj.accountId = account['accountId'];
+      _contacts.add(contactObj);
+    }
+    return ContactsResponse(
+      success: false, contacts: _contacts, error: 'connect_timeout'
+    );
+  }
+}
+
 
 class Transaction {
   String mode; // send or receive
