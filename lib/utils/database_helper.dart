@@ -70,8 +70,10 @@ class DatabaseHelper {
     // Added table for contact list
     await db.execute("CREATE TABLE Contact ("
       "id INTEGER NOT NULL PRIMARY KEY,"
-      "accountName TEXT,"
-      "accountId TEXT"
+      "firstName TEXT,"
+      "lastName TEXT,"
+      "mobileNumber TEXT,"
+      "transferAccount TEXT"
       ")");
     print('Contact table done!');
 	}
@@ -104,35 +106,35 @@ class DatabaseHelper {
 		return result;
 	}
 
-  // Update ContactList table
-  Future<String> updateContactList(List<Contact> contacts) async {
-    Database db = await this.database;
-    int idHolder = 1;
-    for (final contact in contacts) {
-      var values = {
-        'id': idHolder,
-        'accountName': contact.accountName,
-        'accountId': contact.accountId
-      };
-      var idCheck = await db.query(
-        'ContactList',
-        where: 'id = ?',
-        whereArgs: [idHolder]
-      );
-      if (idCheck.length == 0 ) {
-        try {
-          await db.insert(
-            'ContactList',
-            values
-          );
-        } catch(e) {
-          print("The error value in updateContactList() is: $e");
-        }
-      }
-      idHolder += 1;
-    }
-		return 'success';
-  }
+  // // Update ContactList table
+  // Future<String> updateContactList(List<Contact> contacts) async {
+  //   Database db = await this.database;
+  //   int idHolder = 1;
+  //   for (final contact in contacts) {
+  //     var values = {
+  //       'id': idHolder,
+  //       'accountName': contact.accountName,
+  //       'accountId': contact.accountId
+  //     };
+  //     var idCheck = await db.query(
+  //       'ContactList',
+  //       where: 'id = ?',
+  //       whereArgs: [idHolder]
+  //     );
+  //     if (idCheck.length == 0 ) {
+  //       try {
+  //         await db.insert(
+  //           'ContactList',
+  //           values
+  //         );
+  //       } catch(e) {
+  //         print("The error value in updateContactList() is: $e");
+  //       }
+  //     }
+  //     idHolder += 1;
+  //   }
+	// 	return 'success';
+  // }
 
   // Update latest balance of balance objects in database
   Future<String> updateOfflineBalances(List<Balance> balances) async {

@@ -93,13 +93,34 @@ Future<GenericCreateResponse> createUser(payload) async {
 
 // Endpoint for creating contact list
 // This is called in contactList.dart
-Future<GenericCreateResponse> createContact(payload) async {
+Future<ContactResponse> createContact(payload) async {
   print("This is debug print from createContact() in endpoints.dart");
   print("The value of payload is: $payload");
   try {
     final String url = globals.baseUrl + '/api/contacts/create';
     final response = await sendPostRequest(url, payload);
-    return GenericCreateResponse.fromResponse(response);
+
+    print("The value of response in createContact() is: $response");
+
+    // // Store account details in keychain
+    // List<Contact> _contact;
+    // var cont = response.data['contact_info'];
+    // var contactObj = new Contact();
+    // contactObj.firstName = cont['Firstname'];
+    // contactObj.lastName = cont['Lastname'];
+    // contactObj.mobileNumber = cont['MobileNumber'];
+    // contactObj.transferAccount = cont['TransferAccount'];
+    // _contact.add(contactObj);
+
+    // Update contact list only if response is success
+    // if (response.data['success']) {
+    //   SharedPreferences prefs = await SharedPreferences.getInstance();
+    //   await databaseHelper.updateContactList(_contact);
+    //   // Parse response into BalanceResponse
+    //   return BalancesResponse.fromResponse(response);
+    // }    
+
+    return ContactResponse.fromResponse(response);
   } catch (e) {
     throw Exception(e);
   }
@@ -258,6 +279,7 @@ Future<BalancesResponse> getOnlineBalances() async {
   var response;
   try {
     response = await sendGetRequest(url);
+    //print("The value of response in getOnlineBalances() is: $response");
     // Store account details in keychain
     List<String> _accounts = [];
     List<Balance> _balances = [];

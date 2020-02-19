@@ -36,6 +36,7 @@ class ContactListComponentState extends State<ContactListComponent> {
   bool _showContactForm = false;
   bool _executeFuture = false;
   bool _popDialog = false;
+  var contactDetails = new Map();
 
   @override
   void initState()  {
@@ -226,68 +227,116 @@ class ContactListComponentState extends State<ContactListComponent> {
             _submitting = true;
           });
 
-          // Create contact payload
-          var contactPayload = {
-            "mobile_number": newContact.mobileNumber,
-          };
+        if (newContact.mobileNumber == '0000 - 000 - 0000') {
+        } else {
+          newContact.mobileNumber = "+63" + newContact.mobileNumber.substring(1).replaceAll(" - ", "");
+        }
 
-          var contact = await createContact(contactPayload);
+        // Create contact payload
+        var contactPayload = {
+          "mobile_number": newContact.mobileNumber,
+        };
+        // Call createContact request in endpoints.dart 
+        // to search registered mobile number
+        var contact = await createContact(contactPayload);
+        setState(() {
+          contactDetails = contact.contact;
+        });
+        print(contactDetails);
+        print("${contact.contact['firstName']}");
 
-          print("The value of contact.error is: ${contact.error}");
-          print("The value of contact.success is: ${contact.success}");
+        // Catch app version compatibility
+        if (contact.error == "outdated_app_version") {
+          showOutdatedAppVersionDialog(context);
+        }
 
-          // Catch app version compatibility
-          if (contact.error == "outdated_app_version") {
-            showOutdatedAppVersionDialog(context);
-          }
-
-          SharedPreferences prefs = await SharedPreferences.getInstance();
-          await prefs.setBool('installed', true);
-          Application.router.navigateTo(context, "/contactlist");
+        // SharedPreferences prefs = await SharedPreferences.getInstance();
+        // await prefs.setBool('installed', true);
+        // Application.router.navigateTo(context, "/contactlist");
+        setState(() {
+          _submitting = false;
+        });
   }
  }
 
   List<Widget> _buildContactListForm(BuildContext context) {
     Form form = new Form(
-        key: _formKey,
-        autovalidate: false,
-        child: new ListView(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0),
-            children: <Widget>[
-              new SizedBox(
-                height: 30.0,
-              ),
-              new Center(
-                  child: new Text("Create contact",
-                      style: TextStyle(
-                        fontSize: 20.0,
-                      ))),
-              new SizedBox(
-                height: 10.0,
-              ),
-              new TextFormField(
-                keyboardType: TextInputType.text,
-                validator: validateMobile,
-                onSaved: (value) {
-                  newContact.mobileNumber = value;
-                },
-                maxLength: 11,
-                decoration: const InputDecoration(
-                  icon: const Icon(Icons.search),
-                  hintText: '09** - *** - ****',
-                  labelText: 'Mobile Number',
-                ),
-              ),
-              new SizedBox(
-                height: 15.0,
-              ),
-              new RaisedButton(
-                onPressed: () {
-                  _validateInputs(context);
-                },
-                child: new Text('Submit'),
-              )
-            ]));
+      key: _formKey,
+      autovalidate: false,
+      child: new ListView(
+        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+        children: <Widget>[
+          new SizedBox(
+            height: 30.0,
+          ),
+          new Center(
+              child: new Text("Create contact",
+                  style: TextStyle(
+                    fontSize: 20.0,
+                  ))),
+          new SizedBox(
+            height: 10.0,
+          ),
+          new TextFormField(
+            keyboardType: TextInputType.phone,
+            validator: validateMobile,
+            onSaved: (value) {
+              newContact.mobileNumber = value;
+            },
+            maxLength: 11,
+            decoration: const InputDecoration(
+              icon: const Icon(Icons.search),
+              hintText: '09** - *** - ****',
+              labelText: 'Mobile Number',
+            ),
+          ),
+          // If contactDetails is not empty show details.
+          // If empty, show empty container with SizedBox to hide "null" text.
+          // Added GestureDetector to the displayed contact details 
+          // so when user tap will save to local database.
+          contactDetails.isNotEmpty ?
+          GestureDetector(
+            onTap: () => print("Save this contact!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"),
+            child: Column(
+              children: <Widget>[
+                Column(
+                  children: <Widget>[
+                    Padding(
+                      padding:
+                      const EdgeInsets.fromLTRB(15.0, 15.0, 12.0, 4.0),
+                      child: Text(
+                        "${contactDetails['firstName']} ${contactDetails['lastName']}",
+                        style: TextStyle(fontSize: 20.0),
+                      ),
+                    ),
+                    Padding(
+                      padding:
+                      const EdgeInsets.fromLTRB(15.0, 4.0, 8.0, 15.0),
+                      child: Text(
+                          "${contactDetails['mobileNumber']}",
+                          style: TextStyle(fontSize: 16.0)
+                      ),
+                    ),
+                  ],
+                )
+              ],
+            )
+          )
+          :
+          new Container(
+            child: new SizedBox(
+              height: 30.0,
+            ),
+          ),
+          new RaisedButton(
+            onPressed: () {
+              _validateInputs(context);
+            },
+            child: new Text('Submit'),
+          )
+        ]
+      )
+    );
 
     var ws = new List<Widget>();
     ws.add(form);
