@@ -139,7 +139,6 @@ class ContactResponse {
   ContactResponse({this.success, this.contact, this.error});
 
   factory ContactResponse.fromResponse(Response response) {
-    print("The value of response from responses.dart is: $response");
     var _contact = new Map();
     if (response.data['contact_info'] != null) {
       var cont = response.data['contact_info'];
@@ -154,32 +153,32 @@ class ContactResponse {
     );
   }
 
-  factory ContactResponse.fromDatabase(List accounts) {
-    Map<String, String> _contacts;
-    var cont;
-    var contactObj = new Contact();
-    contactObj.firstName = cont['Firstname'];
-    contactObj.lastName = cont['Lastname'];
-    contactObj.mobileNumber = cont['MobileNumber'];
-    contactObj.transferAccount = cont['TransferAccount'];
-
+  factory ContactResponse.duplicateContact(Response response) {
+    var _contact = new Map();
+    if (response.data['contact_info'] != null) {
+      var cont = response.data['contact_info'];
+      _contact['firstName'] = cont['Firstname'];
+      _contact['lastName'] = cont['Lastname'];
+      _contact['mobileNumber'] = cont['MobileNumber'];
+      _contact['transferAccount'] = cont['TransferAccount'];
+    }
     return ContactResponse(
-      success: true, contact: _contacts, error: ''
+      success: false, contact: _contact, error: 'Duplicate Contact!'
     );
   }
 
-  // Added this response for connect timeout error
-  factory ContactResponse.connectTimeoutError(List accounts) {
-    Map<String, String> _contacts;
-    var cont;
-    var contactObj = new Contact();
-    contactObj.firstName = cont['Firstname'];
-    contactObj.lastName = cont['Lastname'];
-    contactObj.mobileNumber = cont['MobileNumber'];
-    contactObj.transferAccount = cont['TransferAccount'];
-
+  factory ContactResponse.unregisteredMobileNumber(Response response) {
+    print("The value of response from responses.dart is: $response");
+    var _contact = new Map();
+    if (response.data['contact_info'] != null) {
+      var cont = response.data['contact_info'];
+      _contact['firstName'] = cont['Firstname'];
+      _contact['lastName'] = cont['Lastname'];
+      _contact['mobileNumber'] = cont['MobileNumber'];
+      _contact['transferAccount'] = cont['TransferAccount'];
+    }
     return ContactResponse(
-      success: false, contact: _contacts, error: 'connect_timeout'
+      success: false, contact: _contact, error: 'Unregistered Mobile Number!'
     );
   }
 }

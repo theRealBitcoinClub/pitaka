@@ -92,33 +92,27 @@ Future<GenericCreateResponse> createUser(payload) async {
 }
 
 // Endpoint for creating contact list
-// This is called in contactList.dart
+// This is called from contactList.dart in _validateInputs()
 Future<ContactResponse> createContact(payload) async {
   print("This is debug print from createContact() in endpoints.dart");
   print("The value of payload is: $payload");
   try {
     final String url = globals.baseUrl + '/api/contacts/create';
     final response = await sendPostRequest(url, payload);
-
+      
     print("The value of response in createContact() is: $response");
 
-    // // Store account details in keychain
-    // List<Contact> _contact;
-    // var cont = response.data['contact_info'];
-    // var contactObj = new Contact();
-    // contactObj.firstName = cont['Firstname'];
-    // contactObj.lastName = cont['Lastname'];
-    // contactObj.mobileNumber = cont['MobileNumber'];
-    // contactObj.transferAccount = cont['TransferAccount'];
-    // _contact.add(contactObj);
-
-    // Update contact list only if response is success
-    // if (response.data['success']) {
-    //   SharedPreferences prefs = await SharedPreferences.getInstance();
-    //   await databaseHelper.updateContactList(_contact);
-    //   // Parse response into BalanceResponse
-    //   return BalancesResponse.fromResponse(response);
-    // }    
+    if (response.data['success']) {
+      return ContactResponse.fromResponse(response);
+    }
+    else if ((response.data['error']) == 'duplicate_contact') {
+      print("Duplicate Contact!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+      return ContactResponse.duplicateContact(response);
+    }
+    else if ((response.data['error']) == 'unregistered_mobile_number') {
+      print("Unregistered Mobile Number!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+      return ContactResponse.unregisteredMobileNumber(response);
+    }
 
     return ContactResponse.fromResponse(response);
   } catch (e) {

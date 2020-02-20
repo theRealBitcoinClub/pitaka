@@ -37,6 +37,11 @@ class ContactListComponentState extends State<ContactListComponent> {
   bool _executeFuture = false;
   bool _popDialog = false;
   var contactDetails = new Map();
+  String _error;
+
+  // Initialize a controller for TextFormField.
+  // This is used to clear the contents of TextFormField at onPressed 
+  TextEditingController _controller = TextEditingController();
 
   @override
   void initState()  {
@@ -223,10 +228,13 @@ class ContactListComponentState extends State<ContactListComponent> {
 
         // If all data are correct then save data to out variables
         _formKey.currentState.save();
-          setState(() {
-            _submitting = true;
-          });
 
+        // Set _submitting to true for ModalBarrier and CircularProgressIndicator
+        setState(() {
+          _submitting = true;
+        });
+
+        // Parse the mobile number input to "+639XX XX XXXX" format
         if (newContact.mobileNumber == '0000 - 000 - 0000') {
         } else {
           newContact.mobileNumber = "+63" + newContact.mobileNumber.substring(1).replaceAll(" - ", "");
@@ -239,13 +247,20 @@ class ContactListComponentState extends State<ContactListComponent> {
         // Call createContact request in endpoints.dart 
         // to search registered mobile number
         var contact = await createContact(contactPayload);
-        setState(() {
-          contactDetails = contact.contact;
-        });
-        print(contactDetails);
-        print("${contact.contact['firstName']}");
+        // If response success is true get contact details.
+        // Store the contact details in contactDetails map.
+        // If response success is false, get the error.
+        // Store the error in _error string variable
+        if (contact.success) {
+          setState(() {
+            contactDetails = contact.contact;
+          });
+        }
+        else {
+          _error = contact.error;
+        }
 
-        // Catch app version compatibility
+        // Catch app version compatibility and show dialog
         if (contact.error == "outdated_app_version") {
           showOutdatedAppVersionDialog(context);
         }
@@ -278,6 +293,7 @@ class ContactListComponentState extends State<ContactListComponent> {
             height: 10.0,
           ),
           new TextFormField(
+            controller: _controller,
             keyboardType: TextInputType.phone,
             validator: validateMobile,
             onSaved: (value) {
@@ -290,6 +306,20 @@ class ContactListComponentState extends State<ContactListComponent> {
               labelText: 'Mobile Number',
             ),
           ),
+
+          // If there is error, show accordingly
+          _error != null ?
+          Padding(
+            padding: EdgeInsets.all(16.0),
+            child: Text(
+              "$_error",
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: Colors.red,
+              ),
+            ),
+          )
+          :
           // If contactDetails is not empty show details.
           // If empty, show empty container with SizedBox to hide "null" text.
           // Added GestureDetector to the displayed contact details 
@@ -328,9 +358,12 @@ class ContactListComponentState extends State<ContactListComponent> {
               height: 30.0,
             ),
           ),
+
           new RaisedButton(
             onPressed: () {
               _validateInputs(context);
+              // Clear TextFormField
+              _controller.clear();  
             },
             child: new Text('Submit'),
           )
