@@ -35,7 +35,7 @@ class ContactListComponentState extends State<ContactListComponent> {
   bool isOffline = false;
   StreamSubscription _connectionChangeStream;
   bool _loading = false;   // For CircularProgressIndicator
-  bool _isContactListEmpty = true;
+  bool _isContactListEmpty;
   bool _showContactForm = false;
   bool _executeFuture = false;
   bool _popDialog = false;
@@ -54,13 +54,20 @@ class ContactListComponentState extends State<ContactListComponent> {
     ConnectionStatusSingleton connectionStatus = ConnectionStatusSingleton.getInstance();
     _connectionChangeStream = connectionStatus.connectionChange.listen(connectionChanged);
 
-    var result = getContacts();
-    print("The value of result from initState() in contactList.dart is ${result.toString()}");
-    if (result != null) {
-      setState(() {
-        _isContactListEmpty = false;
-      });
-    }
+    // Check if there is/are save contacts
+    Future future = Future(() => getContacts());
+    future.then((contacts) {
+      if (contacts.contacts.length > 0) {
+        setState(() {
+          _isContactListEmpty = false;
+        });
+      }
+      else {
+        setState(() {
+          _isContactListEmpty = true;
+        });
+      }
+    });
   }
 
   void connectionChanged(dynamic hasConnection) {
@@ -152,6 +159,7 @@ class ContactListComponentState extends State<ContactListComponent> {
             }
           }
         }),
+        // Toggle hide and show contact
         floatingActionButton: FloatingActionButton(
           onPressed: () {
             setState(() {

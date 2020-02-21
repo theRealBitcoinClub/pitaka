@@ -101,7 +101,6 @@ class DatabaseHelper {
 
   // Update Contac table
   Future<String> updateContactList(contact) async {
-    print("The value of contact recieve in updateContactList is: $contact");
     Database db = await this.database;
       var values = {
         'firstName': contact['firstName'],
