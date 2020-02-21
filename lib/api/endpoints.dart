@@ -36,7 +36,6 @@ Future<dynamic> sendPostRequest(url, payload) async {
     // Check if "DioErrorType.CONNECT_TIMEOUT" error is in the string
     // And return the error type
     if (errorType.contains("DioErrorType.CONNECT_TIMEOUT")) {
-      //print("Your internet connection is very slow. Switch to offline mode to continue this transaction.");
       return "DioErrorType.CONNECT_TIMEOUT";
     } else {
       return errorType;
@@ -71,7 +70,6 @@ Future<dynamic> sendGetRequest(url) async {
     // Check if "DioErrorType.CONNECT_TIMEOUT" error is in the string
     // And return the error type
     if (errorType.contains("DioErrorType.CONNECT_TIMEOUT")) {
-      //print("Your internet connection is very slow. Switch to offline mode to continue this transaction.");
       return "DioErrorType.CONNECT_TIMEOUT";
     } else {
       return errorType;
@@ -94,30 +92,30 @@ Future<GenericCreateResponse> createUser(payload) async {
 // Endpoint for creating contact list
 // This is called from contactList.dart in _validateInputs()
 Future<ContactResponse> createContact(payload) async {
-  print("This is debug print from createContact() in endpoints.dart");
-  print("The value of payload is: $payload");
   try {
     final String url = globals.baseUrl + '/api/contacts/create';
     final response = await sendPostRequest(url, payload);
-      
-    print("The value of response in createContact() is: $response");
 
     if (response.data['success']) {
       return ContactResponse.fromResponse(response);
     }
     else if ((response.data['error']) == 'duplicate_contact') {
-      print("Duplicate Contact!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
       return ContactResponse.duplicateContact(response);
     }
     else if ((response.data['error']) == 'unregistered_mobile_number') {
-      print("Unregistered Mobile Number!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
       return ContactResponse.unregisteredMobileNumber(response);
     }
-
     return ContactResponse.fromResponse(response);
   } catch (e) {
     throw Exception(e);
   }
+}
+
+// Endpoint for getting contact list from database
+// This is called from contactList.dart in _FutureBuilder()
+Future<ContactListResponse> getContacts() async {
+  var response = await databaseHelper.getContactList();
+  return ContactListResponse.fromDatabase(response);
 }
 
 Future<GenericCreateResponse> registerBusiness(payload) async {
@@ -181,7 +179,6 @@ Future<PlainSuccessResponse> loginUser(payload) async {
   try {
     Response response;
     response = await sendPostRequest(url, payload);
-    print("From endpoints.dart loginUser() - The value of response is $response");
     // Save user details in shared preferences
     SharedPreferences prefs = await SharedPreferences.getInstance();
     var user = response.data['user'];
@@ -261,19 +258,11 @@ Future<BalancesResponse> getOffLineBalances() async {
   return BalancesResponse.fromDatabase(resp);
 }
 
-// Endpoint for getting contact list
-// This is called in contactList.dart
-Future<BalancesResponse> getContactList() async {
-  var resp = await databaseHelper.contactList();
-  return BalancesResponse.fromDatabase(resp);
-}
-
 Future<BalancesResponse> getOnlineBalances() async {
   final String url = globals.baseUrl + '/api/wallet/balance';
   var response;
   try {
     response = await sendGetRequest(url);
-    //print("The value of response in getOnlineBalances() is: $response");
     // Store account details in keychain
     List<String> _accounts = [];
     List<Balance> _balances = [];

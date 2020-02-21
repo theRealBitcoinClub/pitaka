@@ -79,26 +79,19 @@ class DatabaseHelper {
 	}
 
 	// Get latest contact of contact objects in database
-	Future <List<Map<String, dynamic>>> contactList() async {
+	Future <List<Map<String, dynamic>>> getContactList() async {
 		Database db = await this.database;
     List<Map<String, dynamic>> result = [];
 		List<Map<String, dynamic>> qs = await db.query('Contact');
+
     for (var account in qs) {
-      double onlineBalance = account['balance'];
-      var timestamp = account['timestamp'];
-      String accountId = account['accountId'].toString();
-      var resp = await offlineBalanceAnalyser(accountId, onlineBalance);
-      if (resp['latestTimeStamp'] != '') {
-        timestamp = resp['latestTimeStamp'];
-      }
       var info = {
-        'balance': resp['computedBalance'].toString(),
-        'timestamp': timestamp,
-        'accountName': account['accountName'],
-        'accountId': accountId,
-        'signature': account['signature'],
-        'datetime': account['datetime']
+        'firstName': account['firstName'],
+        'lastName': account['lastName'],
+        'mobileNumber': account['mobileNumber'],
+        'transferAccount': account['transferAccount']
       };
+
       if (result.indexOf(info) == -1) {
         result.add(info);
       } 
@@ -106,35 +99,28 @@ class DatabaseHelper {
 		return result;
 	}
 
-  // // Update ContactList table
-  // Future<String> updateContactList(List<Contact> contacts) async {
-  //   Database db = await this.database;
-  //   int idHolder = 1;
-  //   for (final contact in contacts) {
-  //     var values = {
-  //       'id': idHolder,
-  //       'accountName': contact.accountName,
-  //       'accountId': contact.accountId
-  //     };
-  //     var idCheck = await db.query(
-  //       'ContactList',
-  //       where: 'id = ?',
-  //       whereArgs: [idHolder]
-  //     );
-  //     if (idCheck.length == 0 ) {
-  //       try {
-  //         await db.insert(
-  //           'ContactList',
-  //           values
-  //         );
-  //       } catch(e) {
-  //         print("The error value in updateContactList() is: $e");
-  //       }
-  //     }
-  //     idHolder += 1;
-  //   }
-	// 	return 'success';
-  // }
+  // Update Contac table
+  Future<String> updateContactList(contact) async {
+    print("The value of contact recieve in updateContactList is: $contact");
+    Database db = await this.database;
+      var values = {
+        'firstName': contact['firstName'],
+        'lastName': contact['lastName'],
+        'mobileNumber': contact['mobileNumber'],
+        'transferAccount': contact['transferAccount']
+      };
+      print("The value of values in updateContactList is: $values");
+      try {
+        await db.insert(
+          'Contact',
+          values
+        );
+      } catch(e) {
+        print("The error value in updateContactList() is: $e");
+      }
+
+		return 'success';
+  }
 
   // Update latest balance of balance objects in database
   Future<String> updateOfflineBalances(List<Balance> balances) async {

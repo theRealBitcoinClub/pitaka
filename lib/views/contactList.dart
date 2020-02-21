@@ -10,8 +10,11 @@ import 'package:passcode_screen/keyboard.dart';
 import '../views/app.dart';
 import '../utils/dialog.dart';
 import '../api/endpoints.dart';
-import '../components/contactListView.dart' as listview;
+import '../utils/database_helper.dart';
 
+
+// Used to access functions in database_helper.dart
+DatabaseHelper databaseHelper = DatabaseHelper();
 
 class Contact {
   String mobileNumber;
@@ -50,6 +53,14 @@ class ContactListComponentState extends State<ContactListComponent> {
     // Fires whenever connectivity state changes
     ConnectionStatusSingleton connectionStatus = ConnectionStatusSingleton.getInstance();
     _connectionChangeStream = connectionStatus.connectionChange.listen(connectionChanged);
+
+    var result = getContacts();
+    print("The value of result from initState() in contactList.dart is ${result.toString()}");
+    if (result != null) {
+      setState(() {
+        _isContactListEmpty = false;
+      });
+    }
   }
 
   void connectionChanged(dynamic hasConnection) {
@@ -114,69 +125,30 @@ class ContactListComponentState extends State<ContactListComponent> {
               return new Stack(children: _buildContactListForm(context));
             }
             else {
-              new Builder(builder: (BuildContext context) {
-                return new Container(
-                  alignment: Alignment.center,
-                  child: new FutureBuilder(
-                    // Added condition, when both syncing and online are true get offline balances
-                    future: getContactList(),
-                    builder: (BuildContext context, AsyncSnapshot snapshot) {
-                      if (snapshot.hasData) {
-                        if (snapshot.data != null) {
-                          var contacts = snapshot.data.contacts;
-                          if (snapshot.data.success) {
-                            return listview.buildContactList(contacts);
-                          } 
-                          // When connect timeout error, show message
-                          // ANDing with globals.online prevents showing the dialog 
-                          // during manually swithing to airplane mode
-                          else if (snapshot.data.error == 'connect_timeout' && globals.online) {
-                            return Padding(
-                              padding: EdgeInsets.all(16.0),
-                              child: Text(
-                                "You don't seem to have internet connection, or it's too slow. " 
-                                "Switch your phone to Airplane mode to keep using the app in offline mode.",
-                                textAlign: TextAlign.center,
-                              ),
-                            );
-                          }
-                          // When maintainance mode error, show message
-                          // ANDing with globals.online prevents showing the dialog 
-                          // during manually swithing to airplane mode
-                          else if (snapshot.data.error == 'maintenance_mode' && globals.online) {
-                            return Padding(
-                              padding: EdgeInsets.all(16.0),
-                              child: Text(
-                                "Server is down for maintenance. " 
-                                "Please try again later or switch your phone to Airplane mode to keep using the app in offline mode.",
-                                textAlign: TextAlign.center,
-                              ),
-                            );
-                          }
-                          // When app version error, show dialog
-                          // ANDing with globals.online prevents showing the dialog 
-                          // during manually swithing to airplane mode
-                          else if (snapshot.data.error == 'outdated_app_version' && globals.online) {
-                            Future.delayed(Duration(milliseconds: 100), () async {
-                              _executeFuture = true;
-                              if(_executeFuture){
-                                showOutdatedAppVersionDialog(context);
-                              }
-                            });
-                          } 
-                          else {
-                            return new CircularProgressIndicator();
-                          }
-                        } else {
-                          return new CircularProgressIndicator();
-                        }
-                      } else {
-                        return new CircularProgressIndicator();
-                      }
-                    }
-                  )
-                );
-              });
+              return new Container(
+                child: FutureBuilder(
+                  future: getContacts(),
+                  builder: (context, snapshot) {
+                    if (!snapshot.hasData) return Center(child: CircularProgressIndicator());
+                    return ListView(
+                      children: snapshot.data
+                          .contacts.map<Widget>((contact) => ListTile(
+                            title: Text(contact.firstName + ' ' + contact.lastName),
+                            subtitle: Text(contact.mobileNumber),
+                            leading: CircleAvatar(
+                              backgroundColor: Colors.red,
+                              child: Text(contact.firstName[0],
+                                  style: TextStyle(
+                                    fontSize: 18.0,
+                                    color: Colors.white,
+                                  )),
+                                ),
+                              ))
+                          .toList(),
+                    );
+                  },
+                )
+              );
             }
           }
         }),
@@ -214,65 +186,68 @@ class ContactListComponentState extends State<ContactListComponent> {
     }
   }
 
-  BuildContext _scaffoldContext;
   FocusNode focusNode = FocusNode();
   bool _submitting = false;
 
   var circleUIConfig = new CircleUIConfig();
   var keyboardUIConfig = new KeyboardUIConfig();
 
- void _validateInputs(BuildContext context) async {
-    if (_formKey.currentState.validate()) {
-      // Close the on-screen keyboard by removing focus from the form's inputs
-      FocusScope.of(context).requestFocus(new FocusNode());
+  void _validateInputs(BuildContext context) async {
+      if (_formKey.currentState.validate()) {
+        // Close the on-screen keyboard by removing focus from the form's inputs
+        FocusScope.of(context).requestFocus(new FocusNode());
 
-        // If all data are correct then save data to out variables
-        _formKey.currentState.save();
+          // If all data are correct then save data to out variables
+          _formKey.currentState.save();
 
-        // Set _submitting to true for ModalBarrier and CircularProgressIndicator
-        setState(() {
-          _submitting = true;
-        });
-
-        // Parse the mobile number input to "+639XX XX XXXX" format
-        if (newContact.mobileNumber == '0000 - 000 - 0000') {
-        } else {
-          newContact.mobileNumber = "+63" + newContact.mobileNumber.substring(1).replaceAll(" - ", "");
-        }
-
-        // Create contact payload
-        var contactPayload = {
-          "mobile_number": newContact.mobileNumber,
-        };
-        // Call createContact request in endpoints.dart 
-        // to search registered mobile number
-        var contact = await createContact(contactPayload);
-        // If response success is true get contact details.
-        // Store the contact details in contactDetails map.
-        // If response success is false, get the error.
-        // Store the error in _error string variable
-        if (contact.success) {
+          // Set _submitting to true for ModalBarrier and CircularProgressIndicator
           setState(() {
-            contactDetails = contact.contact;
+            _submitting = true;
           });
-        }
-        else {
-          _error = contact.error;
-        }
 
-        // Catch app version compatibility and show dialog
-        if (contact.error == "outdated_app_version") {
-          showOutdatedAppVersionDialog(context);
-        }
+          // Parse the mobile number input to "+639XX XX XXXX" format
+          if (newContact.mobileNumber == '0000 - 000 - 0000') {
+          } else {
+            newContact.mobileNumber = "+63" + newContact.mobileNumber.substring(1).replaceAll(" - ", "");
+          }
 
-        // SharedPreferences prefs = await SharedPreferences.getInstance();
-        // await prefs.setBool('installed', true);
-        // Application.router.navigateTo(context, "/contactlist");
-        setState(() {
-          _submitting = false;
-        });
+          // Create contact payload
+          var contactPayload = {
+            "mobile_number": newContact.mobileNumber,
+          };
+          // Call createContact request in endpoints.dart 
+          // to search registered mobile number
+          var contact = await createContact(contactPayload);
+          // If response success is true get contact details.
+          // Store the contact details in contactDetails map.
+          // If response success is false, get the error.
+          // Store the error in _error string variable
+          if (contact.success) {
+            setState(() {
+              contactDetails = contact.contact;
+            });
+          }
+          else {
+            _error = contact.error;
+          }
+
+          // Catch app version compatibility and show dialog
+          if (contact.error == "outdated_app_version") {
+            showOutdatedAppVersionDialog(context);
+          }
+
+          // SharedPreferences prefs = await SharedPreferences.getInstance();
+          // await prefs.setBool('installed', true);
+          // Application.router.navigateTo(context, "/contactlist");
+          setState(() {
+            _submitting = false;
+          });
+    }
   }
- }
+
+  void _saveContact(BuildContext context) async {
+    await databaseHelper.updateContactList(contactDetails);
+  }
 
   List<Widget> _buildContactListForm(BuildContext context) {
     Form form = new Form(
@@ -326,7 +301,7 @@ class ContactListComponentState extends State<ContactListComponent> {
           // so when user tap will save to local database.
           contactDetails.isNotEmpty ?
           GestureDetector(
-            onTap: () => print("Save this contact!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"),
+            onTap: () => _saveContact(context),
             child: Column(
               children: <Widget>[
                 Column(
@@ -390,131 +365,4 @@ class ContactListComponentState extends State<ContactListComponent> {
     }
     return ws;
   }
-
 }
-
-
-
-
-
-
-// import 'package:flutter/material.dart';
-// import 'package:dio/dio.dart';
-
-
-// class ContactListComponent extends StatefulWidget {
-//   // ExamplePage({ Key key }) : super(key: key);
-//   @override
-//   ContactListComponentState createState() => new ContactListComponentState();
-// }
-
-// class ContactListComponentState extends State<ContactListComponent> {
-//  // final formKey = new GlobalKey<FormState>();
-//  // final key = new GlobalKey<ScaffoldState>();
-//   final TextEditingController _filter = new TextEditingController();
-//   final dio = new Dio();
-//   String _searchText = "";
-//   List names = new List();
-//   List filteredNames = new List();
-//   Icon _searchIcon = new Icon(Icons.search);
-//   Widget _appBarTitle = new Text( 'Search Example' );
-
-//   ExamplePageState() {
-//     _filter.addListener(() {
-//       if (_filter.text.isEmpty) {
-//         setState(() {
-//           _searchText = "";
-//           filteredNames = names;
-//         });
-//       } else {
-//         setState(() {
-//           _searchText = _filter.text;
-//         });
-//       }
-//     });
-//   }
-
-//   @override
-//   void initState() {
-//     this._getNames();
-//     super.initState();
-//   }
-
-//   Widget build(BuildContext context) {
-//     return Scaffold(
-//       appBar: _buildBar(context),
-//       body: Container(
-//         child: _buildList(),
-//       ),
-//       resizeToAvoidBottomPadding: false,
-//     );
-//   }
-
-//   Widget _buildBar(BuildContext context) {
-//     return new AppBar(
-//       centerTitle: true,
-//       title: _appBarTitle,
-//       leading: new IconButton(
-//         icon: _searchIcon,
-//         onPressed: _searchPressed,
-
-//       ),
-//     );
-//   }
-
-//   Widget _buildList() {
-//     if (!(_searchText.isNotEmpty)) {
-//       List tempList = new List();
-//       for (int i = 0; i < filteredNames.length; i++) {
-//         if (filteredNames[i]['name'].toLowerCase().contains(_searchText.toLowerCase())) {
-//           tempList.add(filteredNames[i]);
-//         }
-//       }
-//       filteredNames = tempList;
-//     }
-//     return ListView.builder(
-//       itemCount: names == null ? 0 : filteredNames.length,
-//       itemBuilder: (BuildContext context, int index) {
-//         return new ListTile(
-//           title: Text(filteredNames[index]['name']),
-//           onTap: () => print(filteredNames[index]['name']),
-//         );
-//       },
-//     );
-//   }
-
-//   void _searchPressed() {
-//     setState(() {
-//       if (this._searchIcon.icon == Icons.search) {
-//         this._searchIcon = new Icon(Icons.close);
-//         this._appBarTitle = new TextField(
-//           controller: _filter,
-//           decoration: new InputDecoration(
-//             prefixIcon: new Icon(Icons.search),
-//             hintText: 'Search...'
-//           ),
-//         );
-//       } else {
-//         this._searchIcon = new Icon(Icons.search);
-//         this._appBarTitle = new Text( 'Search Example' );
-//         filteredNames = names;
-//         _filter.clear();
-//       }
-//     });
-//   }
-
-//   void _getNames() async {
-//     final response = await dio.get('https://swapi.co/api/people');
-//     List tempList = new List();
-//     for (int i = 0; i < response.data['results'].length; i++) {
-//       tempList.add(response.data['results'][i]);
-//     }
-//     setState(() {
-//       names = tempList;
-//       names.shuffle();
-//       filteredNames = names;
-//     });
-//   }
-
-
-// }

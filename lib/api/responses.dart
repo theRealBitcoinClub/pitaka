@@ -134,6 +134,7 @@ class Contact {
 class ContactResponse {
   final bool success;
   var contact = new Map();
+  // final List<Contact> contacts;
   final String error;
 
   ContactResponse({this.success, this.contact, this.error});
@@ -147,11 +148,26 @@ class ContactResponse {
       _contact['mobileNumber'] = cont['MobileNumber'];
       _contact['transferAccount'] = cont['TransferAccount'];
     }
-    print("###################################### $_contact");
     return ContactResponse(
       success: response.data['success'], contact: _contact, error: ''
     );
   }
+
+  // factory ContactResponse.fromDatabase(List contactsList) {
+  //   List<Contact> _contacts = [];
+  //   for (final contact in contactsList) {
+  //     var contactObj = new Contact();
+  //     contactObj.firstName = contact['firstName'];
+  //     contactObj.lastName = contact['lastName'];
+  //     contactObj.mobileNumber = contact['mobileNumber'];
+  //     contactObj.transferAccount = contact['transferAccount'];
+  //     _contacts.add(contactObj);
+  //   }
+
+  //   return ContactResponse(
+  //     success: true, contacts: _contacts, error: ''
+  //   );
+  // }
 
   factory ContactResponse.duplicateContact(Response response) {
     var _contact = new Map();
@@ -163,12 +179,11 @@ class ContactResponse {
       _contact['transferAccount'] = cont['TransferAccount'];
     }
     return ContactResponse(
-      success: false, contact: _contact, error: 'Duplicate Contact!'
+      success: false, contact: _contact, error: 'This contact is already in your list.'
     );
   }
 
   factory ContactResponse.unregisteredMobileNumber(Response response) {
-    print("The value of response from responses.dart is: $response");
     var _contact = new Map();
     if (response.data['contact_info'] != null) {
       var cont = response.data['contact_info'];
@@ -178,11 +193,41 @@ class ContactResponse {
       _contact['transferAccount'] = cont['TransferAccount'];
     }
     return ContactResponse(
-      success: false, contact: _contact, error: 'Unregistered Mobile Number!'
+      success: false, contact: _contact, error: 'Unregistered mobile number!'
     );
   }
 }
 
+// For contact list
+class ContactList {
+  String firstName;
+  String lastName;
+  String mobileNumber;
+  String transferAccount; 
+}
+class ContactListResponse {
+  final bool success;
+  final List<Contact> contacts;
+  final String error;
+
+  ContactListResponse({this.success, this.contacts, this.error});
+
+  factory ContactListResponse.fromDatabase(List contactsList) {
+    List<Contact> _contacts = [];
+    for (final contact in contactsList) {
+      var contactObj = new Contact();
+      contactObj.firstName = contact['firstName'];
+      contactObj.lastName = contact['lastName'];
+      contactObj.mobileNumber = contact['mobileNumber'];
+      contactObj.transferAccount = contact['transferAccount'];
+      _contacts.add(contactObj);
+    }
+
+    return ContactListResponse(
+      success: true, contacts: _contacts, error: ''
+    );
+  }
+}
 
 class Transaction {
   String mode; // send or receive
