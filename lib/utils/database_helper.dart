@@ -72,7 +72,7 @@ class DatabaseHelper {
       "id INTEGER NOT NULL PRIMARY KEY,"
       "firstName TEXT,"
       "lastName TEXT,"
-      "mobileNumber TEXT,"
+      "mobileNumber TEXT NOT NULL UNIQUE,"
       "transferAccount TEXT"
       ")");
     print('Contact table done!');
@@ -82,7 +82,7 @@ class DatabaseHelper {
 	Future <List<Map<String, dynamic>>> getContactList() async {
 		Database db = await this.database;
     List<Map<String, dynamic>> result = [];
-		List<Map<String, dynamic>> qs = await db.query('Contact');
+		List<Map<String, dynamic>> qs = await db.query('Contact', orderBy: "id DESC",);
 
     for (var account in qs) {
       var info = {
