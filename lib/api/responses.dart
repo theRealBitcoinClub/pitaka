@@ -141,8 +141,8 @@ class ContactResponse {
 
   factory ContactResponse.fromResponse(Response response) {
     var _contact = new Map();
-    if (response.data['contact_info'] != null) {
-      var cont = response.data['contact_info'];
+    if (response.data['user_info'] != null) {
+      var cont = response.data['user_info'];
       _contact['firstName'] = cont['Firstname'];
       _contact['lastName'] = cont['Lastname'];
       _contact['mobileNumber'] = cont['MobileNumber'];
@@ -152,22 +152,6 @@ class ContactResponse {
       success: response.data['success'], contact: _contact, error: ''
     );
   }
-
-  // factory ContactResponse.fromDatabase(List contactsList) {
-  //   List<Contact> _contacts = [];
-  //   for (final contact in contactsList) {
-  //     var contactObj = new Contact();
-  //     contactObj.firstName = contact['firstName'];
-  //     contactObj.lastName = contact['lastName'];
-  //     contactObj.mobileNumber = contact['mobileNumber'];
-  //     contactObj.transferAccount = contact['transferAccount'];
-  //     _contacts.add(contactObj);
-  //   }
-
-  //   return ContactResponse(
-  //     success: true, contacts: _contacts, error: ''
-  //   );
-  // }
 
   factory ContactResponse.duplicateContact(Response response) {
     var _contact = new Map();

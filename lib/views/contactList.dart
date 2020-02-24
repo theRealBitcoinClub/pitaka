@@ -49,6 +49,14 @@ class ContactListComponentState extends State<ContactListComponent> {
   @override
   void initState()  {
     super.initState();
+
+    // // Start listening to changes in TextFormField for mobile number input
+    // _controller.addListener((){
+    //   if (_controller.text.length == 11){
+    //     _validateInputs(context);
+    //   }
+    // });
+    
     // Subscribe to Notifier Stream from ConnectionStatusSingleton class in globals.dart
     // Fires whenever connectivity state changes
     ConnectionStatusSingleton connectionStatus = ConnectionStatusSingleton.getInstance();
@@ -68,6 +76,12 @@ class ContactListComponentState extends State<ContactListComponent> {
         });
       }
     });
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose(); // release unused memory in RAM
+    super.dispose();
   }
 
   void connectionChanged(dynamic hasConnection) {
@@ -91,11 +105,6 @@ class ContactListComponentState extends State<ContactListComponent> {
         }
       }
     });
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
   }
 
   @override
@@ -175,7 +184,8 @@ class ContactListComponentState extends State<ContactListComponent> {
           child: Icon(Icons.person_add),
           backgroundColor: Colors.red,
         ),
-        floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+        // Uncomment to center the FloatingActionButtonLocation button
+        //floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
         bottomNavigationBar: buildBottomNavigation(context, path)
       );
   }
@@ -225,7 +235,7 @@ class ContactListComponentState extends State<ContactListComponent> {
           };
           // Call createContact request in endpoints.dart 
           // to search registered mobile number
-          var contact = await createContact(contactPayload);
+          var contact = await searchContact(contactPayload);
           // If response success is true get contact details.
           // Store the contact details in contactDetails map.
           // If response success is false, get the error.
@@ -250,11 +260,24 @@ class ContactListComponentState extends State<ContactListComponent> {
           setState(() {
             _submitting = false;
           });
+
+        // Future.delayed(Duration(milliseconds: 3000), () async {
+        //   // Clear mobile number TextFormField input after request
+          _controller.clear();
+        // });
     }
   }
 
   void _saveContact(BuildContext context) async {
+    // Save to local database
     await databaseHelper.updateContactList(contactDetails);
+
+    // Create contact payload
+    var contactPayload = {
+      "mobile_number": newContact.mobileNumber,
+    };
+    // Save to server's database
+    await saveContact(contactPayload);
   }
 
   List<Widget> _buildContactListForm(BuildContext context) {
@@ -268,10 +291,12 @@ class ContactListComponentState extends State<ContactListComponent> {
             height: 30.0,
           ),
           new Center(
-              child: new Text("Create contact",
-                  style: TextStyle(
-                    fontSize: 20.0,
-                  ))),
+            child: new Text("Create contact",
+              style: TextStyle(
+                fontSize: 20.0,
+              )
+            )
+          ),
           new SizedBox(
             height: 10.0,
           ),

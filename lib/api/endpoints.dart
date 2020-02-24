@@ -91,9 +91,9 @@ Future<GenericCreateResponse> createUser(payload) async {
 
 // Endpoint for creating contact list
 // This is called from contactList.dart in _validateInputs()
-Future<ContactResponse> createContact(payload) async {
+Future<ContactResponse> searchContact(payload) async {
   try {
-    final String url = globals.baseUrl + '/api/contacts/create';
+    final String url = globals.baseUrl + '/api/users/search';
     final response = await sendPostRequest(url, payload);
 
     if (response.data['success']) {
@@ -116,6 +116,20 @@ Future<ContactResponse> createContact(payload) async {
 Future<ContactListResponse> getContacts() async {
   var response = await databaseHelper.getContactList();
   return ContactListResponse.fromDatabase(response);
+}
+
+Future saveContact(payload) async {
+  final String url = globals.baseUrl + "/api/contacts/create";
+  Response response;
+  try {
+    response = await sendPostRequest(url, payload);
+    if (response.data['success']) {
+    }
+  } catch (e) {
+    throw(e);
+  }
+
+  return response;
 }
 
 Future<GenericCreateResponse> registerBusiness(payload) async {
