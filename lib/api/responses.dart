@@ -211,6 +211,25 @@ class ContactListResponse {
       success: true, contacts: _contacts, error: ''
     );
   }
+  
+  // Added this response for unauthorized error
+  factory BalancesResponse.unauthorizedError(List accounts) {
+    List<Balance> _balances = [];
+    for (final account in accounts) {
+      var balanceObj = new Balance();
+      balanceObj.accountName = account['accountName'];
+      var balance = double.tryParse(account['balance']);
+      balanceObj.balance = balance;
+      balanceObj.accountId = account['accountId'];
+      balanceObj.timestamp = account['timestamp'];
+      balanceObj.signature = account['signature'];
+      balanceObj.date = account['datetime'];
+      _balances.add(balanceObj);
+    }
+    return BalancesResponse(
+      success: false, balances: _balances, error: 'unauthorized'
+    );
+  }
 }
 
 class Transaction {
@@ -284,6 +303,25 @@ class TransactionsResponse {
     }
     return TransactionsResponse(
       success: false, transactions: _trans, error: 'connect_timeout'
+    );
+  }
+
+  // Added this response for unauthorized error
+  factory TransactionsResponse.unauthorizedError(List transactions) {
+    List<Transaction> _trans = [];
+    for (final txn in transactions) {
+      var transObj = new Transaction();
+      transObj.mode = txn['mode'];
+      transObj.amount = txn['amount'].toDouble();
+      transObj.timestamp = txn['timestamp'].toString();
+     transObj.timeslot = DateTime.tryParse(transObj.timestamp).toLocal();
+      transObj.txnID = txn['txnID'];
+      transObj.time = txn['time'];
+      transObj.paymentProof = txn['paymentProof'];
+      _trans.add(transObj);
+    }
+    return TransactionsResponse(
+      success: false, transactions: _trans, error: 'unauthorized'
     );
   }
 }
