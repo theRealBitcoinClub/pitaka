@@ -84,19 +84,24 @@ class DatabaseHelper {
     List<Map<String, dynamic>> result = [];
 		List<Map<String, dynamic>> qs = await db.query('Contact', orderBy: "id DESC",);
 
-    for (var account in qs) {
-      var info = {
-        'firstName': account['firstName'],
-        'lastName': account['lastName'],
-        'mobileNumber': account['mobileNumber'],
-        'transferAccount': account['transferAccount']
-      };
+    try {
+      for (var account in qs) {
+        var info = {
+          'firstName': account['firstName'],
+          'lastName': account['lastName'],
+          'mobileNumber': account['mobileNumber'],
+          'transferAccount': account['transferAccount']
+        };
 
-      if (result.indexOf(info) == -1) {
-        result.add(info);
-      } 
+        if (result.indexOf(info) == -1) {
+          result.add(info);
+        } 
+      }
+    return result;
     }
-		return result;
+    catch (e) {
+      throw Exception("The value of e is: $e");
+    }
 	}
 
   // Update Contac table
@@ -116,9 +121,17 @@ class DatabaseHelper {
         );
       } catch(e) {
         print("The error value in updateContactList() is: $e");
+        // Cast error to string type
+        String errorType = e.toString();
+        // Check if "UNIQUE constraint" error is in the string
+        // And return the error type
+        if (errorType.contains("UNIQUE constraint failed")) {
+          return "Contact is already in your list.";
+        } else {
+          return errorType;
+        }
       }
-
-		return 'success';
+		return 'contact save';
   }
 
   // Update latest balance of balance objects in database

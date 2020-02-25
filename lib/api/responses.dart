@@ -155,8 +155,8 @@ class ContactResponse {
 
   factory ContactResponse.duplicateContact(Response response) {
     var _contact = new Map();
-    if (response.data['contact_info'] != null) {
-      var cont = response.data['contact_info'];
+    if (response.data['user_info'] != null) {
+      var cont = response.data['user_info'];
       _contact['firstName'] = cont['Firstname'];
       _contact['lastName'] = cont['Lastname'];
       _contact['mobileNumber'] = cont['MobileNumber'];
@@ -169,8 +169,8 @@ class ContactResponse {
 
   factory ContactResponse.unregisteredMobileNumber(Response response) {
     var _contact = new Map();
-    if (response.data['contact_info'] != null) {
-      var cont = response.data['contact_info'];
+    if (response.data['user_info'] != null) {
+      var cont = response.data['user_info'];
       _contact['firstName'] = cont['Firstname'];
       _contact['lastName'] = cont['Lastname'];
       _contact['mobileNumber'] = cont['MobileNumber'];

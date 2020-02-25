@@ -41,6 +41,7 @@ Future<dynamic> sendPostRequest(url, payload) async {
       return errorType;
     }
   }
+  print("The value of response in sendPostRequest() in endpoints.dart is: $response");
   return response;
 }
 
@@ -118,18 +119,23 @@ Future<ContactListResponse> getContacts() async {
   return ContactListResponse.fromDatabase(response);
 }
 
-Future saveContact(payload) async {
+Future<ContactResponse> saveContact(payload) async {
   final String url = globals.baseUrl + "/api/contacts/create";
   Response response;
   try {
     response = await sendPostRequest(url, payload);
     if (response.data['success']) {
     }
+    else if ((response.data['error']) == 'duplicate_contact') {
+      return ContactResponse.duplicateContact(response);
+    }
+    else if ((response.data['error']) == 'unregistered_mobile_number') {
+      return ContactResponse.unregisteredMobileNumber(response);
+    }
+    return ContactResponse.fromResponse(response);
   } catch (e) {
-    throw(e);
+    throw Exception(e);
   }
-
-  return response;
 }
 
 Future<GenericCreateResponse> registerBusiness(payload) async {

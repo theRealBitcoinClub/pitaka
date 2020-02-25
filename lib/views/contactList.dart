@@ -211,73 +211,80 @@ class ContactListComponentState extends State<ContactListComponent> {
   var keyboardUIConfig = new KeyboardUIConfig();
 
   void _validateInputs(BuildContext context) async {
-      if (_formKey.currentState.validate()) {
-        // Close the on-screen keyboard by removing focus from the form's inputs
-        FocusScope.of(context).requestFocus(new FocusNode());
+    if (_formKey.currentState.validate()) {
+      // Close the on-screen keyboard by removing focus from the form's inputs
+      FocusScope.of(context).requestFocus(new FocusNode());
 
-          // If all data are correct then save data to out variables
-          _formKey.currentState.save();
+      // If all data are correct then save data to out variables
+      _formKey.currentState.save();
 
-          // Set _submitting to true for ModalBarrier and CircularProgressIndicator
-          setState(() {
-            _submitting = true;
-          });
+      // Set _submitting to true for ModalBarrier and CircularProgressIndicator
+      setState(() {
+        _submitting = true;
+      });
 
-          // Parse the mobile number input to "+639XX XX XXXX" format
-          if (newContact.mobileNumber == '0000 - 000 - 0000') {
-          } else {
-            newContact.mobileNumber = "+63" + newContact.mobileNumber.substring(1).replaceAll(" - ", "");
-          }
+      // Parse the mobile number input to "+639XX XX XXXX" format
+      if (newContact.mobileNumber == '0000 - 000 - 0000') {
+      } else {
+        newContact.mobileNumber = "+63" + newContact.mobileNumber.substring(1).replaceAll(" - ", "");
+      }
 
-          // Create contact payload
-          var contactPayload = {
-            "mobile_number": newContact.mobileNumber,
-          };
-          // Call createContact request in endpoints.dart 
-          // to search registered mobile number
-          var contact = await searchContact(contactPayload);
-          // If response success is true get contact details.
-          // Store the contact details in contactDetails map.
-          // If response success is false, get the error.
-          // Store the error in _error string variable
-          if (contact.success) {
-            setState(() {
-              contactDetails = contact.contact;
-            });
-          }
-          else {
-            _error = contact.error;
-          }
+      // Create contact payload
+      var contactPayload = {
+        "mobile_number": newContact.mobileNumber,
+      };
+      // Call createContact request in endpoints.dart 
+      // to search registered mobile number
+      var contact = await searchContact(contactPayload);
+      // If response success is true get contact details.
+      // Store the contact details in contactDetails map.
+      // If response success is false, get the error.
+      // Store the error in _error string variable
+      if (contact.success) {
+        setState(() {
+          contactDetails = contact.contact;
+        });
+      }
+      else {
+        _error = contact.error;
+      }
 
-          // Catch app version compatibility and show dialog
-          if (contact.error == "outdated_app_version") {
-            showOutdatedAppVersionDialog(context);
-          }
+      // Catch app version compatibility and show dialog
+      if (contact.error == "outdated_app_version") {
+        showOutdatedAppVersionDialog(context);
+      }
+      
+      // Hide ModalBarrier and CircularProgressIndicator
+      setState(() {
+        _submitting = false;
+      });
 
-          // SharedPreferences prefs = await SharedPreferences.getInstance();
-          // await prefs.setBool('installed', true);
-          // Application.router.navigateTo(context, "/contactlist");
-          setState(() {
-            _submitting = false;
-          });
-
-        // Future.delayed(Duration(milliseconds: 3000), () async {
-        //   // Clear mobile number TextFormField input after request
-          _controller.clear();
-        // });
+      // Future.delayed(Duration(milliseconds: 3000), () async {
+      //   // Clear mobile number TextFormField input after request
+        _controller.clear();
+      // });
     }
   }
 
   void _saveContact(BuildContext context) async {
     // Save to local database
-    await databaseHelper.updateContactList(contactDetails);
-
+    var resp = await databaseHelper.updateContactList(contactDetails);
+    // Display the unique constraint or duplicate error
+    setState(() {
+      _error = resp;
+    });
     // Create contact payload
     var contactPayload = {
       "mobile_number": newContact.mobileNumber,
     };
     // Save to server's database
-    await saveContact(contactPayload);
+    var contact = await saveContact(contactPayload);
+
+    if (contact.success) {
+      setState(() {
+        contactDetails = contact.contact;
+      });
+    }
   }
 
   List<Widget> _buildContactListForm(BuildContext context) {
@@ -337,26 +344,48 @@ class ContactListComponentState extends State<ContactListComponent> {
             onTap: () => _saveContact(context),
             child: Column(
               children: <Widget>[
-                Column(
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: <Widget>[
+                    Column(
+                      children: <Widget>[
+                        Padding(
+                          padding:
+                          const EdgeInsets.fromLTRB(15.0, 15.0, 12.0, 4.0),
+                          child: Text(
+                            "${contactDetails['firstName']} ${contactDetails['lastName']}",
+                            style: TextStyle(fontSize: 20.0),
+                          ),
+                        ),
+                        Padding(
+                          padding:
+                          const EdgeInsets.fromLTRB(15.0, 4.0, 8.0, 15.0),
+                          child: Text(
+                              "${contactDetails['mobileNumber']}",
+                              style: TextStyle(fontSize: 16.0)
+                          ),
+                        ),
+                      ],
+                    ),
+                    // For save icon
                     Padding(
-                      padding:
-                      const EdgeInsets.fromLTRB(15.0, 15.0, 12.0, 4.0),
-                      child: Text(
-                        "${contactDetails['firstName']} ${contactDetails['lastName']}",
-                        style: TextStyle(fontSize: 20.0),
+                      padding: const EdgeInsets.all(8.0),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: <Widget>[
+                          Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Icon(
+                              Icons.save,
+                              size: 40.0,
+                              color: Colors.red,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                    Padding(
-                      padding:
-                      const EdgeInsets.fromLTRB(15.0, 4.0, 8.0, 15.0),
-                      child: Text(
-                          "${contactDetails['mobileNumber']}",
-                          style: TextStyle(fontSize: 16.0)
-                      ),
-                    ),
-                  ],
-                )
+                  ]
+                ),
               ],
             )
           )
@@ -371,7 +400,7 @@ class ContactListComponentState extends State<ContactListComponent> {
             onPressed: () {
               _validateInputs(context);
               // Clear TextFormField
-              _controller.clear();  
+              _controller.clear();
             },
             child: new Text('Submit'),
           )
