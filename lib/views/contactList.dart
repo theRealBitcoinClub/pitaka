@@ -31,7 +31,7 @@ class ContactListComponentState extends State<ContactListComponent> {
   bool online = globals.online;
   bool isOffline = false;
   StreamSubscription _connectionChangeStream;
-  bool _isContactListEmpty;
+  bool _isContactListEmpty = true;
   bool _showContactForm = false;
   bool _executeFuture = false;
   bool _popDialog = false;
