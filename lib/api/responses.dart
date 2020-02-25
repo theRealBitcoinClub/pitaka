@@ -121,8 +121,27 @@ class BalancesResponse {
       success: false, balances: _balances, error: 'connect_timeout'
     );
   }
-}
 
+  // Added this response for unauthorized error
+  factory BalancesResponse.unauthorizedError(List accounts) {
+    List<Balance> _balances = [];
+    for (final account in accounts) {
+      var balanceObj = new Balance();
+      balanceObj.accountName = account['accountName'];
+      var balance = double.tryParse(account['balance']);
+      balanceObj.balance = balance;
+      balanceObj.accountId = account['accountId'];
+      balanceObj.timestamp = account['timestamp'];
+      balanceObj.signature = account['signature'];
+      balanceObj.date = account['datetime'];
+      _balances.add(balanceObj);
+    }
+    return BalancesResponse(
+      success: false, balances: _balances, error: 'unauthorized'
+    );
+  }
+
+}
 
 // For contact list
 class Contact {
@@ -209,25 +228,6 @@ class ContactListResponse {
 
     return ContactListResponse(
       success: true, contacts: _contacts, error: ''
-    );
-  }
-  
-  // Added this response for unauthorized error
-  factory BalancesResponse.unauthorizedError(List accounts) {
-    List<Balance> _balances = [];
-    for (final account in accounts) {
-      var balanceObj = new Balance();
-      balanceObj.accountName = account['accountName'];
-      var balance = double.tryParse(account['balance']);
-      balanceObj.balance = balance;
-      balanceObj.accountId = account['accountId'];
-      balanceObj.timestamp = account['timestamp'];
-      balanceObj.signature = account['signature'];
-      balanceObj.date = account['datetime'];
-      _balances.add(balanceObj);
-    }
-    return BalancesResponse(
-      success: false, balances: _balances, error: 'unauthorized'
     );
   }
 }
