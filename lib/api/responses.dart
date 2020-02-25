@@ -121,7 +121,97 @@ class BalancesResponse {
       success: false, balances: _balances, error: 'connect_timeout'
     );
   }
+}
 
+
+// For contact list
+class Contact {
+  String firstName;
+  String lastName;
+  String mobileNumber;
+  String transferAccount; 
+}
+class ContactResponse {
+  final bool success;
+  var contact = new Map();
+  // final List<Contact> contacts;
+  final String error;
+
+  ContactResponse({this.success, this.contact, this.error});
+
+  factory ContactResponse.fromResponse(Response response) {
+    var _contact = new Map();
+    if (response.data['user_info'] != null) {
+      var cont = response.data['user_info'];
+      _contact['firstName'] = cont['Firstname'];
+      _contact['lastName'] = cont['Lastname'];
+      _contact['mobileNumber'] = cont['MobileNumber'];
+      _contact['transferAccount'] = cont['TransferAccount'];
+    }
+    return ContactResponse(
+      success: response.data['success'], contact: _contact, error: ''
+    );
+  }
+
+  factory ContactResponse.duplicateContact(Response response) {
+    var _contact = new Map();
+    if (response.data['user_info'] != null) {
+      var cont = response.data['user_info'];
+      _contact['firstName'] = cont['Firstname'];
+      _contact['lastName'] = cont['Lastname'];
+      _contact['mobileNumber'] = cont['MobileNumber'];
+      _contact['transferAccount'] = cont['TransferAccount'];
+    }
+    return ContactResponse(
+      success: false, contact: _contact, error: 'This contact is already in your list.'
+    );
+  }
+
+  factory ContactResponse.unregisteredMobileNumber(Response response) {
+    var _contact = new Map();
+    if (response.data['user_info'] != null) {
+      var cont = response.data['user_info'];
+      _contact['firstName'] = cont['Firstname'];
+      _contact['lastName'] = cont['Lastname'];
+      _contact['mobileNumber'] = cont['MobileNumber'];
+      _contact['transferAccount'] = cont['TransferAccount'];
+    }
+    return ContactResponse(
+      success: false, contact: _contact, error: 'Unregistered mobile number!'
+    );
+  }
+}
+
+// For contact list
+class ContactList {
+  String firstName;
+  String lastName;
+  String mobileNumber;
+  String transferAccount; 
+}
+class ContactListResponse {
+  final bool success;
+  final List<Contact> contacts;
+  final String error;
+
+  ContactListResponse({this.success, this.contacts, this.error});
+
+  factory ContactListResponse.fromDatabase(List contactsList) {
+    List<Contact> _contacts = [];
+    for (final contact in contactsList) {
+      var contactObj = new Contact();
+      contactObj.firstName = contact['firstName'];
+      contactObj.lastName = contact['lastName'];
+      contactObj.mobileNumber = contact['mobileNumber'];
+      contactObj.transferAccount = contact['transferAccount'];
+      _contacts.add(contactObj);
+    }
+
+    return ContactListResponse(
+      success: true, contacts: _contacts, error: ''
+    );
+  }
+  
   // Added this response for unauthorized error
   factory BalancesResponse.unauthorizedError(List accounts) {
     List<Balance> _balances = [];
@@ -140,7 +230,6 @@ class BalancesResponse {
       success: false, balances: _balances, error: 'unauthorized'
     );
   }
-
 }
 
 class Transaction {

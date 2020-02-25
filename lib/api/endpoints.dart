@@ -37,12 +37,12 @@ Future<dynamic> sendPostRequest(url, payload) async {
     // Check if "DioErrorType.CONNECT_TIMEOUT" error is in the string
     // And return the error type
     if (errorType.contains("DioErrorType.CONNECT_TIMEOUT")) {
-      //print("Your internet connection is very slow. Switch to offline mode to continue this transaction.");
       return "DioErrorType.CONNECT_TIMEOUT";
     } else {
       return errorType;
     }
   }
+  print("The value of response in sendPostRequest() in endpoints.dart is: $response");
   return response;
 }
 
@@ -80,8 +80,6 @@ Future<dynamic> sendGetRequest(url) async {
     // Check if "DioErrorType.CONNECT_TIMEOUT" error is in the string
     // And return the error type
     if (errorType.contains("DioErrorType.CONNECT_TIMEOUT")) {
-      respErrorType = "connect_timeout";
-      //print("Your internet connection is very slow. Switch to offline mode to continue this transaction.");
       return "DioErrorType.CONNECT_TIMEOUT";
     }
     // Check if the error is 401, it means unauthorized and the user's session has expired
@@ -110,6 +108,54 @@ Future<GenericCreateResponse> createUser(payload) async {
     final String url = globals.baseUrl + '/api/users/create';
     final response = await sendPostRequest(url, payload);
     return GenericCreateResponse.fromResponse(response);
+  } catch (e) {
+    throw Exception(e);
+  }
+}
+
+// Endpoint for creating contact list
+// This is called from contactList.dart in _validateInputs()
+Future<ContactResponse> searchContact(payload) async {
+  try {
+    final String url = globals.baseUrl + '/api/users/search';
+    final response = await sendPostRequest(url, payload);
+
+    if (response.data['success']) {
+      return ContactResponse.fromResponse(response);
+    }
+    else if ((response.data['error']) == 'duplicate_contact') {
+      return ContactResponse.duplicateContact(response);
+    }
+    else if ((response.data['error']) == 'unregistered_mobile_number') {
+      return ContactResponse.unregisteredMobileNumber(response);
+    }
+    return ContactResponse.fromResponse(response);
+  } catch (e) {
+    throw Exception(e);
+  }
+}
+
+// Endpoint for getting contact list from database
+// This is called from contactList.dart in _FutureBuilder()
+Future<ContactListResponse> getContacts() async {
+  var response = await databaseHelper.getContactList();
+  return ContactListResponse.fromDatabase(response);
+}
+
+Future<ContactResponse> saveContact(payload) async {
+  final String url = globals.baseUrl + "/api/contacts/create";
+  Response response;
+  try {
+    response = await sendPostRequest(url, payload);
+    if (response.data['success']) {
+    }
+    else if ((response.data['error']) == 'duplicate_contact') {
+      return ContactResponse.duplicateContact(response);
+    }
+    else if ((response.data['error']) == 'unregistered_mobile_number') {
+      return ContactResponse.unregisteredMobileNumber(response);
+    }
+    return ContactResponse.fromResponse(response);
   } catch (e) {
     throw Exception(e);
   }

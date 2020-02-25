@@ -125,7 +125,7 @@ class VerifyComponentState extends State<VerifyComponent> {
                 new TextFormField(
                   controller: textController,
                   textAlign: TextAlign.center,
-                  keyboardType: TextInputType.number,
+                  keyboardType: TextInputType.phone,
                   validator: validateCode,
                   onSaved: (value) {
                     newCode.value = value;

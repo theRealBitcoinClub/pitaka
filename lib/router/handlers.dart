@@ -19,6 +19,8 @@ import '../views/addAccount.dart';
 import '../views/settings.dart';
 import '../views/addPinCode.dart';
 import '../views/checkPinCode.dart';
+import '../views/contactList.dart';
+
 
 var rootHandler = new Handler(
     handlerFunc: (BuildContext context, Map<String, dynamic> params) {
@@ -114,4 +116,9 @@ var addPinCodeHandler = new Handler(
 var checkPinCodeHandler = new Handler(
     handlerFunc: (BuildContext context, Map<String, dynamic> params) {
       return new CheckPincodeComponent();
+});
+
+var contactListHandler = new Handler(
+    handlerFunc: (BuildContext context, Map<String, dynamic> params) {
+      return new ContactListComponent();
 });

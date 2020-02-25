@@ -22,6 +22,8 @@ class Routes {
   static String settings = "/settings";
   static String addPinCode = "/addpincode";
   static String checkPinCode = "/checkpincode";
+  static String contactList = "/contactlist"; 
+
 
   static void configureRoutes(Router router) {
     router.notFoundHandler = new Handler(
@@ -103,6 +105,11 @@ class Routes {
     router.define(
         checkPinCode,
         handler: checkPinCodeHandler,
+        transitionType: TransitionType.fadeIn
+    );
+    router.define(
+        contactList,
+        handler: contactListHandler,
         transitionType: TransitionType.fadeIn
     );
   }

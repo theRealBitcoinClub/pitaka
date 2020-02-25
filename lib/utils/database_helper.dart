@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:sqflite/sqflite.dart';
 import 'dart:async';
@@ -52,7 +51,8 @@ class DatabaseHelper {
       "signature TEXT,"
       "datetime TEXT"
       ")");
-    print('balance done');
+    print('Balance table done!');
+
     await db.execute("CREATE TABLE OfflineTransaction ("
       "id INTEGER NOT NULL PRIMARY KEY,"
       "account TEXT,"
@@ -65,8 +65,74 @@ class DatabaseHelper {
       "time TEXT,"
       "publicKey TEXT"
       ")");
-      print('offlinetransaction done');
+      print('OfflineTransaction table done!');
+
+    // Added table for contact list
+    await db.execute("CREATE TABLE Contact ("
+      "id INTEGER NOT NULL PRIMARY KEY,"
+      "firstName TEXT,"
+      "lastName TEXT,"
+      "mobileNumber TEXT NOT NULL UNIQUE,"
+      "transferAccount TEXT"
+      ")");
+    print('Contact table done!');
 	}
+
+	// Get latest contact of contact objects in database
+	Future <List<Map<String, dynamic>>> getContactList() async {
+		Database db = await this.database;
+    List<Map<String, dynamic>> result = [];
+		List<Map<String, dynamic>> qs = await db.query('Contact', orderBy: "id DESC",);
+
+    try {
+      for (var account in qs) {
+        var info = {
+          'firstName': account['firstName'],
+          'lastName': account['lastName'],
+          'mobileNumber': account['mobileNumber'],
+          'transferAccount': account['transferAccount']
+        };
+
+        if (result.indexOf(info) == -1) {
+          result.add(info);
+        } 
+      }
+    return result;
+    }
+    catch (e) {
+      throw Exception("The value of e is: $e");
+    }
+	}
+
+  // Update Contac table
+  Future<String> updateContactList(contact) async {
+    Database db = await this.database;
+      var values = {
+        'firstName': contact['firstName'],
+        'lastName': contact['lastName'],
+        'mobileNumber': contact['mobileNumber'],
+        'transferAccount': contact['transferAccount']
+      };
+      print("The value of values in updateContactList is: $values");
+      try {
+        await db.insert(
+          'Contact',
+          values
+        );
+      } catch(e) {
+        print("The error value in updateContactList() is: $e");
+        // Cast error to string type
+        String errorType = e.toString();
+        // Check if "UNIQUE constraint" error is in the string
+        // And return the error type
+        if (errorType.contains("UNIQUE constraint failed")) {
+          return "Contact is already in your list.";
+        } else {
+          return errorType;
+        }
+      }
+		return 'contact save';
+  }
 
   // Update latest balance of balance objects in database
   Future<String> updateOfflineBalances(List<Balance> balances) async {
