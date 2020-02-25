@@ -2,12 +2,10 @@ import 'package:flutter/material.dart';
 import 'dart:async';
 import '../components/drawer.dart';
 import '../components/bottomNavigation.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import '../utils/globals.dart' as globals;
 import '../utils/globals.dart';
 import 'package:passcode_screen/circle.dart';
 import 'package:passcode_screen/keyboard.dart';
-import '../views/app.dart';
 import '../utils/dialog.dart';
 import '../api/endpoints.dart';
 import '../utils/database_helper.dart';
@@ -29,12 +27,10 @@ class ContactListComponentState extends State<ContactListComponent> {
   String path = "/receive";
   int accountIndex = 0;
   final _formKey = GlobalKey<FormState>();
-  String _selectedPaytacaAccount;
   static List data = List(); //edited line
   bool online = globals.online;
   bool isOffline = false;
   StreamSubscription _connectionChangeStream;
-  bool _loading = false;   // For CircularProgressIndicator
   bool _isContactListEmpty;
   bool _showContactForm = false;
   bool _executeFuture = false;
@@ -146,22 +142,23 @@ class ContactListComponentState extends State<ContactListComponent> {
                   future: getContacts(),
                   builder: (context, snapshot) {
                     if (!snapshot.hasData) return Center(child: CircularProgressIndicator());
-                    return ListView(
-                      children: snapshot.data
+                      return ListView(
+                        children: snapshot.data
                           .contacts.map<Widget>((contact) => ListTile(
                             title: Text(contact.firstName + ' ' + contact.lastName),
                             subtitle: Text(contact.mobileNumber),
                             leading: CircleAvatar(
                               backgroundColor: Colors.red,
                               child: Text(contact.firstName[0],
-                                  style: TextStyle(
-                                    fontSize: 18.0,
-                                    color: Colors.white,
-                                  )),
-                                ),
-                              ))
+                                style: TextStyle(
+                                  fontSize: 18.0,
+                                  color: Colors.white,
+                                )
+                              ),
+                            ),
+                          ))
                           .toList(),
-                    );
+                      );
                   },
                 )
               );
@@ -269,10 +266,17 @@ class ContactListComponentState extends State<ContactListComponent> {
   void _saveContact(BuildContext context) async {
     // Save to local database
     var resp = await databaseHelper.updateContactList(contactDetails);
+
     // Display the unique constraint or duplicate error
     setState(() {
-      _error = resp;
+      if (resp == 'contact save') {
+        _showContactForm = false;
+      } 
+      else {
+        _error = resp;
+      }
     });
+
     // Create contact payload
     var contactPayload = {
       "mobile_number": newContact.mobileNumber,
@@ -281,10 +285,15 @@ class ContactListComponentState extends State<ContactListComponent> {
     var contact = await saveContact(contactPayload);
 
     if (contact.success) {
+      _showContactForm = false;
       setState(() {
         contactDetails = contact.contact;
       });
     }
+
+    // Clear the _error and contactDetails to show next searched contact
+    _error = null;
+    contactDetails = {};
   }
 
   List<Widget> _buildContactListForm(BuildContext context) {
