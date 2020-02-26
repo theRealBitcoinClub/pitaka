@@ -23,6 +23,7 @@ class Routes {
   static String addPinCode = "/addpincode";
   static String checkPinCode = "/checkpincode";
   static String contactList = "/contactlist"; 
+  static String sendContact = "/sendcontact";
 
 
   static void configureRoutes(Router router) {
@@ -110,6 +111,11 @@ class Routes {
     router.define(
         contactList,
         handler: contactListHandler,
+        transitionType: TransitionType.fadeIn
+    );
+    router.define(
+        sendContact,
+        handler: sendContactHandler,
         transitionType: TransitionType.fadeIn
     );
   }
