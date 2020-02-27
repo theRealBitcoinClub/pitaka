@@ -113,7 +113,6 @@ class DatabaseHelper {
         'mobileNumber': contact['mobileNumber'],
         'transferAccount': contact['transferAccount']
       };
-      print("The value of values in updateContactList is: $values");
       try {
         await db.insert(
           'Contact',

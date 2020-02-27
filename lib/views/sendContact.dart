@@ -52,16 +52,19 @@ class SendContactComponentState extends State<SendContactComponent> {
   int offlineTime = globals.offlineTime;
   bool isSenderOnline;  // Variable for marking if the sender is online or offline
   bool _isInternetSlow = false;
-  bool _showForm = false;
+  bool _showForm = true;
   String destinationAccountId;
   bool _isMaintenanceMode = false;
   
   Future<List> getAccounts() async {
+    // Get accounts stored in shared preferences
     SharedPreferences prefs = await SharedPreferences.getInstance();
     var _prefAccounts = prefs.get("accounts");
-    print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! $_prefAccounts !!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+
     List<Map> _accounts = [];
-    destinationAccountId = _barcodeString.split('::paytaca::')[1];
+
+    // Get account stored in shared preferences
+    destinationAccountId = prefs.get("transferAccountId");
 
     for (final acct in _prefAccounts) {
       String accountId = acct.split(' | ')[1];
@@ -84,6 +87,7 @@ class SendContactComponentState extends State<SendContactComponent> {
       }
     }
     data = _accounts;
+    print("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ $data @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
     return _accounts;
   }
 
@@ -94,6 +98,8 @@ class SendContactComponentState extends State<SendContactComponent> {
     // Fires whenever connectivity state changes
     ConnectionStatusSingleton connectionStatus = ConnectionStatusSingleton.getInstance();
     _connectionChangeStream = connectionStatus.connectionChange.listen(connectionChanged);
+
+    getAccounts();
   }
 
   void connectionChanged(dynamic hasConnection) {
@@ -365,53 +371,53 @@ List<Widget> _buildForm(BuildContext context) {
           new SizedBox(
             height: 30.0,
           ),
-          // When slow or no internet connection show this message
-          _isInternetSlow ?
-            Container(
-              alignment: Alignment.center,
-              padding: EdgeInsets.only(top: 250),
-              child: Text(
-                "You don't seem to have internet connection, or it's too slow. " 
-                "Switch your phone to Airplane mode to keep using the app in offline mode.",
-                textAlign: TextAlign.center,
-              ), 
-            )
-          : // Another condition
-          // When server is under maintenance show this message
-          _isMaintenanceMode ?
-            Container(
-              alignment: Alignment.center,
-              padding: EdgeInsets.only(top: 250),
-              child: Text(
-                "Server is down for maintenance. " 
-                "Please try again later or switch your phone to Airplane mode to keep using the app in offline mode.",
-                textAlign: TextAlign.center,
-              ), 
-            )
-          : // Another condition
-          // When maximum offline timeout (6 hours) is true show message transaction not allowed
-          globals.maxOfflineTime == true ? 
-            Container(
-              padding: EdgeInsets.only(top: 250),
-              child: new Text(
-                "You've been offline for 6 hours, transaction not allowed. Please go online ASAP!",
-                textAlign: TextAlign.center,
-              ),
-            ) 
-          : new Container(
-              margin: const EdgeInsets.only(top: 5.0),
-              child: new ButtonTheme(
-                height: 60,
-                buttonColor: Colors.white,
-                child: new OutlineButton(
-                  borderSide: BorderSide(
-                    color: Colors.black
-                  ),
-                  child: const Text('Scan QR Code', style: TextStyle(fontSize: 18)),
-                  onPressed: scanBarcode
-                )
-              )
-            ),
+          // // When slow or no internet connection show this message
+          // _isInternetSlow ?
+          //   Container(
+          //     alignment: Alignment.center,
+          //     padding: EdgeInsets.only(top: 250),
+          //     child: Text(
+          //       "You don't seem to have internet connection, or it's too slow. " 
+          //       "Switch your phone to Airplane mode to keep using the app in offline mode.",
+          //       textAlign: TextAlign.center,
+          //     ), 
+          //   )
+          // : // Another condition
+          // // When server is under maintenance show this message
+          // _isMaintenanceMode ?
+          //   Container(
+          //     alignment: Alignment.center,
+          //     padding: EdgeInsets.only(top: 250),
+          //     child: Text(
+          //       "Server is down for maintenance. " 
+          //       "Please try again later or switch your phone to Airplane mode to keep using the app in offline mode.",
+          //       textAlign: TextAlign.center,
+          //     ), 
+          //   )
+          // : // Another condition
+          // // When maximum offline timeout (6 hours) is true show message transaction not allowed
+          // globals.maxOfflineTime == true ? 
+          //   Container(
+          //     padding: EdgeInsets.only(top: 250),
+          //     child: new Text(
+          //       "You've been offline for 6 hours, transaction not allowed. Please go online ASAP!",
+          //       textAlign: TextAlign.center,
+          //     ),
+          //   ) 
+          // : new Container(
+          //     margin: const EdgeInsets.only(top: 5.0),
+          //     child: new ButtonTheme(
+          //       height: 60,
+          //       buttonColor: Colors.white,
+          //       child: new OutlineButton(
+          //         borderSide: BorderSide(
+          //           color: Colors.black
+          //         ),
+          //         child: const Text('Scan QR Code', style: TextStyle(fontSize: 18)),
+          //         onPressed: scanBarcode
+          //       )
+          //     )
+          //   ),
             _showForm ?
               Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
