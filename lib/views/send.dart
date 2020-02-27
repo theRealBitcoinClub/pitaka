@@ -412,6 +412,31 @@ List<Widget> _buildForm(BuildContext context) {
                 )
               )
             ),
+            new Container(
+              margin: const EdgeInsets.fromLTRB(0.0, 20.0, 0.0, 20.0),
+              child: Text(
+                "OR",
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 18.0,
+                  fontWeight: FontWeight.bold,
+                ),
+              )
+            ),
+            new Container(
+              margin: const EdgeInsets.only(top: 5.0),
+              child: new ButtonTheme(
+                height: 60,
+                buttonColor: Colors.white,
+                child: new OutlineButton(
+                  borderSide: BorderSide(
+                    color: Colors.black
+                  ),
+                  child: const Text('Send through Contact', style: TextStyle(fontSize: 18)),
+                  onPressed: () => Application.router.navigateTo(context, "/contactlist")
+                )
+              )
+            ),
             _showForm ?
               Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
