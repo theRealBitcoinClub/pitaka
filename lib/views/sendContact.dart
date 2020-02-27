@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:archive/archive.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
 import '../components/bottomNavigation.dart';
 import '../components/drawer.dart';
 import '../api/endpoints.dart';
@@ -10,7 +9,6 @@ import '../views/app.dart';
 import '../utils/helpers.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:intl/intl.dart';
-import 'package:permission_handler/permission_handler.dart';
 import '../utils/globals.dart' as globals;
 import '../utils/database_helper.dart';
 import 'package:uuid/uuid.dart';
@@ -87,7 +85,6 @@ class SendContactComponentState extends State<SendContactComponent> {
       }
     }
     data = _accounts;
-    print("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ $data @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
     return _accounts;
   }
 
@@ -278,34 +275,6 @@ class SendContactComponentState extends State<SendContactComponent> {
     }
     _submitting = false;
     return response.success;
-  }
-
-  void scanBarcode() async {
-    _showForm = true;
-    allowCamera();
-    String barcode = await FlutterBarcodeScanner.scanBarcode("#ff6666", "Cancel", true, ScanMode.DEFAULT);
-    setState(() {
-      if (barcode.length > 0) {
-        _barcodeString = barcode;
-      } else {
-        _barcodeString = '';
-      }  
-    });
-
-    // Don't show form if barcode sacnner is cancelled
-    if (barcode == "-1") {
-      _showForm = false;
-    }
-    
-    getAccounts();
-  }
-
-  void allowCamera() async {
-    var permission = PermissionHandler();
-    PermissionStatus cameraStatus = await permission.checkPermissionStatus(PermissionGroup.camera);
-    if (cameraStatus == PermissionStatus.denied) {
-          await permission.requestPermissions([PermissionGroup.camera]);
-    }
   }
 
   String validateAmount(String value) {

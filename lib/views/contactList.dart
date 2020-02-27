@@ -6,7 +6,6 @@ import '../utils/globals.dart';
 import '../utils/dialog.dart';
 import '../api/endpoints.dart';
 import '../utils/database_helper.dart';
-import '../views/app.dart';
 import '../utils/globals.dart' as globals;
 import '../components/contactListView.dart' as contactlist;
 
@@ -25,24 +24,18 @@ class ContactListComponent extends StatefulWidget {
 class ContactListComponentState extends State<ContactListComponent> {
   String path = "/receive";
   String _error;
-  String _sourceAccount;
   String selectedPaytacaAccount;
   int accountIndex = 0;
   bool online = globals.online;
   bool isOffline = false;
   bool _isContactListEmpty = true;
   bool _showContactForm = false;
-  // bool _showSendFundForm = false;
   bool _executeFuture = false;
   bool _popDialog = false;
   bool _submitting = false;
-  bool _isInternetSlow = false;
-  bool _isMaintenanceMode = false;
   var contactDetails = new Map();
   final _formKey = GlobalKey<FormState>();
   static List data = List(); //edited line
-  static bool _errorFound = false;
-  static String _errorMessage;
   StreamSubscription _connectionChangeStream;
   
   // Initialize a controller for TextFormField.
@@ -171,37 +164,6 @@ class ContactListComponentState extends State<ContactListComponent> {
                 )
               );
             });
-            // return GestureDetector(
-            //   onTap: () => _showSendFundForm(),
-            //   child: FutureBuilder(
-            //     future: getContacts(),
-            //     builder: (context, snapshot) {
-            //       if (!snapshot.hasData) return Center(child: CircularProgressIndicator());
-            //         return ListView(
-            //           children: snapshot.data
-            //             .contacts.map<Widget>((contact) => ListTile(
-            //               title: Text(contact.firstName + ' ' + contact.lastName),
-            //               subtitle: Text(contact.mobileNumber),
-            //               leading: CircleAvatar(
-            //                 backgroundColor: Colors.red,
-            //                 child: Text(contact.firstName[0],
-            //                   style: TextStyle(
-            //                     fontSize: 18.0,
-            //                     color: Colors.white,
-            //                   )
-            //                 ),
-            //               ),
-            //               trailing: Icon(
-            //                 Icons.send,
-            //                 size: 25.0,
-            //                 color: Colors.red,
-            //               ),
-            //             ))
-            //             .toList(),
-            //         );
-            //     },
-            //   )
-            // );
           }
         }
       }),
@@ -380,162 +342,6 @@ class ContactListComponentState extends State<ContactListComponent> {
     return ws;
   }
 
-  List<Widget> _sendFundBuildForm(BuildContext context) {
-    // Added the code below for the display error during sending offline
-    if (!globals.online) {
-      getAccounts();
-    }
-      Form form = new Form(
-        key: _formKey,
-        child: new ListView(
-          padding: const EdgeInsets.symmetric(horizontal: 16.0),
-          children: <Widget>[
-            new SizedBox(
-              height: 30.0,
-            ),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: <Widget>[
-                    new SizedBox(
-                      height: 20.0,
-                    ),
-                    Visibility(
-                      child:  new FormField(
-                          validator: (value){
-                            if (value == null) {
-                              return 'This field is required.';
-                            } else {
-                              return null;
-                            }
-                          },
-                          builder: (FormFieldState state) {
-                            return InputDecorator(
-                              decoration: InputDecoration(
-                                errorText: state.errorText,
-                                labelText: 'Select Account',
-                              ),
-                              child: new DropdownButtonHideUnderline(
-                                child: new DropdownButton(
-                                  iconEnabledColor: Colors.red,
-                                  value: _sourceAccount,
-                                  isDense: true,
-                                  onChanged: (newVal){
-                                    String accountId = newVal.split('::sep::')[0];
-                                    String balance = newVal.split('::sep::')[1];
-                                    String signature = newVal.split('::sep::')[2];
-                                    String timestamp = newVal.split('::sep::')[3];
-                                    setState(() {
-                                      state.didChange(newVal);
-                                    });
-                                  },
-                                  items: data.map((item) {
-                                    return DropdownMenuItem(
-                                      value: "${item['accountId']}::sep::${item['lastBalance']}::sep::${item['balanceSignature']}::sep::${item['timestamp']}",
-                                      child: new Text("${item['accountName']} ( ${double.parse(item['computedBalance']).toStringAsFixed(2)} )"),
-                                    );
-                                  }).toList()
-                                ),
-                              )
-                            );
-                          },
-                        ),
-                      visible: data != null,
-                    ),
-                    Visibility(
-                      child: new TextFormField(
-                        validator: validateAmount,
-                        decoration: new InputDecoration(labelText: "Enter the amount"),
-                        keyboardType: TextInputType.number,
-                        onSaved: (value) {
-
-                        },
-                      ),
-                      visible: data != null,
-                    ),
-                    new SizedBox(
-                      height: 20.0,
-                    ),
-                    Visibility(
-                      child: Container(
-                        child: new ButtonTheme(
-                          height: 50,
-                          buttonColor: Colors.white,
-                          child: new OutlineButton(
-                            borderSide: BorderSide(
-                              color: Colors.black
-                            ),
-                            child: const Text("Pay Now", style: TextStyle(fontSize: 18)),
-                            onPressed: () {
-                              var valid = _formKey.currentState.validate();
-                              if (valid) {
-                                setState(() {
-
-                                });
-                                _formKey.currentState.save();
-                                // Dismiss keyboard after the "Pay Now" button is click
-                                FocusScopeNode currentFocus = FocusScope.of(context);
-                                if (!currentFocus.hasPrimaryFocus) {
-                                  currentFocus.unfocus();
-                                }
-                              }
-                            }
-                          )
-                        )
-                      ),
-                      visible: data != null,
-                    )
-                  ]
-                )
-          ],
-        )
-      );
-      var ws = new List<Widget>();
-      ws.add(form);
-      if (_submitting) {
-        var modal = new Stack(
-          children: [
-            new Opacity(
-              opacity: 0.8,
-              child: const ModalBarrier(dismissible: false, color: Colors.grey),
-            ),
-            Center(
-              child: new CircularProgressIndicator(),
-            ),
-          ],
-        );
-        ws.add(modal);
-      }
-      if (_errorFound) {
-        var modal = new Stack(
-          children: [
-            AlertDialog(
-              title: Text('Success'),
-              content: SingleChildScrollView(
-                child: ListBody(
-                  children: <Widget>[
-                    Text('$_errorMessage')
-                  ],
-                ),
-              ),
-              actions: <Widget>[
-                FlatButton(
-                  child: Text('Got it!'),
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                    Application.router.navigateTo(context, "/send");
-                    _errorMessage = '';
-                    _errorFound = false;
-                  },
-                ),
-              ],
-            )
-          ]
-        );
-        ws.add(modal);
-      }
-      return ws;
-    }
-
   String validateAmount(String value) {
     if (value == null || value == "") {
       return 'This field is required.';
@@ -648,13 +454,5 @@ class ContactListComponentState extends State<ContactListComponent> {
         _controller.clear();
       // });
     }
-  }
-
-  void _showSendFundForm() {
-    print("################################################################################");
-    // setState(() {
-    //   _showSendFundForm = true;
-    // });
-    Application.router.navigateTo(context, "/sendcontact");
   }
 }

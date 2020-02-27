@@ -119,7 +119,6 @@ Future<ContactResponse> searchContact(payload) async {
   try {
     final String url = globals.baseUrl + '/api/users/search';
     final response = await sendPostRequest(url, payload);
-    print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!! $response !!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
     if (response.data['success']) {
       return ContactResponse.fromResponse(response);
     }

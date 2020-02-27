@@ -83,7 +83,6 @@ class SendComponentState extends State<SendComponent> {
       }
     }
     data = _accounts;
-    print("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ $data @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
     return _accounts;
   }
 
