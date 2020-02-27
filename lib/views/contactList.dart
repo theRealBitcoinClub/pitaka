@@ -2,12 +2,13 @@ import 'package:flutter/material.dart';
 import 'dart:async';
 import '../components/drawer.dart';
 import '../components/bottomNavigation.dart';
-import '../utils/globals.dart' as globals;
 import '../utils/globals.dart';
 import '../utils/dialog.dart';
 import '../api/endpoints.dart';
 import '../utils/database_helper.dart';
 import '../views/app.dart';
+import '../utils/globals.dart' as globals;
+import '../components/contactListView.dart' as contactlist;
 
 // Used to access functions in database_helper.dart
 DatabaseHelper databaseHelper = DatabaseHelper();
@@ -144,38 +145,63 @@ class ContactListComponentState extends State<ContactListComponent> {
           if (_showContactForm) {
             return new Stack(children: _buildContactListForm(context));
           }
-          else {
-            return GestureDetector(
-              onTap: () => _showSendFundForm(),
-              child: FutureBuilder(
-                future: getContacts(),
-                builder: (context, snapshot) {
-                  if (!snapshot.hasData) return Center(child: CircularProgressIndicator());
-                    return ListView(
-                      children: snapshot.data
-                        .contacts.map<Widget>((contact) => ListTile(
-                          title: Text(contact.firstName + ' ' + contact.lastName),
-                          subtitle: Text(contact.mobileNumber),
-                          leading: CircleAvatar(
-                            backgroundColor: Colors.red,
-                            child: Text(contact.firstName[0],
-                              style: TextStyle(
-                                fontSize: 18.0,
-                                color: Colors.white,
-                              )
-                            ),
-                          ),
-                          trailing: Icon(
-                            Icons.send,
-                            size: 25.0,
-                            color: Colors.red,
-                          ),
-                        ))
-                        .toList(),
-                    );
-                },
-              )
-            );
+          else {     
+            return Builder(builder: (BuildContext context) {
+              return new Container(
+                alignment: Alignment.center,
+                child: new FutureBuilder(
+                  future: getContacts(),
+                  builder: (BuildContext context, AsyncSnapshot snapshot) {
+                    if (snapshot.hasData) {
+                      if (snapshot.data != null) {
+                        if (snapshot.data.contacts.length > 0) {
+                          return contactlist.buildContactList(snapshot.data.contacts);
+                        } 
+                        else {
+                          return Text('No transactions to display');
+                        }
+                      } else {
+                        return new CircularProgressIndicator();  
+                      }
+                    } else {
+                      // return new Container();
+                      return new CircularProgressIndicator();
+                    }
+                  }
+                )
+              );
+            });
+            // return GestureDetector(
+            //   onTap: () => _showSendFundForm(),
+            //   child: FutureBuilder(
+            //     future: getContacts(),
+            //     builder: (context, snapshot) {
+            //       if (!snapshot.hasData) return Center(child: CircularProgressIndicator());
+            //         return ListView(
+            //           children: snapshot.data
+            //             .contacts.map<Widget>((contact) => ListTile(
+            //               title: Text(contact.firstName + ' ' + contact.lastName),
+            //               subtitle: Text(contact.mobileNumber),
+            //               leading: CircleAvatar(
+            //                 backgroundColor: Colors.red,
+            //                 child: Text(contact.firstName[0],
+            //                   style: TextStyle(
+            //                     fontSize: 18.0,
+            //                     color: Colors.white,
+            //                   )
+            //                 ),
+            //               ),
+            //               trailing: Icon(
+            //                 Icons.send,
+            //                 size: 25.0,
+            //                 color: Colors.red,
+            //               ),
+            //             ))
+            //             .toList(),
+            //         );
+            //     },
+            //   )
+            // );
           }
         }
       }),

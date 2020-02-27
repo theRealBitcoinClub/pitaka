@@ -52,12 +52,14 @@ class SendContactComponentState extends State<SendContactComponent> {
   int offlineTime = globals.offlineTime;
   bool isSenderOnline;  // Variable for marking if the sender is online or offline
   bool _isInternetSlow = false;
+  bool _showForm = false;
   String destinationAccountId;
   bool _isMaintenanceMode = false;
   
   Future<List> getAccounts() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     var _prefAccounts = prefs.get("accounts");
+    print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! $_prefAccounts !!!!!!!!!!!!!!!!!!!!!!!!!!!!");
     List<Map> _accounts = [];
     destinationAccountId = _barcodeString.split('::paytaca::')[1];
 
@@ -273,6 +275,7 @@ class SendContactComponentState extends State<SendContactComponent> {
   }
 
   void scanBarcode() async {
+    _showForm = true;
     allowCamera();
     String barcode = await FlutterBarcodeScanner.scanBarcode("#ff6666", "Cancel", true, ScanMode.DEFAULT);
     setState(() {
@@ -282,6 +285,11 @@ class SendContactComponentState extends State<SendContactComponent> {
         _barcodeString = '';
       }  
     });
+
+    // Don't show form if barcode sacnner is cancelled
+    if (barcode == "-1") {
+      _showForm = false;
+    }
     
     getAccounts();
   }
@@ -390,7 +398,21 @@ List<Widget> _buildForm(BuildContext context) {
                 textAlign: TextAlign.center,
               ),
             ) 
-          : new Container(),
+          : new Container(
+              margin: const EdgeInsets.only(top: 5.0),
+              child: new ButtonTheme(
+                height: 60,
+                buttonColor: Colors.white,
+                child: new OutlineButton(
+                  borderSide: BorderSide(
+                    color: Colors.black
+                  ),
+                  child: const Text('Scan QR Code', style: TextStyle(fontSize: 18)),
+                  onPressed: scanBarcode
+                )
+              )
+            ),
+            _showForm ?
               Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: <Widget>[
@@ -499,7 +521,8 @@ List<Widget> _buildForm(BuildContext context) {
                   )
                 ]
               )
-
+              :
+              Container()
         ],
       )
     );
