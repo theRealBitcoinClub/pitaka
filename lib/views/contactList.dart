@@ -371,6 +371,8 @@ class ContactListComponentState extends State<ContactListComponent> {
     // Save to local database
     var resp = await databaseHelper.updateContactList(contactDetails);
 
+    print("The value of contactDetails in _saveContact() in contactList.dar is: $contactDetails");
+
     // Display the unique constraint or duplicate error
     setState(() {
       if (resp == 'contact save') {
@@ -439,6 +441,7 @@ class ContactListComponentState extends State<ContactListComponent> {
         _error = contact.error;
       }
 
+      print("The value of contactDetails in _validateInputs() in contactList.dar is: $contactDetails");
       // Catch app version compatibility and show dialog
       if (contact.error == "outdated_app_version") {
         showOutdatedAppVersionDialog(context);

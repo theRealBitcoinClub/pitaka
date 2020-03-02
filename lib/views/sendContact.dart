@@ -24,7 +24,6 @@ class SendContactComponent extends StatefulWidget {
 }
 
 class SendContactComponentState extends State<SendContactComponent> {
-  String _barcodeString = '';
   String path = '/send';
   int accountIndex = 0;
   bool _submitting = false;
@@ -54,6 +53,7 @@ class SendContactComponentState extends State<SendContactComponent> {
   bool _showForm = true;
   String destinationAccountId;
   bool _isMaintenanceMode = false;
+  bool disableSubmitButton = false;
   
   Future<List> getAccounts() async {
     // Get accounts stored in shared preferences
@@ -331,8 +331,6 @@ class SendContactComponentState extends State<SendContactComponent> {
         bottomNavigationBar: buildBottomNavigation(context, path)
       );
   }
-
-  bool disableSubmitButton = false;
 
   List<Widget> _buildForm(BuildContext context) {
     Form form = new Form(
