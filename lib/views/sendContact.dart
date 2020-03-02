@@ -15,6 +15,7 @@ import 'package:uuid/uuid.dart';
 import '../utils/globals.dart';
 import '../utils/dialog.dart';
 import 'package:crypto/crypto.dart';
+import 'package:flutter/scheduler.dart';
 
 
 class SendContactComponent extends StatefulWidget {
@@ -84,6 +85,7 @@ class SendContactComponentState extends State<SendContactComponent> {
         _accounts.add(acctObj);
       }
     }
+    print("The value of data is: $data");
     data = _accounts;
     return _accounts;
   }
@@ -96,7 +98,12 @@ class SendContactComponentState extends State<SendContactComponent> {
     ConnectionStatusSingleton connectionStatus = ConnectionStatusSingleton.getInstance();
     _connectionChangeStream = connectionStatus.connectionChange.listen(connectionChanged);
 
-    getAccounts();
+    // Run getAccounts() function upon widget build
+    SchedulerBinding.instance.addPostFrameCallback((_) {
+      setState(() {
+        getAccounts();
+      });
+    } );
   }
 
   void connectionChanged(dynamic hasConnection) {
@@ -325,13 +332,9 @@ class SendContactComponentState extends State<SendContactComponent> {
       );
   }
 
-bool disableSubmitButton = false;
+  bool disableSubmitButton = false;
 
-List<Widget> _buildForm(BuildContext context) {
-  // Added the code below for the display error during sending offline
-  if (!globals.online) {
-    getAccounts();
-  }
+  List<Widget> _buildForm(BuildContext context) {
     Form form = new Form(
       key: _formKey,
       child: new ListView(
@@ -340,53 +343,6 @@ List<Widget> _buildForm(BuildContext context) {
           new SizedBox(
             height: 30.0,
           ),
-          // // When slow or no internet connection show this message
-          // _isInternetSlow ?
-          //   Container(
-          //     alignment: Alignment.center,
-          //     padding: EdgeInsets.only(top: 250),
-          //     child: Text(
-          //       "You don't seem to have internet connection, or it's too slow. " 
-          //       "Switch your phone to Airplane mode to keep using the app in offline mode.",
-          //       textAlign: TextAlign.center,
-          //     ), 
-          //   )
-          // : // Another condition
-          // // When server is under maintenance show this message
-          // _isMaintenanceMode ?
-          //   Container(
-          //     alignment: Alignment.center,
-          //     padding: EdgeInsets.only(top: 250),
-          //     child: Text(
-          //       "Server is down for maintenance. " 
-          //       "Please try again later or switch your phone to Airplane mode to keep using the app in offline mode.",
-          //       textAlign: TextAlign.center,
-          //     ), 
-          //   )
-          // : // Another condition
-          // // When maximum offline timeout (6 hours) is true show message transaction not allowed
-          // globals.maxOfflineTime == true ? 
-          //   Container(
-          //     padding: EdgeInsets.only(top: 250),
-          //     child: new Text(
-          //       "You've been offline for 6 hours, transaction not allowed. Please go online ASAP!",
-          //       textAlign: TextAlign.center,
-          //     ),
-          //   ) 
-          // : new Container(
-          //     margin: const EdgeInsets.only(top: 5.0),
-          //     child: new ButtonTheme(
-          //       height: 60,
-          //       buttonColor: Colors.white,
-          //       child: new OutlineButton(
-          //         borderSide: BorderSide(
-          //           color: Colors.black
-          //         ),
-          //         child: const Text('Scan QR Code', style: TextStyle(fontSize: 18)),
-          //         onPressed: scanBarcode
-          //       )
-          //     )
-          //   ),
             _showForm ?
               Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
@@ -407,10 +363,10 @@ List<Widget> _buildForm(BuildContext context) {
                           return InputDecorator(
                             decoration: InputDecoration(
                               errorText: state.errorText,
-                              labelText: 'Select Account',
                             ),
                             child: new DropdownButtonHideUnderline(
                               child: new DropdownButton(
+                                hint: Text('Select Account'),
                                 iconEnabledColor: Colors.red,
                                 value: _sourceAccount,
                                 isDense: true,
