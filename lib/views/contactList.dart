@@ -55,6 +55,8 @@ class ContactListComponentState extends State<ContactListComponent> {
       //   _validateInputs(context);
       // }
 
+      // Clear _error and contactDetails during new search
+      // This will prevent the duplicating of error on registered mobile number after error occurs
       if (_controller.text.length == 0){
         _error = null;
         contactDetails = {};
@@ -142,7 +144,22 @@ class ContactListComponentState extends State<ContactListComponent> {
         }
         else {
           if (_showContactForm) {
-            return new Stack(children: _buildContactListForm(context));
+            if (globals.online) {
+              return new Stack(children: _buildContactListForm(context));
+            }
+            else {
+              return Center(
+                child: new Padding(
+                  padding: EdgeInsets.all(8.0),
+                  child:new Container(
+                    child: Text(
+                      "This is not available in offline mode.",
+                      style: TextStyle(fontSize: 18.0)
+                    )
+                  )
+                )
+              );
+            }
           }
           else {     
             return Builder(builder: (BuildContext context) {

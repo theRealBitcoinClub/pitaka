@@ -326,7 +326,22 @@ class SendContactComponentState extends State<SendContactComponent> {
         ),
         drawer: buildDrawer(context),
         body: new Builder(builder: (BuildContext context) {
-          return new Stack(children: _buildForm(context));
+          if (globals.online) {
+            return new Stack(children: _buildForm(context));
+          }
+          else {
+            return Center(
+              child: new Padding(
+                padding: EdgeInsets.all(8.0),
+                child:new Container(
+                  child: Text(
+                    "This is not available in offline mode.",
+                    style: TextStyle(fontSize: 18.0)
+                  )
+                )
+              )
+            );
+          }  
         }),
         bottomNavigationBar: buildBottomNavigation(context, path)
       );
