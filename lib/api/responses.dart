@@ -199,20 +199,6 @@ class ContactResponse {
       success: false, contact: _contact, error: 'Unregistered mobile number!'
     );
   }
-
-  factory ContactResponse.unverifiedMobileNumber(Response response) {
-    var _contact = new Map();
-    if (response.data['user_info'] != null) {
-      var cont = response.data['user_info'];
-      _contact['firstName'] = cont['Firstname'];
-      _contact['lastName'] = cont['Lastname'];
-      _contact['mobileNumber'] = cont['MobileNumber'];
-      _contact['transferAccount'] = cont['TransferAccounts'][0]['ID'];
-    }
-    return ContactResponse(
-      success: false, contact: _contact, error: 'Unverified mobile number!'
-    );
-  }
 }
 
 // For contact list

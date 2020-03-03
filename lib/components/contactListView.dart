@@ -54,6 +54,7 @@ ListView buildContactList(contacts) {
                 style: TextStyle(
                   fontSize: 14.0,
                   fontWeight: FontWeight.normal,
+                  color: Colors.white,
                 ),
               ),
               onPressed: () async {

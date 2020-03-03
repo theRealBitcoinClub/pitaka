@@ -48,12 +48,18 @@ class ContactListComponentState extends State<ContactListComponent> {
   void initState()  {
     super.initState();
 
-    // // Start listening to changes in TextFormField for mobile number input
-    // _controller.addListener((){
-    //   if (_controller.text.length == 11){
-    //     _validateInputs(context);
-    //   }
-    // });
+    // Start listening to changes in TextFormField for mobile number input
+    _controller.addListener((){
+
+      // if (_controller.text.length == 11){
+      //   _validateInputs(context);
+      // }
+
+      if (_controller.text.length == 0){
+        _error = null;
+        contactDetails = {};
+      }
+    });
     
     // Subscribe to Notifier Stream from ConnectionStatusSingleton class in globals.dart
     // Fires whenever connectivity state changes
@@ -235,7 +241,6 @@ class ContactListComponentState extends State<ContactListComponent> {
               labelText: 'Mobile Number',
             ),
           ),
-
           // If there is error, show accordingly
           _error != null ?
           Padding(
@@ -309,7 +314,6 @@ class ContactListComponentState extends State<ContactListComponent> {
               height: 30.0,
             ),
           ),
-
           new RaisedButton(
             onPressed: () {
               _validateInputs(context);
@@ -371,8 +375,6 @@ class ContactListComponentState extends State<ContactListComponent> {
     // Save to local database
     var resp = await databaseHelper.updateContactList(contactDetails);
 
-    print("The value of contactDetails in _saveContact() in contactList.dar is: $contactDetails");
-
     // Display the unique constraint or duplicate error
     setState(() {
       if (resp == 'contact save') {
@@ -398,7 +400,7 @@ class ContactListComponentState extends State<ContactListComponent> {
     }
 
     // Clear the _error and contactDetails to show next searched contact
-    _error = null;
+    _error = "";
     contactDetails = {};
   }
 
@@ -438,10 +440,11 @@ class ContactListComponentState extends State<ContactListComponent> {
         });
       }
       else {
-        _error = contact.error;
+        setState(() {
+          _error = contact.error;
+        });
       }
 
-      print("The value of contactDetails in _validateInputs() in contactList.dar is: $contactDetails");
       // Catch app version compatibility and show dialog
       if (contact.error == "outdated_app_version") {
         showOutdatedAppVersionDialog(context);
@@ -452,10 +455,8 @@ class ContactListComponentState extends State<ContactListComponent> {
         _submitting = false;
       });
 
-      // Future.delayed(Duration(milliseconds: 3000), () async {
-      //   // Clear mobile number TextFormField input after request
-        _controller.clear();
-      // });
+      // Clear mobile number TextFormField input after request
+      _controller.clear();
     }
   }
 }

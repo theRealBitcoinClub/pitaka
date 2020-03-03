@@ -119,18 +119,14 @@ Future<ContactResponse> searchContact(payload) async {
   try {
     final String url = globals.baseUrl + '/api/users/search';
     final response = await sendPostRequest(url, payload);
-    print("The value of response in seachContact() in endpoints.dart is: $response");
     if (response.data['success']) {
       return ContactResponse.fromResponse(response);
-    }
-    else if ((response.data['error']) == 'duplicate_contact') {
-      return ContactResponse.duplicateContact(response);
     }
     else if ((response.data['error']) == 'unregistered_mobile_number') {
       return ContactResponse.unregisteredMobileNumber(response);
     }
     else if ((response.data['error']) == 'unverified_mobile_number') {
-      return ContactResponse.unverifiedMobileNumber(response);
+      return ContactResponse.unregisteredMobileNumber(response);
     }
     return ContactResponse.fromResponse(response);
   } catch (e) {
