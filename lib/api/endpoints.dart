@@ -119,6 +119,7 @@ Future<ContactResponse> searchContact(payload) async {
   try {
     final String url = globals.baseUrl + '/api/users/search';
     final response = await sendPostRequest(url, payload);
+    print("The value of response in seachContact() in endpoints.dart is: $response");
     if (response.data['success']) {
       return ContactResponse.fromResponse(response);
     }
@@ -331,9 +332,6 @@ Future<BalancesResponse> getOnlineBalances() async {
       return BalancesResponse.fromResponse(response);
     }
   } catch (e) {
-    // Cast error to string type
-    String errorType = e.toString();
-    print("The value of errorType in getOnlineBalances() is $errorType");
     var resp = await databaseHelper.offLineBalances();
     // Check response error type
     if (respErrorType == "connect_timeout") {

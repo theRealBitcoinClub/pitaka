@@ -252,8 +252,10 @@ class SendContactComponentState extends State<SendContactComponent> {
       'proof_of_payment': proofOfPayment,
       'txn_str' : txnstr,
     };
-    print("The value of payload is: $payload");
     var response = await transferAsset(payload);
+
+    print("The value of response in sendFunds() in sendContact.dart is: ${response.error}");
+
       // Catch app version compatibility
     if (response.error == "outdated_app_version") {
       showOutdatedAppVersionDialog(context);
@@ -336,7 +338,6 @@ class SendContactComponentState extends State<SendContactComponent> {
                 child:new Container(
                   child: Text(
                     "This is not available in offline mode.",
-                    style: TextStyle(fontSize: 18.0)
                   )
                 )
               )
@@ -356,117 +357,152 @@ class SendContactComponentState extends State<SendContactComponent> {
           new SizedBox(
             height: 30.0,
           ),
-            _showForm ?
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: <Widget>[
-                  new SizedBox(
-                    height: 20.0,
-                  ),
-                  Visibility(
-                    child:  new FormField(
-                        validator: (value){
-                          if (value == null) {
-                            return 'This field is required.';
-                          } else {
-                            return null;
-                          }
-                        },
-                        builder: (FormFieldState state) {
-                          return InputDecorator(
-                            decoration: InputDecoration(
-                              errorText: state.errorText,
-                            ),
-                            child: new DropdownButtonHideUnderline(
-                              child: new DropdownButton(
-                                hint: Text('Select Account'),
-                                iconEnabledColor: Colors.red,
-                                value: _sourceAccount,
-                                isDense: true,
-                                onChanged: (newVal){
-                                  String accountId = newVal.split('::sep::')[0];
-                                  String balance = newVal.split('::sep::')[1];
-                                  String signature = newVal.split('::sep::')[2];
-                                  String timestamp = newVal.split('::sep::')[3];
-                                  setState(() {
-                                    selectedPaytacaAccount = accountId;
-                                    lastBalance = balance;
-                                    lBalanceSignature = signature;
-                                    lBalanceTime = timestamp;
-                                    _sourceAccount = newVal;
-                                    state.didChange(newVal);
-                                  });
-                                },
-                                items: data.map((item) {
-                                  return DropdownMenuItem(
-                                    value: "${item['accountId']}::sep::${item['lastBalance']}::sep::${item['balanceSignature']}::sep::${item['timestamp']}",
-                                    child: new Text("${item['accountName']} ( ${double.parse(item['computedBalance']).toStringAsFixed(2)} )"),
-                                  );
-                                }).toList()
-                              ),
-                            )
-                          );
-                        },
-                      ),
-                    visible: data != null,
-                  ),
-                  Visibility(
-                    child: new TextFormField(
-                      validator: validateAmount,
-                      decoration: new InputDecoration(labelText: "Enter the amount"),
-                      keyboardType: TextInputType.number,
-                      onSaved: (value) {
-                        sendAmount = null;
-                        sendAmount = double.parse(value);
+
+          // When slow or no internet connection show this message
+          _isInternetSlow ?
+            Container(
+              alignment: Alignment.center,
+              padding: EdgeInsets.only(top: 250),
+              child: Text(
+                "You don't seem to have internet connection, or it's too slow. " 
+                "Make sure you're connected to internet and its fast enough to make this transaction.",
+                textAlign: TextAlign.center,
+              ), 
+            )
+          : // Another condition
+          // When server is under maintenance show this message
+          _isMaintenanceMode ?
+            Container(
+              alignment: Alignment.center,
+              padding: EdgeInsets.only(top: 250),
+              child: Text(
+                "Server is down for maintenance. " 
+                "Please try again later or switch your phone to Airplane mode to keep using the app in offline mode.",
+                textAlign: TextAlign.center,
+              ), 
+            )
+          : // Another condition
+          // When maximum offline timeout (6 hours) is true show message transaction not allowed
+          globals.maxOfflineTime == true ? 
+            Container(
+              padding: EdgeInsets.only(top: 250),
+              child: new Text(
+                "You've been offline for 6 hours, transaction not allowed. Please go online ASAP!",
+                textAlign: TextAlign.center,
+              ),
+            )
+          : // Another condition 
+          _showForm ?
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: <Widget>[
+                new SizedBox(
+                  height: 20.0,
+                ),
+                Visibility(
+                  child:  new FormField(
+                      validator: (value){
+                        if (value == null) {
+                          return 'This field is required.';
+                        } else {
+                          return null;
+                        }
                       },
-                    ),
-                    visible: data != null,
-                  ),
-                  new SizedBox(
-                    height: 20.0,
-                  ),
-                  Visibility(
-                    child: Container(
-                      child: new ButtonTheme(
-                        height: 50,
-                        buttonColor: Colors.white,
-                        child: new OutlineButton(
-                          borderSide: BorderSide(
-                            color: Colors.black
+                      builder: (FormFieldState state) {
+                        return InputDecorator(
+                          decoration: InputDecoration(
+                            errorText: state.errorText,
                           ),
-                          child: const Text("Pay Now", style: TextStyle(fontSize: 18)),
-                          onPressed: disableSubmitButton ? null : () {
-                            var valid = _formKey.currentState.validate();
-                            if (valid) {
-                              setState(() {
-                                disableSubmitButton = true;
-                              });
-                              _formKey.currentState.save();
-                              sendFunds(
-                                toAccount,
-                                sendAmount,
-                                context,
-                                lastBalance,
-                                lBalanceSignature,
-                                txnID,
-                                lBalanceTime,
-                              );
-                              // Dismiss keyboard after the "Pay Now" button is click
-                              FocusScopeNode currentFocus = FocusScope.of(context);
-                              if (!currentFocus.hasPrimaryFocus) {
-                                currentFocus.unfocus();
-                              }
+                          child: new DropdownButtonHideUnderline(
+                            child: new DropdownButton(
+                              hint: Text('Select Account'),
+                              iconEnabledColor: Colors.red,
+                              value: _sourceAccount,
+                              isDense: true,
+                              onChanged: (newVal){
+                                String accountId = newVal.split('::sep::')[0];
+                                String balance = newVal.split('::sep::')[1];
+                                String signature = newVal.split('::sep::')[2];
+                                String timestamp = newVal.split('::sep::')[3];
+                                setState(() {
+                                  selectedPaytacaAccount = accountId;
+                                  lastBalance = balance;
+                                  lBalanceSignature = signature;
+                                  lBalanceTime = timestamp;
+                                  _sourceAccount = newVal;
+                                  state.didChange(newVal);
+                                });
+                              },
+                              items: data.map((item) {
+                                return DropdownMenuItem(
+                                  value: "${item['accountId']}::sep::${item['lastBalance']}::sep::${item['balanceSignature']}::sep::${item['timestamp']}",
+                                  child: new Text("${item['accountName']} ( ${double.parse(item['computedBalance']).toStringAsFixed(2)} )"),
+                                );
+                              }).toList()
+                            ),
+                          )
+                        );
+                      },
+                  ),
+                  visible: data != null,
+                ),
+                Visibility(
+                  child: new TextFormField(
+                    validator: validateAmount,
+                    decoration: new InputDecoration(labelText: "Enter the amount"),
+                    keyboardType: TextInputType.number,
+                    onSaved: (value) {
+                      sendAmount = null;
+                      sendAmount = double.parse(value);
+                    },
+                  ),
+                  visible: data != null,
+                ),
+                new SizedBox(
+                  height: 20.0,
+                ),
+                Visibility(
+                  child: Container(
+                    child: new ButtonTheme(
+                      height: 50,
+                      buttonColor: Colors.white,
+                      child: new OutlineButton(
+                        borderSide: BorderSide(
+                          color: Colors.black
+                        ),
+                        child: const Text("Pay Now", style: TextStyle(fontSize: 18)),
+                        onPressed: disableSubmitButton ? null : () {
+                          var valid = _formKey.currentState.validate();
+                          if (valid) {
+                            setState(() {
+                              disableSubmitButton = true;
+                            });
+                            _formKey.currentState.save();
+                            sendFunds(
+                              toAccount,
+                              sendAmount,
+                              context,
+                              lastBalance,
+                              lBalanceSignature,
+                              txnID,
+                              lBalanceTime,
+                            );
+                            // Dismiss keyboard after the "Pay Now" button is click
+                            FocusScopeNode currentFocus = FocusScope.of(context);
+                            if (!currentFocus.hasPrimaryFocus) {
+                              currentFocus.unfocus();
                             }
                           }
-                        )
+                        }
                       )
-                    ),
-                    visible: data != null,
-                  )
-                ]
-              )
-              :
-              Container()
+                    )
+                  ),
+                  visible: data != null,
+                )
+              ]
+            )
+            :
+            Container()
         ],
       )
     );

@@ -154,7 +154,6 @@ class ContactListComponentState extends State<ContactListComponent> {
                   child:new Container(
                     child: Text(
                       "This is not available in offline mode.",
-                      style: TextStyle(fontSize: 18.0)
                     )
                   )
                 )
@@ -174,7 +173,9 @@ class ContactListComponentState extends State<ContactListComponent> {
                           return contactlist.buildContactList(snapshot.data.contacts);
                         } 
                         else {
-                          return Text('No transactions to display');
+                          return Text(
+                            "You're contact list is empty. Create by tapping the '+ person' icon button."
+                          );
                         }
                       } else {
                         return new CircularProgressIndicator();  
