@@ -308,6 +308,7 @@ Future<BalancesResponse> getOnlineBalances() async {
   var response;
   try {
     response = await sendGetRequest(url);
+    
     // Store account details in keychain
     List<String> _accounts = [];
     List<Balance> _balances = [];
@@ -333,10 +334,11 @@ Future<BalancesResponse> getOnlineBalances() async {
       // Parse response into BalanceResponse
       return BalancesResponse.fromResponse(response);
     }
+  
   } catch (e) {
     var resp = await databaseHelper.offLineBalances();
     // Check response error type
-    if (respErrorType == "connect_timeout") {
+    if (response == "DioErrorType.CONNECT_TIMEOUT") {
       // Parse response into BalanceResponse
       return BalancesResponse.connectTimeoutError(resp);
     }
@@ -359,7 +361,7 @@ Future<TransactionsResponse> getOnlineTransactions() async {
   } catch (e) {
     var resp = await databaseHelper.offLineTransactions();
     // Check response error type
-    if (respErrorType == "connect_timeout") {
+    if (response == "DioErrorType.CONNECT_TIMEOUT") {
       // Parse response into BalanceResponse
       return TransactionsResponse.connectTimeoutError(resp);
     }

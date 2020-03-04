@@ -183,7 +183,6 @@ class HomeComponentState extends State<HomeComponent> {
                         // ANDing with globals.online prevents showing the dialog 
                         // during manually swithing to airplane mode 
                         else if (snapshot.data.error == 'connect_timeout' && globals.online) {
-                          print("The value of snapshot.data in getting transactions is: ${snapshot.data.error}");
                           return Padding(
                             padding: EdgeInsets.all(16.0),
                             child: Text(
