@@ -116,22 +116,24 @@ Future<GenericCreateResponse> createUser(payload) async {
 // Endpoint for creating contact list
 // This is called from contactList.dart in _validateInputs()
 Future<ContactResponse> searchContact(payload) async {
+  var response;
   try {
     final String url = globals.baseUrl + '/api/users/search';
-    final response = await sendPostRequest(url, payload);
-
+    response = await sendPostRequest(url, payload);
+    
     if (response.data['success']) {
       return ContactResponse.fromResponse(response);
-    }
-    else if ((response.data['error']) == 'duplicate_contact') {
-      return ContactResponse.duplicateContact(response);
     }
     else if ((response.data['error']) == 'unregistered_mobile_number') {
       return ContactResponse.unregisteredMobileNumber(response);
     }
-    return ContactResponse.fromResponse(response);
+    else if ((response.data['error']) == 'unverified_mobile_number') {
+      return ContactResponse.unregisteredMobileNumber(response);
+    }
   } catch (e) {
-    throw Exception(e);
+    if (response == "DioErrorType.CONNECT_TIMEOUT") {
+      return ContactResponse.connectTimeoutError();
+    }
   }
 }
 
@@ -306,6 +308,7 @@ Future<BalancesResponse> getOnlineBalances() async {
   var response;
   try {
     response = await sendGetRequest(url);
+    
     // Store account details in keychain
     List<String> _accounts = [];
     List<Balance> _balances = [];
@@ -331,13 +334,11 @@ Future<BalancesResponse> getOnlineBalances() async {
       // Parse response into BalanceResponse
       return BalancesResponse.fromResponse(response);
     }
+  
   } catch (e) {
-    // Cast error to string type
-    String errorType = e.toString();
-    print("The value of errorType in getOnlineBalances() is $errorType");
     var resp = await databaseHelper.offLineBalances();
     // Check response error type
-    if (respErrorType == "connect_timeout") {
+    if (response == "DioErrorType.CONNECT_TIMEOUT") {
       // Parse response into BalanceResponse
       return BalancesResponse.connectTimeoutError(resp);
     }
@@ -360,7 +361,7 @@ Future<TransactionsResponse> getOnlineTransactions() async {
   } catch (e) {
     var resp = await databaseHelper.offLineTransactions();
     // Check response error type
-    if (respErrorType == "connect_timeout") {
+    if (response == "DioErrorType.CONNECT_TIMEOUT") {
       // Parse response into BalanceResponse
       return TransactionsResponse.connectTimeoutError(resp);
     }

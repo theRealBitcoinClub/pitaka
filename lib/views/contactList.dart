@@ -2,14 +2,12 @@ import 'package:flutter/material.dart';
 import 'dart:async';
 import '../components/drawer.dart';
 import '../components/bottomNavigation.dart';
-import '../utils/globals.dart' as globals;
 import '../utils/globals.dart';
-import 'package:passcode_screen/circle.dart';
-import 'package:passcode_screen/keyboard.dart';
 import '../utils/dialog.dart';
 import '../api/endpoints.dart';
 import '../utils/database_helper.dart';
-
+import '../utils/globals.dart' as globals;
+import '../components/contactListView.dart' as contactlist;
 
 // Used to access functions in database_helper.dart
 DatabaseHelper databaseHelper = DatabaseHelper();
@@ -25,33 +23,45 @@ class ContactListComponent extends StatefulWidget {
 
 class ContactListComponentState extends State<ContactListComponent> {
   String path = "/receive";
+  String _error;
+  String selectedPaytacaAccount;
   int accountIndex = 0;
-  final _formKey = GlobalKey<FormState>();
-  static List data = List(); //edited line
   bool online = globals.online;
   bool isOffline = false;
-  StreamSubscription _connectionChangeStream;
   bool _isContactListEmpty = true;
   bool _showContactForm = false;
   bool _executeFuture = false;
   bool _popDialog = false;
+  bool _submitting = false;
   var contactDetails = new Map();
-  String _error;
-
+  final _formKey = GlobalKey<FormState>();
+  static List data = List(); //edited line
+  StreamSubscription _connectionChangeStream;
+  
   // Initialize a controller for TextFormField.
   // This is used to clear the contents of TextFormField at onPressed 
   TextEditingController _controller = TextEditingController();
+  // Used for contact instance
+  Contact newContact = new Contact();
 
   @override
   void initState()  {
     super.initState();
 
-    // // Start listening to changes in TextFormField for mobile number input
-    // _controller.addListener((){
-    //   if (_controller.text.length == 11){
-    //     _validateInputs(context);
-    //   }
-    // });
+    // Start listening to changes in TextFormField for mobile number input
+    _controller.addListener((){
+
+      // if (_controller.text.length == 11){
+      //   _validateInputs(context);
+      // }
+
+      // Clear _error and contactDetails during new search
+      // This will prevent the duplicating of error on registered mobile number after error occurs
+      if (_controller.text.length == 0){
+        _error = null;
+        contactDetails = {};
+      }
+    });
     
     // Subscribe to Notifier Stream from ConnectionStatusSingleton class in globals.dart
     // Fires whenever connectivity state changes
@@ -106,88 +116,102 @@ class ContactListComponentState extends State<ContactListComponent> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(
-          title: Text('Contact List'),
-          actions: [
-            Padding(
-              padding: EdgeInsets.only(right: 20.0),
-              child: GestureDetector(
-                child: online ? new Icon(Icons.wifi): new Icon(Icons.signal_wifi_off)
-              ) 
+      appBar: AppBar(
+        title: Text('Contact List'),
+        actions: [
+          Padding(
+            padding: EdgeInsets.only(right: 20.0),
+            child: GestureDetector(
+              child: online ? new Icon(Icons.wifi): new Icon(Icons.signal_wifi_off)
+            ) 
+          )
+        ],
+        centerTitle: true,
+      ),
+      drawer: buildDrawer(context),
+      body: new Builder(builder: (BuildContext context) {
+        if (_isContactListEmpty) {
+          return Container(
+            alignment: Alignment.center,
+            child: Padding(
+              padding: EdgeInsets.all(16.0),
+              child: Text(
+                "You're contact list is empty. Create by tapping the '+ person' icon button." ,
+                textAlign: TextAlign.center,
+              ),
             )
-          ],
-          centerTitle: true,
-        ),
-        drawer: buildDrawer(context),
-        body: new Builder(builder: (BuildContext context) {
-          if (_isContactListEmpty) {
-            return Container(
-              alignment: Alignment.center,
-              child: Padding(
-                padding: EdgeInsets.all(16.0),
-                child: Text(
-                  "You're contact list is empty. Create by tapping the '+ person' icon button." ,
-                  textAlign: TextAlign.center,
-                ),
-              )
-            );
-          }
-          else {
-            if (_showContactForm) {
+          );
+        }
+        else {
+          if (_showContactForm) {
+            if (globals.online) {
               return new Stack(children: _buildContactListForm(context));
             }
             else {
-              return new Container(
-                child: FutureBuilder(
-                  future: getContacts(),
-                  builder: (context, snapshot) {
-                    if (!snapshot.hasData) return Center(child: CircularProgressIndicator());
-                      return ListView(
-                        children: snapshot.data
-                          .contacts.map<Widget>((contact) => ListTile(
-                            title: Text(contact.firstName + ' ' + contact.lastName),
-                            subtitle: Text(contact.mobileNumber),
-                            leading: CircleAvatar(
-                              backgroundColor: Colors.red,
-                              child: Text(contact.firstName[0],
-                                style: TextStyle(
-                                  fontSize: 18.0,
-                                  color: Colors.white,
-                                )
-                              ),
-                            ),
-                          ))
-                          .toList(),
-                      );
-                  },
+              return Center(
+                child: new Padding(
+                  padding: EdgeInsets.all(8.0),
+                  child:new Container(
+                    child: Text(
+                      "This is not available in offline mode.",
+                    )
+                  )
                 )
               );
             }
           }
-        }),
-        // Toggle hide and show contact
-        floatingActionButton: FloatingActionButton(
-          onPressed: () {
-            setState(() {
-              if (!_showContactForm) {
-                _showContactForm = true;
-                _isContactListEmpty = false;
-              }
-              else {
-                _showContactForm = false;
-              }
-            }); 
-          },
-          child: Icon(Icons.person_add),
-          backgroundColor: Colors.red,
-        ),
-        // Uncomment to center the FloatingActionButtonLocation button
-        //floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
-        bottomNavigationBar: buildBottomNavigation(context, path)
-      );
+          else {     
+            return Builder(builder: (BuildContext context) {
+              return new Container(
+                alignment: Alignment.center,
+                child: new FutureBuilder(
+                  future: getContacts(),
+                  builder: (BuildContext context, AsyncSnapshot snapshot) {
+                    if (snapshot.hasData) {
+                      if (snapshot.data != null) {
+                        if (snapshot.data.contacts.length > 0) {
+                          return contactlist.buildContactList(snapshot.data.contacts);
+                        } 
+                        else {
+                          return Text(
+                            "You're contact list is empty. Create by tapping the '+ person' icon button."
+                          );
+                        }
+                      } else {
+                        return new CircularProgressIndicator();  
+                      }
+                    } else {
+                      // return new Container();
+                      return new CircularProgressIndicator();
+                    }
+                  }
+                )
+              );
+            });
+          }
+        }
+      }),
+      // Toggle hide and show contact
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          setState(() {
+            if (!_showContactForm) {
+              _showContactForm = true;
+              _isContactListEmpty = false;
+            }
+            else {
+              _showContactForm = false;
+            }
+          }); 
+        },
+        child: Icon(Icons.person_add),
+        backgroundColor: Colors.red,
+      ),
+      // Uncomment to center the FloatingActionButtonLocation button
+      //floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+      bottomNavigationBar: buildBottomNavigation(context, path)
+    );
   }
-
-  Contact newContact = new Contact();
 
   String validateMobile(String value) {
     if (value == '0000 - 000 - 0000') {
@@ -199,101 +223,6 @@ class ContactListComponentState extends State<ContactListComponent> {
         return 'Invalid phone number';
       }
     }
-  }
-
-  FocusNode focusNode = FocusNode();
-  bool _submitting = false;
-
-  var circleUIConfig = new CircleUIConfig();
-  var keyboardUIConfig = new KeyboardUIConfig();
-
-  void _validateInputs(BuildContext context) async {
-    if (_formKey.currentState.validate()) {
-      // Close the on-screen keyboard by removing focus from the form's inputs
-      FocusScope.of(context).requestFocus(new FocusNode());
-
-      // If all data are correct then save data to out variables
-      _formKey.currentState.save();
-
-      // Set _submitting to true for ModalBarrier and CircularProgressIndicator
-      setState(() {
-        _submitting = true;
-      });
-
-      // Parse the mobile number input to "+639XX XX XXXX" format
-      if (newContact.mobileNumber == '0000 - 000 - 0000') {
-      } else {
-        newContact.mobileNumber = "+63" + newContact.mobileNumber.substring(1).replaceAll(" - ", "");
-      }
-
-      // Create contact payload
-      var contactPayload = {
-        "mobile_number": newContact.mobileNumber,
-      };
-      // Call createContact request in endpoints.dart 
-      // to search registered mobile number
-      var contact = await searchContact(contactPayload);
-      // If response success is true get contact details.
-      // Store the contact details in contactDetails map.
-      // If response success is false, get the error.
-      // Store the error in _error string variable
-      if (contact.success) {
-        setState(() {
-          contactDetails = contact.contact;
-        });
-      }
-      else {
-        _error = contact.error;
-      }
-
-      // Catch app version compatibility and show dialog
-      if (contact.error == "outdated_app_version") {
-        showOutdatedAppVersionDialog(context);
-      }
-      
-      // Hide ModalBarrier and CircularProgressIndicator
-      setState(() {
-        _submitting = false;
-      });
-
-      // Future.delayed(Duration(milliseconds: 3000), () async {
-      //   // Clear mobile number TextFormField input after request
-        _controller.clear();
-      // });
-    }
-  }
-
-  void _saveContact(BuildContext context) async {
-    // Save to local database
-    var resp = await databaseHelper.updateContactList(contactDetails);
-
-    // Display the unique constraint or duplicate error
-    setState(() {
-      if (resp == 'contact save') {
-        _showContactForm = false;
-      } 
-      else {
-        _error = resp;
-      }
-    });
-
-    // Create contact payload
-    var contactPayload = {
-      "mobile_number": newContact.mobileNumber,
-    };
-    // Save to server's database
-    var contact = await saveContact(contactPayload);
-
-    if (contact.success) {
-      _showContactForm = false;
-      setState(() {
-        contactDetails = contact.contact;
-      });
-    }
-
-    // Clear the _error and contactDetails to show next searched contact
-    _error = null;
-    contactDetails = {};
   }
 
   List<Widget> _buildContactListForm(BuildContext context) {
@@ -330,7 +259,6 @@ class ContactListComponentState extends State<ContactListComponent> {
               labelText: 'Mobile Number',
             ),
           ),
-
           // If there is error, show accordingly
           _error != null ?
           Padding(
@@ -404,7 +332,6 @@ class ContactListComponentState extends State<ContactListComponent> {
               height: 30.0,
             ),
           ),
-
           new RaisedButton(
             onPressed: () {
               _validateInputs(context);
@@ -435,5 +362,119 @@ class ContactListComponentState extends State<ContactListComponent> {
       ws.add(modal);
     }
     return ws;
+  }
+
+  String validateAmount(String value) {
+    if (value == null || value == "") {
+      return 'This field is required.';
+    } else if (value == '0') {
+      return 'Please enter valid amount.';
+    } else {
+      var currentBalance;
+      for(final map in data) {
+        if(selectedPaytacaAccount ==  map['accountId']){
+          currentBalance = map['computedBalance'];
+          break;
+        }
+      }
+      if (double.parse(currentBalance) < double.parse(value)) {
+        return 'Insufficient balance';
+      } else {
+        if (double.parse(value) >= 100000) {
+          return 'Max limit of Php 100,000.00 per transaction';
+        } else {
+          return null;
+        } 
+      }
+    }
+  }
+
+  void _saveContact(BuildContext context) async {
+    // Save to local database
+    var resp = await databaseHelper.updateContactList(contactDetails);
+
+    // Display the unique constraint or duplicate error
+    setState(() {
+      if (resp == 'contact save') {
+        _showContactForm = false;
+      } 
+      else {
+        _error = resp;
+      }
+    });
+
+    // Create contact payload
+    var contactPayload = {
+      "mobile_number": newContact.mobileNumber,
+    };
+    // Save to server's database
+    var contact = await saveContact(contactPayload);
+
+    if (contact.success) {
+      _showContactForm = false;
+      setState(() {
+        contactDetails = contact.contact;
+      });
+    }
+
+    // Clear the _error and contactDetails to show next searched contact
+    _error = "";
+    contactDetails = {};
+  }
+
+  void _validateInputs(BuildContext context) async {
+    if (_formKey.currentState.validate()) {
+      // Close the on-screen keyboard by removing focus from the form's inputs
+      FocusScope.of(context).requestFocus(new FocusNode());
+
+      // If all data are correct then save data to out variables
+      _formKey.currentState.save();
+
+      // Set _submitting to true for ModalBarrier and CircularProgressIndicator
+      setState(() {
+        _submitting = true;
+      });
+
+      // Parse the mobile number input to "+639XX XX XXXX" format
+      if (newContact.mobileNumber == '0000 - 000 - 0000') {
+      } else {
+        newContact.mobileNumber = "+63" + newContact.mobileNumber.substring(1).replaceAll(" - ", "");
+      }
+
+      // Create contact payload
+      var contactPayload = {
+        "mobile_number": newContact.mobileNumber,
+      };
+      // Call createContact request in endpoints.dart 
+      // to search registered mobile number
+      var contact = await searchContact(contactPayload);
+      // If response success is true get contact details.
+      // Store the contact details in contactDetails map.
+      // If response success is false, get the error.
+      // Store the error in _error string variable
+      if (contact.success) {
+        setState(() {
+          contactDetails = contact.contact;
+        });
+      }
+      else {
+        setState(() {
+          _error = contact.error;
+        });
+      }
+
+      // Catch app version compatibility and show dialog
+      if (contact.error == "outdated_app_version") {
+        showOutdatedAppVersionDialog(context);
+      }
+      
+      // Hide ModalBarrier and CircularProgressIndicator
+      setState(() {
+        _submitting = false;
+      });
+
+      // Clear mobile number TextFormField input after request
+      _controller.clear();
+    }
   }
 }

@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:archive/archive.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
 import '../components/bottomNavigation.dart';
 import '../components/drawer.dart';
 import '../api/endpoints.dart';
@@ -10,22 +9,21 @@ import '../views/app.dart';
 import '../utils/helpers.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:intl/intl.dart';
-import 'package:permission_handler/permission_handler.dart';
 import '../utils/globals.dart' as globals;
 import '../utils/database_helper.dart';
 import 'package:uuid/uuid.dart';
 import '../utils/globals.dart';
 import '../utils/dialog.dart';
 import 'package:crypto/crypto.dart';
+import 'package:flutter/scheduler.dart';
 
 
-class SendComponent extends StatefulWidget {
+class SendContactComponent extends StatefulWidget {
   @override
-  SendComponentState createState() => new SendComponentState();
+  SendContactComponentState createState() => new SendContactComponentState();
 }
 
-class SendComponentState extends State<SendComponent> {
-  String _barcodeString = '';
+class SendContactComponentState extends State<SendContactComponent> {
   String path = '/send';
   int accountIndex = 0;
   bool _submitting = false;
@@ -52,15 +50,20 @@ class SendComponentState extends State<SendComponent> {
   int offlineTime = globals.offlineTime;
   bool isSenderOnline;  // Variable for marking if the sender is online or offline
   bool _isInternetSlow = false;
-  bool _showForm = false;
+  bool _showForm = true;
   String destinationAccountId;
   bool _isMaintenanceMode = false;
+  bool disableSubmitButton = false;
   
   Future<List> getAccounts() async {
+    // Get accounts stored in shared preferences
     SharedPreferences prefs = await SharedPreferences.getInstance();
     var _prefAccounts = prefs.get("accounts");
+
     List<Map> _accounts = [];
-    destinationAccountId = _barcodeString.split('::paytaca::')[1];
+
+    // Get account stored in shared preferences
+    destinationAccountId = prefs.get("transferAccountId");
 
     for (final acct in _prefAccounts) {
       String accountId = acct.split(' | ')[1];
@@ -82,6 +85,7 @@ class SendComponentState extends State<SendComponent> {
         _accounts.add(acctObj);
       }
     }
+    print("The value of data is: $data");
     data = _accounts;
     return _accounts;
   }
@@ -93,6 +97,13 @@ class SendComponentState extends State<SendComponent> {
     // Fires whenever connectivity state changes
     ConnectionStatusSingleton connectionStatus = ConnectionStatusSingleton.getInstance();
     _connectionChangeStream = connectionStatus.connectionChange.listen(connectionChanged);
+
+    // Run getAccounts() function upon widget build
+    SchedulerBinding.instance.addPostFrameCallback((_) {
+      setState(() {
+        getAccounts();
+      });
+    } );
   }
 
   void connectionChanged(dynamic hasConnection) {
@@ -241,8 +252,8 @@ class SendComponentState extends State<SendComponent> {
       'proof_of_payment': proofOfPayment,
       'txn_str' : txnstr,
     };
-    print("The value of payload is: $payload");
     var response = await transferAsset(payload);
+
       // Catch app version compatibility
     if (response.error == "outdated_app_version") {
       showOutdatedAppVersionDialog(context);
@@ -271,34 +282,6 @@ class SendComponentState extends State<SendComponent> {
     }
     _submitting = false;
     return response.success;
-  }
-
-  void scanBarcode() async {
-    _showForm = true;
-    allowCamera();
-    String barcode = await FlutterBarcodeScanner.scanBarcode("#ff6666", "Cancel", true, ScanMode.DEFAULT);
-    setState(() {
-      if (barcode.length > 0) {
-        _barcodeString = barcode;
-      } else {
-        _barcodeString = '';
-      }  
-    });
-
-    // Don't show form if barcode sacnner is cancelled
-    if (barcode == "-1") {
-      _showForm = false;
-    }
-    
-    getAccounts();
-  }
-
-  void allowCamera() async {
-    var permission = PermissionHandler();
-    PermissionStatus cameraStatus = await permission.checkPermissionStatus(PermissionGroup.camera);
-    if (cameraStatus == PermissionStatus.denied) {
-          await permission.requestPermissions([PermissionGroup.camera]);
-    }
   }
 
   String validateAmount(String value) {
@@ -330,7 +313,7 @@ class SendComponentState extends State<SendComponent> {
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
-          title: Text('Send'),
+          title: Text('Send to Contact'),
           actions: [
             Padding(
               padding: EdgeInsets.only(right: 20.0),
@@ -343,19 +326,27 @@ class SendComponentState extends State<SendComponent> {
         ),
         drawer: buildDrawer(context),
         body: new Builder(builder: (BuildContext context) {
-          return new Stack(children: _buildForm(context));
+          if (globals.online) {
+            return new Stack(children: _buildForm(context));
+          }
+          else {
+            return Center(
+              child: new Padding(
+                padding: EdgeInsets.all(8.0),
+                child:new Container(
+                  child: Text(
+                    "This is not available in offline mode.",
+                  )
+                )
+              )
+            );
+          }  
         }),
         bottomNavigationBar: buildBottomNavigation(context, path)
       );
   }
 
-bool disableSubmitButton = false;
-
-List<Widget> _buildForm(BuildContext context) {
-  // Added the code below for the display error during sending offline
-  if (!globals.online) {
-    getAccounts();
-  }
+  List<Widget> _buildForm(BuildContext context) {
     Form form = new Form(
       key: _formKey,
       child: new ListView(
@@ -364,6 +355,19 @@ List<Widget> _buildForm(BuildContext context) {
           new SizedBox(
             height: 30.0,
           ),
+
+          // When slow or no internet connection show this message
+          _isInternetSlow ?
+            Container(
+              alignment: Alignment.center,
+              padding: EdgeInsets.only(top: 250),
+              child: Text(
+                "You don't seem to have internet connection, or it's too slow. " 
+                "Make sure you're connected to internet and its fast enough to make this transaction.",
+                textAlign: TextAlign.center,
+              ), 
+            )
+          : // Another condition
           // When server is under maintenance show this message
           _isMaintenanceMode ?
             Container(
@@ -385,55 +389,7 @@ List<Widget> _buildForm(BuildContext context) {
                 textAlign: TextAlign.center,
               ),
             )
-          :  // Another condition
-          Visibility(
-          child: Container(
-              margin: const EdgeInsets.only(top: 5.0),
-              child: new ButtonTheme(
-                height: 60,
-                buttonColor: Colors.white,
-                child: new OutlineButton(
-                  borderSide: BorderSide(
-                    color: Colors.black
-                  ),
-                  child: const Text('Scan QR Code', style: TextStyle(fontSize: 18)),
-                  onPressed: scanBarcode
-                )
-              )
-            ),
-            visible: !_showForm,
-          ),
-          Visibility(
-            child: Container(
-              margin: const EdgeInsets.fromLTRB(0.0, 20.0, 0.0, 20.0),
-              child: Text(
-                "OR",
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 18.0,
-                  fontWeight: FontWeight.bold,
-                ),
-              )
-            ),
-            visible: !_showForm,
-          ),
-          Visibility(
-            child: Container(
-              margin: const EdgeInsets.only(top: 5.0),
-              child: new ButtonTheme(
-                height: 60,
-                buttonColor: Colors.white,
-                child: new OutlineButton(
-                  borderSide: BorderSide(
-                    color: Colors.black
-                  ),
-                  child: const Text('Send through Contact', style: TextStyle(fontSize: 18)),
-                  onPressed: () => Application.router.navigateTo(context, "/contactlist")
-                )
-              )
-            ),
-            visible: !_showForm,
-          ),
+          : // Another condition 
           _showForm ?
             Column(
               crossAxisAlignment: CrossAxisAlignment.center,
@@ -442,49 +398,49 @@ List<Widget> _buildForm(BuildContext context) {
                   height: 20.0,
                 ),
                 Visibility(
-                  child: new FormField(
-                    validator: (value){
-                      if (value == null) {
-                        return 'This field is required.';
-                      } else {
-                        return null;
-                      }
-                    },
-                    builder: (FormFieldState state) {
-                      return InputDecorator(
-                        decoration: InputDecoration(
-                          errorText: state.errorText,
-                        ),
-                        child: new DropdownButtonHideUnderline(
-                          child: new DropdownButton(
-                            hint: Text('Select Account'),
-                            iconEnabledColor: Colors.red,
-                            value: _sourceAccount,
-                            isDense: true,
-                            onChanged: (newVal){
-                              String accountId = newVal.split('::sep::')[0];
-                              String balance = newVal.split('::sep::')[1];
-                              String signature = newVal.split('::sep::')[2];
-                              String timestamp = newVal.split('::sep::')[3];
-                              setState(() {
-                                selectedPaytacaAccount = accountId;
-                                lastBalance = balance;
-                                lBalanceSignature = signature;
-                                lBalanceTime = timestamp;
-                                _sourceAccount = newVal;
-                                state.didChange(newVal);
-                              });
-                            },
-                            items: data.map((item) {
-                              return DropdownMenuItem(
-                                value: "${item['accountId']}::sep::${item['lastBalance']}::sep::${item['balanceSignature']}::sep::${item['timestamp']}",
-                                child: new Text("${item['accountName']} ( ${double.parse(item['computedBalance']).toStringAsFixed(2)} )"),
-                              );
-                            }).toList()
+                  child:  new FormField(
+                      validator: (value){
+                        if (value == null) {
+                          return 'This field is required.';
+                        } else {
+                          return null;
+                        }
+                      },
+                      builder: (FormFieldState state) {
+                        return InputDecorator(
+                          decoration: InputDecoration(
+                            errorText: state.errorText,
                           ),
-                        )
-                      );
-                    },
+                          child: new DropdownButtonHideUnderline(
+                            child: new DropdownButton(
+                              hint: Text('Select Account'),
+                              iconEnabledColor: Colors.red,
+                              value: _sourceAccount,
+                              isDense: true,
+                              onChanged: (newVal){
+                                String accountId = newVal.split('::sep::')[0];
+                                String balance = newVal.split('::sep::')[1];
+                                String signature = newVal.split('::sep::')[2];
+                                String timestamp = newVal.split('::sep::')[3];
+                                setState(() {
+                                  selectedPaytacaAccount = accountId;
+                                  lastBalance = balance;
+                                  lBalanceSignature = signature;
+                                  lBalanceTime = timestamp;
+                                  _sourceAccount = newVal;
+                                  state.didChange(newVal);
+                                });
+                              },
+                              items: data.map((item) {
+                                return DropdownMenuItem(
+                                  value: "${item['accountId']}::sep::${item['lastBalance']}::sep::${item['balanceSignature']}::sep::${item['timestamp']}",
+                                  child: new Text("${item['accountName']} ( ${double.parse(item['computedBalance']).toStringAsFixed(2)} )"),
+                                );
+                              }).toList()
+                            ),
+                          )
+                        );
+                      },
                   ),
                   visible: data != null,
                 ),
@@ -500,20 +456,6 @@ List<Widget> _buildForm(BuildContext context) {
                   ),
                   visible: data != null,
                 ),
-                _isInternetSlow ?
-                  Padding(
-                    padding: EdgeInsets.all(16.0),
-                    child: Text(
-                      "You don't seem to have internet connection, or it's too slow. " 
-                      "Switch your phone to Airplane mode to keep using the app in offline mode.",
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        color: Colors.red,
-                      ),
-                    ),
-                  )
-                :
-                new Container(),
                 new SizedBox(
                   height: 20.0,
                 ),

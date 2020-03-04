@@ -165,7 +165,7 @@ class ContactResponse {
       _contact['firstName'] = cont['Firstname'];
       _contact['lastName'] = cont['Lastname'];
       _contact['mobileNumber'] = cont['MobileNumber'];
-      _contact['transferAccount'] = cont['TransferAccount'];
+      _contact['transferAccount'] = cont['TransferAccounts'][0]['ID'];
     }
     return ContactResponse(
       success: response.data['success'], contact: _contact, error: ''
@@ -179,7 +179,7 @@ class ContactResponse {
       _contact['firstName'] = cont['Firstname'];
       _contact['lastName'] = cont['Lastname'];
       _contact['mobileNumber'] = cont['MobileNumber'];
-      _contact['transferAccount'] = cont['TransferAccount'];
+      _contact['transferAccount'] = cont['TransferAccounts'][0]['ID'];
     }
     return ContactResponse(
       success: false, contact: _contact, error: 'This contact is already in your list.'
@@ -193,10 +193,17 @@ class ContactResponse {
       _contact['firstName'] = cont['Firstname'];
       _contact['lastName'] = cont['Lastname'];
       _contact['mobileNumber'] = cont['MobileNumber'];
-      _contact['transferAccount'] = cont['TransferAccount'];
+      _contact['transferAccount'] = cont['TransferAccounts'][0]['ID'];
     }
     return ContactResponse(
       success: false, contact: _contact, error: 'Unregistered mobile number!'
+    );
+  }
+
+  factory ContactResponse.connectTimeoutError(){
+    return ContactResponse(
+      success: false, 
+      error: "You don't seem to have internet connection, or it's too slow. " 
     );
   }
 }

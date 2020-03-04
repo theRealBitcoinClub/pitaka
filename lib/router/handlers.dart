@@ -20,6 +20,7 @@ import '../views/settings.dart';
 import '../views/addPinCode.dart';
 import '../views/checkPinCode.dart';
 import '../views/contactList.dart';
+import '../views/sendContact.dart';
 
 
 var rootHandler = new Handler(
@@ -121,4 +122,9 @@ var checkPinCodeHandler = new Handler(
 var contactListHandler = new Handler(
     handlerFunc: (BuildContext context, Map<String, dynamic> params) {
       return new ContactListComponent();
+});
+
+var sendContactHandler = new Handler(
+    handlerFunc: (BuildContext context, Map<String, dynamic> params) {
+      return new SendContactComponent();
 });
