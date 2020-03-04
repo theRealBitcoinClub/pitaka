@@ -254,8 +254,6 @@ class SendContactComponentState extends State<SendContactComponent> {
     };
     var response = await transferAsset(payload);
 
-    print("The value of response in sendFunds() in sendContact.dart is: ${response.error}");
-
       // Catch app version compatibility
     if (response.error == "outdated_app_version") {
       showOutdatedAppVersionDialog(context);

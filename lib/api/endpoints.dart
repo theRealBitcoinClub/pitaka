@@ -116,10 +116,11 @@ Future<GenericCreateResponse> createUser(payload) async {
 // Endpoint for creating contact list
 // This is called from contactList.dart in _validateInputs()
 Future<ContactResponse> searchContact(payload) async {
+  var response;
   try {
     final String url = globals.baseUrl + '/api/users/search';
-    final response = await sendPostRequest(url, payload);
-    print("The value of response in seachContact() in endpoints.dart is: $response");
+    response = await sendPostRequest(url, payload);
+    
     if (response.data['success']) {
       return ContactResponse.fromResponse(response);
     }
@@ -129,9 +130,10 @@ Future<ContactResponse> searchContact(payload) async {
     else if ((response.data['error']) == 'unverified_mobile_number') {
       return ContactResponse.unregisteredMobileNumber(response);
     }
-    return ContactResponse.fromResponse(response);
   } catch (e) {
-    throw Exception(e);
+    if (response == "DioErrorType.CONNECT_TIMEOUT") {
+      return ContactResponse.connectTimeoutError();
+    }
   }
 }
 

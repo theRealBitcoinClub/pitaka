@@ -199,6 +199,13 @@ class ContactResponse {
       success: false, contact: _contact, error: 'Unregistered mobile number!'
     );
   }
+
+  factory ContactResponse.connectTimeoutError(){
+    return ContactResponse(
+      success: false, 
+      error: "You don't seem to have internet connection, or it's too slow. " 
+    );
+  }
 }
 
 // For contact list
