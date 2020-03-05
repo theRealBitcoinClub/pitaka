@@ -15,7 +15,6 @@ import '../../utils/helpers.dart';
 import 'package:flutter_datetime_picker/flutter_datetime_picker.dart';
 import 'package:pitaka/utils/database_helper.dart';
 import '../../utils/globals.dart' as globals;
-import 'package:passcode_screen/passcode_screen.dart';
 import 'package:passcode_screen/circle.dart';
 import 'package:passcode_screen/keyboard.dart';
 import 'package:easy_dialog/easy_dialog.dart';
@@ -74,8 +73,6 @@ class RegisterComponentState extends State<RegisterComponent> {
           stickyAuth: false);
     } on PlatformException catch (e) {
       if (e.code == auth_error.notAvailable) {
-        // TODO - Automatically authenticate if the phone does not have fingerprint auth
-        // Change this later to custom PIN code authentication
         authenticated = true;
       }
     }

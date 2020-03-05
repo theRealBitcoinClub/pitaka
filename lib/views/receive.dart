@@ -326,11 +326,11 @@ class ReceiveComponentState extends State<ReceiveComponent> {
             builder: (FormFieldState state) {
               return InputDecorator(
                 decoration: InputDecoration(
-                  labelText: 'Select Account',
+                  errorText: state.errorText,
                 ),
-
                 child: new DropdownButtonHideUnderline(
                   child: new DropdownButton(
+                    hint: Text('Select Account'),
                     items: data.map((item) {
                       return DropdownMenuItem(
                         value: item['accountId'],

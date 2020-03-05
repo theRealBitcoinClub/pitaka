@@ -1,17 +1,14 @@
 import 'package:flutter/material.dart';
 import '../components/drawer.dart';
-import '../views/app.dart';
-import '../api/endpoints.dart';
+
 
 class SettingsComponent extends StatefulWidget {
   @override
   State createState() => new SettingsComponentState();
   }
 
-
 class SettingsComponentState extends State<SettingsComponent> {
   String path = '/settings';
-
 
   Widget bodyFunc() {
     return new Container(
@@ -32,7 +29,6 @@ class SettingsComponentState extends State<SettingsComponent> {
 
   @override
   Widget build(BuildContext context) {
-    // TODO: implement build
     return Scaffold(
       appBar: AppBar(
         title: Text('Settings'),

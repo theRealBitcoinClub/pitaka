@@ -7,7 +7,6 @@ import 'package:flutter/services.dart';
 import 'package:local_auth/local_auth.dart';
 import '../views/app.dart';
 import '../utils/globals.dart' as globals;
-import '../utils/globals.dart';
 
 
 class LandingComponent extends StatefulWidget {

@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import '../../api/endpoints.dart';
 import '../../views/app.dart';
 import 'package:flutter_masked_text/flutter_masked_text.dart';
-import '../../utils/globals.dart' as globals;
 import '../../utils/dialog.dart';
 
 

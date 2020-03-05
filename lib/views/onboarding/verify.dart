@@ -4,7 +4,6 @@ import 'package:back_button_interceptor/back_button_interceptor.dart';
 import 'package:flutter/services.dart';
 import '../../api/endpoints.dart';
 import '../app.dart';
-import '../../utils/globals.dart' as globals;
 import '../../utils/dialog.dart';
 
 
@@ -147,22 +146,6 @@ class VerifyComponentState extends State<VerifyComponent> {
                   },
                   child: new Text('Submit'),
                 ),
-                // new SizedBox(
-                //   height: 30.0,
-                // ),
-                // new GestureDetector(
-                //   onTap: () {
-                //     print("Resend code...");
-                //   },
-                //   child: new Text(
-                //     'Did not receive it? Resend Code.',
-                //     textAlign: TextAlign.center,
-                //     style: TextStyle(
-                //       fontSize: 16.0,
-                //       color: Colors.blue,
-                //     )
-                //   )
-                // ),
                 new SizedBox(
                   height: 50.0,
                 )
@@ -189,30 +172,29 @@ class VerifyComponentState extends State<VerifyComponent> {
       );
       ws.add(modal);
     }
-
     return ws;
   }
 
   @override
   Widget build(BuildContext context) {
     return new Scaffold(
-        appBar: new AppBar(
-          title: new Text("Welcome to Paytaca"),
-          automaticallyImplyLeading: true,
-          centerTitle: true,
-          leading: new IconButton(
-            icon: new Icon(Icons.arrow_back, color: Colors.white),
-            onPressed: () {
-              Application.router
-                .navigateTo(context, "/onboarding/request");
-            }
-          ), 
-        ),
-        body: new Builder(builder: (BuildContext context) {
+      appBar: new AppBar(
+        title: new Text("Welcome to Paytaca"),
+        automaticallyImplyLeading: true,
+        centerTitle: true,
+        leading: new IconButton(
+          icon: new Icon(Icons.arrow_back, color: Colors.white),
+          onPressed: () {
+            Application.router
+              .navigateTo(context, "/onboarding/request");
+          }
+        ), 
+      ),
+      body: new Builder(builder: (BuildContext context) {
           _scaffoldContext = context;
           return new Stack(children: _buildOtpCodeForm(context));
         }
       )
-      );
+    );
   }
 }
