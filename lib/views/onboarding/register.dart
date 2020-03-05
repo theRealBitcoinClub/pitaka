@@ -9,16 +9,17 @@ import "package:hex/hex.dart";
 import 'package:intl/intl.dart';
 import 'dart:typed_data';
 import 'dart:async';
-import '../app.dart';
-import '../../api/endpoints.dart';
-import '../../utils/helpers.dart';
 import 'package:flutter_datetime_picker/flutter_datetime_picker.dart';
 import 'package:pitaka/utils/database_helper.dart';
-import '../../utils/globals.dart' as globals;
+import 'package:flutter_udid/flutter_udid.dart';
 import 'package:passcode_screen/circle.dart';
 import 'package:passcode_screen/keyboard.dart';
 import 'package:easy_dialog/easy_dialog.dart';
+import '../../api/endpoints.dart';
+import '../../utils/helpers.dart';
+import '../../utils/globals.dart' as globals;
 import '../../utils/dialog.dart';
+import '../app.dart';
 
 
 class User {
@@ -27,6 +28,7 @@ class User {
   String emailAddress;
   DateTime birthDate;
   String imei;
+  String udid;
 }
 
 class RegisterComponent extends StatefulWidget {
@@ -38,10 +40,22 @@ class RegisterComponent extends StatefulWidget {
 
 class RegisterComponentState extends State<RegisterComponent> {
   DatabaseHelper databaseHelper = DatabaseHelper();
-
+  User newUser = new User();
+  FocusNode focusNode = FocusNode();
+  BuildContext _scaffoldContext;
+  final LocalAuthentication auth = LocalAuthentication();
+  final _formKey = GlobalKey<FormState>();
+  var circleUIConfig = new CircleUIConfig();
+  var keyboardUIConfig = new KeyboardUIConfig();
   String iniPasscode = '';
-  bool checkBiometrics = false;
   String mobileNumber = "";
+  String publicKey;
+  String privateKey;
+  String udid;
+  bool authenticated = false;
+  bool checkBiometrics = false;
+  bool _termsChecked = false;
+  bool _submitting = false;
 
   @override
   void initState() {
@@ -60,17 +74,12 @@ class RegisterComponentState extends State<RegisterComponent> {
     return true;
   }
 
-  final LocalAuthentication auth = LocalAuthentication();
-  bool authenticated = false;
-  // final StreamController<bool> _verificationNotifier =
-  // StreamController<bool>.broadcast();
-
   Future<Null> _authenticate() async {
     try {
       authenticated = await auth.authenticateWithBiometrics(
-          localizedReason: 'Scan your fingerprint to authenticate',
-          useErrorDialogs: true,
-          stickyAuth: false);
+        localizedReason: 'Scan your fingerprint to authenticate',
+        useErrorDialogs: true,
+        stickyAuth: false);
     } on PlatformException catch (e) {
       if (e.code == auth_error.notAvailable) {
         authenticated = true;
@@ -78,9 +87,6 @@ class RegisterComponentState extends State<RegisterComponent> {
     }
     if (!mounted) return;
   }
-
-  String publicKey;
-  String privateKey;
 
   Future<Null> generateKeyPair(BuildContext context) async {
     final keyPair = await CryptoSign.generateKeyPair();
@@ -95,8 +101,15 @@ class RegisterComponentState extends State<RegisterComponent> {
     await globals.storage.write(key: "privateKey", value: privateKey);
   }
 
-  final _formKey = GlobalKey<FormState>();
-  User newUser = new User();
+  // Generate UDID
+  Future<Null> generateUdid(BuildContext context) async {
+    // Generate using the flutter_udid library
+    String udid = await FlutterUdid.consistentUdid;
+    // Call _authenticate()
+    await _authenticate();
+    // Store UDID in global storage
+    await globals.storage.write(key: "udid", value: udid);
+  }
 
   String validateName(String value) {
     if (value.length < 2)
@@ -133,14 +146,6 @@ class RegisterComponentState extends State<RegisterComponent> {
       return null;
     }
   }
-
-  BuildContext _scaffoldContext;
-  FocusNode focusNode = FocusNode();
-  bool _termsChecked = false;
-  bool _submitting = false;
-
-  var circleUIConfig = new CircleUIConfig();
-  var keyboardUIConfig = new KeyboardUIConfig();
 
   onDialogClose() {
     // Not use
@@ -190,7 +195,9 @@ class RegisterComponentState extends State<RegisterComponent> {
       if (_termsChecked) {
         // If all data are correct then save data to out variables
         _formKey.currentState.save();
+        // Generate KeyPair and UDID
         await generateKeyPair(context);
+        await generateUdid(context);
 
         if (authenticated == true) {
           setState(() {
@@ -206,14 +213,19 @@ class RegisterComponentState extends State<RegisterComponent> {
             "birthday": "2006-01-02",
             "email": newUser.emailAddress,
             "mobile_number": mobileNumber,
+            "udid": udid,
           };
+
           String txnHash = generateTransactionHash(userPayload);
-          print("The value of txnHash is: $txnHash");
+
+          print("The value of txnHash _validateInputs() in register.dart is: $txnHash");
+
           String signature = await signTransaction(txnHash, privateKey);
 
           userPayload["public_key"] = publicKey;
           userPayload["txn_hash"] = txnHash;
           userPayload["signature"] = signature;
+          
           var user = await createUser(userPayload);
           
           // Catch duplicate email address in the error
@@ -407,14 +419,15 @@ class RegisterComponentState extends State<RegisterComponent> {
   @override
   Widget build(BuildContext context) {
     return new Scaffold(
-        appBar: new AppBar(
-          title: new Text("Welcome to Paytaca"),
-          automaticallyImplyLeading: false,
-          centerTitle: true,
-        ),
-        body: new Builder(builder: (BuildContext context) {
-          _scaffoldContext = context;
-          return new Stack(children: _buildRegistrationForm(context));
-        }));
+      appBar: new AppBar(
+        title: new Text("Welcome to Paytaca"),
+        automaticallyImplyLeading: false,
+        centerTitle: true,
+      ),
+      body: new Builder(builder: (BuildContext context) {
+        _scaffoldContext = context;
+        return new Stack(children: _buildRegistrationForm(context));
+      })
+    );
   }
 }

@@ -3,20 +3,21 @@ import 'dart:convert';
 import 'package:archive/archive.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:intl/intl.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'package:uuid/uuid.dart';
+import 'package:crypto/crypto.dart';
 import '../components/bottomNavigation.dart';
 import '../components/drawer.dart';
 import '../api/endpoints.dart';
 import '../views/app.dart';
 import '../utils/helpers.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:intl/intl.dart';
-import 'package:permission_handler/permission_handler.dart';
 import '../utils/globals.dart' as globals;
 import '../utils/database_helper.dart';
-import 'package:uuid/uuid.dart';
 import '../utils/globals.dart';
 import '../utils/dialog.dart';
-import 'package:crypto/crypto.dart';
+
 
 
 class SendComponent extends StatefulWidget {
@@ -189,6 +190,7 @@ class SendComponentState extends State<SendComponent> {
     _submitting = true;
     String publicKey = await globals.storage.read(key: "publicKey");
     String privateKey = await globals.storage.read(key: "privateKey");
+    String udid = await globals.storage.read(key: "udid");
     SharedPreferences prefs = await SharedPreferences.getInstance();
     toAccount = destinationAccountId;
 
@@ -207,18 +209,21 @@ class SendComponentState extends State<SendComponent> {
     var now = new DateTime.now();
     var txnDateTime = DateTime.parse(now.toString());
     var _txnReadableDateTime = DateFormat('MMMM dd, yyyy  h:mm a').format(
-        DateTime.parse(now.toString())
+      DateTime.parse(now.toString())
     );
 
+    // Create the transaction string
     var txnstr = "$amount:-:$txnDateTime:-:"
-    "$selectedPaytacaAccount:-:$lBalance:-:$lSignedBalance:-:$lBalanceTimeStamp:-:$txnID:-:$_txnReadableDateTime:-:$isSenderOnline";
-
+      "$selectedPaytacaAccount:-:$lBalance:-:$lSignedBalance:-:$lBalanceTimeStamp:-:"
+      "$txnID:-:$_txnReadableDateTime:-:$isSenderOnline:-:$udid";
+    // Create the transaction hash
     var bytes = utf8.encode(txnstr);
-    var txnhash = sha256.convert(bytes).toString();         
-    print("The value of txnhash is: $txnhash");
+    var txnhash = sha256.convert(bytes).toString();
+
+    print("The value of txnhash in sendFund() in send.dart is: $txnhash");
     
     String signature = await signTransaction(txnhash, privateKey);
-    //String signatureForQR = await signTransaction(txnstr, privateKey);
+
     var qrcode = "$txnhash||$signature||$txnstr||$publicKey";
     prefs.setString("_txnQrCode", qrcode);
     prefs.setString("_txnDateTime", _txnReadableDateTime);
@@ -228,6 +233,7 @@ class SendComponentState extends State<SendComponent> {
     List<int> gzipBytes = new GZipEncoder().encode(stringBytes);
     String proofOfPayment = base64.encode(gzipBytes);
     prefs.setString("_txnProofCode", proofOfPayment);
+    // Create the payload
     var payload = {
       'from_account': selectedPaytacaAccount,
       'to_account': toAccount,
@@ -241,7 +247,9 @@ class SendComponentState extends State<SendComponent> {
       'proof_of_payment': proofOfPayment,
       'txn_str' : txnstr,
     };
-    print("The value of payload is: $payload");
+
+    print("The value of payload in sendFund() in send.dart is: $payload");
+
     var response = await transferAsset(payload);
       // Catch app version compatibility
     if (response.error == "outdated_app_version") {
@@ -329,24 +337,24 @@ class SendComponentState extends State<SendComponent> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(
-          title: Text('Send'),
-          actions: [
-            Padding(
-              padding: EdgeInsets.only(right: 20.0),
-              child: GestureDetector(
-                child: online ? new Icon(Icons.wifi): new Icon(Icons.signal_wifi_off)
-              ) 
-            )
-          ],
-          centerTitle: true,
-        ),
-        drawer: buildDrawer(context),
-        body: new Builder(builder: (BuildContext context) {
-          return new Stack(children: _buildForm(context));
-        }),
-        bottomNavigationBar: buildBottomNavigation(context, path)
-      );
+      appBar: AppBar(
+        title: Text('Send'),
+        actions: [
+          Padding(
+            padding: EdgeInsets.only(right: 20.0),
+            child: GestureDetector(
+              child: online ? new Icon(Icons.wifi): new Icon(Icons.signal_wifi_off)
+            ) 
+          )
+        ],
+        centerTitle: true,
+      ),
+      drawer: buildDrawer(context),
+      body: new Builder(builder: (BuildContext context) {
+        return new Stack(children: _buildForm(context));
+      }),
+      bottomNavigationBar: buildBottomNavigation(context, path)
+    );
   }
 
 bool disableSubmitButton = false;
