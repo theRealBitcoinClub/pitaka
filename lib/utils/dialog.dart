@@ -64,3 +64,51 @@ showOutdatedAppVersionDialog(context) {
     ]
   ).show(context, onDialogClose);
 }
+
+// Function that will redirect to Google Play Store 
+// to download the latest version of Paytaca app 
+_launchPaytacaURL() async {
+  const url = 'https://www.paytaca.com/';
+  if (await canLaunch(url)) {
+    await launch(url, forceWebView: true);
+  } else {
+    throw 'Could not launch $url';
+  }
+}
+
+// Alert dialog for unregistered device ID
+showUnregisteredUdidDialog(context) {
+  EasyDialog(
+    title: Text(
+      "Unregistered Device ID!",
+      style: TextStyle(fontWeight: FontWeight.bold),
+      textScaleFactor: 1.2,
+    ),
+    description: Text(
+      "Your phone might have been compromised! Please contact Paytaca for assistance and support.",
+      textScaleFactor: 1.1,
+      textAlign: TextAlign.center,
+    ),
+    height: 160,
+    closeButton: false,
+    contentList: [
+      Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: <Widget>[
+          new FlatButton(
+            padding: EdgeInsets.all(8),
+            textColor: Colors.lightBlue,
+            onPressed: () {
+              _launchPaytacaURL();
+              SystemNavigator.pop();
+            },
+            child: new Text("Ok",
+              textScaleFactor: 1.2,
+              textAlign: TextAlign.center,
+            ),
+          ),
+        ],
+      )
+    ]
+  ).show(context, onDialogClose);
+}

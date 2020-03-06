@@ -1,15 +1,16 @@
 import 'dart:async';
-import 'package:flutter/material.dart';
-import '../components/drawer.dart';
-import '../components/bottomNavigation.dart';
-import '../components/homeTabs.dart' as hometabs;
-import 'package:intl/intl.dart';
-import '../api/endpoints.dart';
-import '../utils/globals.dart' as globals;
-import '../utils/database_helper.dart';
-import '../utils/globals.dart';
 import 'receive.dart';
+import 'package:intl/intl.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_udid/flutter_udid.dart';
 import '../utils/dialog.dart';
+import '../api/endpoints.dart';
+import '../utils/globals.dart';
+import '../components/drawer.dart';
+import '../utils/database_helper.dart';
+import '../components/bottomNavigation.dart';
+import '../utils/globals.dart' as globals;
+import '../components/homeTabs.dart' as hometabs;
 
 
 class HomeComponent extends StatefulWidget {
@@ -18,12 +19,14 @@ class HomeComponent extends StatefulWidget {
 }
 
 class HomeComponentState extends State<HomeComponent> {
-  String path = "/home";
-  bool online = globals.online;
-  bool syncing = globals.syncing;
-  final formatCurrency = new NumberFormat.currency(symbol: 'PHP ');
   DatabaseHelper databaseHelper = DatabaseHelper();
   StreamSubscription _connectionChangeStream;
+  final formatCurrency = new NumberFormat.currency(symbol: 'PHP ');
+  String path = "/home";
+  String storedUdid;
+  String freshUdid;
+  bool online = globals.online;
+  bool syncing = globals.syncing;
   bool isOffline = false;
   bool _executeFuture = false;
   bool _popDialog = false;
@@ -38,6 +41,19 @@ class HomeComponentState extends State<HomeComponent> {
     ReceiveComponentState comp = new ReceiveComponentState();
 
     comp.getAccounts();
+
+    _checkUdid();
+  }
+
+  void _checkUdid() async {
+    storedUdid = await globals.storage.read(key: "udid");
+    freshUdid = await FlutterUdid.consistentUdid;
+    print("The value of UDID is: $freshUdid");
+    // freshUdid = '14490a8175339cb79cca9cb169644cb75354c2706e528d70c6c646621829a655';
+    // If storedUdid does not match with freshUdid, show undismissible dialog
+    if (storedUdid != freshUdid) {
+      showUnregisteredUdidDialog(context);
+    }
   }
 
   void connectionChanged(dynamic hasConnection) {

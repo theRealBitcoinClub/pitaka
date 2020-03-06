@@ -101,12 +101,11 @@ class RegisterComponentState extends State<RegisterComponent> {
     await globals.storage.write(key: "privateKey", value: privateKey);
   }
 
-  // Generate UDID
+  // Generate UDID to be stored
   Future<Null> generateUdid(BuildContext context) async {
     // Generate using the flutter_udid library
     String udid = await FlutterUdid.consistentUdid;
-    // Call _authenticate()
-    await _authenticate();
+    print("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ $udid @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
     // Store UDID in global storage
     await globals.storage.write(key: "udid", value: udid);
   }
@@ -213,18 +212,15 @@ class RegisterComponentState extends State<RegisterComponent> {
             "birthday": "2006-01-02",
             "email": newUser.emailAddress,
             "mobile_number": mobileNumber,
-            "udid": udid,
           };
 
           String txnHash = generateTransactionHash(userPayload);
-
-          print("The value of txnHash _validateInputs() in register.dart is: $txnHash");
-
           String signature = await signTransaction(txnHash, privateKey);
 
           userPayload["public_key"] = publicKey;
           userPayload["txn_hash"] = txnHash;
           userPayload["signature"] = signature;
+          userPayload["device_id"] = udid;
           
           var user = await createUser(userPayload);
           
