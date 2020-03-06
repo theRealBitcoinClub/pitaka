@@ -141,6 +141,24 @@ class BalancesResponse {
     );
   }
 
+  factory BalancesResponse.invalidDeviceIdError(Response response) {
+    List<Balance> _balances = [];
+    if (response.data['balances'] != null) {
+      for (final bal in response.data['balances']) {
+        var balanceObj = new Balance();
+        balanceObj.accountName = bal['AccountName'];
+        double balance = bal['Balance'].toDouble();
+        balanceObj.balance = balance;
+        balanceObj.accountId = bal['AccountID'];
+        balanceObj.timestamp = response.data['timestamp'].toString();
+        balanceObj.signature = bal['Signature'];
+        _balances.add(balanceObj);
+      }
+    }
+    return BalancesResponse(
+      success: response.data['success'], balances: _balances, error: 'invalid_device_id'
+    );
+  }
 }
 
 // For contact list
@@ -275,6 +293,27 @@ class TransactionsResponse {
       }
     return TransactionsResponse(
       success: response.data['success'], transactions: _transactions);
+  }
+
+   factory TransactionsResponse.invalidDeviceIdError(Response response) {
+    List<Transaction> _transactions = [];
+    if (response.data['transactions'] != null) {
+        for (final txn in response.data['transactions']) {
+          var transObj = new Transaction();
+          transObj.mode = txn['Mode'];
+          transObj.amount = txn['Amount'].toDouble();
+          transObj.accountID = txn['AccountID'];
+          transObj.timestamp = txn['Timestamp'].toString();
+          transObj.timeslot = DateTime.tryParse(transObj.timestamp).toLocal();
+          transObj.time = DateFormat('y/M/d hh:mm a').format(transObj.timeslot).toString();
+          transObj.txnID = txn['TransactionID'];
+          transObj.paymentProof = txn['ProofOfPayment'];
+          _transactions.add(transObj);
+        }
+      }
+    return TransactionsResponse(
+      success: response.data['success'], transactions: _transactions, error: 'invalid_device_id'
+    );
   }
 
   factory TransactionsResponse.fromDatabase(List transactions) {

@@ -104,7 +104,7 @@ class RegisterComponentState extends State<RegisterComponent> {
   // Generate UDID to be stored
   Future<Null> generateUdid(BuildContext context) async {
     // Generate using the flutter_udid library
-    String udid = await FlutterUdid.consistentUdid;
+    udid = await FlutterUdid.consistentUdid;
     print("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ $udid @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
     // Store UDID in global storage
     await globals.storage.write(key: "udid", value: udid);

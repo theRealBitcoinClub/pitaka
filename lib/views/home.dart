@@ -48,7 +48,7 @@ class HomeComponentState extends State<HomeComponent> {
   void _checkUdid() async {
     storedUdid = await globals.storage.read(key: "udid");
     freshUdid = await FlutterUdid.consistentUdid;
-    print("The value of UDID is: $freshUdid");
+    print("The value of UDID in _checkUdid() in home.dart is: $freshUdid");
     // freshUdid = '14490a8175339cb79cca9cb169644cb75354c2706e528d70c6c646621829a655';
     // If storedUdid does not match with freshUdid, show undismissible dialog
     if (storedUdid != freshUdid) {
@@ -128,6 +128,7 @@ class HomeComponentState extends State<HomeComponent> {
                   builder: (BuildContext context, AsyncSnapshot snapshot) {
                     if (snapshot.hasData) {
                       if (snapshot.data != null) {
+                        print("The value of snapshot.data.error is: ${snapshot.data.error}");
                         var balances = snapshot.data.balances;
                         if (snapshot.data.success) {
                           return hometabs.buildBalancesList(balances);
@@ -136,7 +137,7 @@ class HomeComponentState extends State<HomeComponent> {
                         // ANDing with globals.online prevents showing the dialog 
                         // during manually swithing to airplane mode
                         else if (snapshot.data.error == 'connect_timeout' && globals.online) {
-                          print("The value of snapshot.data in getting balances is: ${snapshot.data.error}");
+                          //print("The value of snapshot.data in getting balances is: ${snapshot.data.error}");
                           return Padding(
                             padding: EdgeInsets.all(16.0),
                             child: Text(
@@ -169,6 +170,17 @@ class HomeComponentState extends State<HomeComponent> {
                               showOutdatedAppVersionDialog(context);
                             }
                           });
+                        }
+                        // When invalid device ID error, show dialog
+                        // ANDing with globals.online prevents showing the dialog 
+                        // during manually swithing to airplane mode
+                        else if (snapshot.data.error == 'invalid_device_id' && globals.online) {
+                          Future.delayed(Duration(milliseconds: 100), () async {
+                            _executeFuture = true;
+                            if(_executeFuture){
+                              showUnregisteredUdidDialog(context);
+                            }
+                          });
                         } 
                         else {
                           return new CircularProgressIndicator();
@@ -179,6 +191,7 @@ class HomeComponentState extends State<HomeComponent> {
                     } else {
                       return new CircularProgressIndicator();
                     }
+                    return new Container();
                   }
                 )
               );
@@ -231,6 +244,17 @@ class HomeComponentState extends State<HomeComponent> {
                               showOutdatedAppVersionDialog(context);
                             }
                           });
+                        }
+                        // When invalid device ID error, show dialog
+                        // ANDing with globals.online prevents showing the dialog 
+                        // during manually swithing to airplane mode
+                        else if (snapshot.data.error == 'invalid_device_id' && globals.online) {
+                          Future.delayed(Duration(milliseconds: 100), () async {
+                            _executeFuture = true;
+                            if(_executeFuture){
+                              showUnregisteredUdidDialog(context);
+                            }
+                          });
                         } 
                         else {
                           return Text('No transactions to display');
@@ -242,6 +266,7 @@ class HomeComponentState extends State<HomeComponent> {
                       // return new Container();
                       return new CircularProgressIndicator();
                     }
+                    return new Container();
                   }
                 )
               );

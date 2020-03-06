@@ -3,6 +3,7 @@ import 'package:dio/dio.dart';
 import 'package:cookie_jar/cookie_jar.dart';
 import 'package:dio_flutter_transformer/dio_flutter_transformer.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_udid/flutter_udid.dart';
 import 'package:path_provider/path_provider.dart';
 import 'dart:async';
 import 'responses.dart';
@@ -51,12 +52,15 @@ Future<dynamic> sendGetRequest(url) async {
   // To be use to re-login user when session expires
   String publicKey = await globals.storage.read(key: "publicKey");
   String privateKey = await globals.storage.read(key: "privateKey");
+  // Get fresh UDID and include in the headers
+  String udid = await FlutterUdid.consistentUdid;
 
   // For CircularProgressIndicator
   globals.loading = true;
 
   var payload = {
     'public_key': globals.serverPublicKey,
+    'device_id': udid,
   };
   var dio = new Dio();
   dio.options.connectTimeout = 30000;  // Set connection timeout for 30 seconds
@@ -100,10 +104,12 @@ Future<dynamic> sendGetRequest(url) async {
     }
   }
   globals.loading = false;
+  print("The value of response in sendGetRequest() in endpoints.dart is: $response");
   return response;
 }
 
 Future<GenericCreateResponse> createUser(payload) async {
+  print("The value of payload in createUser() in endpoints.dart is: $payload");
   try {
     final String url = globals.baseUrl + '/api/users/create';
     final response = await sendPostRequest(url, payload);
@@ -308,7 +314,11 @@ Future<BalancesResponse> getOnlineBalances() async {
   var response;
   try {
     response = await sendGetRequest(url);
-    
+    // Check for invalid device ID error
+    if (response.data['error'] == "invalid_device_id") {
+      print("The value of response in getOnlineBalances() in endpoints.dart is: $response");
+      return BalancesResponse.invalidDeviceIdError(response);
+    }
     // Store account details in keychain
     List<String> _accounts = [];
     List<Balance> _balances = [];
@@ -355,6 +365,11 @@ Future<TransactionsResponse> getOnlineTransactions() async {
   var response;
   try {
     response = await sendGetRequest(url);
+    // Check for invalid device ID error
+    if (response.data['error'] == "invalid_device_id") {
+      print("The value of response in getOnlineTransactions() in endpoints.dart is: $response");
+      return TransactionsResponse.invalidDeviceIdError(response);
+    }
     if (response.data['success']) {
       return TransactionsResponse.fromResponse(response);
     }
