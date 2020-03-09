@@ -24,11 +24,14 @@ class SendContactComponent extends StatefulWidget {
 }
 
 class SendContactComponentState extends State<SendContactComponent> {
-  String path = '/send';
-  int accountIndex = 0;
-  bool _submitting = false;
+  DatabaseHelper databaseHelper = DatabaseHelper();
+  StreamSubscription _connectionChangeStream;
+  static bool _errorFound = false;
+  static String _errorMessage;
   static double sendAmount;
+  static List data = List();
   final _formKey = GlobalKey<FormState>();
+  String path = '/send';
   String selectedPaytacaAccount;
   String _sourceAccount;
   String lastBalance;
@@ -37,23 +40,20 @@ class SendContactComponentState extends State<SendContactComponent> {
   String txnID;
   String qrCode;
   String toAccount;
-  static List data = List();
-  bool validCode = false;
-  static bool _errorFound = false;
-  static String _errorMessage;
-  bool online = globals.online;
-  DatabaseHelper databaseHelper = DatabaseHelper();
-  StreamSubscription _connectionChangeStream;
-  bool isOffline = false;
+  String destinationAccountId;
   String newVal;
+  bool validCode = false;
+  bool online = globals.online;
+  bool isOffline = false;
   bool maxOfflineTime = globals.maxOfflineTime;
-  int offlineTime = globals.offlineTime;
   bool isSenderOnline;  // Variable for marking if the sender is online or offline
   bool _isInternetSlow = false;
   bool _showForm = true;
-  String destinationAccountId;
   bool _isMaintenanceMode = false;
   bool disableSubmitButton = false;
+  bool _submitting = false;
+  int accountIndex = 0;
+  int offlineTime = globals.offlineTime;
   
   Future<List> getAccounts() async {
     // Get accounts stored in shared preferences
@@ -85,7 +85,7 @@ class SendContactComponentState extends State<SendContactComponent> {
         _accounts.add(acctObj);
       }
     }
-    print("The value of data is: $data");
+    //print("The value of data is: $data");
     data = _accounts;
     return _accounts;
   }
@@ -253,6 +253,11 @@ class SendContactComponentState extends State<SendContactComponent> {
       'txn_str' : txnstr,
     };
     var response = await transferAsset(payload);
+
+    // Catch invalid device ID error
+    if (response.error == "invalid_device_id") {
+      showUnregisteredUdidDialog(context);
+    }
 
       // Catch app version compatibility
     if (response.error == "outdated_app_version") {
@@ -448,7 +453,7 @@ class SendContactComponentState extends State<SendContactComponent> {
                   child: new TextFormField(
                     validator: validateAmount,
                     decoration: new InputDecoration(labelText: "Enter the amount"),
-                    keyboardType: TextInputType.number,
+                    keyboardType: TextInputType.phone,
                     onSaved: (value) {
                       sendAmount = null;
                       sendAmount = double.parse(value);

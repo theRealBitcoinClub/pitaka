@@ -8,6 +8,7 @@ import 'package:intl/intl.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:uuid/uuid.dart';
 import 'package:crypto/crypto.dart';
+import 'package:flutter_udid/flutter_udid.dart';
 import '../components/bottomNavigation.dart';
 import '../components/drawer.dart';
 import '../api/endpoints.dart';
@@ -17,7 +18,6 @@ import '../utils/globals.dart' as globals;
 import '../utils/database_helper.dart';
 import '../utils/globals.dart';
 import '../utils/dialog.dart';
-
 
 
 class SendComponent extends StatefulWidget {
@@ -40,6 +40,8 @@ class SendComponentState extends State<SendComponent> {
   String txnID;
   String qrCode;
   String toAccount;
+  String destinationAccountId;
+  String newVal;
   static List data = List();
   bool validCode = false;
   static bool _errorFound = false;
@@ -48,13 +50,11 @@ class SendComponentState extends State<SendComponent> {
   DatabaseHelper databaseHelper = DatabaseHelper();
   StreamSubscription _connectionChangeStream;
   bool isOffline = false;
-  String newVal;
   bool maxOfflineTime = globals.maxOfflineTime;
   int offlineTime = globals.offlineTime;
   bool isSenderOnline;  // Variable for marking if the sender is online or offline
   bool _isInternetSlow = false;
   bool _showForm = false;
-  String destinationAccountId;
   bool _isMaintenanceMode = false;
   
   Future<List> getAccounts() async {
@@ -187,10 +187,14 @@ class SendComponentState extends State<SendComponent> {
     String lSignedBalance,
     String txnID,
     String lBalanceTimeStamp) async {
+
     _submitting = true;
+    // Get keypair from global storage
     String publicKey = await globals.storage.read(key: "publicKey");
     String privateKey = await globals.storage.read(key: "privateKey");
-    String udid = await globals.storage.read(key: "udid");
+    // Create fresh UDID from flutter_udid library
+    String udid = await FlutterUdid.consistentUdid;
+
     SharedPreferences prefs = await SharedPreferences.getInstance();
     toAccount = destinationAccountId;
 
@@ -215,7 +219,7 @@ class SendComponentState extends State<SendComponent> {
     // Create the transaction string
     var txnstr = "$amount:-:$txnDateTime:-:"
       "$selectedPaytacaAccount:-:$lBalance:-:$lSignedBalance:-:$lBalanceTimeStamp:-:"
-      "$txnID:-:$_txnReadableDateTime:-:$isSenderOnline:-:$udid";
+      "$txnID:-:$_txnReadableDateTime:-:$isSenderOnline";
     // Create the transaction hash
     var bytes = utf8.encode(txnstr);
     var txnhash = sha256.convert(bytes).toString();
@@ -246,12 +250,19 @@ class SendComponentState extends State<SendComponent> {
       'transaction_datetime': _txnReadableDateTime,
       'proof_of_payment': proofOfPayment,
       'txn_str' : txnstr,
+      'device_id': "14490a8175339cb79cca9cb169644cb75354c2706e528d70c6c646621829a655",
     };
 
-    print("The value of payload in sendFund() in send.dart is: $payload");
-
     var response = await transferAsset(payload);
-      // Catch app version compatibility
+
+    print("The value of response in sendFund() in send.dart is: ${response.error}");
+
+    // Catch invalid device ID error
+    if (response.error == "invalid_device_id") {
+      showUnregisteredUdidDialog(context);
+    }
+
+    // Catch app version compatibility
     if (response.error == "outdated_app_version") {
       showOutdatedAppVersionDialog(context);
     }
@@ -500,7 +511,7 @@ List<Widget> _buildForm(BuildContext context) {
                   child: new TextFormField(
                     validator: validateAmount,
                     decoration: new InputDecoration(labelText: "Enter the amount"),
-                    keyboardType: TextInputType.number,
+                    keyboardType: TextInputType.phone,
                     onSaved: (value) {
                       sendAmount = null;
                       sendAmount = double.parse(value);

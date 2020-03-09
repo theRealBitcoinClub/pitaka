@@ -28,6 +28,10 @@ class PlainSuccessResponse {
     return PlainSuccessResponse(success: response.data['success'], error: response.data['error']);
   }
 
+  factory PlainSuccessResponse.invalidDeviceIdError(Response response) {
+    return PlainSuccessResponse(success: response.data['success'], error: response.data['error']);
+  }
+
   factory PlainSuccessResponse.toDatabase(){
     return PlainSuccessResponse(success: true, error: '');
   }

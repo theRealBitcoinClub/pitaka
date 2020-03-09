@@ -19,10 +19,12 @@ Future<dynamic> sendPostRequest(url, payload) async {
   var dio = new Dio();
   dio.options.connectTimeout = 30000;  // Set connection timeout for 30 seconds
   dio.transformer = new FlutterTransformer();
+
   var tempDir = await getTemporaryDirectory();
   String tempPath = tempDir.path;
   CookieJar cj = new PersistCookieJar(dir: tempPath);
   dio.interceptors.add(CookieManager(cj));
+  
   Response response;
   try {
     response = await dio.post(
@@ -109,7 +111,7 @@ Future<dynamic> sendGetRequest(url) async {
 }
 
 Future<GenericCreateResponse> createUser(payload) async {
-  print("The value of payload in createUser() in endpoints.dart is: $payload");
+  //print("The value of payload in createUser() in endpoints.dart is: $payload");
   try {
     final String url = globals.baseUrl + '/api/users/create';
     final response = await sendPostRequest(url, payload);
@@ -141,6 +143,7 @@ Future<ContactResponse> searchContact(payload) async {
       return ContactResponse.connectTimeoutError();
     }
   }
+  return response;
 }
 
 // Endpoint for getting contact list from database
@@ -316,7 +319,6 @@ Future<BalancesResponse> getOnlineBalances() async {
     response = await sendGetRequest(url);
     // Check for invalid device ID error
     if (response.data['error'] == "invalid_device_id") {
-      print("The value of response in getOnlineBalances() in endpoints.dart is: $response");
       return BalancesResponse.invalidDeviceIdError(response);
     }
     // Store account details in keychain
@@ -367,7 +369,6 @@ Future<TransactionsResponse> getOnlineTransactions() async {
     response = await sendGetRequest(url);
     // Check for invalid device ID error
     if (response.data['error'] == "invalid_device_id") {
-      print("The value of response in getOnlineTransactions() in endpoints.dart is: $response");
       return TransactionsResponse.invalidDeviceIdError(response);
     }
     if (response.data['success']) {
@@ -415,6 +416,12 @@ Future<PlainSuccessResponse> transferAsset(Map payload) async {
     // Catch the CONNECT_TIMEOUT error
     try {
       response = await sendPostRequest(url, payload);
+
+      // Check for invalid device ID error
+      if (response.data['error'] == "invalid_device_id") {
+        return PlainSuccessResponse.invalidDeviceIdError(response);
+      }
+
       if (response.statusCode == 200) {
         return PlainSuccessResponse.fromResponse(response);
       } else {
@@ -432,6 +439,7 @@ Future<PlainSuccessResponse> transferAsset(Map payload) async {
     await databaseHelper.offLineTransfer(payload);
     return PlainSuccessResponse.toDatabase();
   } 
+  return response;
 }
 
 // This is called in "authenticate.dart" in sendAuthentication()

@@ -88,6 +88,7 @@ showUnregisteredUdidDialog(context) {
       "Your phone might have been compromised! Please contact Paytaca for assistance and support.",
       textScaleFactor: 1.1,
       textAlign: TextAlign.center,
+      style: TextStyle(color: Colors.red),
     ),
     height: 160,
     closeButton: false,
