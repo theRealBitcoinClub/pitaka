@@ -70,46 +70,65 @@ showOutdatedAppVersionDialog(context) {
 _launchPaytacaURL() async {
   const url = 'https://www.paytaca.com/';
   if (await canLaunch(url)) {
-    await launch(url, forceWebView: true);
+    await launch(url, forceWebView: false);
   } else {
     throw 'Could not launch $url';
   }
 }
 
-// Alert dialog for unregistered device ID
 showUnregisteredUdidDialog(context) {
-  EasyDialog(
-    title: Text(
-      "Unregistered Device ID!",
-      style: TextStyle(fontWeight: FontWeight.bold),
-      textScaleFactor: 1.2,
-    ),
-    description: Text(
-      "Your phone might have been compromised! Please contact Paytaca for assistance and support.",
-      textScaleFactor: 1.1,
-      textAlign: TextAlign.center,
-      style: TextStyle(color: Colors.red),
-    ),
-    height: 160,
-    closeButton: false,
-    contentList: [
-      Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: <Widget>[
-          new FlatButton(
-            padding: EdgeInsets.all(8),
-            textColor: Colors.lightBlue,
-            onPressed: () {
-              _launchPaytacaURL();
-              SystemNavigator.pop();
-            },
-            child: new Text("Ok",
-              textScaleFactor: 1.2,
-              textAlign: TextAlign.center,
+  showDialog(
+    context: context,
+    builder: (context) => WillPopScope(
+      onWillPop: () async => false,
+      child: AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(10.0))),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            Container(
+              child: Text(
+                "Unregistered Device ID!",
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 20.0,
+                ),
+              ),
             ),
-          ),
-        ],
-      )
-    ]
-  ).show(context, onDialogClose);
+            new SizedBox(
+              height: 15.0,
+            ),
+            Container(
+              child: Text(
+                "Your phone might have been compromised! "
+                "Please contact Paytaca for assistance and support.",
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: Colors.red,
+                ),
+              ),
+            ),
+            Container(
+              child: new FlatButton(
+                child: new Text(
+                  "OK",
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: Colors.blue,
+                    fontSize: 16.0,
+                  ),
+                ),
+                onPressed: () {
+                  _launchPaytacaURL();
+                  SystemNavigator.pop();
+                },
+              )
+            )
+          ]
+        )
+      ),
+    ),
+  );
 }
