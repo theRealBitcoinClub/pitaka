@@ -26,12 +26,15 @@ class SendComponent extends StatefulWidget {
 }
 
 class SendComponentState extends State<SendComponent> {
+  DatabaseHelper databaseHelper = DatabaseHelper();
+  StreamSubscription _connectionChangeStream;
+  static bool _errorFound = false;
+  static String _errorMessage;
+  static double sendAmount;
+  static List data = List();
+  final _formKey = GlobalKey<FormState>();
   String _barcodeString = '';
   String path = '/send';
-  int accountIndex = 0;
-  bool _submitting = false;
-  static double sendAmount;
-  final _formKey = GlobalKey<FormState>();
   String selectedPaytacaAccount;
   String _sourceAccount;
   String lastBalance;
@@ -42,20 +45,18 @@ class SendComponentState extends State<SendComponent> {
   String toAccount;
   String destinationAccountId;
   String newVal;
-  static List data = List();
   bool validCode = false;
-  static bool _errorFound = false;
-  static String _errorMessage;
   bool online = globals.online;
-  DatabaseHelper databaseHelper = DatabaseHelper();
-  StreamSubscription _connectionChangeStream;
   bool isOffline = false;
   bool maxOfflineTime = globals.maxOfflineTime;
-  int offlineTime = globals.offlineTime;
   bool isSenderOnline;  // Variable for marking if the sender is online or offline
   bool _isInternetSlow = false;
   bool _showForm = false;
   bool _isMaintenanceMode = false;
+  bool disableSubmitButton = false;
+  bool _submitting = false;
+  int accountIndex = 0;
+  int offlineTime = globals.offlineTime;
   
   Future<List> getAccounts() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -250,12 +251,10 @@ class SendComponentState extends State<SendComponent> {
       'transaction_datetime': _txnReadableDateTime,
       'proof_of_payment': proofOfPayment,
       'txn_str' : txnstr,
-      'device_id': "14490a8175339cb79cca9cb169644cb75354c2706e528d70c6c646621829a655",
+      'device_id': udid,
     };
 
     var response = await transferAsset(payload);
-
-    print("The value of response in sendFund() in send.dart is: ${response.error}");
 
     // Catch invalid device ID error
     if (response.error == "invalid_device_id") {
@@ -368,13 +367,11 @@ class SendComponentState extends State<SendComponent> {
     );
   }
 
-bool disableSubmitButton = false;
-
-List<Widget> _buildForm(BuildContext context) {
-  // Added the code below for the display error during sending offline
-  if (!globals.online) {
-    getAccounts();
-  }
+  List<Widget> _buildForm(BuildContext context) {
+    // Added the code below for the display error during sending offline
+    if (!globals.online) {
+      getAccounts();
+    }
     Form form = new Form(
       key: _formKey,
       child: new ListView(

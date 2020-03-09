@@ -1,21 +1,23 @@
 import 'dart:async';
 import 'dart:convert';
+import 'package:uuid/uuid.dart';
 import 'package:archive/archive.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+import 'package:crypto/crypto.dart';
+import 'package:flutter/scheduler.dart';
+import 'package:flutter_udid/flutter_udid.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../components/bottomNavigation.dart';
 import '../components/drawer.dart';
 import '../api/endpoints.dart';
 import '../views/app.dart';
 import '../utils/helpers.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:intl/intl.dart';
-import '../utils/globals.dart' as globals;
-import '../utils/database_helper.dart';
-import 'package:uuid/uuid.dart';
 import '../utils/globals.dart';
 import '../utils/dialog.dart';
-import 'package:crypto/crypto.dart';
-import 'package:flutter/scheduler.dart';
+import '../utils/database_helper.dart';
+import '../utils/globals.dart' as globals;
+
 
 
 class SendContactComponent extends StatefulWidget {
@@ -197,9 +199,13 @@ class SendContactComponentState extends State<SendContactComponent> {
     String lSignedBalance,
     String txnID,
     String lBalanceTimeStamp) async {
+
     _submitting = true;
+    // Get keypair from global storage
     String publicKey = await globals.storage.read(key: "publicKey");
     String privateKey = await globals.storage.read(key: "privateKey");
+    // Create fresh UDID from flutter_udid library
+    String udid = await FlutterUdid.consistentUdid;
     SharedPreferences prefs = await SharedPreferences.getInstance();
     toAccount = destinationAccountId;
 
@@ -251,6 +257,7 @@ class SendContactComponentState extends State<SendContactComponent> {
       'transaction_datetime': _txnReadableDateTime,
       'proof_of_payment': proofOfPayment,
       'txn_str' : txnstr,
+      'device_id': udid,
     };
     var response = await transferAsset(payload);
 
