@@ -64,3 +64,71 @@ showOutdatedAppVersionDialog(context) {
     ]
   ).show(context, onDialogClose);
 }
+
+// Function that will redirect to Google Play Store 
+// to download the latest version of Paytaca app 
+_launchPaytacaURL() async {
+  const url = 'https://www.paytaca.com/';
+  if (await canLaunch(url)) {
+    await launch(url, forceWebView: false);
+  } else {
+    throw 'Could not launch $url';
+  }
+}
+
+showUnregisteredUdidDialog(context) {
+  showDialog(
+    context: context,
+    builder: (context) => WillPopScope(
+      onWillPop: () async => false,
+      child: AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(10.0))),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            Container(
+              child: Text(
+                "Unregistered Device ID!",
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 20.0,
+                ),
+              ),
+            ),
+            new SizedBox(
+              height: 15.0,
+            ),
+            Container(
+              child: Text(
+                "Your phone might have been compromised! "
+                "Please contact Paytaca for assistance and support.",
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: Colors.red,
+                ),
+              ),
+            ),
+            Container(
+              child: new FlatButton(
+                child: new Text(
+                  "OK",
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: Colors.blue,
+                    fontSize: 16.0,
+                  ),
+                ),
+                onPressed: () {
+                  _launchPaytacaURL();
+                  SystemNavigator.pop();
+                },
+              )
+            )
+          ]
+        )
+      ),
+    ),
+  );
+}

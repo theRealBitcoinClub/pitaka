@@ -1,21 +1,23 @@
 import 'dart:async';
 import 'dart:convert';
+import 'package:uuid/uuid.dart';
 import 'package:archive/archive.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+import 'package:crypto/crypto.dart';
+import 'package:flutter/scheduler.dart';
+import 'package:flutter_udid/flutter_udid.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../components/bottomNavigation.dart';
 import '../components/drawer.dart';
 import '../api/endpoints.dart';
 import '../views/app.dart';
 import '../utils/helpers.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:intl/intl.dart';
-import '../utils/globals.dart' as globals;
-import '../utils/database_helper.dart';
-import 'package:uuid/uuid.dart';
 import '../utils/globals.dart';
 import '../utils/dialog.dart';
-import 'package:crypto/crypto.dart';
-import 'package:flutter/scheduler.dart';
+import '../utils/database_helper.dart';
+import '../utils/globals.dart' as globals;
+
 
 
 class SendContactComponent extends StatefulWidget {
@@ -24,11 +26,14 @@ class SendContactComponent extends StatefulWidget {
 }
 
 class SendContactComponentState extends State<SendContactComponent> {
-  String path = '/send';
-  int accountIndex = 0;
-  bool _submitting = false;
+  DatabaseHelper databaseHelper = DatabaseHelper();
+  StreamSubscription _connectionChangeStream;
+  static bool _errorFound = false;
+  static String _errorMessage;
   static double sendAmount;
+  static List data = List();
   final _formKey = GlobalKey<FormState>();
+  String path = '/send';
   String selectedPaytacaAccount;
   String _sourceAccount;
   String lastBalance;
@@ -37,23 +42,20 @@ class SendContactComponentState extends State<SendContactComponent> {
   String txnID;
   String qrCode;
   String toAccount;
-  static List data = List();
-  bool validCode = false;
-  static bool _errorFound = false;
-  static String _errorMessage;
-  bool online = globals.online;
-  DatabaseHelper databaseHelper = DatabaseHelper();
-  StreamSubscription _connectionChangeStream;
-  bool isOffline = false;
+  String destinationAccountId;
   String newVal;
+  bool validCode = false;
+  bool online = globals.online;
+  bool isOffline = false;
   bool maxOfflineTime = globals.maxOfflineTime;
-  int offlineTime = globals.offlineTime;
   bool isSenderOnline;  // Variable for marking if the sender is online or offline
   bool _isInternetSlow = false;
   bool _showForm = true;
-  String destinationAccountId;
   bool _isMaintenanceMode = false;
   bool disableSubmitButton = false;
+  bool _submitting = false;
+  int accountIndex = 0;
+  int offlineTime = globals.offlineTime;
   
   Future<List> getAccounts() async {
     // Get accounts stored in shared preferences
@@ -85,7 +87,7 @@ class SendContactComponentState extends State<SendContactComponent> {
         _accounts.add(acctObj);
       }
     }
-    print("The value of data is: $data");
+    //print("The value of data is: $data");
     data = _accounts;
     return _accounts;
   }
@@ -197,9 +199,13 @@ class SendContactComponentState extends State<SendContactComponent> {
     String lSignedBalance,
     String txnID,
     String lBalanceTimeStamp) async {
+
     _submitting = true;
+    // Get keypair from global storage
     String publicKey = await globals.storage.read(key: "publicKey");
     String privateKey = await globals.storage.read(key: "privateKey");
+    // Create fresh UDID from flutter_udid library
+    String udid = await FlutterUdid.consistentUdid;
     SharedPreferences prefs = await SharedPreferences.getInstance();
     toAccount = destinationAccountId;
 
@@ -251,8 +257,14 @@ class SendContactComponentState extends State<SendContactComponent> {
       'transaction_datetime': _txnReadableDateTime,
       'proof_of_payment': proofOfPayment,
       'txn_str' : txnstr,
+      'device_id': udid,
     };
     var response = await transferAsset(payload);
+
+    // Catch invalid device ID error
+    if (response.error == "invalid_device_id") {
+      showUnregisteredUdidDialog(context);
+    }
 
       // Catch app version compatibility
     if (response.error == "outdated_app_version") {
@@ -448,7 +460,7 @@ class SendContactComponentState extends State<SendContactComponent> {
                   child: new TextFormField(
                     validator: validateAmount,
                     decoration: new InputDecoration(labelText: "Enter the amount"),
-                    keyboardType: TextInputType.number,
+                    keyboardType: TextInputType.phone,
                     onSaved: (value) {
                       sendAmount = null;
                       sendAmount = double.parse(value);

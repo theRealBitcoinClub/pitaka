@@ -3,20 +3,21 @@ import 'dart:convert';
 import 'package:archive/archive.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:intl/intl.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'package:uuid/uuid.dart';
+import 'package:crypto/crypto.dart';
+import 'package:flutter_udid/flutter_udid.dart';
 import '../components/bottomNavigation.dart';
 import '../components/drawer.dart';
 import '../api/endpoints.dart';
 import '../views/app.dart';
 import '../utils/helpers.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:intl/intl.dart';
-import 'package:permission_handler/permission_handler.dart';
 import '../utils/globals.dart' as globals;
 import '../utils/database_helper.dart';
-import 'package:uuid/uuid.dart';
 import '../utils/globals.dart';
 import '../utils/dialog.dart';
-import 'package:crypto/crypto.dart';
 
 
 class SendComponent extends StatefulWidget {
@@ -25,12 +26,15 @@ class SendComponent extends StatefulWidget {
 }
 
 class SendComponentState extends State<SendComponent> {
+  DatabaseHelper databaseHelper = DatabaseHelper();
+  StreamSubscription _connectionChangeStream;
+  static bool _errorFound = false;
+  static String _errorMessage;
+  static double sendAmount;
+  static List data = List();
+  final _formKey = GlobalKey<FormState>();
   String _barcodeString = '';
   String path = '/send';
-  int accountIndex = 0;
-  bool _submitting = false;
-  static double sendAmount;
-  final _formKey = GlobalKey<FormState>();
   String selectedPaytacaAccount;
   String _sourceAccount;
   String lastBalance;
@@ -39,22 +43,20 @@ class SendComponentState extends State<SendComponent> {
   String txnID;
   String qrCode;
   String toAccount;
-  static List data = List();
-  bool validCode = false;
-  static bool _errorFound = false;
-  static String _errorMessage;
-  bool online = globals.online;
-  DatabaseHelper databaseHelper = DatabaseHelper();
-  StreamSubscription _connectionChangeStream;
-  bool isOffline = false;
+  String destinationAccountId;
   String newVal;
+  bool validCode = false;
+  bool online = globals.online;
+  bool isOffline = false;
   bool maxOfflineTime = globals.maxOfflineTime;
-  int offlineTime = globals.offlineTime;
   bool isSenderOnline;  // Variable for marking if the sender is online or offline
   bool _isInternetSlow = false;
   bool _showForm = false;
-  String destinationAccountId;
   bool _isMaintenanceMode = false;
+  bool disableSubmitButton = false;
+  bool _submitting = false;
+  int accountIndex = 0;
+  int offlineTime = globals.offlineTime;
   
   Future<List> getAccounts() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -186,9 +188,14 @@ class SendComponentState extends State<SendComponent> {
     String lSignedBalance,
     String txnID,
     String lBalanceTimeStamp) async {
+
     _submitting = true;
+    // Get keypair from global storage
     String publicKey = await globals.storage.read(key: "publicKey");
     String privateKey = await globals.storage.read(key: "privateKey");
+    // Create fresh UDID from flutter_udid library
+    String udid = await FlutterUdid.consistentUdid;
+
     SharedPreferences prefs = await SharedPreferences.getInstance();
     toAccount = destinationAccountId;
 
@@ -207,18 +214,21 @@ class SendComponentState extends State<SendComponent> {
     var now = new DateTime.now();
     var txnDateTime = DateTime.parse(now.toString());
     var _txnReadableDateTime = DateFormat('MMMM dd, yyyy  h:mm a').format(
-        DateTime.parse(now.toString())
+      DateTime.parse(now.toString())
     );
 
+    // Create the transaction string
     var txnstr = "$amount:-:$txnDateTime:-:"
-    "$selectedPaytacaAccount:-:$lBalance:-:$lSignedBalance:-:$lBalanceTimeStamp:-:$txnID:-:$_txnReadableDateTime:-:$isSenderOnline";
-
+      "$selectedPaytacaAccount:-:$lBalance:-:$lSignedBalance:-:$lBalanceTimeStamp:-:"
+      "$txnID:-:$_txnReadableDateTime:-:$isSenderOnline";
+    // Create the transaction hash
     var bytes = utf8.encode(txnstr);
-    var txnhash = sha256.convert(bytes).toString();         
-    print("The value of txnhash is: $txnhash");
+    var txnhash = sha256.convert(bytes).toString();
+
+    print("The value of txnhash in sendFund() in send.dart is: $txnhash");
     
     String signature = await signTransaction(txnhash, privateKey);
-    //String signatureForQR = await signTransaction(txnstr, privateKey);
+
     var qrcode = "$txnhash||$signature||$txnstr||$publicKey";
     prefs.setString("_txnQrCode", qrcode);
     prefs.setString("_txnDateTime", _txnReadableDateTime);
@@ -228,6 +238,7 @@ class SendComponentState extends State<SendComponent> {
     List<int> gzipBytes = new GZipEncoder().encode(stringBytes);
     String proofOfPayment = base64.encode(gzipBytes);
     prefs.setString("_txnProofCode", proofOfPayment);
+    // Create the payload
     var payload = {
       'from_account': selectedPaytacaAccount,
       'to_account': toAccount,
@@ -240,10 +251,17 @@ class SendComponentState extends State<SendComponent> {
       'transaction_datetime': _txnReadableDateTime,
       'proof_of_payment': proofOfPayment,
       'txn_str' : txnstr,
+      'device_id': udid,
     };
-    print("The value of payload is: $payload");
+
     var response = await transferAsset(payload);
-      // Catch app version compatibility
+
+    // Catch invalid device ID error
+    if (response.error == "invalid_device_id") {
+      showUnregisteredUdidDialog(context);
+    }
+
+    // Catch app version compatibility
     if (response.error == "outdated_app_version") {
       showOutdatedAppVersionDialog(context);
     }
@@ -329,33 +347,31 @@ class SendComponentState extends State<SendComponent> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(
-          title: Text('Send'),
-          actions: [
-            Padding(
-              padding: EdgeInsets.only(right: 20.0),
-              child: GestureDetector(
-                child: online ? new Icon(Icons.wifi): new Icon(Icons.signal_wifi_off)
-              ) 
-            )
-          ],
-          centerTitle: true,
-        ),
-        drawer: buildDrawer(context),
-        body: new Builder(builder: (BuildContext context) {
-          return new Stack(children: _buildForm(context));
-        }),
-        bottomNavigationBar: buildBottomNavigation(context, path)
-      );
+      appBar: AppBar(
+        title: Text('Send'),
+        actions: [
+          Padding(
+            padding: EdgeInsets.only(right: 20.0),
+            child: GestureDetector(
+              child: online ? new Icon(Icons.wifi): new Icon(Icons.signal_wifi_off)
+            ) 
+          )
+        ],
+        centerTitle: true,
+      ),
+      drawer: buildDrawer(context),
+      body: new Builder(builder: (BuildContext context) {
+        return new Stack(children: _buildForm(context));
+      }),
+      bottomNavigationBar: buildBottomNavigation(context, path)
+    );
   }
 
-bool disableSubmitButton = false;
-
-List<Widget> _buildForm(BuildContext context) {
-  // Added the code below for the display error during sending offline
-  if (!globals.online) {
-    getAccounts();
-  }
+  List<Widget> _buildForm(BuildContext context) {
+    // Added the code below for the display error during sending offline
+    if (!globals.online) {
+      getAccounts();
+    }
     Form form = new Form(
       key: _formKey,
       child: new ListView(
@@ -492,7 +508,7 @@ List<Widget> _buildForm(BuildContext context) {
                   child: new TextFormField(
                     validator: validateAmount,
                     decoration: new InputDecoration(labelText: "Enter the amount"),
-                    keyboardType: TextInputType.number,
+                    keyboardType: TextInputType.phone,
                     onSaved: (value) {
                       sendAmount = null;
                       sendAmount = double.parse(value);

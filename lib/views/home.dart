@@ -1,15 +1,16 @@
 import 'dart:async';
-import 'package:flutter/material.dart';
-import '../components/drawer.dart';
-import '../components/bottomNavigation.dart';
-import '../components/homeTabs.dart' as hometabs;
-import 'package:intl/intl.dart';
-import '../api/endpoints.dart';
-import '../utils/globals.dart' as globals;
-import '../utils/database_helper.dart';
-import '../utils/globals.dart';
 import 'receive.dart';
+import 'package:intl/intl.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_udid/flutter_udid.dart';
 import '../utils/dialog.dart';
+import '../api/endpoints.dart';
+import '../utils/globals.dart';
+import '../components/drawer.dart';
+import '../utils/database_helper.dart';
+import '../components/bottomNavigation.dart';
+import '../utils/globals.dart' as globals;
+import '../components/homeTabs.dart' as hometabs;
 
 
 class HomeComponent extends StatefulWidget {
@@ -18,12 +19,14 @@ class HomeComponent extends StatefulWidget {
 }
 
 class HomeComponentState extends State<HomeComponent> {
-  String path = "/home";
-  bool online = globals.online;
-  bool syncing = globals.syncing;
-  final formatCurrency = new NumberFormat.currency(symbol: 'PHP ');
   DatabaseHelper databaseHelper = DatabaseHelper();
   StreamSubscription _connectionChangeStream;
+  final formatCurrency = new NumberFormat.currency(symbol: 'PHP ');
+  String path = "/home";
+  String storedUdid;
+  String freshUdid;
+  bool online = globals.online;
+  bool syncing = globals.syncing;
   bool isOffline = false;
   bool _executeFuture = false;
   bool _popDialog = false;
@@ -38,6 +41,19 @@ class HomeComponentState extends State<HomeComponent> {
     ReceiveComponentState comp = new ReceiveComponentState();
 
     comp.getAccounts();
+
+    _checkUdid();
+  }
+
+  void _checkUdid() async {
+    storedUdid = await globals.storage.read(key: "udid");
+    //freshUdid = await FlutterUdid.consistentUdid;
+    print("The value of UDID in _checkUdid() in home.dart is: $freshUdid");
+    freshUdid = '14490a8175339cb79cca9cb169644cb75354c2706e528d70c6c646621829a655';
+    // If storedUdid does not match with freshUdid, show undismissible dialog
+    if (storedUdid != freshUdid) {
+      showUnregisteredUdidDialog(context);
+    }
   }
 
   void connectionChanged(dynamic hasConnection) {
@@ -112,6 +128,7 @@ class HomeComponentState extends State<HomeComponent> {
                   builder: (BuildContext context, AsyncSnapshot snapshot) {
                     if (snapshot.hasData) {
                       if (snapshot.data != null) {
+                        print("The value of snapshot.data.error is: ${snapshot.data.error}");
                         var balances = snapshot.data.balances;
                         if (snapshot.data.success) {
                           return hometabs.buildBalancesList(balances);
@@ -120,7 +137,7 @@ class HomeComponentState extends State<HomeComponent> {
                         // ANDing with globals.online prevents showing the dialog 
                         // during manually swithing to airplane mode
                         else if (snapshot.data.error == 'connect_timeout' && globals.online) {
-                          print("The value of snapshot.data in getting balances is: ${snapshot.data.error}");
+                          //print("The value of snapshot.data in getting balances is: ${snapshot.data.error}");
                           return Padding(
                             padding: EdgeInsets.all(16.0),
                             child: Text(
@@ -153,6 +170,17 @@ class HomeComponentState extends State<HomeComponent> {
                               showOutdatedAppVersionDialog(context);
                             }
                           });
+                        }
+                        // When invalid device ID error, show dialog
+                        // ANDing with globals.online prevents showing the dialog 
+                        // during manually swithing to airplane mode
+                        else if (snapshot.data.error == 'invalid_device_id' && globals.online) {
+                          Future.delayed(Duration(milliseconds: 100), () async {
+                            _executeFuture = true;
+                            if(_executeFuture){
+                              showUnregisteredUdidDialog(context);
+                            }
+                          });
                         } 
                         else {
                           return new CircularProgressIndicator();
@@ -163,6 +191,7 @@ class HomeComponentState extends State<HomeComponent> {
                     } else {
                       return new CircularProgressIndicator();
                     }
+                    return new Container();
                   }
                 )
               );
@@ -215,6 +244,17 @@ class HomeComponentState extends State<HomeComponent> {
                               showOutdatedAppVersionDialog(context);
                             }
                           });
+                        }
+                        // When invalid device ID error, show dialog
+                        // ANDing with globals.online prevents showing the dialog 
+                        // during manually swithing to airplane mode
+                        else if (snapshot.data.error == 'invalid_device_id' && globals.online) {
+                          Future.delayed(Duration(milliseconds: 100), () async {
+                            _executeFuture = true;
+                            if(_executeFuture){
+                              showUnregisteredUdidDialog(context);
+                            }
+                          });
                         } 
                         else {
                           return Text('No transactions to display');
@@ -226,6 +266,7 @@ class HomeComponentState extends State<HomeComponent> {
                       // return new Container();
                       return new CircularProgressIndicator();
                     }
+                    return new Container();
                   }
                 )
               );
