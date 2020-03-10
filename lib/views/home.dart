@@ -47,9 +47,9 @@ class HomeComponentState extends State<HomeComponent> {
 
   void _checkUdid() async {
     storedUdid = await globals.storage.read(key: "udid");
-    //freshUdid = await FlutterUdid.consistentUdid;
+    freshUdid = await FlutterUdid.consistentUdid;
     print("The value of UDID in _checkUdid() in home.dart is: $freshUdid");
-    freshUdid = '14490a8175339cb79cca9cb169644cb75354c2706e528d70c6c646621829a655';
+    //freshUdid = '14490a8175339cb79cca9cb169644cb75354c2706e528d70c6c646621829a655';
     // If storedUdid does not match with freshUdid, show undismissible dialog
     if (storedUdid != freshUdid) {
       showUnregisteredUdidDialog(context);
