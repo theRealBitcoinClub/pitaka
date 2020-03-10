@@ -1,19 +1,20 @@
-import 'dart:convert';
-import 'package:crypto/crypto.dart';
-import 'package:flutter/material.dart';
-import 'package:qr_flutter/qr_flutter.dart';
-import '../views/app.dart';
 import 'dart:async';
+import 'dart:convert';
+import 'package:hex/hex.dart';
+import 'package:crypto/crypto.dart';
+import 'package:archive/archive.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
+import 'package:qr_flutter/qr_flutter.dart';
+import 'package:flutter_sodium/flutter_sodium.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
+import '../views/app.dart';
+import '../api/endpoints.dart';
 import '../components/drawer.dart';
 import '../components/bottomNavigation.dart';
-import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
-import 'package:flutter_sodium/flutter_sodium.dart';
-import 'package:hex/hex.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import '../utils/globals.dart' as globals;
-import '../api/endpoints.dart';
-import 'package:archive/archive.dart';
 import '../utils/globals.dart';
+import '../utils/globals.dart' as globals;
 
 
 class ReceiveComponent extends StatefulWidget {
@@ -22,15 +23,15 @@ class ReceiveComponent extends StatefulWidget {
 }
 
 class ReceiveComponentState extends State<ReceiveComponent> {
-  String path = "/receive";
-  int accountIndex = 0;
+  StreamSubscription _connectionChangeStream;
   final _formKey = GlobalKey<FormState>();
+  static List data = List();
+  String path = "/receive";
   String _selectedPaytacaAccount;
-  static List data = List(); //edited line
   bool online = globals.online;
   bool isOffline = false;
-  StreamSubscription _connectionChangeStream;
-  bool _loading = false;   // For CircularProgressIndicator
+  bool _loading = false;
+  int accountIndex = 0;
 
   @override
   void initState()  {
@@ -40,7 +41,12 @@ class ReceiveComponentState extends State<ReceiveComponent> {
     ConnectionStatusSingleton connectionStatus = ConnectionStatusSingleton.getInstance();
     _connectionChangeStream = connectionStatus.connectionChange.listen(connectionChanged);
 
-    getAccounts();
+    // Run getAccounts() function upon widget build
+    SchedulerBinding.instance.addPostFrameCallback((_) {
+      setState(() {
+        getAccounts();
+      });
+    });
   }
 
   void connectionChanged(dynamic hasConnection) {
