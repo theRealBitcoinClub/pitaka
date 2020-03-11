@@ -6,6 +6,7 @@ import 'package:archive/archive.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:qr_flutter/qr_flutter.dart';
+import 'package:flutter_udid/flutter_udid.dart';
 import 'package:flutter_sodium/flutter_sodium.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
@@ -71,12 +72,17 @@ class ReceiveComponentState extends State<ReceiveComponent> {
 
   // Scan QRcode from Payment Proof after Send
   void scanQrcode() async {
-    String qrcode = await FlutterBarcodeScanner.scanBarcode("#ff6666","Cancel", true, ScanMode.DEFAULT);  
+    String qrcode = await FlutterBarcodeScanner.scanBarcode("#ff6666","Cancel", true, ScanMode.DEFAULT); 
+
     // Decode and split the QRcode data
     var baseDecoded = base64.decode(qrcode);
     var gzipDecoded = new GZipDecoder().decodeBytes(baseDecoded);
     var utf8Decoded = utf8.decode(gzipDecoded);
     var qrArr = utf8Decoded.split('||');
+
+    // Create fresh UDID from flutter_udid library
+    String udid = await FlutterUdid.consistentUdid;
+    
     // Check if QRcode data array has all the payload data created from "sender.dart" in sendFunds function
     if (qrArr.length == 4) {
       var stringified  = qrArr[2].toString();
@@ -114,7 +120,8 @@ class ReceiveComponentState extends State<ReceiveComponent> {
               'signature': HEX.encode(decodedSignature),  // Convert signature back to string
               'transaction_id': txnID,
               'transaction_datetime': txnDateTime,
-              'signed_balance':  {}
+              'signed_balance':  {},
+              'device_id': udid,
             };
             // Call receiveAsset function from "endpoints.dart"
             var response = await receiveAsset(payload);
@@ -173,6 +180,7 @@ class ReceiveComponentState extends State<ReceiveComponent> {
                     'balance': lBalance,
                     'timestamp': timestamp,
                   },
+                  'device_id': udid,
                 };
                 // Call receiveAsset function from "endpoints.dart"
                 var response = await receiveAsset(payload);

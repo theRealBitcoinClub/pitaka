@@ -473,7 +473,6 @@ Future<PlainSuccessResponse> receiveAsset(Map payload) async {
     await transferAsset(payload);
     return PlainSuccessResponse.toDatabase();
   } else {
-
     // If both sender & reciever are offline, save scanned QRcode payload to local database
     await databaseHelper.acceptOfflinePayment(payload);
     return PlainSuccessResponse.toDatabase();
