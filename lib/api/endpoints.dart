@@ -372,6 +372,7 @@ Future<TransactionsResponse> getOnlineTransactions() async {
       return TransactionsResponse.invalidDeviceIdError(response);
     }
     if (response.data['success']) {
+      await databaseHelper.deleteTransactions();
       return TransactionsResponse.fromResponse(response);
     }
   } catch (e) {
