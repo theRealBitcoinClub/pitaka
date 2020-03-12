@@ -1,11 +1,11 @@
 import 'dart:async';
-
-import 'package:flutter/material.dart';
 import 'package:fluro/fluro.dart';
-import '../router/routes.dart';
-import '../utils/globals.dart' as globals;
+import 'package:flutter/material.dart';
 import 'package:after_layout/after_layout.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../router/routes.dart';
+import '../utils/globals.dart' as globals;
+
 
 class AppComponent extends StatefulWidget {
   @override
@@ -19,7 +19,7 @@ class Application {
 }
 
 class AppComponentState extends State<AppComponent>
-    with AfterLayoutMixin<AppComponent> {
+  with AfterLayoutMixin<AppComponent> {
   static bool debugMode = false;
   bool maxOfflineTime = globals.maxOfflineTime;
   bool online = globals.online;

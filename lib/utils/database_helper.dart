@@ -1,8 +1,8 @@
+import 'dart:io';
+import 'dart:async';
 import 'dart:convert';
 import 'package:intl/intl.dart';
 import 'package:sqflite/sqflite.dart';
-import 'dart:async';
-import 'dart:io';
 import 'package:path_provider/path_provider.dart';
 import '../api/responses.dart';
 import '../api/endpoints.dart';
@@ -171,6 +171,11 @@ class DatabaseHelper {
 		return 'success';
   }
   
+  Future deleteTransactions() async{
+    Database db = await this.database;
+    await db.delete('OfflineTransaction');
+  }
+  
   Future <Map<String, dynamic>> offlineBalanceAnalyser(String accountId, double onlineBalance) async {
     Database db = await this.database;
     double totalTransactions = 0.0;
@@ -232,7 +237,7 @@ class DatabaseHelper {
       prevTxnHash = payload['txn_hash'];
     }
 
-    // Don't delete database during synching
+    // Don't delete database during syncing
     //await db.delete('OfflineTransaction');
     //await db.delete('Balance');
     globals.syncing = false;

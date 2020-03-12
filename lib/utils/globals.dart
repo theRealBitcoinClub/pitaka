@@ -1,10 +1,11 @@
-import 'dart:async';
 import 'dart:io';
+import 'dart:async';
+import 'package:flutter/services.dart';
 import 'package:connectivity/connectivity.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../utils/database_helper.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:flutter/services.dart';
+
 
 // For dev server
 const String baseUrl = 'https://lantaka-dev.paytaca.com';
