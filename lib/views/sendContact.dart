@@ -133,8 +133,6 @@ class SendContactComponentState extends State<SendContactComponent> {
         syncing = false;
         globals.syncing = false;
         print("Offline");
-        // For dismissing the dialog
-        Navigator.of(context).pop();
 
         // Wrap arround Future to get the value of previous timestamp
         Future.delayed(Duration(milliseconds: 100), () async {
