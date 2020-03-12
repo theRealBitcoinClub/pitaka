@@ -1,18 +1,19 @@
 import 'dart:async';
 import 'dart:convert';
+import 'package:uuid/uuid.dart';
+import 'package:intl/intl.dart';
+import 'package:crypto/crypto.dart';
 import 'package:archive/archive.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:intl/intl.dart';
-import 'package:permission_handler/permission_handler.dart';
-import 'package:uuid/uuid.dart';
-import 'package:crypto/crypto.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:flutter_udid/flutter_udid.dart';
-import '../components/bottomNavigation.dart';
-import '../components/drawer.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
 import '../api/endpoints.dart';
 import '../views/app.dart';
+import '../components/drawer.dart';
+import '../components/bottomNavigation.dart';
 import '../utils/helpers.dart';
 import '../utils/globals.dart' as globals;
 import '../utils/database_helper.dart';
@@ -55,38 +56,9 @@ class SendComponentState extends State<SendComponent> {
   bool _isMaintenanceMode = false;
   bool disableSubmitButton = false;
   bool _submitting = false;
+  bool _isScanningQr = false;
   int accountIndex = 0;
   int offlineTime = globals.offlineTime;
-  
-  Future<List> getAccounts() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    var _prefAccounts = prefs.get("accounts");
-    List<Map> _accounts = [];
-    destinationAccountId = _barcodeString.split('::paytaca::')[1];
-
-    for (final acct in _prefAccounts) {
-      String accountId = acct.split(' | ')[1];
-      if(accountId != destinationAccountId) {
-        var acctObj = new Map();
-        var onlineBalance = acct.split(' | ')[2];
-        acctObj['accountName'] = acct.split(' | ')[0];
-        acctObj['accountId'] = accountId;
-        acctObj['balanceSignature'] = acct.split(' | ')[3];
-        acctObj['timestamp'] = acct.split(' | ')[4];
-        if (globals.online) {
-          acctObj['computedBalance'] = onlineBalance;
-        } else {
-          var lastBalance = double.tryParse(onlineBalance);
-          var resp = await databaseHelper.offlineBalanceAnalyser(accountId, lastBalance);
-          acctObj['computedBalance'] = resp['computedBalance'].toString();
-          acctObj['lastBalance'] = lastBalance.toString();
-        }
-        _accounts.add(acctObj);
-      }
-    }
-    data = _accounts;
-    return _accounts;
-  }
 
   @override
   void initState() {
@@ -95,6 +67,13 @@ class SendComponentState extends State<SendComponent> {
     // Fires whenever connectivity state changes
     ConnectionStatusSingleton connectionStatus = ConnectionStatusSingleton.getInstance();
     _connectionChangeStream = connectionStatus.connectionChange.listen(connectionChanged);
+
+    // Run getAccounts() function upon widget build
+    SchedulerBinding.instance.addPostFrameCallback((_) {
+      setState(() {
+        getAccounts();
+      });
+    });
   }
 
   void connectionChanged(dynamic hasConnection) {
@@ -122,8 +101,6 @@ class SendComponentState extends State<SendComponent> {
         syncing = false;
         globals.syncing = false;
         print("Offline");
-        // For dismissing the dialog
-        Navigator.of(context).pop();
 
         // Wrap arround Future to get the value of previous timestamp
         Future.delayed(Duration(milliseconds: 100), () async {
@@ -142,6 +119,47 @@ class SendComponentState extends State<SendComponent> {
         });
       }
     });
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+  }
+
+  Future<List> getAccounts() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    var _prefAccounts = prefs.get("accounts");
+    List<Map> _accounts = [];
+
+    if (_isScanningQr) {
+      destinationAccountId = _barcodeString.split('::paytaca::')[1];
+    }
+    else {
+      destinationAccountId = "";
+    }
+
+    for (final acct in _prefAccounts) {
+      String accountId = acct.split(' | ')[1];
+      if(accountId != destinationAccountId) {
+        var acctObj = new Map();
+        var onlineBalance = acct.split(' | ')[2];
+        acctObj['accountName'] = acct.split(' | ')[0];
+        acctObj['accountId'] = accountId;
+        acctObj['balanceSignature'] = acct.split(' | ')[3];
+        acctObj['timestamp'] = acct.split(' | ')[4];
+        if (globals.online) {
+          acctObj['computedBalance'] = onlineBalance;
+        } else {
+          var lastBalance = double.tryParse(onlineBalance);
+          var resp = await databaseHelper.offlineBalanceAnalyser(accountId, lastBalance);
+          acctObj['computedBalance'] = resp['computedBalance'].toString();
+          acctObj['lastBalance'] = lastBalance.toString();
+        }
+        _accounts.add(acctObj);
+      }
+    }
+    data = _accounts;
+    return _accounts;
   }
 
   // Timer for maximum offline timeout
@@ -292,6 +310,7 @@ class SendComponentState extends State<SendComponent> {
   }
 
   void scanBarcode() async {
+    _isScanningQr = true;
     _showForm = true;
     allowCamera();
     String barcode = await FlutterBarcodeScanner.scanBarcode("#ff6666", "Cancel", true, ScanMode.DEFAULT);
