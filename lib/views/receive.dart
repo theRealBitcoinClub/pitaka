@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'package:hex/hex.dart';
+import 'package:intl/intl.dart';
 import 'package:crypto/crypto.dart';
 import 'package:archive/archive.dart';
 import 'package:flutter/material.dart';
@@ -94,7 +95,13 @@ class ReceiveComponentState extends State<ReceiveComponent> {
       String fromAccount = hashArr[2];
       String txnHash = qrArr[0];
       String txnSignature = qrArr[1];
-      String txnDateTime = hashArr[1];
+      // Get the date and time from array
+      // And convert to datetime object
+      var parsedDate = DateTime.parse(hashArr[1]);
+      // Format the datetime object and convert bact to string
+      //String txnDateTime = DateFormat('MMMM dd, yyyy  h:mm a').format(parsedDate);
+      String txnDateTime = DateFormat("yyyy/MM/dd HH:mm a").format(parsedDate);
+
       String txnID = hashArr[6];
       // Convert signature and public key to bytes for verification
       var decodedSignature = HEX.decode(txnSignature);

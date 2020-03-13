@@ -231,7 +231,7 @@ class SendComponentState extends State<SendComponent> {
 
     var now = new DateTime.now();
     var txnDateTime = DateTime.parse(now.toString());
-    var _txnReadableDateTime = DateFormat('MMMM dd, yyyy  h:mm a').format(
+    var _txnReadableDateTime = DateFormat("yyyy/MM/dd HH:mm a").format(
       DateTime.parse(now.toString())
     );
 
