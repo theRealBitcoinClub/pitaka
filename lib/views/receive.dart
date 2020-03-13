@@ -99,7 +99,8 @@ class ReceiveComponentState extends State<ReceiveComponent> {
       // And convert to datetime object
       var parsedDate = DateTime.parse(hashArr[1]);
       // Format the datetime object and convert bact to string
-      String txnDateTime = DateFormat('MMMM dd, yyyy  h:mm a').format(parsedDate);
+      //String txnDateTime = DateFormat('MMMM dd, yyyy  h:mm a').format(parsedDate);
+      String txnDateTime = DateFormat("yyyy/MM/dd HH:mm a").format(parsedDate);
 
       String txnID = hashArr[6];
       // Convert signature and public key to bytes for verification
