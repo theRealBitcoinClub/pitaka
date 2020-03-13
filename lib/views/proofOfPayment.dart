@@ -1,10 +1,11 @@
 import 'dart:convert';
+import 'package:intl/intl.dart';
 import 'package:archive/archive.dart';
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:qr_flutter/qr_flutter.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../views/app.dart';
+
 
 class ProofOfPaymentComponent extends StatefulWidget {
   @override
@@ -95,6 +96,7 @@ class ProofOfPaymentComponentState extends State<ProofOfPaymentComponent> {
               );
             }
           }
+          return new Container();
         }
     );
     var ws = new List<Widget>();
@@ -103,17 +105,16 @@ class ProofOfPaymentComponentState extends State<ProofOfPaymentComponent> {
   }
 
   @override
-  Widget build(BuildContext context) {
-    
+  Widget build(BuildContext context) { 
     return Scaffold(
-        appBar: AppBar(
-          title: Text('Payment Proof'),
-          centerTitle: true,
-          automaticallyImplyLeading: false
-        ),
-        body: new Builder(builder: (BuildContext context) {
-          return new Stack(children: _buildAccountForm(context));
-        })
-      );
+      appBar: AppBar(
+        title: Text('Payment Proof'),
+        centerTitle: true,
+        automaticallyImplyLeading: false
+      ),
+      body: new Builder(builder: (BuildContext context) {
+        return new Stack(children: _buildAccountForm(context));
+      })
+    );
   }
 }
