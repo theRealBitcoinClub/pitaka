@@ -69,7 +69,6 @@ class AppComponentState extends State<AppComponent>
               globals.timeDiff.toString() +
               " " +
               "seconds");
-
           if (globals.timeDiff >= 21600) {
             globals.maxOfflineTime = true;
           } else {

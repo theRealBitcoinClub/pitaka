@@ -168,20 +168,21 @@ class SendComponentState extends State<SendComponent> {
   void startTimer() {
     const oneSec = const Duration(seconds: 1);
     _timer = new Timer.periodic(
-        oneSec,
-        (Timer timer) => setState(() {
-          if (globals.online == true) {
-            globals.maxOfflineTime = false;
-            timer.cancel();
-          } else if (_start >= 21600 - globals.timeDiff) { // (60) 1 minute, change to 21600 for 6 hours
-            globals.maxOfflineTime = true;
-            timer.cancel();
-          } else {
-            _start = _start + 1;
-            globals.maxOfflineTime = false;
-            print(_start);
-          }
-        }));
+      oneSec,
+      (Timer timer) => setState(() {
+        if (globals.online == true) {
+          globals.maxOfflineTime = false;
+          timer.cancel();
+        } else if (_start >= 21600 - globals.timeDiff) { // (60) 1 minute, change to 21600 for 6 hours
+          globals.maxOfflineTime = true;
+          timer.cancel();        
+        } else {
+          _start = _start + 1;
+          globals.maxOfflineTime = false;
+          print(_start);
+        }
+      })
+    );
   }
 
   _read() async {
@@ -420,54 +421,59 @@ class SendComponentState extends State<SendComponent> {
                 textAlign: TextAlign.center,
               ),
             )
-          :  // Another condition
-          Visibility(
-          child: Container(
-              margin: const EdgeInsets.only(top: 5.0),
-              child: new ButtonTheme(
-                height: 60,
-                buttonColor: Colors.white,
-                child: new OutlineButton(
-                  borderSide: BorderSide(
-                    color: Colors.black
-                  ),
-                  child: const Text('Scan QR Code', style: TextStyle(fontSize: 18)),
-                  onPressed: scanBarcode
-                )
-              )
-            ),
-            visible: !_showForm,
-          ),
-          Visibility(
-            child: Container(
-              margin: const EdgeInsets.fromLTRB(0.0, 20.0, 0.0, 20.0),
-              child: Text(
-                "OR",
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 18.0,
-                  fontWeight: FontWeight.bold,
+          :  
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: <Widget>[
+              Visibility(
+                child: Container(
+                  margin: const EdgeInsets.only(top: 5.0),
+                  child: new ButtonTheme(
+                    height: 60,
+                    buttonColor: Colors.white,
+                    child: new OutlineButton(
+                      borderSide: BorderSide(
+                        color: Colors.black
+                      ),
+                      child: const Text('Scan QR Code', style: TextStyle(fontSize: 18)),
+                      onPressed: scanBarcode
+                    )
+                  )
                 ),
-              )
-            ),
-            visible: !_showForm,
-          ),
-          Visibility(
-            child: Container(
-              margin: const EdgeInsets.only(top: 5.0),
-              child: new ButtonTheme(
-                height: 60,
-                buttonColor: Colors.white,
-                child: new OutlineButton(
-                  borderSide: BorderSide(
-                    color: Colors.black
-                  ),
-                  child: const Text('Send through Contact', style: TextStyle(fontSize: 18)),
-                  onPressed: () => Application.router.navigateTo(context, "/contactlist")
-                )
-              )
-            ),
-            visible: !_showForm,
+                visible: !_showForm,
+              ),
+              Visibility(
+                child: Container(
+                  margin: const EdgeInsets.fromLTRB(0.0, 20.0, 0.0, 20.0),
+                  child: Text(
+                    "OR",
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 18.0,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  )
+                ),
+                visible: !_showForm,
+              ),
+              Visibility(
+                child: Container(
+                  margin: const EdgeInsets.only(top: 5.0),
+                  child: new ButtonTheme(
+                    height: 60,
+                    buttonColor: Colors.white,
+                    child: new OutlineButton(
+                      borderSide: BorderSide(
+                        color: Colors.black
+                      ),
+                      child: const Text('Send through Contact', style: TextStyle(fontSize: 18)),
+                      onPressed: () => Application.router.navigateTo(context, "/contactlist")
+                    )
+                  )
+                ),
+                visible: !_showForm,
+              ),
+            ]
           ),
           _showForm ?
             Column(
