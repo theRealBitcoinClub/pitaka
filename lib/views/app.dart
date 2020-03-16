@@ -69,12 +69,7 @@ class AppComponentState extends State<AppComponent>
               globals.timeDiff.toString() +
               " " +
               "seconds");
-
-          setState(() {
-            globals.showOfflineTimerNotification = true;
-          });
-
-          if (globals.timeDiff >= 20) {
+          if (globals.timeDiff >= 21600) {
             globals.maxOfflineTime = true;
           } else {
             startTimer();
@@ -105,11 +100,6 @@ class AppComponentState extends State<AppComponent>
                 // (60) 1 minute, change to 21600 for 6 hours
                 timer.cancel();
                 globals.maxOfflineTime = true;
-
-                setState(() {
-                  globals.showOfflineTimerNotification = true;
-                });
-                
               } else {
                 _start = _start + 1;
                 print(_start);
