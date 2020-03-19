@@ -71,7 +71,6 @@ class HomeComponentState extends State<HomeComponent> {
         globals.online = online;
         syncing = false;
         globals.syncing = false;
-        globals.loading = false;
         print("Offline");
         // For dismissing the dialog
         if (_executeFuture) {
