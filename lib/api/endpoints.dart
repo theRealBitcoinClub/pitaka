@@ -57,9 +57,6 @@ Future<dynamic> sendGetRequest(url) async {
   // Get fresh UDID and include in the headers
   String udid = await FlutterUdid.consistentUdid;
 
-  // For CircularProgressIndicator
-  globals.loading = true;
-
   var payload = {
     'public_key': globals.serverPublicKey,
     'device_id': udid,
@@ -105,7 +102,6 @@ Future<dynamic> sendGetRequest(url) async {
       return errorType;
     }
   }
-  globals.loading = false;
   print("The value of response in sendGetRequest() in endpoints.dart is: $response");
   return response;
 }

@@ -47,20 +47,7 @@ ListView buildBalancesList(balances) {
                   )
                 ) : Container(),
               ],
-            ), Column (
-              children: <Widget>[
-                !globals.loading? Container() :
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(8.0, 0, 12.0, 12.0),
-                  child:
-                    Image.asset(
-                    "assets/images/loading.gif",
-                    height: 30.0,
-                    width: 30.0,
-                  )
-                ),
-              ],
-            )
+            ), 
           ],
         ),
         Divider(
