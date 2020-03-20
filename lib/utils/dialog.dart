@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:easy_dialog/easy_dialog.dart'; 
 import 'package:url_launcher/url_launcher.dart'; 
 import 'package:flutter/services.dart';
+import '../views/app.dart';
 
 
 // Function that will redirect to Google Play Store 
@@ -130,5 +131,62 @@ showUnregisteredUdidDialog(context) {
         )
       ),
     ),
+  );
+}
+
+Future<void> proofOfPaymentSuccessDialog(context) async {
+  return showDialog<void>(
+    context: context,
+    barrierDismissible: false, // user must tap button!
+    builder: (BuildContext context) {
+      return AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(10.0))),
+        title: Text('Success'),
+        content: SingleChildScrollView(
+          child: ListBody(
+            children: <Widget>[
+              Text('Proof of payment has been validated.')
+            ],
+          ),
+        ),
+        actions: <Widget>[
+          FlatButton(
+            child: Text('Okay!'),
+            onPressed: () {
+              Navigator.of(context).pop();
+              Application.router.navigateTo(context, "/home");
+            },
+          ),
+        ],
+      );
+    },
+  );
+}
+
+Future<void> proofOfPaymentFailedDialog(context) async {
+  return showDialog<void>(
+    context: context,
+    barrierDismissible: false, // user must tap button!
+    builder: (BuildContext context) {
+      return AlertDialog(
+        title: Text('Failure'),
+        content: SingleChildScrollView(
+          child: ListBody(
+            children: <Widget>[
+              Text("The proof of payment you scanned is invalid.")
+            ],
+          ),
+        ),
+        actions: <Widget>[
+          FlatButton(
+            child: Text('Okay!'),
+            onPressed: () {
+              Navigator.of(context).pop();
+              Application.router.navigateTo(context, "/receive");
+            },
+          ),
+        ],
+      );
+    },
   );
 }

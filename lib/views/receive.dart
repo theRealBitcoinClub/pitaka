@@ -16,6 +16,7 @@ import '../api/endpoints.dart';
 import '../components/drawer.dart';
 import '../components/bottomNavigation.dart';
 import '../utils/globals.dart';
+import '../utils/dialog.dart';
 import '../utils/globals.dart' as globals;
 
 
@@ -127,7 +128,7 @@ class ReceiveComponentState extends State<ReceiveComponent> {
               'signature': HEX.encode(decodedSignature),  // Convert signature back to string
               'transaction_id': txnID,
               'transaction_datetime': txnDateTime,
-              'signed_balance':  {},
+              'signed_baproofOfPaymentSuccessDialoglance':  {},
               'device_id': udid,
             };
             // Call receiveAsset function from "endpoints.dart"
@@ -138,14 +139,13 @@ class ReceiveComponentState extends State<ReceiveComponent> {
             });
             // Check response, pop up a dialog for failed or success 
             if (response.success == false) {
-              _failedDialog();
+              proofOfPaymentFailedDialog(context);
             } else {
-             // _loading = false;
-              _successDialog();
+              proofOfPaymentSuccessDialog(context);
             }
           } catch(e) {
             print(e);
-            _successDialog();
+            proofOfPaymentSuccessDialog(context);
           }
         } else {
           // Set _loading to true to show circular progress bar
@@ -197,21 +197,21 @@ class ReceiveComponentState extends State<ReceiveComponent> {
                 });
                 // Check response, pop up a dialog for failed or success 
                 if (response.success == false) {
-                  _failedDialog();
+                  proofOfPaymentFailedDialog(context);
                 } else {
-                  _successDialog();
+                  proofOfPaymentSuccessDialog(context);
                 }
               } else {
-                _failedDialog();
+                proofOfPaymentFailedDialog(context);
               }
             } else {
-              _failedDialog();
+              proofOfPaymentFailedDialog(context);
             }
           }
         }
       }
     } else {
-      _failedDialog();
+      proofOfPaymentFailedDialog(context);
     }
   }
 
@@ -233,62 +233,6 @@ class ReceiveComponentState extends State<ReceiveComponent> {
       print("Error in getAccounts(): $e");
     }
     return data;
-  }
-
-  Future<void> _failedDialog() async {
-    return showDialog<void>(
-      context: context,
-      barrierDismissible: false, // user must tap button!
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text('Failure'),
-          content: SingleChildScrollView(
-            child: ListBody(
-              children: <Widget>[
-                Text("The proof of payment you scanned is invalid.")
-              ],
-            ),
-          ),
-          actions: <Widget>[
-            FlatButton(
-              child: Text('Okay!'),
-              onPressed: () {
-                Navigator.of(context).pop();
-                Application.router.navigateTo(context, "/receive");
-              },
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  Future<void> _successDialog() async {
-    return showDialog<void>(
-      context: context,
-      barrierDismissible: false, // user must tap button!
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text('Success'),
-          content: SingleChildScrollView(
-            child: ListBody(
-              children: <Widget>[
-                Text('Proof of payment has been validated.')
-              ],
-            ),
-          ),
-          actions: <Widget>[
-            FlatButton(
-              child: Text('Okay!'),
-              onPressed: () {
-                Navigator.of(context).pop();
-                Application.router.navigateTo(context, "/home");
-              },
-            ),
-          ],
-        );
-      },
-    );
   }
 
   @override
