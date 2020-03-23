@@ -10,7 +10,7 @@ import 'package:permission_handler/permission_handler.dart';
 import '../utils/globals.dart' as globals;
 import '../utils/database_helper.dart';
 import '../utils/globals.dart';
-import '../utils/dialog.dart';
+import '../utils/dialogs.dart';
 
 
 class AuthenticateComponent extends StatefulWidget {

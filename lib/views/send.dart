@@ -18,7 +18,7 @@ import '../utils/helpers.dart';
 import '../utils/globals.dart' as globals;
 import '../utils/database_helper.dart';
 import '../utils/globals.dart';
-import '../utils/dialog.dart';
+import '../utils/dialogs.dart';
 
 
 class SendComponent extends StatefulWidget {

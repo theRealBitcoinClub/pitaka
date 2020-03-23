@@ -16,7 +16,7 @@ import '../api/endpoints.dart';
 import '../components/drawer.dart';
 import '../components/bottomNavigation.dart';
 import '../utils/globals.dart';
-import '../utils/dialog.dart';
+import '../utils/dialogs.dart';
 import '../utils/globals.dart' as globals;
 
 

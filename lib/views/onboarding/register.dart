@@ -1,31 +1,29 @@
-import 'package:flutter/material.dart';
-import 'package:flutter_sodium/flutter_sodium.dart';
-import 'package:back_button_interceptor/back_button_interceptor.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:flutter/services.dart';
-import 'package:local_auth/local_auth.dart';
-import 'package:local_auth/error_codes.dart' as auth_error;
+import 'dart:async';
+import 'dart:typed_data';
 import "package:hex/hex.dart";
 import 'package:intl/intl.dart';
-import 'dart:typed_data';
-import 'dart:async';
-import 'package:flutter_datetime_picker/flutter_datetime_picker.dart';
-import 'package:pitaka/utils/database_helper.dart';
-import 'package:flutter_udid/flutter_udid.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:local_auth/local_auth.dart';
 import 'package:passcode_screen/circle.dart';
 import 'package:passcode_screen/keyboard.dart';
-import 'package:easy_dialog/easy_dialog.dart';
+import 'package:flutter_udid/flutter_udid.dart';
+import 'package:pitaka/utils/database_helper.dart';
+import 'package:flutter_sodium/flutter_sodium.dart';
+import 'package:local_auth/error_codes.dart' as auth_error;
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:back_button_interceptor/back_button_interceptor.dart';
+import 'package:flutter_datetime_picker/flutter_datetime_picker.dart';
+import '../app.dart';
 import '../../api/endpoints.dart';
 import '../../utils/helpers.dart';
+import '../../utils/dialogs.dart';
 import '../../utils/globals.dart' as globals;
-import '../../utils/dialog.dart';
-import '../app.dart';
 
 
 class User {
   String firstName;
   String lastName;
-  String emailAddress;
   DateTime birthDate;
   String imei;
   String udid;
@@ -43,19 +41,20 @@ class RegisterComponentState extends State<RegisterComponent> {
   User newUser = new User();
   FocusNode focusNode = FocusNode();
   BuildContext _scaffoldContext;
-  final LocalAuthentication auth = LocalAuthentication();
   final _formKey = GlobalKey<FormState>();
+  final LocalAuthentication auth = LocalAuthentication();
+  final TextEditingController _birthDateController = new TextEditingController();
   var circleUIConfig = new CircleUIConfig();
   var keyboardUIConfig = new KeyboardUIConfig();
-  String iniPasscode = '';
-  String mobileNumber = "";
+  String udid;
   String publicKey;
   String privateKey;
-  String udid;
-  bool authenticated = false;
-  bool checkBiometrics = false;
-  bool _termsChecked = false;
+  String iniPasscode = '';
+  String mobileNumber = "";
   bool _submitting = false;
+  bool authenticated = false;
+  bool _termsChecked = false;
+  bool checkBiometrics = false;
 
   @override
   void initState() {
@@ -105,7 +104,7 @@ class RegisterComponentState extends State<RegisterComponent> {
   Future<Null> generateUdid(BuildContext context) async {
     // Generate using the flutter_udid library
     udid = await FlutterUdid.consistentUdid;
-    print("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ $udid @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
+    print("The value of udid in generateUdid() in register.dart is: $udid");
     // Store UDID in global storage
     await globals.storage.write(key: "udid", value: udid);
   }
@@ -113,16 +112,6 @@ class RegisterComponentState extends State<RegisterComponent> {
   String validateName(String value) {
     if (value.length < 2)
       return 'Name must be at least 2 characters';
-    else
-      return null;
-  }
-
-  String validateEmail(String value) {
-    Pattern pattern =
-        r'^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$';
-    RegExp regex = new RegExp(pattern);
-    if (!regex.hasMatch(value))
-      return 'Enter Valid Email';
     else
       return null;
   }
@@ -135,8 +124,6 @@ class RegisterComponentState extends State<RegisterComponent> {
       return null;
   }
 
-  final TextEditingController _birthDateController = new TextEditingController();
-
   DateTime convertToDate(String input) {
     try {
       var d = new DateFormat.yMd().parseStrict(input);
@@ -144,46 +131,6 @@ class RegisterComponentState extends State<RegisterComponent> {
     } catch (e) {
       return null;
     }
-  }
-
-  onDialogClose() {
-    // Not use
-  }
-
-  // Alert dialog for duplicate email address
-  showAlertDialog() {
-    EasyDialog(
-      title: Text(
-        "Duplicate Email Address!",
-        style: TextStyle(fontWeight: FontWeight.bold),
-        textScaleFactor: 1.2,
-      ),
-      description: Text(
-        "The email address is already registered. Please use other email address",
-        textScaleFactor: 1.1,
-        textAlign: TextAlign.center,
-      ),
-      height: 160,
-      closeButton: false,
-      contentList: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            new FlatButton(
-              padding: EdgeInsets.all(8),
-              textColor: Colors.lightBlue,
-              onPressed: () {
-                Navigator.of(context).pop();
-                // Use same mobile number after retry on duplicate email 
-                Application.router.navigateTo(context, "/onboarding/register/$mobileNumber");
-              },
-              child: new Text("OK",
-                textScaleFactor: 1.2,
-                textAlign: TextAlign.center,
-              ),),
-           ],)
-      ]
-    ).show(context, onDialogClose);
   }
 
   void _validateInputs(BuildContext context) async {
@@ -210,7 +157,6 @@ class RegisterComponentState extends State<RegisterComponent> {
             "firstname": newUser.firstName,
             "lastname": newUser.lastName,
             "birthday": "2006-01-02",
-            "email": newUser.emailAddress,
             "mobile_number": mobileNumber,
           };
 
@@ -223,11 +169,6 @@ class RegisterComponentState extends State<RegisterComponent> {
           userPayload["device_id"] = udid;
           
           var user = await createUser(userPayload);
-          
-          // Catch duplicate email address in the error
-          if (user.error == "duplicate_email") {
-            showAlertDialog();
-          }
 
           // Catch app version compatibility
           if (user.error == "outdated_app_version") {
@@ -305,18 +246,6 @@ class RegisterComponentState extends State<RegisterComponent> {
                   icon: const Icon(Icons.person),
                   hintText: 'Enter your last name',
                   labelText: 'Last Name',
-                ),
-              ),
-              new TextFormField(
-                keyboardType: TextInputType.emailAddress,
-                validator: validateEmail,
-                onSaved: (value) {
-                  newUser.emailAddress = value;
-                },
-                decoration: const InputDecoration(
-                  icon: const Icon(Icons.email),
-                  hintText: 'Enter your email address',
-                  labelText: 'Email address',
                 ),
               ),
               new GestureDetector(

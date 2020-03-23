@@ -4,7 +4,7 @@ import 'package:flutter/services.dart';
 import '../../api/endpoints.dart';
 import '../app.dart';
 import 'package:easy_dialog/easy_dialog.dart';
-import '../../utils/dialog.dart';
+import '../../utils/dialogs.dart';
 
 
 class Mobile {

@@ -3,7 +3,7 @@ import '../../api/endpoints.dart';
 import '../../views/app.dart';
 import '../../utils/helpers.dart';
 import '../../utils/globals.dart' as globals;
-import '../../utils/dialog.dart';
+import '../../utils/dialogs.dart';
 
 
 class Account {

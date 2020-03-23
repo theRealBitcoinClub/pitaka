@@ -20,6 +20,42 @@ _launchURL() async {
 onDialogClose() {
   // Not use
 }
+
+// Alert dialog for duplicate email address
+showAlertDialog(context) {
+  EasyDialog(
+    title: Text(
+      "Duplicate Email Address!",
+      style: TextStyle(fontWeight: FontWeight.bold),
+      textScaleFactor: 1.2,
+    ),
+    description: Text(
+      "The email address is already registered. Please use other email address",
+      textScaleFactor: 1.1,
+      textAlign: TextAlign.center,
+    ),
+    height: 160,
+    closeButton: false,
+    contentList: [
+      Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: <Widget>[
+          new FlatButton(
+            padding: EdgeInsets.all(8),
+            textColor: Colors.lightBlue,
+            onPressed: () {
+              Navigator.of(context).pop();
+              // Use same mobile number after retry on duplicate email 
+              //Application.router.navigateTo(context, "/onboarding/register/$mobileNumber");
+            },
+            child: new Text("OK",
+              textScaleFactor: 1.2,
+              textAlign: TextAlign.center,
+            ),),
+          ],)
+    ]
+  ).show(context, onDialogClose);
+}
   
 // Alert dialog for outdated app version
 showOutdatedAppVersionDialog(context) {
