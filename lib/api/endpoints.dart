@@ -107,7 +107,7 @@ Future<dynamic> sendGetRequest(url) async {
 }
 
 Future<GenericCreateResponse> createUser(payload) async {
-  //print("The value of payload in createUser() in endpoints.dart is: $payload");
+  print("The value of payload in createUser() in endpoints.dart is: $payload");
   try {
     final String url = globals.baseUrl + '/api/users/create';
     final response = await sendPostRequest(url, payload);
@@ -225,6 +225,7 @@ Future<GenericCreateResponse> addAccount(payload) async {
 }
 
 Future<PlainSuccessResponse> loginUser(payload) async {
+  print("The value of payload in loginUser() in endpoints.dart is: $payload");
   final String url = globals.baseUrl + '/api/auth/login';
   try {
     Response response;
