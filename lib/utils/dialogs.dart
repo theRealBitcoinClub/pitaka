@@ -22,7 +22,7 @@ onDialogClose() {
 }
 
 // Alert dialog for duplicate email address
-showAlertDialog(context) {
+showDuplicateEmailDialog(context) {
   EasyDialog(
     title: Text(
       "Duplicate Email Address!",
@@ -51,8 +51,47 @@ showAlertDialog(context) {
             child: new Text("OK",
               textScaleFactor: 1.2,
               textAlign: TextAlign.center,
-            ),),
-          ],)
+            ),
+          ),
+        ],
+      )
+    ]
+  ).show(context, onDialogClose);
+}
+
+// Alert dialog for duplicate mobile number
+showDuplicateMobileNumberDialog(context) {
+  EasyDialog(
+    title: Text(
+      "Duplicate Mobile Number!",
+      style: TextStyle(fontWeight: FontWeight.bold),
+      textScaleFactor: 1.2,
+    ),
+    description: Text(
+      "The mobile number is already registered. Please use other mobile number",
+      textScaleFactor: 1.1,
+      textAlign: TextAlign.center,
+    ),
+    height: 160,
+    closeButton: false,
+    contentList: [
+      Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: <Widget>[
+          new FlatButton(
+            padding: EdgeInsets.all(8),
+            textColor: Colors.lightBlue,
+            onPressed: () {
+              Navigator.of(context).pop();
+              Application.router.navigateTo(context, "/onboarding/request");
+            },
+            child: new Text("OK",
+              textScaleFactor: 1.2,
+              textAlign: TextAlign.center,
+            ),
+          ),
+        ],
+      )
     ]
   ).show(context, onDialogClose);
 }
@@ -96,8 +135,10 @@ showOutdatedAppVersionDialog(context) {
             child: new Text("Cancel",
               textScaleFactor: 1.2,
               textAlign: TextAlign.center,
-            ),),
-          ],)
+            ),
+          ),
+        ],
+      )
     ]
   ).show(context, onDialogClose);
 }
