@@ -26,45 +26,122 @@ Drawer buildDrawer(BuildContext context) {
           builder: (BuildContext context, AsyncSnapshot snapshot) {
             if (snapshot.hasData) {
               if (snapshot.data != null) {
-                return UserAccountsDrawerHeader(
-                  accountName: Text(
-                    snapshot.data['name'],
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                  accountEmail: Text('0917 606 6774'),
-                  currentAccountPicture: CircleAvatar(
-                    backgroundColor:
-                        Theme.of(context).platform == TargetPlatform.iOS
-                            ? Colors.blue
-                            : Colors.white,
-                    child: Text(
-                      snapshot.data['initials'],
-                      style: TextStyle(fontSize: 40.0),
+                return Container(
+                  height: 250.0,
+                  child: DrawerHeader(
+                    decoration: BoxDecoration(
+                      color: Colors.red,
                     ),
-                  ),
-                  otherAccountsPictures: <Widget>[
-                    StepProgressIndicator(
-                        totalSteps: 6,
-                        currentStep: 4,
-                        size: 36,
-                        selectedColor: Colors.black,
-                        unselectedColor: Colors.grey[200],
-                        customStep: (index, color, _) => color == Colors.black
-                            ? Container(
-                                color: color,
-                                child: Icon(
-                                Icons.check,
-                                color: Colors.white,
-                                ),
-                            )
-                            : Container(
-                                color: color,
-                                child: Icon(
-                                Icons.remove,
-                                ),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: <Widget>[
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: <Widget>[
+                            new CircleAvatar(
+                              backgroundColor: Colors.white,
+                              maxRadius: 35.0,
+                              child: Text(
+                                snapshot.data['initials'],
+                                style: TextStyle(fontSize: 40.0),
+                              ),
                             ),
+                            Column(
+                              children: <Widget>[
+                                Text(
+                                  snapshot.data['name'],
+                                  style: TextStyle(
+                                    fontSize: 18.0,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                                Text(
+                                  '0917 606 6774',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                  ),
+                                )
+                              ]
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.all(2.0),
+                              child: Icon(
+                                Icons.keyboard_arrow_right,
+                                size: 35.0,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ]
+                        ),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: <Widget>[
+                            // Text(
+                            //   "View Benefits",
+                            //   style: TextStyle(
+                            //     color: Colors.white,
+                            //     fontSize: 12.0,
+                            //   ),
+                            // ),
+                            // FlatButton(
+                            //   textColor: Colors.white,
+                            //   padding: EdgeInsets.all(2.0),
+                            //   onPressed: () {
+                            //     /*...*/
+                            //   },
+                            //   child: Text(
+                            //     "View Benefits",
+                            //     style: TextStyle(fontSize: 12.0),
+                            //   ),
+                            // ),
+
+                            OutlineButton(
+                              onPressed: () {
+                                /*...*/
+                              },
+                              borderSide: BorderSide(
+                                color: Colors.white
+                              ),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(5)
+                              ),
+                              padding: EdgeInsets.fromLTRB(8.0, 1.0, 8.0, 1.0),
+                              child: Text(
+                                "View Benefits",
+                                style: TextStyle(color: Colors.white),
+                              ),
+                            ),
+                            Row(
+                              children: <Widget>[
+                                StepProgressIndicator(
+                                  totalSteps: 3,
+                                  currentStep: 1,
+                                  size: 30,
+                                  selectedColor: Colors.black,
+                                  unselectedColor: Colors.grey[200],
+                                  customStep: (index, color, _) => color == Colors.black
+                                  ? Container(
+                                      color: color,
+                                      child: Icon(
+                                        Icons.check,
+                                        color: Colors.white,
+                                      ),
+                                  )
+                                  : Container(
+                                      color: color,
+                                      child: Icon(
+                                        Icons.remove,
+                                      ),
+                                  ),
+                                )
+                              ]
+                            )
+                          ]
+                        )
+                      ]
                     )
-                  ],
+                  )
                 );
               }
             } else {
