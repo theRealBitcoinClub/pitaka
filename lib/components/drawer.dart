@@ -75,7 +75,7 @@ Drawer buildDrawer(BuildContext context) {
                             ),
                             GestureDetector(
                               onTap: () {
-                                print("onTap called.");
+                                Application.router.navigateTo(context, "/userprofile");
                               },
                               child: Padding(
                                 padding: const EdgeInsets.all(2.0),
@@ -93,7 +93,7 @@ Drawer buildDrawer(BuildContext context) {
                           children: <Widget>[
                             OutlineButton(
                               onPressed: () {
-                                /*...*/
+                                Application.router.navigateTo(context, "/verificationlevels");
                               },
                               borderSide: BorderSide(
                                 color: Colors.white
