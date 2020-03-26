@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:step_progress_indicator/step_progress_indicator.dart';
 import '../views/app.dart';
 
 
@@ -27,7 +26,7 @@ Drawer buildDrawer(BuildContext context) {
             if (snapshot.hasData) {
               if (snapshot.data != null) {
                 return Container(
-                  height: 250.0,
+                  height: 230.0,
                   child: DrawerHeader(
                     decoration: BoxDecoration(
                       color: Colors.red,
@@ -77,25 +76,6 @@ Drawer buildDrawer(BuildContext context) {
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: <Widget>[
-                            // Text(
-                            //   "View Benefits",
-                            //   style: TextStyle(
-                            //     color: Colors.white,
-                            //     fontSize: 12.0,
-                            //   ),
-                            // ),
-                            // FlatButton(
-                            //   textColor: Colors.white,
-                            //   padding: EdgeInsets.all(2.0),
-                            //   onPressed: () {
-                            //     /*...*/
-                            //   },
-                            //   child: Text(
-                            //     "View Benefits",
-                            //     style: TextStyle(fontSize: 12.0),
-                            //   ),
-                            // ),
-
                             OutlineButton(
                               onPressed: () {
                                 /*...*/
@@ -106,34 +86,88 @@ Drawer buildDrawer(BuildContext context) {
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(5)
                               ),
-                              padding: EdgeInsets.fromLTRB(8.0, 1.0, 8.0, 1.0),
+                              padding: EdgeInsets.fromLTRB(6.0, 1.0, 6.0, 1.0),
                               child: Text(
                                 "View Benefits",
-                                style: TextStyle(color: Colors.white),
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 12.0,
+                                ),
                               ),
                             ),
+                            new SizedBox(
+                              height: 6.0,
+                            ),
                             Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: <Widget>[
-                                StepProgressIndicator(
-                                  totalSteps: 3,
-                                  currentStep: 1,
-                                  size: 30,
-                                  selectedColor: Colors.black,
-                                  unselectedColor: Colors.grey[200],
-                                  customStep: (index, color, _) => color == Colors.black
-                                  ? Container(
-                                      color: color,
-                                      child: Icon(
-                                        Icons.check,
-                                        color: Colors.white,
-                                      ),
-                                  )
-                                  : Container(
-                                      color: color,
-                                      child: Icon(
-                                        Icons.remove,
-                                      ),
+                                new CircleAvatar(
+                                  backgroundColor: Colors.white,
+                                  maxRadius: 10.0,
+                                  child: Icon(
+                                    Icons.check,
+                                    size: 16.0,
+                                    color: Colors.red,
                                   ),
+                                ),
+                                Expanded(
+                                    child: Divider(
+                                      color: Colors.white,
+                                      thickness: 3.0,
+                                    )
+                                ),
+                                new CircleAvatar(
+                                  backgroundColor: Colors.white,
+                                  maxRadius: 10.0,
+                                  child: Icon(
+                                    Icons.check,
+                                    size: 16.0,
+                                    color: Colors.red,
+                                  ),
+                                ),
+                                Expanded(
+                                    child: Divider(
+                                      color: Colors.white,
+                                      thickness: 3.0,
+                                    )
+                                ),
+                                new CircleAvatar(
+                                  backgroundColor: Colors.white,
+                                  maxRadius: 10.0,
+                                  child: Icon(
+                                    Icons.check,
+                                    size: 16.0,
+                                    color: Colors.red,
+                                  ),
+                                ),
+                              ]
+                            ),
+                            new SizedBox(
+                              height: 5.0,
+                            ),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: <Widget>[
+                                Text(
+                                  "Level 1",
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 8.0,
+                                  )
+                                ),
+                                Text(
+                                  "Level 2",
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 8.0,
+                                  )
+                                ),
+                                Text(
+                                  "Level 3",
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 8.0,
+                                  )
                                 )
                               ]
                             )
