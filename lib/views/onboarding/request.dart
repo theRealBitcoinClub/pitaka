@@ -1,5 +1,6 @@
 import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:back_button_interceptor/back_button_interceptor.dart';
 import '../app.dart';
 import '../../api/endpoints.dart';
@@ -70,6 +71,10 @@ class RequestComponentState extends State<RequestComponent> {
           "mobile_number": newMobile.number,
         };
         var resp = await requestOtpCode(numberPayload);
+
+        // Save mobile number in shared preferences
+        SharedPreferences prefs = await SharedPreferences.getInstance();
+        await prefs.setString('mobileNumber', newMobile.number);
 
         // Catch app version compatibility
         if (resp.error == "outdated_app_version") {

@@ -7,10 +7,14 @@ Future<Map> getUserDetails() async {
   SharedPreferences prefs = await SharedPreferences.getInstance();
   var firstName = prefs.getString('firstName');
   var lastName = prefs.getString('lastName');
+  var mobileNumber = prefs.getString('mobileNumber');
+  var mobileNumPart1 = mobileNumber.substring(3, 6);
+  var mobileNumPart2 = mobileNumber.substring(6, 9);
+  var mobileNumPart3 = mobileNumber.substring(9);
   var user = {
     'name': '$firstName $lastName',
     'initials': '${firstName[0]}${lastName[0]}'.toUpperCase(),
-    'email': prefs.getString('email')
+    'mobile_number': '0$mobileNumPart1 $mobileNumPart2 $mobileNumPart3'
   };
   return user;
 }
@@ -46,29 +50,40 @@ Drawer buildDrawer(BuildContext context) {
                               ),
                             ),
                             Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: <Widget>[
                                 Text(
                                   snapshot.data['name'],
                                   style: TextStyle(
                                     fontSize: 18.0,
+                                    letterSpacing: 0.5,
                                     fontWeight: FontWeight.bold,
                                     color: Colors.white,
                                   ),
                                 ),
+                                new SizedBox(
+                                  height: 8.0,
+                                ),
                                 Text(
-                                  '0917 606 6774',
+                                  snapshot.data['mobile_number'],
                                   style: TextStyle(
                                     color: Colors.white,
+                                    fontSize: 12,
                                   ),
                                 )
                               ]
                             ),
-                            Padding(
-                              padding: const EdgeInsets.all(2.0),
-                              child: Icon(
-                                Icons.keyboard_arrow_right,
-                                size: 35.0,
-                                color: Colors.white,
+                            GestureDetector(
+                              onTap: () {
+                                print("onTap called.");
+                              },
+                              child: Padding(
+                                padding: const EdgeInsets.all(2.0),
+                                child: Icon(
+                                  Icons.keyboard_arrow_right,
+                                  size: 30.0,
+                                  color: Colors.white54,
+                                ),
                               ),
                             ),
                           ]
