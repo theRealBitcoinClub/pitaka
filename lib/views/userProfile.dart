@@ -33,22 +33,6 @@ class UserProfileComponentState extends State<UserProfileComponent> {
   bool maxOfflineTime = globals.maxOfflineTime;
   int offlineTime = globals.offlineTime;
 
-  Future<Map> getUserDetails() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    var firstName = prefs.getString('firstName');
-    var lastName = prefs.getString('lastName');
-    var mobileNumber = prefs.getString('mobileNumber');
-    var mobileNumPart1 = mobileNumber.substring(3, 6);
-    var mobileNumPart2 = mobileNumber.substring(6, 9);
-    var mobileNumPart3 = mobileNumber.substring(9);
-    var user = {
-      'name': '$firstName $lastName',
-      'initials': '${firstName[0]}${lastName[0]}'.toUpperCase(),
-      'mobile_number': '0$mobileNumPart1 $mobileNumPart2 $mobileNumPart3'
-    };
-    return user;
-  }
-
   @override
   void initState() {
     super.initState();
@@ -74,6 +58,22 @@ class UserProfileComponentState extends State<UserProfileComponent> {
         print("Offline");
       }
     });
+  }
+
+  Future<Map> getUserDetails() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    var firstName = prefs.getString('firstName');
+    var lastName = prefs.getString('lastName');
+    var birthDate = prefs.getString('birthDate');
+    var email = prefs.getString('email');
+    var address = prefs.getString('address');
+    var user = {
+      'name': '$firstName $lastName'.toUpperCase(),
+      'birth_date': '$birthDate',
+      'email': '$email',
+      'address': '$address',
+    };
+    return user;
   }
 
   Future<bool> sendAuthentication() async {
@@ -190,192 +190,207 @@ class UserProfileComponentState extends State<UserProfileComponent> {
       child: ListView(
         padding: const EdgeInsets.symmetric(horizontal: 16.0),
         children: <Widget>[
-          // When maximum offline timeout (6 hours) is true show message transaction not allowed
-          online == false ? 
-            Container(
-              padding: EdgeInsets.only(top: 250),
-              child: new Text(
-                "You're offline, authentication is not possible!",
-                textAlign: TextAlign.center,
-              ),
-            ) 
-          : Column( 
-            children: <Widget>[
-              Container(
-                child: Text(
-                  'PERSONAL INFO',
-                  style: TextStyle(
-                    fontSize: 16.0,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                alignment: Alignment.centerLeft,
-                height: 30.0,
-              ),
-              Stack(
-                children: <Widget>[
-                  Column(
-                    children: <Widget>[
-                      DecoratedBox(
-                        decoration: BoxDecoration(
-                          color: Colors.red,
-                        ),
-                        child: Container(
-                          height: 100.0,
-                        )
-                      ),
-                      Container(
-                        height: 20.0
-                      )
-                    ],
-                  ),
-                  Column(
-                    children:<Widget>[
-                      Container(
-                        height: 50.0
-                      ),
-                      Center(
-                        child: CircleAvatar(
-                          backgroundColor: Colors.white,
-                          maxRadius: 35.0,
-                          child: new Image.asset(
-                            'assets/images/default_profile_pic.png',
-                          ), 
-                        ),
-                      )
-                    ]
-                  )
-                ],
-              ),
-              RichText(
-                text: TextSpan(
-                  style: Theme.of(context).textTheme.body1,
-                  children: [
-                    WidgetSpan(
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 2.0),
-                        child: Icon(Icons.edit),
-                      ),
-                    ),
-                    TextSpan(text: 'EDIT PROFILE'),
-                  ],
-                ),
-              ),
-              SizedBox(
-                height: 30.0,
-              ),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: <Widget>[
-                  Text(
-                    'NAME',
-                    style: TextStyle(color: Colors.grey),
-                  ),
-                  SizedBox(height: 5.0),
-                  Text('JESUS CABRELLOS TAGANNA'),
-                  SizedBox(height: 8.0),
-                  Divider(color: Colors.grey,), 
-                  SizedBox(height: 8.0),
-                  Text(
-                    'BIRTH DATE',
-                    style: TextStyle(color: Colors.grey),
-                  ),
-                  SizedBox(height: 5.0),
-                  Text('03-29-1977'),
-                  SizedBox(height: 8.0),
-                  Divider(color: Colors.grey,),
-                  SizedBox(height: 8.0),
-                  Text(
-                    'EMAIL',
-                    style: TextStyle(color: Colors.grey),
-                  ),
-                  SizedBox(height: 5.0),
-                  Text('JTAGANNA@YAHOO.COM'),
-                  SizedBox(height: 8.0),
-                  Divider(color: Colors.grey,),
-                  SizedBox(height: 8.0),
-                  Text(
-                    'CURRENT ADDRESS',
-                    style: TextStyle(color: Colors.grey),
-                  ),
-                  SizedBox(height: 5.0),
-                  Text(''),
-                  SizedBox(height: 8.0),
-                  Divider(color: Colors.grey,),
-                ]
-              ),
-              SizedBox(
-                height: 30.0,
-              ),
-              // Button for registering email
-              Visibility(
-                visible: true,
-                child: SizedBox(
-                  width: double.infinity,
-                  child: FlatButton.icon(
-                    color: Colors.red,
-                    icon: Icon(
-                      Icons.email,
-                      color: Colors.white,
-                    ),
-                    label: Text(
-                      'REGISTER AN EMAIL',
-                      style: TextStyle(color: Colors.white),
-                    ),
-                    onPressed: () {
-                      //Code to execute when Floating Action Button is clicked
-                      //...
-                    },
-                  ),
-                ),
-              ),
-              // Button for confirming email
-              Visibility(
-                visible: false,
-                child: SizedBox(
-                  width: double.infinity,
-                  child: FlatButton.icon(
-                    color: Colors.red,
-                    icon: Icon(
-                      Icons.contact_mail,
-                      color: Colors.white,
-                    ),
-                    label: Text(
-                      'VERIFY EMAIL',
-                      style: TextStyle(color: Colors.white),
-                    ),
-                    onPressed: () {
-                      //Code to execute when Floating Action Button is clicked
-                      //...
-                    },
-                  ),
-                ),
-              ),
-              // Button for verifying identity
-              Visibility(
-                visible: false,
-                child: SizedBox(
-                  width: double.infinity,
-                  child: FlatButton.icon(
-                    color: Colors.red,
-                    icon: Icon(
-                      Icons.person,
-                      color: Colors.white,
-                    ),
-                    label: Text(
-                      'VERIFY IDENTITY',
-                      style: TextStyle(color: Colors.white),
-                    ),
-                    onPressed: () {
-                      //Code to execute when Floating Action Button is clicked
-                      //...
-                    },
-                  ),
-                )
-              )
-            ]
-            )
-        ],
+          FutureBuilder(
+            future: getUserDetails(),
+            builder: (BuildContext context, AsyncSnapshot snapshot) {
+              if (snapshot.hasData) {
+                if (snapshot.data != null) {
+                  return Container(
+                    child: Column(
+                      children: <Widget>[
+                        // When maximum offline timeout (6 hours) is true show message transaction not allowed
+                        online == false ? 
+                          Container(
+                            padding: EdgeInsets.only(top: 250),
+                            child: new Text(
+                              "You're offline, authentication is not possible!",
+                              textAlign: TextAlign.center,
+                            ),
+                          ) 
+                        : Column( 
+                          children: <Widget>[
+                            Container(
+                              child: Text(
+                                'PERSONAL INFO',
+                                style: TextStyle(
+                                  fontSize: 16.0,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              alignment: Alignment.centerLeft,
+                              height: 30.0,
+                            ),
+                            Stack(
+                              children: <Widget>[
+                                Column(
+                                  children: <Widget>[
+                                    DecoratedBox(
+                                      decoration: BoxDecoration(
+                                        color: Colors.red,
+                                      ),
+                                      child: Container(
+                                        height: 100.0,
+                                      )
+                                    ),
+                                    Container(
+                                      height: 20.0
+                                    )
+                                  ],
+                                ),
+                                Column(
+                                  children:<Widget>[
+                                    Container(
+                                      height: 50.0
+                                    ),
+                                    Center(
+                                      child: CircleAvatar(
+                                        backgroundColor: Colors.white,
+                                        maxRadius: 35.0,
+                                        child: new Image.asset(
+                                          'assets/images/default_profile_pic.png',
+                                        ), 
+                                      ),
+                                    )
+                                  ]
+                                )
+                              ],
+                            ),
+                            RichText(
+                              text: TextSpan(
+                                style: Theme.of(context).textTheme.body1,
+                                children: [
+                                  WidgetSpan(
+                                    child: Padding(
+                                      padding: const EdgeInsets.symmetric(horizontal: 2.0),
+                                      child: Icon(Icons.edit),
+                                    ),
+                                  ),
+                                  TextSpan(text: 'EDIT PROFILE'),
+                                ],
+                              ),
+                            ),
+                            SizedBox(
+                              height: 30.0,
+                            ),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: <Widget>[
+                                Text(
+                                  'NAME',
+                                  style: TextStyle(color: Colors.grey),
+                                ),
+                                SizedBox(height: 5.0),
+                                Text(snapshot.data['name']),
+                                SizedBox(height: 8.0),
+                                Divider(color: Colors.grey,), 
+                                SizedBox(height: 8.0),
+                                Text(
+                                  'BIRTH DATE',
+                                  style: TextStyle(color: Colors.grey),
+                                ),
+                                SizedBox(height: 5.0),
+                                Text(snapshot.data['birth_date']),
+                                SizedBox(height: 8.0),
+                                Divider(color: Colors.grey,),
+                                SizedBox(height: 8.0),
+                                Text(
+                                  'EMAIL',
+                                  style: TextStyle(color: Colors.grey),
+                                ),
+                                SizedBox(height: 5.0),
+                                Text(snapshot.data['email']),
+                                SizedBox(height: 8.0),
+                                Divider(color: Colors.grey,),
+                                SizedBox(height: 8.0),
+                                Text(
+                                  'CURRENT ADDRESS',
+                                  style: TextStyle(color: Colors.grey),
+                                ),
+                                SizedBox(height: 5.0),
+                                Text(snapshot.data['address']),
+                                SizedBox(height: 8.0),
+                                Divider(color: Colors.grey,),
+                              ]
+                            ),
+                            SizedBox(
+                              height: 30.0,
+                            ),
+                            // Button for registering email
+                            Visibility(
+                              visible: true,
+                              child: SizedBox(
+                                width: double.infinity,
+                                child: FlatButton.icon(
+                                  color: Colors.red,
+                                  icon: Icon(
+                                    Icons.email,
+                                    color: Colors.white,
+                                  ),
+                                  label: Text(
+                                    'REGISTER AN EMAIL',
+                                    style: TextStyle(color: Colors.white),
+                                  ),
+                                  onPressed: () {
+                                    //Code to execute when Floating Action Button is clicked
+                                    //...
+                                  },
+                                ),
+                              ),
+                            ),
+                            // Button for confirming email
+                            Visibility(
+                              visible: false,
+                              child: SizedBox(
+                                width: double.infinity,
+                                child: FlatButton.icon(
+                                  color: Colors.red,
+                                  icon: Icon(
+                                    Icons.contact_mail,
+                                    color: Colors.white,
+                                  ),
+                                  label: Text(
+                                    'VERIFY EMAIL',
+                                    style: TextStyle(color: Colors.white),
+                                  ),
+                                  onPressed: () {
+                                    //Code to execute when Floating Action Button is clicked
+                                    //...
+                                  },
+                                ),
+                              ),
+                            ),
+                            // Button for verifying identity
+                            Visibility(
+                              visible: false,
+                              child: SizedBox(
+                                width: double.infinity,
+                                child: FlatButton.icon(
+                                  color: Colors.red,
+                                  icon: Icon(
+                                    Icons.person,
+                                    color: Colors.white,
+                                  ),
+                                  label: Text(
+                                    'VERIFY IDENTITY',
+                                    style: TextStyle(color: Colors.white),
+                                  ),
+                                  onPressed: () {
+                                    //Code to execute when Floating Action Button is clicked
+                                    //...
+                                  },
+                                ),
+                              )
+                            )
+                          ]
+                          )
+                      ]
+                    )
+                  );
+                }
+              }
+            }
+          )
+        ]
       )
     );
     var ws = new List<Widget>();
