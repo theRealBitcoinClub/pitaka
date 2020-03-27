@@ -134,11 +134,11 @@ Drawer buildDrawer(BuildContext context) {
                                 new CircleAvatar(
                                   backgroundColor: Colors.white,
                                   maxRadius: 10.0,
-                                  child: Icon(
-                                    Icons.check,
-                                    size: 16.0,
-                                    color: Colors.red,
-                                  ),
+                                  // child: Icon(
+                                  //   Icons.check,
+                                  //   size: 16.0,
+                                  //   color: Colors.red,
+                                  // ),
                                 ),
                                 Expanded(
                                     child: Divider(
@@ -149,11 +149,11 @@ Drawer buildDrawer(BuildContext context) {
                                 new CircleAvatar(
                                   backgroundColor: Colors.white,
                                   maxRadius: 10.0,
-                                  child: Icon(
-                                    Icons.check,
-                                    size: 16.0,
-                                    color: Colors.red,
-                                  ),
+                                  // child: Icon(
+                                  //   Icons.check,
+                                  //   size: 16.0,
+                                  //   color: Colors.red,
+                                  // ),
                                 ),
                               ]
                             ),

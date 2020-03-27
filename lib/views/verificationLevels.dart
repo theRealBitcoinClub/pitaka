@@ -17,22 +17,20 @@ class VerificationLevelsComponent extends StatefulWidget {
 }
 
 class VerificationLevelsComponentState extends State<VerificationLevelsComponent> {
-  String path = '/send';
-  bool _submitting = false;
-  final _formKey = GlobalKey<FormState>();
+  StreamSubscription _connectionChangeStream;
+  DatabaseHelper databaseHelper = DatabaseHelper();
   static bool _errorFound = false;
   static String _errorMessage;
-  bool online = globals.online;
-  DatabaseHelper databaseHelper = DatabaseHelper();
-  StreamSubscription _connectionChangeStream;
-  bool isOffline = false;
+  final _formKey = GlobalKey<FormState>();
+  final TextEditingController _accountController = new TextEditingController();
   String newVal;
+  String sessionKey = '';
+  bool isOffline = false;
+  bool _submitting = false;
+  bool online = globals.online;
+  bool disableSubmitButton = false;
   bool maxOfflineTime = globals.maxOfflineTime;
   int offlineTime = globals.offlineTime;
-
-  String sessionKey = '';
-
-  
 
   @override
   void initState() {
@@ -60,8 +58,6 @@ class VerificationLevelsComponentState extends State<VerificationLevelsComponent
       }
     });
   }
-
-  final TextEditingController _accountController = new TextEditingController();
 
   Future<bool> sendAuthentication() async {
     // Set _submitting to true for progress indicator to display while sending the request
@@ -104,74 +100,53 @@ class VerificationLevelsComponentState extends State<VerificationLevelsComponent
     return response.success;
   }
 
-  void scanBarcode() async {
-    allowCamera();
-    String barcode = await FlutterBarcodeScanner.scanBarcode("#ff6666", "Cancel", true,  ScanMode.DEFAULT);
-    setState(() {
-      if (barcode.length > 0) {
-        sessionKey = barcode;
-        sendAuthentication();
-      }
-    });
-  }
-
-  void allowCamera() async {
-    var permission = PermissionHandler();
-    PermissionStatus cameraStatus = await permission.checkPermissionStatus(PermissionGroup.camera);
-    if (cameraStatus == PermissionStatus.denied) {
-      await permission.requestPermissions([PermissionGroup.camera]);
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(
-          title: Text('Verification Levels'),
-          centerTitle: true,
-          leading: IconButton(icon:Icon(Icons.arrow_back),
-            onPressed:() => Navigator.pop(context, false),
-          ),
+      appBar: AppBar(
+        title: Text('Verification Levels'),
+        centerTitle: true,
+        leading: IconButton(icon:Icon(Icons.arrow_back),
+          onPressed:() => Navigator.pop(context, false),
         ),
-        body: new Builder(builder: (BuildContext context) {
-          return new Stack(children: _buildForm(context));
-        }),
-      );
+      ),
+      body: new Builder(builder: (BuildContext context) {
+        return new Stack(children: _buildForm(context));
+      }),
+    );
   }
 
-bool disableSubmitButton = false;
+  // Alert dialog for slow internet speed connection
+  // This is called in sendFunds() when there is connection timeout error response
+  // from transferAsset() in endpoints.dart
+  showAlertDialog(BuildContext context) {
+    // set up the buttons
+    Widget okButton = FlatButton(
+      child: Text("Try again"),
+      onPressed:  () {
+        Navigator.pop(context);
+        Application.router.navigateTo(context, "/authenticate");
+      }
+    );
 
-// Alert dialog for slow internet speed connection
-// This is called in sendFunds() when there is connection timeout error response
-// from transferAsset() in endpoints.dart
-showAlertDialog(BuildContext context) {
-  // set up the buttons
-  Widget okButton = FlatButton(
-    child: Text("Try again"),
-    onPressed:  () {
-      Navigator.pop(context);
-      Application.router.navigateTo(context, "/authenticate");
-    }
-  );
+    // set up the AlertDialog
+    AlertDialog alert = AlertDialog(
+      title: Text("Request Failure!"),
+      content: Text("There was an error in sending the request!"
+      ),
+      actions: [
+        okButton,
+      ],
+    );
 
-  // set up the AlertDialog
-  AlertDialog alert = AlertDialog(
-    title: Text("Request Failure!"),
-    content: Text("There was an error in sending the request!"
-    ),
-    actions: [
-      okButton,
-    ],
-  );
-
-  // show the dialog
-  showDialog(
-    context: context,
-    builder: (BuildContext context) {
-      return alert;
-    },
-  );
-}
+    // show the dialog
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return alert;
+      },
+    );
+  }
 
 List<Widget> _buildForm(BuildContext context) {
     Form form = new Form(
@@ -192,7 +167,7 @@ List<Widget> _buildForm(BuildContext context) {
               ),
             ) 
           : new Container(
-
+            
             ),
         ],
       )

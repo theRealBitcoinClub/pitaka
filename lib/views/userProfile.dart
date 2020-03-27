@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
 import '../views/app.dart';
 import '../api/endpoints.dart';
@@ -17,22 +18,36 @@ class UserProfileComponent extends StatefulWidget {
 }
 
 class UserProfileComponentState extends State<UserProfileComponent> {
-  String path = '/send';
-  bool _submitting = false;
+  StreamSubscription _connectionChangeStream;
+  DatabaseHelper databaseHelper = DatabaseHelper();
   final _formKey = GlobalKey<FormState>();
+  final TextEditingController _accountController = new TextEditingController();
   static bool _errorFound = false;
   static String _errorMessage;
-  bool online = globals.online;
-  DatabaseHelper databaseHelper = DatabaseHelper();
-  StreamSubscription _connectionChangeStream;
-  bool isOffline = false;
   String newVal;
+  String sessionKey = '';
+  bool isOffline = false;
+  bool _submitting = false;
+  bool online = globals.online;
+  bool disableSubmitButton = false;
   bool maxOfflineTime = globals.maxOfflineTime;
   int offlineTime = globals.offlineTime;
 
-  String sessionKey = '';
-
-  
+  Future<Map> getUserDetails() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    var firstName = prefs.getString('firstName');
+    var lastName = prefs.getString('lastName');
+    var mobileNumber = prefs.getString('mobileNumber');
+    var mobileNumPart1 = mobileNumber.substring(3, 6);
+    var mobileNumPart2 = mobileNumber.substring(6, 9);
+    var mobileNumPart3 = mobileNumber.substring(9);
+    var user = {
+      'name': '$firstName $lastName',
+      'initials': '${firstName[0]}${lastName[0]}'.toUpperCase(),
+      'mobile_number': '0$mobileNumPart1 $mobileNumPart2 $mobileNumPart3'
+    };
+    return user;
+  }
 
   @override
   void initState() {
@@ -60,8 +75,6 @@ class UserProfileComponentState extends State<UserProfileComponent> {
       }
     });
   }
-
-  final TextEditingController _accountController = new TextEditingController();
 
   Future<bool> sendAuthentication() async {
     // Set _submitting to true for progress indicator to display while sending the request
@@ -139,49 +152,44 @@ class UserProfileComponentState extends State<UserProfileComponent> {
       );
   }
 
-bool disableSubmitButton = false;
+  // Alert dialog for slow internet speed connection
+  // This is called in sendFunds() when there is connection timeout error response
+  // from transferAsset() in endpoints.dart
+  showAlertDialog(BuildContext context) {
+    // set up the buttons
+    Widget okButton = FlatButton(
+      child: Text("Try again"),
+      onPressed:  () {
+        Navigator.pop(context);
+        Application.router.navigateTo(context, "/authenticate");
+      }
+    );
 
-// Alert dialog for slow internet speed connection
-// This is called in sendFunds() when there is connection timeout error response
-// from transferAsset() in endpoints.dart
-showAlertDialog(BuildContext context) {
-  // set up the buttons
-  Widget okButton = FlatButton(
-    child: Text("Try again"),
-    onPressed:  () {
-      Navigator.pop(context);
-      Application.router.navigateTo(context, "/authenticate");
-    }
-  );
+    // set up the AlertDialog
+    AlertDialog alert = AlertDialog(
+      title: Text("Request Failure!"),
+      content: Text("There was an error in sending the request!"
+      ),
+      actions: [
+        okButton,
+      ],
+    );
 
-  // set up the AlertDialog
-  AlertDialog alert = AlertDialog(
-    title: Text("Request Failure!"),
-    content: Text("There was an error in sending the request!"
-    ),
-    actions: [
-      okButton,
-    ],
-  );
+    // show the dialog
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return alert;
+      },
+    );
+  }
 
-  // show the dialog
-  showDialog(
-    context: context,
-    builder: (BuildContext context) {
-      return alert;
-    },
-  );
-}
-
-List<Widget> _buildForm(BuildContext context) {
-    Form form = new Form(
+  List<Widget> _buildForm(BuildContext context) {
+    Form form = Form(
       key: _formKey,
-      child: new ListView(
+      child: ListView(
         padding: const EdgeInsets.symmetric(horizontal: 16.0),
         children: <Widget>[
-          new SizedBox(
-            height: 30.0,
-          ),
           // When maximum offline timeout (6 hours) is true show message transaction not allowed
           online == false ? 
             Container(
@@ -191,9 +199,182 @@ List<Widget> _buildForm(BuildContext context) {
                 textAlign: TextAlign.center,
               ),
             ) 
-          : new Container(
-
-            ),
+          : Column( 
+            children: <Widget>[
+              Container(
+                child: Text(
+                  'PERSONAL INFO',
+                  style: TextStyle(
+                    fontSize: 16.0,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                alignment: Alignment.centerLeft,
+                height: 30.0,
+              ),
+              Stack(
+                children: <Widget>[
+                  Column(
+                    children: <Widget>[
+                      DecoratedBox(
+                        decoration: BoxDecoration(
+                          color: Colors.red,
+                        ),
+                        child: Container(
+                          height: 100.0,
+                        )
+                      ),
+                      Container(
+                        height: 20.0
+                      )
+                    ],
+                  ),
+                  Column(
+                    children:<Widget>[
+                      Container(
+                        height: 50.0
+                      ),
+                      Center(
+                        child: CircleAvatar(
+                          backgroundColor: Colors.white,
+                          maxRadius: 35.0,
+                          child: new Image.asset(
+                            'assets/images/default_profile_pic.png',
+                          ), 
+                        ),
+                      )
+                    ]
+                  )
+                ],
+              ),
+              RichText(
+                text: TextSpan(
+                  style: Theme.of(context).textTheme.body1,
+                  children: [
+                    WidgetSpan(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 2.0),
+                        child: Icon(Icons.edit),
+                      ),
+                    ),
+                    TextSpan(text: 'EDIT PROFILE'),
+                  ],
+                ),
+              ),
+              SizedBox(
+                height: 30.0,
+              ),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  Text(
+                    'NAME',
+                    style: TextStyle(color: Colors.grey),
+                  ),
+                  SizedBox(height: 5.0),
+                  Text('JESUS CABRELLOS TAGANNA'),
+                  SizedBox(height: 8.0),
+                  Divider(color: Colors.grey,), 
+                  SizedBox(height: 8.0),
+                  Text(
+                    'BIRTH DATE',
+                    style: TextStyle(color: Colors.grey),
+                  ),
+                  SizedBox(height: 5.0),
+                  Text('03-29-1977'),
+                  SizedBox(height: 8.0),
+                  Divider(color: Colors.grey,),
+                  SizedBox(height: 8.0),
+                  Text(
+                    'EMAIL',
+                    style: TextStyle(color: Colors.grey),
+                  ),
+                  SizedBox(height: 5.0),
+                  Text('JTAGANNA@YAHOO.COM'),
+                  SizedBox(height: 8.0),
+                  Divider(color: Colors.grey,),
+                  SizedBox(height: 8.0),
+                  Text(
+                    'CURRENT ADDRESS',
+                    style: TextStyle(color: Colors.grey),
+                  ),
+                  SizedBox(height: 5.0),
+                  Text(''),
+                  SizedBox(height: 8.0),
+                  Divider(color: Colors.grey,),
+                ]
+              ),
+              SizedBox(
+                height: 30.0,
+              ),
+              // Button for registering email
+              Visibility(
+                visible: true,
+                child: SizedBox(
+                  width: double.infinity,
+                  child: FlatButton.icon(
+                    color: Colors.red,
+                    icon: Icon(
+                      Icons.email,
+                      color: Colors.white,
+                    ),
+                    label: Text(
+                      'REGISTER AN EMAIL',
+                      style: TextStyle(color: Colors.white),
+                    ),
+                    onPressed: () {
+                      //Code to execute when Floating Action Button is clicked
+                      //...
+                    },
+                  ),
+                ),
+              ),
+              // Button for confirming email
+              Visibility(
+                visible: false,
+                child: SizedBox(
+                  width: double.infinity,
+                  child: FlatButton.icon(
+                    color: Colors.red,
+                    icon: Icon(
+                      Icons.contact_mail,
+                      color: Colors.white,
+                    ),
+                    label: Text(
+                      'VERIFY EMAIL',
+                      style: TextStyle(color: Colors.white),
+                    ),
+                    onPressed: () {
+                      //Code to execute when Floating Action Button is clicked
+                      //...
+                    },
+                  ),
+                ),
+              ),
+              // Button for verifying identity
+              Visibility(
+                visible: false,
+                child: SizedBox(
+                  width: double.infinity,
+                  child: FlatButton.icon(
+                    color: Colors.red,
+                    icon: Icon(
+                      Icons.person,
+                      color: Colors.white,
+                    ),
+                    label: Text(
+                      'VERIFY IDENTITY',
+                      style: TextStyle(color: Colors.white),
+                    ),
+                    onPressed: () {
+                      //Code to execute when Floating Action Button is clicked
+                      //...
+                    },
+                  ),
+                )
+              )
+            ]
+            )
         ],
       )
     );
