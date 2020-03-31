@@ -1,8 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:permission_handler/permission_handler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
 import '../views/app.dart';
 import '../api/endpoints.dart';
 import '../utils/helpers.dart';
@@ -75,7 +73,7 @@ class UserProfileComponentState extends State<UserProfileComponent> {
     };
     return user;
   }
-
+  
   Future<bool> sendAuthentication() async {
     // Set _submitting to true for progress indicator to display while sending the request
     _submitting = true;
@@ -99,13 +97,6 @@ class UserProfileComponentState extends State<UserProfileComponent> {
       showOutdatedAppVersionDialog(context);
     }
 
-    // Check the error response from authWebApp in endpoints.dart
-    // Call the function for alert dialog
-    if (response.error == "request_error") {
-      showAlertDialog(context);
-      // Return null so the second alert dialog won't show
-      return null;
-    }
     if (response.success == false) {
       _errorFound = true;
       _errorMessage = response.error;
@@ -115,25 +106,6 @@ class UserProfileComponentState extends State<UserProfileComponent> {
     // Set _submitting to false after sending the request and return the response
     _submitting = false;
     return response.success;
-  }
-
-  void scanBarcode() async {
-    allowCamera();
-    String barcode = await FlutterBarcodeScanner.scanBarcode("#ff6666", "Cancel", true,  ScanMode.DEFAULT);
-    setState(() {
-      if (barcode.length > 0) {
-        sessionKey = barcode;
-        sendAuthentication();
-      }
-    });
-  }
-
-  void allowCamera() async {
-    var permission = PermissionHandler();
-    PermissionStatus cameraStatus = await permission.checkPermissionStatus(PermissionGroup.camera);
-    if (cameraStatus == PermissionStatus.denied) {
-      await permission.requestPermissions([PermissionGroup.camera]);
-    }
   }
 
   @override
@@ -150,38 +122,6 @@ class UserProfileComponentState extends State<UserProfileComponent> {
           return new Stack(children: _buildForm(context));
         }),
       );
-  }
-
-  // Alert dialog for slow internet speed connection
-  // This is called in sendFunds() when there is connection timeout error response
-  // from transferAsset() in endpoints.dart
-  showAlertDialog(BuildContext context) {
-    // set up the buttons
-    Widget okButton = FlatButton(
-      child: Text("Try again"),
-      onPressed:  () {
-        Navigator.pop(context);
-        Application.router.navigateTo(context, "/authenticate");
-      }
-    );
-
-    // set up the AlertDialog
-    AlertDialog alert = AlertDialog(
-      title: Text("Request Failure!"),
-      content: Text("There was an error in sending the request!"
-      ),
-      actions: [
-        okButton,
-      ],
-    );
-
-    // show the dialog
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return alert;
-      },
-    );
   }
 
   List<Widget> _buildForm(BuildContext context) {
@@ -331,8 +271,7 @@ class UserProfileComponentState extends State<UserProfileComponent> {
                                     style: TextStyle(color: Colors.white),
                                   ),
                                   onPressed: () {
-                                    //Code to execute when Floating Action Button is clicked
-                                    //...
+                                    Application.router.navigateTo(context, "/registeremailform");
                                   },
                                 ),
                               ),
@@ -388,6 +327,7 @@ class UserProfileComponentState extends State<UserProfileComponent> {
                   );
                 }
               }
+              return Container();
             }
           )
         ]

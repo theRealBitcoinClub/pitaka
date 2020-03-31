@@ -106,6 +106,17 @@ Future<dynamic> sendGetRequest(url) async {
   return response;
 }
 
+Future<GenericCreateResponse> registerEmail(payload) async {
+  print("The value of payload in registerEmail() in endpoints.dart is: $payload");
+  try {
+    final String url = globals.baseUrl + '/api/users/register-email';
+    final response = await sendPostRequest(url, payload);
+    return GenericCreateResponse.fromResponse(response);
+  } catch (e) {
+    throw Exception(e);
+  }
+}
+
 Future<GenericCreateResponse> createUser(payload) async {
   print("The value of payload in createUser() in endpoints.dart is: $payload");
   try {
