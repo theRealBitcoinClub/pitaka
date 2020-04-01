@@ -5,6 +5,8 @@ import '../views/app.dart';
 
 Future<Map> getUserDetails() async {
   SharedPreferences prefs = await SharedPreferences.getInstance();
+  var level2 = (prefs.getBool('level2') ?? false);
+  var level3 = (prefs.getBool('level3') ?? false);
   var firstName = prefs.getString('firstName');
   var lastName = prefs.getString('lastName');
   var mobileNumber = prefs.getString('mobileNumber');
@@ -14,7 +16,9 @@ Future<Map> getUserDetails() async {
   var user = {
     'name': '$firstName $lastName',
     'initials': '${firstName[0]}${lastName[0]}'.toUpperCase(),
-    'mobile_number': '0$mobileNumPart1 $mobileNumPart2 $mobileNumPart3'
+    'mobile_number': '0$mobileNumPart1 $mobileNumPart2 $mobileNumPart3',
+    'level2': level2,
+    'level3': level3
   };
   return user;
 }
@@ -110,13 +114,13 @@ Drawer buildDrawer(BuildContext context) {
                                 ),
                               ),
                             ),
-                            new SizedBox(
+                            SizedBox(
                               height: 6.0,
                             ),
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: <Widget>[
-                                new CircleAvatar(
+                                CircleAvatar(
                                   backgroundColor: Colors.white,
                                   maxRadius: 10.0,
                                   child: Icon(
@@ -131,30 +135,42 @@ Drawer buildDrawer(BuildContext context) {
                                       thickness: 3.0,
                                     )
                                 ),
-                                new CircleAvatar(
-                                  backgroundColor: Colors.white,
-                                  maxRadius: 10.0,
-                                  // child: Icon(
-                                  //   Icons.check,
-                                  //   size: 16.0,
-                                  //   color: Colors.red,
-                                  // ),
-                                ),
+                                snapshot.data['level2'] ?
+                                  CircleAvatar(
+                                    backgroundColor: Colors.white,
+                                    maxRadius: 10.0,
+                                    child: Icon(
+                                      Icons.check,
+                                      size: 16.0,
+                                      color: Colors.red,
+                                    ),
+                                  )
+                                :
+                                  CircleAvatar(
+                                    backgroundColor: Colors.white,
+                                    maxRadius: 10.0,
+                                  ),
                                 Expanded(
                                     child: Divider(
                                       color: Colors.white,
                                       thickness: 3.0,
                                     )
                                 ),
-                                new CircleAvatar(
-                                  backgroundColor: Colors.white,
-                                  maxRadius: 10.0,
-                                  // child: Icon(
-                                  //   Icons.check,
-                                  //   size: 16.0,
-                                  //   color: Colors.red,
-                                  // ),
-                                ),
+                                snapshot.data['level3'] ?
+                                  CircleAvatar(
+                                    backgroundColor: Colors.white,
+                                    maxRadius: 10.0,
+                                    child: Icon(
+                                      Icons.check,
+                                      size: 16.0,
+                                      color: Colors.red,
+                                    ),
+                                  )
+                                :
+                                  CircleAvatar(
+                                    backgroundColor: Colors.white,
+                                    maxRadius: 10.0,
+                                  ),
                               ]
                             ),
                             new SizedBox(
