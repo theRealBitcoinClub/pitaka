@@ -106,13 +106,28 @@ Future<dynamic> sendGetRequest(url) async {
   return response;
 }
 
+Future<GenericCreateResponse> verifyEmail(payload) async {
+  print("The value of payload in verifyEmail() in endpoints.dart is: $payload");
+  try {
+    final String url = globals.baseUrl + '/api/users/verify-email';
+    final response = await sendPostRequest(url, payload);
+    if (response.data['success']) {
+      // Save email in shared preferences
+      // SharedPreferences prefs = await SharedPreferences.getInstance();
+      // await prefs.setString('email', payload['email']);
+  }
+    return GenericCreateResponse.fromResponse(response);
+  } catch (e) {
+    throw Exception(e);
+  }
+}
+
 Future<GenericCreateResponse> registerEmail(payload) async {
   print("The value of payload in registerEmail() in endpoints.dart is: $payload");
   try {
     final String url = globals.baseUrl + '/api/users/register-email';
     final response = await sendPostRequest(url, payload);
     if (response.data['success']) {
-      print("@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ${payload['email']} @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
       // Save email in shared preferences
       SharedPreferences prefs = await SharedPreferences.getInstance();
       await prefs.setString('email', payload['email']);

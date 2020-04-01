@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../views/app.dart';
 import '../api/endpoints.dart';
@@ -29,14 +30,51 @@ class UserProfileComponentState extends State<UserProfileComponent> {
   bool online = globals.online;
   bool disableSubmitButton = false;
   bool maxOfflineTime = globals.maxOfflineTime;
+  bool registerEmailBtnBool;
+  bool verifyEmailBtnBool;
+  bool verifyIdentityBtnBool;
   int offlineTime = globals.offlineTime;
-  
 
   @override
   void initState() {
     super.initState();
     ConnectionStatusSingleton connectionStatus = ConnectionStatusSingleton.getInstance();
     _connectionChangeStream = connectionStatus.connectionChange.listen(connectionChanged);
+
+    // Run getAccounts() function upon widget build
+    SchedulerBinding.instance.addPostFrameCallback((_) {
+      setState(() {
+        setVariablesForBtns();
+      });
+    });
+  }
+
+  void setVariablesForBtns() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    var registerEmailBtn = prefs.getString('registerEmailBtn');
+    if (registerEmailBtn == "true") {
+      registerEmailBtnBool = true;
+    }
+    else if (registerEmailBtn == "false") {
+      registerEmailBtnBool = false;
+    }
+
+    var verifyEmailBtn = prefs.getString('verifyEmailBtn');
+    if (verifyEmailBtn == "true") {
+      verifyEmailBtnBool = true;
+    }
+    else if (verifyEmailBtn == "false") {
+      verifyEmailBtnBool = false;
+    }
+
+    var verifyIdentityBtn = prefs.getString('verifyIdentityBtn');
+    if (verifyIdentityBtn == "true") {
+      verifyIdentityBtnBool = true;
+    }
+    else if (verifyIdentityBtn == "false") {
+      verifyIdentityBtnBool = false;
+    }
   }
 
   void connectionChanged(dynamic hasConnection) {
@@ -258,7 +296,7 @@ class UserProfileComponentState extends State<UserProfileComponent> {
                             ),
                             // Button for registering email
                             Visibility(
-                              visible: globals.registerEmailBtn,
+                              visible: registerEmailBtnBool,
                               child: SizedBox(
                                 width: double.infinity,
                                 child: FlatButton.icon(
@@ -279,7 +317,7 @@ class UserProfileComponentState extends State<UserProfileComponent> {
                             ),
                             // Button for confirming email
                             Visibility(
-                              visible: globals.verifyEmailBtn,
+                              visible: verifyEmailBtnBool,
                               child: SizedBox(
                                 width: double.infinity,
                                 child: FlatButton.icon(
@@ -300,7 +338,7 @@ class UserProfileComponentState extends State<UserProfileComponent> {
                             ),
                             // Button for verifying identity
                             Visibility(
-                              visible: false,
+                              visible: verifyIdentityBtnBool,
                               child: SizedBox(
                                 width: double.infinity,
                                 child: FlatButton.icon(

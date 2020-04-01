@@ -1,7 +1,17 @@
+import 'dart:async';
+import 'dart:typed_data';
+import "package:hex/hex.dart";
+import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
-import './../api/endpoints.dart';
+import 'package:local_auth/local_auth.dart';
+import 'package:flutter_sodium/flutter_sodium.dart';
+import 'package:local_auth/error_codes.dart' as auth_error;
+import 'package:shared_preferences/shared_preferences.dart';
 import '../utils/dialogs.dart';
+import './../api/endpoints.dart';
+import './../utils/helpers.dart';
 import '../utils/globals.dart' as globals;
+
 
 
 class VerifyEmailFormComponent extends StatefulWidget {
@@ -11,8 +21,12 @@ class VerifyEmailFormComponent extends StatefulWidget {
 
 class VerifyEmailFormComponentState extends State<VerifyEmailFormComponent> {
   GlobalKey<FormState> _key = new GlobalKey();
+  final LocalAuthentication auth = LocalAuthentication();
   bool _validate = false;
-  String email;
+  bool authenticated = false;
+  String code;
+  String publicKey;
+  String privateKey;
 
   @override
   Widget build(BuildContext context) {
@@ -49,9 +63,9 @@ class VerifyEmailFormComponentState extends State<VerifyEmailFormComponent> {
             labelText: 'Code',
           ),
           keyboardType: TextInputType.emailAddress,
-          validator: validateEmail,
+          validator: validateName,
           onSaved: (String val) {
-            email = val;
+            code = val;
           }
         ),
         SizedBox(height: 15.0),
@@ -69,16 +83,38 @@ class VerifyEmailFormComponentState extends State<VerifyEmailFormComponent> {
     );
   }
 
-  String validateEmail(String value) {
-    String pattern = r'^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$';
-    RegExp regExp = new RegExp(pattern);
-    if (value.length == 0) {
-      return "Email is Required";
-    } else if(!regExp.hasMatch(value)){
-      return "Invalid Email";
-    }else {
-      return null;
+  Future<Null> _authenticate() async {
+    try {
+      authenticated = await auth.authenticateWithBiometrics(
+        localizedReason: 'Scan your fingerprint to authenticate',
+        useErrorDialogs: true,
+        stickyAuth: false);
+    } on PlatformException catch (e) {
+      if (e.code == auth_error.notAvailable) {
+        authenticated = true;
+      }
     }
+    if (!mounted) return;
+  }
+
+  Future<Null> generateKeyPair(BuildContext context) async {
+    final keyPair = await CryptoSign.generateKeyPair();
+
+    Uint8List publicKeyBytes = keyPair.publicKey;
+    Uint8List privateKeyBytes = keyPair.secretKey;
+    publicKey = HEX.encode(publicKeyBytes);
+    privateKey = HEX.encode(privateKeyBytes);
+
+    await _authenticate();
+    await globals.storage.write(key: "publicKey", value: publicKey);
+    await globals.storage.write(key: "privateKey", value: privateKey);
+  }
+
+  String validateName(String value) {
+    if (value.length < 16)
+      return 'Code is exactly 16 characters';
+    else
+      return null;
   }
 
   _sendToServer() async {
@@ -86,26 +122,38 @@ class VerifyEmailFormComponentState extends State<VerifyEmailFormComponent> {
       // No any error in validation
       _key.currentState.save();
 
-      var emailPayload = {
-        "email": "$email",
-      };
-      
-      var user = await registerEmail(emailPayload);
+      // Generate KeyPair and UDID
+      await generateKeyPair(context);
 
-      print("${user.success}");
+      var codePayload = {
+        "code": "$code",
+      };
+
+      String txnHash = codePayload['code'];
+      String signature = await signTransaction(txnHash, privateKey);
+
+      codePayload["public_key"] = publicKey;
+      codePayload["txn_hash"] = txnHash;
+      codePayload["signature"] = signature;
+      
+      var emailCode = await verifyEmail(codePayload);
+
+      print("${emailCode.success}");
 
       // If success is true pop the page, display email and change button to verify
-      if (user.success) {
-        globals.registerEmailBtn = false;
-        globals.verifyEmailBtn = true;
+      if (emailCode.success) {
+        SharedPreferences prefs = await SharedPreferences.getInstance();
+        await prefs.setString('registerEmailBtn', 'false');
+        await prefs.setString('verifyEmailBtn', 'false');
+        await prefs.setString('verifyIdentityBtn', 'true');
         Navigator.of(context).pop();
       }
       // Catch error in sending email
-      else if (user.error == "error_sending_email") {
+      else if (emailCode.error == "error_sending_email") {
         showErrorSendingEmailDialog(context);
       }
       // Catch error in duplicate email
-      else if (user.error == "existing_email") {
+      else if (emailCode.error == "existing_email") {
         showDuplicateEmailDialog(context);
       }
 

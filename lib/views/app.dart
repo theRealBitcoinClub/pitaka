@@ -26,6 +26,8 @@ class AppComponentState extends State<AppComponent>
   int timeDiff = globals.timeDiff;
   int offlineTime = globals.offlineTime;
 
+
+
   AppComponentState() {
     final router = new Router();
     Routes.configureRoutes(router);
@@ -47,6 +49,7 @@ class AppComponentState extends State<AppComponent>
 
   @override
   void afterFirstLayout(BuildContext context) {
+    setVariablesForBtns();
     // At app startup check if offline and get timestamp
     // Add delay to prevent false reading of globals.online default value
     Future.delayed(Duration(milliseconds: 500), () async {
@@ -120,5 +123,12 @@ class AppComponentState extends State<AppComponent>
     final key = 'offlineTimeKey';
     final value = val;
     prefs.setInt(key, value);
+  }
+
+  void setVariablesForBtns() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setString('registerEmailBtn', 'true');
+    await prefs.setString('verifyEmailBtn', 'false');
+    await prefs.setString('verifyIdentityBtn', 'false');
   }
 }

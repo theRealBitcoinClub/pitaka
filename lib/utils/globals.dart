@@ -23,9 +23,6 @@ int timeDiff;
 bool _maxOfflineTime = false;
 bool _online = false;
 bool _syncing = false;
-bool _registerEmailBtn = true;
-bool _verifyEmailBtn = true;
-bool _verifyIdentityBtn = false;
 ConnectivityResult result;
 final storage = new FlutterSecureStorage();
 const String serverPublicKey = '7aeaa44510a950a9a4537faa2f40351dc4560d6d0d12abc0287dcffdd667d7a2';
@@ -34,9 +31,6 @@ const String serverPublicKey = '7aeaa44510a950a9a4537faa2f40351dc4560d6d0d12abc0
 bool get online => _online;
 bool get syncing => _syncing;
 bool get maxOfflineTime => _maxOfflineTime;
-bool get registerEmailBtn => _registerEmailBtn;
-bool get verifyEmailBtn => _verifyEmailBtn;
-bool get verifyIdentityBtn => _verifyIdentityBtn;
 
 // Set global variables
 set online(bool value) {
@@ -55,9 +49,6 @@ DatabaseHelper databaseHelper = DatabaseHelper();
 
 set syncing(bool value) => _syncing = value;
 set maxOfflineTime(bool value) => _maxOfflineTime = value;
-set registerEmailBtn(bool value) => _registerEmailBtn = value;
-set verifyEmailBtn(bool value) => _verifyEmailBtn = value;
-set verifyIdentityBtn(bool value) => _verifyIdentityBtn = value;
 
 Future<bool> iniConnection() async {
   var connectivityResult = await (Connectivity().checkConnectivity());
