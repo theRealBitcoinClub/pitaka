@@ -24,6 +24,7 @@ import '../views/sendContact.dart';
 import '../views/userProfile.dart';
 import '../views/verificationLevels.dart';
 import '../views/registerEmailForm.dart';
+import '../views/verifyEmailForm.dart';
 
 
 var rootHandler = new Handler(
@@ -143,6 +144,13 @@ var verificationLevelsHandler = new Handler(
 });
 
 var registerEmailFormHandler = new Handler(
-    handlerFunc: (BuildContext context, Map<String, dynamic> params) {
-      return new RegisterEmailFormComponent();
-});
+  handlerFunc: (BuildContext context, Map<String, dynamic> params) {
+    return RegisterEmailFormComponent();
+  }
+);
+
+var verifyEmailFormHandler = new Handler(
+  handlerFunc: (BuildContext context, Map<String, dynamic> params) {
+    return VerifyEmailFormComponent();
+  }
+);

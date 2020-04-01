@@ -30,6 +30,7 @@ class UserProfileComponentState extends State<UserProfileComponent> {
   bool disableSubmitButton = false;
   bool maxOfflineTime = globals.maxOfflineTime;
   int offlineTime = globals.offlineTime;
+  
 
   @override
   void initState() {
@@ -68,8 +69,8 @@ class UserProfileComponentState extends State<UserProfileComponent> {
     var user = {
       'name': '$firstName $lastName'.toUpperCase(),
       'birth_date': '$birthDate',
-      'email': '$email',
-      'address': '$address',
+      'email': '$email'.toUpperCase(),
+      'address': '$address'.toUpperCase(),
     };
     return user;
   }
@@ -247,7 +248,7 @@ class UserProfileComponentState extends State<UserProfileComponent> {
                                   style: TextStyle(color: Colors.grey),
                                 ),
                                 SizedBox(height: 5.0),
-                                Text(snapshot.data['address']),
+                                Text(snapshot.data['address']),  
                                 SizedBox(height: 8.0),
                                 Divider(color: Colors.grey,),
                               ]
@@ -257,7 +258,7 @@ class UserProfileComponentState extends State<UserProfileComponent> {
                             ),
                             // Button for registering email
                             Visibility(
-                              visible: true,
+                              visible: globals.registerEmailBtn,
                               child: SizedBox(
                                 width: double.infinity,
                                 child: FlatButton.icon(
@@ -278,7 +279,7 @@ class UserProfileComponentState extends State<UserProfileComponent> {
                             ),
                             // Button for confirming email
                             Visibility(
-                              visible: false,
+                              visible: globals.verifyEmailBtn,
                               child: SizedBox(
                                 width: double.infinity,
                                 child: FlatButton.icon(
@@ -292,8 +293,7 @@ class UserProfileComponentState extends State<UserProfileComponent> {
                                     style: TextStyle(color: Colors.white),
                                   ),
                                   onPressed: () {
-                                    //Code to execute when Floating Action Button is clicked
-                                    //...
+                                    Application.router.navigateTo(context, "/verifyemailform");
                                   },
                                 ),
                               ),

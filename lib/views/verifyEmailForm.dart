@@ -4,12 +4,12 @@ import '../utils/dialogs.dart';
 import '../utils/globals.dart' as globals;
 
 
-class RegisterEmailFormComponent extends StatefulWidget {
+class VerifyEmailFormComponent extends StatefulWidget {
   @override
-  RegisterEmailFormComponentState createState() => RegisterEmailFormComponentState();
+  VerifyEmailFormComponentState createState() => VerifyEmailFormComponentState();
 }
 
-class RegisterEmailFormComponentState extends State<RegisterEmailFormComponent> {
+class VerifyEmailFormComponentState extends State<VerifyEmailFormComponent> {
   GlobalKey<FormState> _key = new GlobalKey();
   bool _validate = false;
   String email;
@@ -18,7 +18,7 @@ class RegisterEmailFormComponentState extends State<RegisterEmailFormComponent> 
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Register an Email'),
+        title: Text('Verify Email'),
         centerTitle: true,
         leading: IconButton(icon:Icon(Icons.arrow_back),
           onPressed:() => Navigator.pop(context, false),
@@ -44,9 +44,9 @@ class RegisterEmailFormComponentState extends State<RegisterEmailFormComponent> 
         TextFormField(
           autofocus: true,
           decoration: InputDecoration(
-            icon: const Icon(Icons.email),
-            hintText: 'Enter your email address',
-            labelText: 'Email address',
+            icon: const Icon(Icons.code),
+            hintText: 'Enter code from your email address',
+            labelText: 'Code',
           ),
           keyboardType: TextInputType.emailAddress,
           validator: validateEmail,

@@ -111,6 +111,12 @@ Future<GenericCreateResponse> registerEmail(payload) async {
   try {
     final String url = globals.baseUrl + '/api/users/register-email';
     final response = await sendPostRequest(url, payload);
+    if (response.data['success']) {
+      print("@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ${payload['email']} @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
+      // Save email in shared preferences
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      await prefs.setString('email', payload['email']);
+  }
     return GenericCreateResponse.fromResponse(response);
   } catch (e) {
     throw Exception(e);
@@ -122,6 +128,11 @@ Future<GenericCreateResponse> createUser(payload) async {
   try {
     final String url = globals.baseUrl + '/api/users/create';
     final response = await sendPostRequest(url, payload);
+    if (response.data['success']) {
+      // Save birthdate in shared preferences
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      await prefs.setString('birthDate', payload['birthday']);
+  }
     return GenericCreateResponse.fromResponse(response);
   } catch (e) {
     throw Exception(e);
