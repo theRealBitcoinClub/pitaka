@@ -11,6 +11,7 @@ import '../utils/dialogs.dart';
 import './../api/endpoints.dart';
 import './../utils/helpers.dart';
 import '../utils/globals.dart' as globals;
+import '../views/app.dart';
 
 
 
@@ -143,10 +144,11 @@ class VerifyEmailFormComponentState extends State<VerifyEmailFormComponent> {
       // If success is true pop the page, display email and change button to verify
       if (emailCode.success) {
         SharedPreferences prefs = await SharedPreferences.getInstance();
-        await prefs.setString('registerEmailBtn', 'false');
-        await prefs.setString('verifyEmailBtn', 'false');
-        await prefs.setString('verifyIdentityBtn', 'true');
+        await prefs.setBool('registerEmailBtn', false);
+        await prefs.setBool('verifyEmailBtn', false);
+        await prefs.setBool('verifyIdentityBtn', true);
         Navigator.of(context).pop();
+        Application.router.navigateTo(context, "/userprofile");
       }
       // Catch error in sending email
       else if (emailCode.error == "error_sending_email") {

@@ -127,8 +127,23 @@ class AppComponentState extends State<AppComponent>
 
   void setVariablesForBtns() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.setString('registerEmailBtn', 'true');
-    await prefs.setString('verifyEmailBtn', 'false');
-    await prefs.setString('verifyIdentityBtn', 'false');
+    var _registeredEmail = (prefs.getBool('registeredEmail') ?? false);
+    var _verifiedEmail = (prefs.getBool('verifiedEmail') ?? false);
+
+    if (!_registeredEmail && !_verifiedEmail) {
+      await prefs.setBool('registerEmailBtn', true);
+      await prefs.setBool('verifyEmailBtn', false);
+      await prefs.setBool('verifyIdentityBtn', false);
+    }
+    else if (_registeredEmail && !_verifiedEmail) {
+      await prefs.setBool('registerEmailBtn', false);
+      await prefs.setBool('verifyEmailBtn', true);
+      await prefs.setBool('verifyIdentityBtn', false);
+    }
+    else if (_registeredEmail && _verifiedEmail) {
+      await prefs.setBool('registerEmailBtn', false);
+      await prefs.setBool('verifyEmailBtn', false);
+      await prefs.setBool('verifyIdentityBtn', true);
+    }
   }
 }

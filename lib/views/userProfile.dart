@@ -30,9 +30,9 @@ class UserProfileComponentState extends State<UserProfileComponent> {
   bool online = globals.online;
   bool disableSubmitButton = false;
   bool maxOfflineTime = globals.maxOfflineTime;
-  bool registerEmailBtnBool;
-  bool verifyEmailBtnBool;
-  bool verifyIdentityBtnBool;
+  bool registerEmailBtn;
+  bool verifyEmailBtn;
+  bool verifyIdentityBtn;
   int offlineTime = globals.offlineTime;
 
   @override
@@ -51,30 +51,9 @@ class UserProfileComponentState extends State<UserProfileComponent> {
 
   void setVariablesForBtns() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-
-    var registerEmailBtn = prefs.getString('registerEmailBtn');
-    if (registerEmailBtn == "true") {
-      registerEmailBtnBool = true;
-    }
-    else if (registerEmailBtn == "false") {
-      registerEmailBtnBool = false;
-    }
-
-    var verifyEmailBtn = prefs.getString('verifyEmailBtn');
-    if (verifyEmailBtn == "true") {
-      verifyEmailBtnBool = true;
-    }
-    else if (verifyEmailBtn == "false") {
-      verifyEmailBtnBool = false;
-    }
-
-    var verifyIdentityBtn = prefs.getString('verifyIdentityBtn');
-    if (verifyIdentityBtn == "true") {
-      verifyIdentityBtnBool = true;
-    }
-    else if (verifyIdentityBtn == "false") {
-      verifyIdentityBtnBool = false;
-    }
+    registerEmailBtn = prefs.getBool('registerEmailBtn');
+    verifyEmailBtn = prefs.getBool('verifyEmailBtn');
+    verifyIdentityBtn = prefs.getBool('verifyIdentityBtn');
   }
 
   void connectionChanged(dynamic hasConnection) {
@@ -296,7 +275,7 @@ class UserProfileComponentState extends State<UserProfileComponent> {
                             ),
                             // Button for registering email
                             Visibility(
-                              visible: registerEmailBtnBool,
+                              visible: registerEmailBtn,
                               child: SizedBox(
                                 width: double.infinity,
                                 child: FlatButton.icon(
@@ -317,7 +296,7 @@ class UserProfileComponentState extends State<UserProfileComponent> {
                             ),
                             // Button for confirming email
                             Visibility(
-                              visible: verifyEmailBtnBool,
+                              visible: verifyEmailBtn,
                               child: SizedBox(
                                 width: double.infinity,
                                 child: FlatButton.icon(
@@ -338,7 +317,7 @@ class UserProfileComponentState extends State<UserProfileComponent> {
                             ),
                             // Button for verifying identity
                             Visibility(
-                              visible: verifyIdentityBtnBool,
+                              visible: verifyIdentityBtn,
                               child: SizedBox(
                                 width: double.infinity,
                                 child: FlatButton.icon(

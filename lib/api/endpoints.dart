@@ -112,7 +112,7 @@ Future<GenericCreateResponse> verifyIdentity(payload) async {
     final String url = globals.baseUrl + '/api/users/verify-identity';
     final response = await sendPostRequest(url, payload);
     if (response.data['success']) {
-      // Save and mark level2 after email verification success
+      // Save and mark level3 after identity verification success
       SharedPreferences prefs = await SharedPreferences.getInstance();
       prefs.setBool('level3', true);
   }
@@ -130,7 +130,8 @@ Future<GenericCreateResponse> verifyEmail(payload) async {
     if (response.data['success']) {
       // Save and mark level2 after email verification success
       SharedPreferences prefs = await SharedPreferences.getInstance();
-      prefs.setBool('level2', true);
+      await prefs.setBool('level2', true);
+      await prefs.setBool('verifiedEmail', true);
   }
     return GenericCreateResponse.fromResponse(response);
   } catch (e) {
@@ -144,9 +145,10 @@ Future<GenericCreateResponse> registerEmail(payload) async {
     final String url = globals.baseUrl + '/api/users/register-email';
     final response = await sendPostRequest(url, payload);
     if (response.data['success']) {
-      // Save email in shared preferences
+      // Save email in shared preferences and mark registeredEmail to true
       SharedPreferences prefs = await SharedPreferences.getInstance();
       await prefs.setString('email', payload['email']);
+      await prefs.setBool('registeredEmail', true);
   }
     return GenericCreateResponse.fromResponse(response);
   } catch (e) {

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import './../api/endpoints.dart';
 import '../utils/dialogs.dart';
+import '../views/app.dart';
 
 
 class RegisterEmailFormComponent extends StatefulWidget {
@@ -97,11 +98,11 @@ class RegisterEmailFormComponentState extends State<RegisterEmailFormComponent> 
       // If success is true pop the page, display email and change button to verify
       if (user.success) {
         SharedPreferences prefs = await SharedPreferences.getInstance();
-        await prefs.setString('registerEmailBtn', 'false');
-        await prefs.setString('verifyEmailBtn', 'true');
-        await prefs.setString('verifyIdentityBtn', 'false');
-
+        await prefs.setBool('registerEmailBtn', false);
+        await prefs.setBool('verifyEmailBtn', true);
+        await prefs.setBool('verifyIdentityBtn', false);
         Navigator.of(context).pop();
+        Application.router.navigateTo(context, "/userprofile");
       }
       // Catch error in sending email
       else if (user.error == "error_sending_email") {
