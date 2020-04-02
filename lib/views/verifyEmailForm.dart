@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import "package:hex/hex.dart";
 import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/gestures.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:flutter_sodium/flutter_sodium.dart';
 import 'package:local_auth/error_codes.dart' as auth_error;
@@ -26,6 +27,7 @@ class VerifyEmailFormComponentState extends State<VerifyEmailFormComponent> {
   bool _validate = false;
   bool authenticated = false;
   String code;
+  String email;
   String publicKey;
   String privateKey;
 
@@ -53,15 +55,46 @@ class VerifyEmailFormComponentState extends State<VerifyEmailFormComponent> {
   }
 
   Widget FormUI() {
+    getEmail();
     return Column(
       children: <Widget>[
-        SizedBox(height: 30.0,),
+        SizedBox(height: 10.0,),
+        Text("We sent a verification email to:"),
+        Text(
+          "$email",
+          style: TextStyle(fontWeight: FontWeight.bold,),
+        ),
+        Text("Check your email and type the code here."),
+        Center(
+          child: RichText(
+            text: TextSpan(
+              text: "Did not receive email? Click",
+              style: TextStyle(
+                color: Colors.black, 
+                fontSize: 14
+              ),
+              children: <TextSpan>[
+                TextSpan(text: ' resend email.',
+                  style: TextStyle(
+                    color: Colors.redAccent, 
+                    fontSize: 14
+                  ),
+                  recognizer: TapGestureRecognizer()
+                    ..onTap = () {
+                      _reSendEmailVerification();
+                    }
+                )
+              ]
+            ),
+          ),
+        ),
+        SizedBox(height: 20.0),
         TextFormField(
           maxLength: 16,
           autofocus: true,
           decoration: InputDecoration(
             icon: const Icon(Icons.code),
-            hintText: 'Enter code',
+            hintText: 'Enter 16-character code',
             labelText: 'Code',
           ),
           keyboardType: TextInputType.emailAddress,
@@ -83,6 +116,11 @@ class VerifyEmailFormComponentState extends State<VerifyEmailFormComponent> {
         )
       ],
     );
+  }
+
+  void getEmail() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    email = prefs.getString('email');
   }
 
   Future<Null> _authenticate() async {
@@ -140,8 +178,6 @@ class VerifyEmailFormComponentState extends State<VerifyEmailFormComponent> {
       
       var emailCode = await verifyEmail(codePayload);
 
-      print("${emailCode.success}");
-
       // If success is true pop the page, display email and change button to verify
       if (emailCode.success) {
         SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -161,6 +197,23 @@ class VerifyEmailFormComponentState extends State<VerifyEmailFormComponent> {
       setState(() {
         _validate = true;
       });
+    }
+  }
+
+  _reSendEmailVerification() async {
+    var payload = {
+      "email": "",
+    };
+
+    var resp = await reSendEmailVerification(payload);
+
+    // Catch error in sending email
+    if (resp.error == "error_sending_email") {
+      showErrorSendingEmailDialog(context);
+    }
+    // Catch error in duplicate email
+    else if (resp.error == "existing_email") {
+      showDuplicateEmailDialog(context);
     }
   }
 }
