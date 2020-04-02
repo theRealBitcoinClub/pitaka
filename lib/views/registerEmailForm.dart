@@ -62,7 +62,11 @@ class RegisterEmailFormComponentState extends State<RegisterEmailFormComponent> 
             color: Colors.red,
             splashColor: Colors.red[100],
             textColor: Colors.white,
-            onPressed: _sendToServer,
+            onPressed: () {
+              _sendToServer();
+              // Dismiss the keyboard after clicking the button
+              FocusScope.of(context).requestFocus(FocusNode());
+            },
             child: new Text('Submit'),
           )
         )

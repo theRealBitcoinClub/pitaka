@@ -37,6 +37,7 @@ class AppComponentState extends State<AppComponent>
 
   @override
   Widget build(BuildContext context) {
+    // OverlaySupport is for notifications
     final app = OverlaySupport(child: MaterialApp(
       title: 'Paytaca',
       debugShowCheckedModeBanner: debugMode,
