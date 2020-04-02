@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:fluro/fluro.dart';
 import 'package:flutter/material.dart';
 import 'package:after_layout/after_layout.dart';
+import 'package:overlay_support/overlay_support.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../router/routes.dart';
 import '../utils/globals.dart' as globals;
@@ -36,13 +37,14 @@ class AppComponentState extends State<AppComponent>
 
   @override
   Widget build(BuildContext context) {
-    final app = new MaterialApp(
+    final app = OverlaySupport(child: MaterialApp(
       title: 'Paytaca',
       debugShowCheckedModeBanner: debugMode,
       theme: new ThemeData(
         primarySwatch: Colors.red,
       ),
       onGenerateRoute: Application.router.generator,
+    )
     );
     return app;
   }

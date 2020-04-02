@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/gestures.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:flutter_sodium/flutter_sodium.dart';
+import 'package:overlay_support/overlay_support.dart';
 import 'package:local_auth/error_codes.dart' as auth_error;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../utils/dialogs.dart';
@@ -207,8 +208,14 @@ class VerifyEmailFormComponentState extends State<VerifyEmailFormComponent> {
 
     var resp = await reSendEmailVerification(payload);
 
+    if (resp.success) {
+      showSimpleNotification(
+        Text("Code was send to your email."),
+        background: Colors.red[600],
+      );
+    }
     // Catch error in sending email
-    if (resp.error == "error_sending_email") {
+    else if (resp.error == "error_sending_email") {
       showErrorSendingEmailDialog(context);
     }
     // Catch error in duplicate email
