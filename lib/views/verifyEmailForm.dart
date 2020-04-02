@@ -57,10 +57,11 @@ class VerifyEmailFormComponentState extends State<VerifyEmailFormComponent> {
       children: <Widget>[
         SizedBox(height: 30.0,),
         TextFormField(
+          maxLength: 16,
           autofocus: true,
           decoration: InputDecoration(
             icon: const Icon(Icons.code),
-            hintText: 'Enter code from your email address',
+            hintText: 'Enter code',
             labelText: 'Code',
           ),
           keyboardType: TextInputType.emailAddress,
@@ -151,12 +152,8 @@ class VerifyEmailFormComponentState extends State<VerifyEmailFormComponent> {
         Application.router.navigateTo(context, "/userprofile");
       }
       // Catch error in sending email
-      else if (emailCode.error == "error_sending_email") {
-        showErrorSendingEmailDialog(context);
-      }
-      // Catch error in duplicate email
-      else if (emailCode.error == "existing_email") {
-        showDuplicateEmailDialog(context);
+      else if (emailCode.error == "invalid_code") {
+        showInvalidCodelDialog(context);
       }
 
     } else {

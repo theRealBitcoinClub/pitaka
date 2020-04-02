@@ -35,6 +35,43 @@ onDialogClose() {
 }
 
 // Alert dialog for error in sending email
+showInvalidCodelDialog(context) {
+  EasyDialog(
+    title: Text(
+      "Invalid Code!",
+      style: TextStyle(fontWeight: FontWeight.bold),
+      textScaleFactor: 1.2,
+    ),
+    description: Text(
+      "The code you've entered is invalid. "
+      "Please make sure to enter a valid or correct code.",
+      textScaleFactor: 1.1,
+      textAlign: TextAlign.center,
+    ),
+    height: 160,
+    closeButton: false,
+    contentList: [
+      Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: <Widget>[
+          new FlatButton(
+            padding: EdgeInsets.all(8),
+            textColor: Colors.lightBlue,
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+            child: new Text("OK",
+              textScaleFactor: 1.2,
+              textAlign: TextAlign.center,
+            ),
+          ),
+        ],
+      )
+    ]
+  ).show(context, onDialogClose);
+}
+
+// Alert dialog for error in sending email
 showErrorSendingEmailDialog(context) {
   EasyDialog(
     title: Text(
