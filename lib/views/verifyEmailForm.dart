@@ -146,7 +146,7 @@ class VerifyEmailFormComponentState extends State<VerifyEmailFormComponent> {
 
   void getEmail() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    email = prefs.getString('email');
+    email = prefs.getString('email') ?? "";
   }
 
   Future<Null> _authenticate() async {

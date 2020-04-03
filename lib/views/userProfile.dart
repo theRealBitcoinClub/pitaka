@@ -78,11 +78,11 @@ class UserProfileComponentState extends State<UserProfileComponent> {
 
   Future<Map> getUserDetails() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    var firstName = prefs.getString('firstName');
-    var lastName = prefs.getString('lastName');
-    var birthDate = prefs.getString('birthDate');
-    var email = prefs.getString('email');
-    var address = prefs.getString('address');
+    var firstName = prefs.getString('firstName') ?? "";
+    var lastName = prefs.getString('lastName') ?? "";
+    var birthDate = prefs.getString('birthDate') ?? "";
+    var email = prefs.getString('email') ?? "";
+    var address = prefs.getString('address') ?? "";
     var user = {
       'name': '$firstName $lastName'.toUpperCase(),
       'birth_date': '$birthDate',
