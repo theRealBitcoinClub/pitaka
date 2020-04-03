@@ -12,6 +12,7 @@ class RegisterEmailFormComponent extends StatefulWidget {
 
 class RegisterEmailFormComponentState extends State<RegisterEmailFormComponent> {
   GlobalKey<FormState> _key = new GlobalKey();
+  bool _loading = false;
   bool _validate = false;
   String email;
 
@@ -25,53 +26,74 @@ class RegisterEmailFormComponentState extends State<RegisterEmailFormComponent> 
           onPressed:() => Navigator.pop(context, false),
         ),
       ),
-      body: SingleChildScrollView(
-        child: Container(
-          margin: EdgeInsets.all(15.0),
-          child: Form(
-            key: _key,
-            autovalidate: _validate,
-            child: FormUI(),
-          ),
-        ),
-      ),
+      // Changed the return body to work with modal progress indicator
+      body: Builder(builder: (BuildContext context) {
+        return Stack(children: _buildForm(context));
+      }),
     );
   }
 
-  Widget FormUI() {
-    return Column(
-      children: <Widget>[
-        SizedBox(height: 30.0,),
-        TextFormField(
-          autofocus: true,
-          decoration: InputDecoration(
-            icon: const Icon(Icons.email),
-            hintText: 'Enter your email address',
-            labelText: 'Email address',
-          ),
-          keyboardType: TextInputType.emailAddress,
-          validator: validateEmail,
-          onSaved: (String val) {
-            email = val;
-          }
-        ),
-        SizedBox(height: 15.0),
-        SizedBox(
-          width: double.infinity,
-          child: RaisedButton(
-            color: Colors.red,
-            splashColor: Colors.red[100],
-            textColor: Colors.white,
-            onPressed: () {
-              _sendToServer();
-              // Dismiss the keyboard after clicking the button
-              FocusScope.of(context).requestFocus(FocusNode());
-            },
-            child: new Text('Submit'),
-          )
+  List<Widget> _buildForm(BuildContext context) {
+    Form form = Form(
+      key: _key,
+      autovalidate: _validate,
+      child: Padding(
+        padding: const EdgeInsets.all(12.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: <Widget>[
+            SizedBox(height: 30.0,),
+            TextFormField(
+              autofocus: true,
+              decoration: InputDecoration(
+                icon: const Icon(Icons.email),
+                hintText: 'Enter your email address',
+                labelText: 'Email address',
+              ),
+              keyboardType: TextInputType.emailAddress,
+              validator: validateEmail,
+              onSaved: (String val) {
+                email = val;
+              }
+            ),
+            SizedBox(height: 15.0),
+            SizedBox(
+              width: double.infinity,
+              child: RaisedButton(
+                color: Colors.red,
+                splashColor: Colors.red[100],
+                textColor: Colors.white,
+                onPressed: () {
+                  _sendToServer();
+                  // Dismiss the keyboard after clicking the button
+                  FocusScope.of(context).requestFocus(FocusNode());
+                },
+                child: new Text('Submit'),
+              )
+            ),
+          ],
         )
-      ],
+      )
     );
+    
+    var l = new List<Widget>();
+    l.add(form);
+
+    if (_loading) {
+      var modal = new Stack(
+        children: [
+          new Opacity(
+            opacity: 0.8,
+            child: const ModalBarrier(dismissible: false, color: Colors.grey),
+          ),
+          new Center(
+            child: new CircularProgressIndicator(),
+          ),
+        ],
+      );
+      l.add(modal);
+    }
+    return l;   
   }
 
   String validateEmail(String value) {
@@ -91,13 +113,15 @@ class RegisterEmailFormComponentState extends State<RegisterEmailFormComponent> 
       // No any error in validation
       _key.currentState.save();
 
+      setState(() {
+        _loading = true;
+      });
+
       var emailPayload = {
         "email": "$email",
       };
       
       var user = await registerEmail(emailPayload);
-
-      print("${user.success}");
 
       // If success is true pop the page, display email and change button to verify
       if (user.success) {
@@ -107,13 +131,25 @@ class RegisterEmailFormComponentState extends State<RegisterEmailFormComponent> 
         await prefs.setBool('verifyIdentityBtn', false);
         Navigator.of(context).pop();
         Application.router.navigateTo(context, "/userprofile");
+        // When response is success, dismiss loading progress
+        setState(() {
+          _loading = false;
+        });
       }
       // Catch error in sending email
       else if (user.error == "error_sending_email") {
+        // When there is error, dismiss loading progress
+        setState(() {
+          _loading = false;
+        });
         showErrorSendingEmailDialog(context);
       }
       // Catch error in duplicate email
       else if (user.error == "existing_email") {
+        // When there is error, dismiss loading progress
+        setState(() {
+          _loading = false;
+        });
         showDuplicateEmailDialog(context);
       }
 
