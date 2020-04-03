@@ -4,7 +4,7 @@ import 'package:back_button_interceptor/back_button_interceptor.dart';
 import 'package:flutter/services.dart';
 import '../../api/endpoints.dart';
 import '../app.dart';
-import '../../utils/dialog.dart';
+import '../../utils/dialogs.dart';
 
 
 class Code {
@@ -122,6 +122,7 @@ class VerifyComponentState extends State<VerifyComponent> {
                   height: 10.0,
                 ),
                 new TextFormField(
+                  autofocus: true,
                   controller: textController,
                   textAlign: TextAlign.center,
                   keyboardType: TextInputType.phone,

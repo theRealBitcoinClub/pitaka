@@ -1,40 +1,36 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
-import '../components/bottomNavigation.dart';
-import '../components/drawer.dart';
-import '../api/endpoints.dart';
-import '../views/app.dart';
-import '../utils/helpers.dart';
 import 'package:permission_handler/permission_handler.dart';
-import '../utils/globals.dart' as globals;
-import '../utils/database_helper.dart';
+import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
+import '../views/app.dart';
+import '../api/endpoints.dart';
+import '../utils/helpers.dart';
 import '../utils/globals.dart';
 import '../utils/dialogs.dart';
+import '../utils/database_helper.dart';
+import '../utils/globals.dart' as globals;
 
 
-class AuthenticateComponent extends StatefulWidget {
+class VerificationLevelsComponent extends StatefulWidget {
   @override
-  AuthenticateComponentState createState() => new AuthenticateComponentState();
+  VerificationLevelsComponentState createState() => new VerificationLevelsComponentState();
 }
 
-class AuthenticateComponentState extends State<AuthenticateComponent> {
-  String path = '/send';
-  bool _submitting = false;
-  final _formKey = GlobalKey<FormState>();
+class VerificationLevelsComponentState extends State<VerificationLevelsComponent> {
+  StreamSubscription _connectionChangeStream;
+  DatabaseHelper databaseHelper = DatabaseHelper();
   static bool _errorFound = false;
   static String _errorMessage;
-  bool online = globals.online;
-  DatabaseHelper databaseHelper = DatabaseHelper();
-  StreamSubscription _connectionChangeStream;
-  bool isOffline = false;
+  final _formKey = GlobalKey<FormState>();
+  final TextEditingController _accountController = new TextEditingController();
   String newVal;
+  String sessionKey = '';
+  bool isOffline = false;
+  bool _submitting = false;
+  bool online = globals.online;
+  bool disableSubmitButton = false;
   bool maxOfflineTime = globals.maxOfflineTime;
   int offlineTime = globals.offlineTime;
-
-  String sessionKey = '';
-
-  
 
   @override
   void initState() {
@@ -62,8 +58,6 @@ class AuthenticateComponentState extends State<AuthenticateComponent> {
       }
     });
   }
-
-  final TextEditingController _accountController = new TextEditingController();
 
   Future<bool> sendAuthentication() async {
     // Set _submitting to true for progress indicator to display while sending the request
@@ -106,82 +100,53 @@ class AuthenticateComponentState extends State<AuthenticateComponent> {
     return response.success;
   }
 
-  void scanBarcode() async {
-    allowCamera();
-    String barcode = await FlutterBarcodeScanner.scanBarcode("#ff6666", "Cancel", true,  ScanMode.DEFAULT);
-    setState(() {
-      if (barcode.length > 0) {
-        sessionKey = barcode;
-        sendAuthentication();
-      }
-    });
-  }
-
-  void allowCamera() async {
-    var permission = PermissionHandler();
-    PermissionStatus cameraStatus = await permission.checkPermissionStatus(PermissionGroup.camera);
-    if (cameraStatus == PermissionStatus.denied) {
-      await permission.requestPermissions([PermissionGroup.camera]);
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(
-          title: Text('Authenticate'),
-          actions: [
-            Padding(
-              padding: EdgeInsets.only(right: 20.0),
-              child: GestureDetector(
-                child: online ? new Icon(Icons.wifi): new Icon(Icons.signal_wifi_off)
-              ) 
-            )
-          ],
-          centerTitle: true,
+      appBar: AppBar(
+        title: Text('Verification Levels'),
+        centerTitle: true,
+        leading: IconButton(icon:Icon(Icons.arrow_back),
+          onPressed:() => Navigator.pop(context, false),
         ),
-        drawer: buildDrawer(context),
-        body: new Builder(builder: (BuildContext context) {
-          return new Stack(children: _buildForm(context));
-        }),
-        bottomNavigationBar: buildBottomNavigation(context, path)
-      );
+      ),
+      body: new Builder(builder: (BuildContext context) {
+        return new Stack(children: _buildForm(context));
+      }),
+    );
   }
 
-bool disableSubmitButton = false;
+  // Alert dialog for slow internet speed connection
+  // This is called in sendFunds() when there is connection timeout error response
+  // from transferAsset() in endpoints.dart
+  showAlertDialog(BuildContext context) {
+    // set up the buttons
+    Widget okButton = FlatButton(
+      child: Text("Try again"),
+      onPressed:  () {
+        Navigator.pop(context);
+        Application.router.navigateTo(context, "/authenticate");
+      }
+    );
 
+    // set up the AlertDialog
+    AlertDialog alert = AlertDialog(
+      title: Text("Request Failure!"),
+      content: Text("There was an error in sending the request!"
+      ),
+      actions: [
+        okButton,
+      ],
+    );
 
-// Alert dialog for slow internet speed connection
-// This is called in sendFunds() when there is connection timeout error response
-// from transferAsset() in endpoints.dart
-showAlertDialog(BuildContext context) {
-  // set up the buttons
-  Widget okButton = FlatButton(
-    child: Text("Try again"),
-    onPressed:  () {
-      Navigator.pop(context);
-      Application.router.navigateTo(context, "/authenticate");
-    }
-  );
-
-  // set up the AlertDialog
-  AlertDialog alert = AlertDialog(
-    title: Text("Request Failure!"),
-    content: Text("There was an error in sending the request!"
-    ),
-    actions: [
-      okButton,
-    ],
-  );
-
-  // show the dialog
-  showDialog(
-    context: context,
-    builder: (BuildContext context) {
-      return alert;
-    },
-  );
-}
+    // show the dialog
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return alert;
+      },
+    );
+  }
 
 List<Widget> _buildForm(BuildContext context) {
     Form form = new Form(
@@ -202,18 +167,7 @@ List<Widget> _buildForm(BuildContext context) {
               ),
             ) 
           : new Container(
-              margin: const EdgeInsets.only(top: 5.0),
-              child: new ButtonTheme(
-                height: 60,
-                buttonColor: Colors.white,
-                child: new OutlineButton(
-                  borderSide: BorderSide(
-                    color: Colors.black
-                  ),
-                  child: const Text('Scan QR Code', style: TextStyle(fontSize: 18)),
-                  onPressed: scanBarcode
-                )
-              )
+            
             ),
         ],
       )

@@ -24,7 +24,10 @@ class Routes {
   static String checkPinCode = "/checkpincode";
   static String contactList = "/contactlist"; 
   static String sendContact = "/sendcontact";
-
+  static String userProfile = "/userprofile";
+  static String verificationLevels = "/verificationlevels";
+  static String registerEmailForm = "/registeremailform";
+  static String verifyEmailForm = "/verifyemailform";
 
   static void configureRoutes(Router router) {
     router.notFoundHandler = new Handler(
@@ -116,6 +119,26 @@ class Routes {
     router.define(
         sendContact,
         handler: sendContactHandler,
+        transitionType: TransitionType.fadeIn
+    );
+    router.define(
+        userProfile,
+        handler: userProfileHandler,
+        transitionType: TransitionType.fadeIn
+    );
+    router.define(
+        verificationLevels,
+        handler: verificationLevelsHandler,
+        transitionType: TransitionType.fadeIn
+    );
+    router.define(
+        registerEmailForm,
+        handler: registerEmailFormHandler,
+        transitionType: TransitionType.fadeIn
+    );
+    router.define(
+        verifyEmailForm,
+        handler: verifyEmailFormHandler,
         transitionType: TransitionType.fadeIn
     );
   }

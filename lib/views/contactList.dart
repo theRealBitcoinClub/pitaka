@@ -3,7 +3,7 @@ import 'dart:async';
 import '../components/drawer.dart';
 import '../components/bottomNavigation.dart';
 import '../utils/globals.dart';
-import '../utils/dialog.dart';
+import '../utils/dialogs.dart';
 import '../api/endpoints.dart';
 import '../utils/database_helper.dart';
 import '../utils/globals.dart' as globals;

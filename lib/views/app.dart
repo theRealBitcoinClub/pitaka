@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:fluro/fluro.dart';
 import 'package:flutter/material.dart';
 import 'package:after_layout/after_layout.dart';
+import 'package:overlay_support/overlay_support.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../router/routes.dart';
 import '../utils/globals.dart' as globals;
@@ -26,6 +27,8 @@ class AppComponentState extends State<AppComponent>
   int timeDiff = globals.timeDiff;
   int offlineTime = globals.offlineTime;
 
+
+
   AppComponentState() {
     final router = new Router();
     Routes.configureRoutes(router);
@@ -34,19 +37,22 @@ class AppComponentState extends State<AppComponent>
 
   @override
   Widget build(BuildContext context) {
-    final app = new MaterialApp(
+    // OverlaySupport is for notifications
+    final app = OverlaySupport(child: MaterialApp(
       title: 'Paytaca',
       debugShowCheckedModeBanner: debugMode,
       theme: new ThemeData(
         primarySwatch: Colors.red,
       ),
       onGenerateRoute: Application.router.generator,
+    )
     );
     return app;
   }
 
   @override
   void afterFirstLayout(BuildContext context) {
+    setVariablesForBtns();
     // At app startup check if offline and get timestamp
     // Add delay to prevent false reading of globals.online default value
     Future.delayed(Duration(milliseconds: 500), () async {
@@ -120,5 +126,27 @@ class AppComponentState extends State<AppComponent>
     final key = 'offlineTimeKey';
     final value = val;
     prefs.setInt(key, value);
+  }
+
+  void setVariablesForBtns() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    var _registeredEmail = (prefs.getBool('registeredEmail') ?? false);
+    var _verifiedEmail = (prefs.getBool('verifiedEmail') ?? false);
+
+    if (!_registeredEmail && !_verifiedEmail) {
+      await prefs.setBool('registerEmailBtn', true);
+      await prefs.setBool('verifyEmailBtn', false);
+      await prefs.setBool('verifyIdentityBtn', false);
+    }
+    else if (_registeredEmail && !_verifiedEmail) {
+      await prefs.setBool('registerEmailBtn', false);
+      await prefs.setBool('verifyEmailBtn', true);
+      await prefs.setBool('verifyIdentityBtn', false);
+    }
+    else if (_registeredEmail && _verifiedEmail) {
+      await prefs.setBool('registerEmailBtn', false);
+      await prefs.setBool('verifyEmailBtn', false);
+      await prefs.setBool('verifyIdentityBtn', true);
+    }
   }
 }

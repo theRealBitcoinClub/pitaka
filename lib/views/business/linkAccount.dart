@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../api/endpoints.dart';
 import '../../views/app.dart';
-import '../../utils/dialog.dart';
+import '../../utils/dialogs.dart';
 
 // business/connect-account
 

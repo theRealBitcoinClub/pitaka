@@ -4,7 +4,7 @@ import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_udid/flutter_udid.dart';
 import '../api/endpoints.dart';
-import '../utils/dialog.dart';
+import '../utils/dialogs.dart';
 import '../utils/globals.dart';
 import '../utils/database_helper.dart';
 import '../utils/globals.dart' as globals;

@@ -1,10 +1,10 @@
-import 'package:flutter/material.dart';
-import 'package:back_button_interceptor/back_button_interceptor.dart';
 import 'package:flutter/services.dart';
-import '../../api/endpoints.dart';
+import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:back_button_interceptor/back_button_interceptor.dart';
 import '../app.dart';
-import 'package:easy_dialog/easy_dialog.dart';
-import '../../utils/dialog.dart';
+import '../../api/endpoints.dart';
+import '../../utils/dialogs.dart';
 
 
 class Mobile {
@@ -17,7 +17,13 @@ class RequestComponent extends StatefulWidget {
 }
 
 class RequestComponentState extends State<RequestComponent> {
+  BuildContext _scaffoldContext;
+  Mobile newMobile = new Mobile();
+  FocusNode focusNode = FocusNode();
+  final _formKey = GlobalKey<FormState>();
   final TextEditingController _accountController = new TextEditingController();
+  bool _submitting = false;
+
   @override
   void initState() {
     super.initState();
@@ -35,9 +41,6 @@ class RequestComponentState extends State<RequestComponent> {
     return true;
   }
 
-  final _formKey = GlobalKey<FormState>();
-  Mobile newMobile = new Mobile();
-
   String validateMobile(String value) {
     if (value == '0000 - 000 - 0000') {
       return null;
@@ -48,49 +51,6 @@ class RequestComponentState extends State<RequestComponent> {
         return 'Invalid phone number';
       }
     }
-  }
-
-  BuildContext _scaffoldContext;
-  FocusNode focusNode = FocusNode();
-  bool _submitting = false;
-
-  onDialogClose() {
-    // Not use
-  }
-
-  // Alert dialog for duplicate mobile number
-  showAlertDialog() {
-    EasyDialog(
-      title: Text(
-        "Duplicate Mobile Number!",
-        style: TextStyle(fontWeight: FontWeight.bold),
-        textScaleFactor: 1.2,
-      ),
-      description: Text(
-        "The mobile number is already registered. Please use other mobile number",
-        textScaleFactor: 1.1,
-        textAlign: TextAlign.center,
-      ),
-      height: 160,
-      closeButton: false,
-      contentList: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            new FlatButton(
-              padding: EdgeInsets.all(8),
-              textColor: Colors.lightBlue,
-              onPressed: () {
-                Navigator.of(context).pop();
-                Application.router.navigateTo(context, "/onboarding/request");
-              },
-              child: new Text("OK",
-                textScaleFactor: 1.2,
-                textAlign: TextAlign.center,
-              ),),
-           ],)
-      ]
-    ).show(context, onDialogClose);
   }
 
   void _validateInputs(BuildContext context) async {
@@ -112,6 +72,10 @@ class RequestComponentState extends State<RequestComponent> {
         };
         var resp = await requestOtpCode(numberPayload);
 
+        // Save mobile number in shared preferences
+        SharedPreferences prefs = await SharedPreferences.getInstance();
+        await prefs.setString('mobileNumber', newMobile.number);
+
         // Catch app version compatibility
         if (resp.error == "outdated_app_version") {
           showOutdatedAppVersionDialog(context);
@@ -122,7 +86,7 @@ class RequestComponentState extends State<RequestComponent> {
         } 
         // Catch duplicate mobile number in the error
         else if(resp.error == "duplicate_mobile_number") {
-          showAlertDialog();
+          showDuplicateMobileNumberDialog(context);
         }
       }
 

@@ -12,7 +12,7 @@ const String baseUrl = 'https://lantaka-dev.paytaca.com';
 const String phpAssetId = '3A8F594F-D736-4673-945C-5465E0209AF0';
 
 // For local server, testing/debugging
-// const String baseUrl = 'https://3b494706.ngrok.io';
+// const String baseUrl = 'https://e7be2f67.ngrok.io';
 // const String phpAssetId = 'C7F4D976-9204-47DC-B998-754C29B043C5';
 
 // App version

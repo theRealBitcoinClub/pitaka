@@ -106,11 +106,83 @@ Future<dynamic> sendGetRequest(url) async {
   return response;
 }
 
+Future<GenericCreateResponse> verifyIdentity(payload) async {
+  print("The value of payload in verifyIdentity() in endpoints.dart is: $payload");
+  try {
+    final String url = globals.baseUrl + '/api/users/verify-identity';
+    final response = await sendPostRequest(url, payload);
+    if (response.data['success']) {
+      // Save and mark level3 after identity verification success
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      prefs.setBool('level3', true);
+  }
+    return GenericCreateResponse.fromResponse(response);
+  } catch (e) {
+    throw Exception(e);
+  }
+}
+
+Future<GenericCreateResponse> reSendEmailVerification(payload) async {
+  print("The value of payload in verifyEmail() in endpoints.dart is: $payload");
+  try {
+    final String url = globals.baseUrl + '/api/users/resend-email-verification';
+    final response = await sendPostRequest(url, payload);
+    // if (response.data['success']) {
+    //   // Save and mark level2 after email verification success
+    //   SharedPreferences prefs = await SharedPreferences.getInstance();
+    //   await prefs.setBool('level2', true);
+    //   await prefs.setBool('verifiedEmail', true);
+    // }
+    return GenericCreateResponse.fromResponse(response);
+  } catch (e) {
+    throw Exception(e);
+  }
+}
+
+Future<GenericCreateResponse> verifyEmail(payload) async {
+  print("The value of payload in verifyEmail() in endpoints.dart is: $payload");
+  try {
+    final String url = globals.baseUrl + '/api/users/verify-email';
+    final response = await sendPostRequest(url, payload);
+    if (response.data['success']) {
+      // Save and mark level2 after email verification success
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      await prefs.setBool('level2', true);
+      await prefs.setBool('verifiedEmail', true);
+  }
+    return GenericCreateResponse.fromResponse(response);
+  } catch (e) {
+    throw Exception(e);
+  }
+}
+
+Future<GenericCreateResponse> registerEmail(payload) async {
+  print("The value of payload in registerEmail() in endpoints.dart is: $payload");
+  try {
+    final String url = globals.baseUrl + '/api/users/register-email';
+    final response = await sendPostRequest(url, payload);
+    if (response.data['success']) {
+      // Save email in shared preferences and mark registeredEmail to true
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      await prefs.setString('email', payload['email']);
+      await prefs.setBool('registeredEmail', true);
+  }
+    return GenericCreateResponse.fromResponse(response);
+  } catch (e) {
+    throw Exception(e);
+  }
+}
+
 Future<GenericCreateResponse> createUser(payload) async {
-  //print("The value of payload in createUser() in endpoints.dart is: $payload");
+  print("The value of payload in createUser() in endpoints.dart is: $payload");
   try {
     final String url = globals.baseUrl + '/api/users/create';
     final response = await sendPostRequest(url, payload);
+    if (response.data['success']) {
+      // Save birthdate in shared preferences
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      await prefs.setString('birthDate', payload['birthday']);
+  }
     return GenericCreateResponse.fromResponse(response);
   } catch (e) {
     throw Exception(e);
@@ -225,6 +297,7 @@ Future<GenericCreateResponse> addAccount(payload) async {
 }
 
 Future<PlainSuccessResponse> loginUser(payload) async {
+  print("The value of payload in loginUser() in endpoints.dart is: $payload");
   final String url = globals.baseUrl + '/api/auth/login';
   try {
     Response response;

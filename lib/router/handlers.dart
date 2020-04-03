@@ -21,6 +21,10 @@ import '../views/addPinCode.dart';
 import '../views/checkPinCode.dart';
 import '../views/contactList.dart';
 import '../views/sendContact.dart';
+import '../views/userProfile.dart';
+import '../views/verificationLevels.dart';
+import '../views/registerEmailForm.dart';
+import '../views/verifyEmailForm.dart';
 
 
 var rootHandler = new Handler(
@@ -128,3 +132,25 @@ var sendContactHandler = new Handler(
     handlerFunc: (BuildContext context, Map<String, dynamic> params) {
       return new SendContactComponent();
 });
+
+var userProfileHandler = new Handler(
+    handlerFunc: (BuildContext context, Map<String, dynamic> params) {
+      return new UserProfileComponent();
+});
+
+var verificationLevelsHandler = new Handler(
+    handlerFunc: (BuildContext context, Map<String, dynamic> params) {
+      return new VerificationLevelsComponent();
+});
+
+var registerEmailFormHandler = new Handler(
+  handlerFunc: (BuildContext context, Map<String, dynamic> params) {
+    return RegisterEmailFormComponent();
+  }
+);
+
+var verifyEmailFormHandler = new Handler(
+  handlerFunc: (BuildContext context, Map<String, dynamic> params) {
+    return VerifyEmailFormComponent();
+  }
+);
