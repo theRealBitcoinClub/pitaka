@@ -9,6 +9,7 @@ import '../utils/globals.dart';
 import '../utils/dialogs.dart';
 import '../utils/database_helper.dart';
 import '../utils/globals.dart' as globals;
+import 'dart:math';
 
 
 class VerificationLevelsComponent extends StatefulWidget {
@@ -29,6 +30,8 @@ class VerificationLevelsComponentState extends State<VerificationLevelsComponent
   bool _submitting = false;
   bool online = globals.online;
   bool disableSubmitButton = false;
+  bool transactionLimitsTable = true;
+  bool levelUp = false;
   bool maxOfflineTime = globals.maxOfflineTime;
   int offlineTime = globals.offlineTime;
 
@@ -86,65 +89,133 @@ class VerificationLevelsComponentState extends State<VerificationLevelsComponent
           SizedBox(
             height: 20.0,
           ),
-          Text(
-            "Transaction Limits",
-            style: TextStyle(fontWeight: FontWeight.bold),
-          ),
-          SingleChildScrollView(
-            scrollDirection: Axis.vertical,
-            child: FittedBox(
-              child: DataTable(
-                columnSpacing: 0,
-                columns: [
-                  DataColumn(
-                    label: Text(
-                      'Transaction Limits',
-                      style: TextStyle(fontWeight: FontWeight.bold,),
-                    ),
+          OutlineButton(
+            onPressed: () {
+              setState(() {
+                transactionLimitsTable = !transactionLimitsTable;
+              });
+            },
+            child: Stack(
+              children: <Widget>[
+                transactionLimitsTable ?
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: Icon(Icons.keyboard_arrow_down, color: Colors.redAccent,)
+                  )
+                :
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: Icon(Icons.keyboard_arrow_up, color: Colors.redAccent,)
                   ),
-                  DataColumn(
-                    label: Text(
-                      'Level 1',
-                      style: TextStyle(fontWeight: FontWeight.bold,),
+                Padding(
+                  padding: EdgeInsets.only(left: 25.0, top: 2.0),
+                  child: Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      "Transaction Limits",
+                      textAlign: TextAlign.left,
                     )
-                  ),
-                  DataColumn(
-                    label: Text(
-                      'Level 2',
-                      style: TextStyle(fontWeight: FontWeight.bold,),
-                    )
-                  ),
-                  DataColumn(
-                    label: Text(
-                      'Level 3',
-                      style: TextStyle(fontWeight: FontWeight.bold,),
-                    )
-                  ),
-                ],
-                rows: [
-                  DataRow(cells: [
-                    DataCell(Text('Wallet Size')),
-                    DataCell(Text('50K')),
-                    DataCell(Text('75K')),
-                    DataCell(Text('100K')),
-                  ]),
-                  DataRow(cells: [
-                    DataCell(Text('Incoming Limit')),
-                    DataCell(Text('50K')),
-                    DataCell(Text('75K')),
-                    DataCell(Text('100K')),
-                  ]),
-                  DataRow(cells: [
-                    DataCell(Text('Outgoing Limit')),
-                    DataCell(Text('50K')),
-                    DataCell(Text('75K')),
-                    DataCell(Text('100K')),
-                  ]),
-                ],
-              ),
+                  )
+                )
+              ],
+            ),
+            borderSide: BorderSide(color: Colors.grey[400]),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(3.0)
             )
-          )
-
+          ),
+          Visibility(
+            visible: transactionLimitsTable,
+            child: SingleChildScrollView(
+              scrollDirection: Axis.vertical,
+              child: FittedBox(
+                child: DataTable(
+                  columnSpacing: 0,
+                  columns: [
+                    DataColumn(
+                      label: Text(
+                        'Transaction Limits',
+                        style: TextStyle(fontWeight: FontWeight.bold,),
+                      ),
+                    ),
+                    DataColumn(
+                      label: Text(
+                        'Level 1',
+                        style: TextStyle(fontWeight: FontWeight.bold,),
+                      )
+                    ),
+                    DataColumn(
+                      label: Text(
+                        'Level 2',
+                        style: TextStyle(fontWeight: FontWeight.bold,),
+                      )
+                    ),
+                    DataColumn(
+                      label: Text(
+                        'Level 3',
+                        style: TextStyle(fontWeight: FontWeight.bold,),
+                      )
+                    ),
+                  ],
+                  rows: [
+                    DataRow(cells: [
+                      DataCell(Text('Wallet Size')),
+                      DataCell(Text('50K')),
+                      DataCell(Text('75K')),
+                      DataCell(Text('100K')),
+                    ]),
+                    DataRow(cells: [
+                      DataCell(Text('Incoming Limit')),
+                      DataCell(Text('50K')),
+                      DataCell(Text('75K')),
+                      DataCell(Text('100K')),
+                    ]),
+                    DataRow(cells: [
+                      DataCell(Text('Outgoing Limit')),
+                      DataCell(Text('50K')),
+                      DataCell(Text('75K')),
+                      DataCell(Text('100K')),
+                    ]),
+                  ],
+                ),
+              )
+            ),
+          ),
+          OutlineButton(
+            onPressed: () {
+              setState(() {
+                levelUp = !levelUp;
+              });            
+            },
+            child: Stack(
+              children: <Widget>[
+                levelUp ?
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: Icon(Icons.keyboard_arrow_down, color: Colors.redAccent,)
+                  )
+                :
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: Icon(Icons.keyboard_arrow_up, color: Colors.redAccent,)
+                  ),
+                Padding(
+                  padding: EdgeInsets.only(left: 25.0, top: 2.0),
+                  child: Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      "How to Level Up",
+                      textAlign: TextAlign.left,
+                    )
+                  )
+                )
+              ],
+            ),
+            borderSide: BorderSide(color: Colors.grey[400]),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(3.0)
+            )
+          ),
         ],
       )
     );
