@@ -59,47 +59,6 @@ class VerificationLevelsComponentState extends State<VerificationLevelsComponent
     });
   }
 
-  Future<bool> sendAuthentication() async {
-    // Set _submitting to true for progress indicator to display while sending the request
-    _submitting = true;
-    // Get private and public key
-    String publicKey = await globals.storage.read(key: "publicKey");
-    String privateKey = await globals.storage.read(key: "privateKey");
-    // Sign the sessionKey scanned from barcode with the private key
-    String signature = await signTransaction(sessionKey, privateKey);
-    // Create the payload
-    var payload = {
-      'session_key': sessionKey,
-      'public_key': publicKey,
-      'signature': signature,
-      'app_version': globals.appVersion,
-    };
-    // Call authWebApp() from endpoints.dart
-    var response = await authWebApp(payload);
-
-    // Catch app version compatibility
-    if (response.error == "outdated_app_version") {
-      showOutdatedAppVersionDialog(context);
-    }
-
-    // Check the error response from authWebApp in endpoints.dart
-    // Call the function for alert dialog
-    if (response.error == "request_error") {
-      showAlertDialog(context);
-      // Return null so the second alert dialog won't show
-      return null;
-    }
-    if (response.success == false) {
-      _errorFound = true;
-      _errorMessage = response.error;
-    } else {
-      Application.router.navigateTo(context, "/home");
-    }
-    // Set _submitting to false after sending the request and return the response
-    _submitting = false;
-    return response.success;
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -116,59 +75,76 @@ class VerificationLevelsComponentState extends State<VerificationLevelsComponent
     );
   }
 
-  // Alert dialog for slow internet speed connection
-  // This is called in sendFunds() when there is connection timeout error response
-  // from transferAsset() in endpoints.dart
-  showAlertDialog(BuildContext context) {
-    // set up the buttons
-    Widget okButton = FlatButton(
-      child: Text("Try again"),
-      onPressed:  () {
-        Navigator.pop(context);
-        Application.router.navigateTo(context, "/authenticate");
-      }
-    );
-
-    // set up the AlertDialog
-    AlertDialog alert = AlertDialog(
-      title: Text("Request Failure!"),
-      content: Text("There was an error in sending the request!"
-      ),
-      actions: [
-        okButton,
-      ],
-    );
-
-    // show the dialog
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return alert;
-      },
-    );
-  }
-
-List<Widget> _buildForm(BuildContext context) {
+  List<Widget> _buildForm(BuildContext context) {
     Form form = new Form(
       key: _formKey,
-      child: new ListView(
-        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+
+      
+      child: ListView(
+        padding: const EdgeInsets.symmetric(horizontal: 12.0),
         children: <Widget>[
-          new SizedBox(
-            height: 30.0,
+          SizedBox(
+            height: 20.0,
           ),
-          // When maximum offline timeout (6 hours) is true show message transaction not allowed
-          online == false ? 
-            Container(
-              padding: EdgeInsets.only(top: 250),
-              child: new Text(
-                "You're offline, authentication is not possible!",
-                textAlign: TextAlign.center,
+          Text(
+            "Transaction Limits",
+            style: TextStyle(fontWeight: FontWeight.bold),
+          ),
+          SingleChildScrollView(
+            scrollDirection: Axis.vertical,
+            child: FittedBox(
+              child: DataTable(
+                columnSpacing: 0,
+                columns: [
+                  DataColumn(
+                    label: Text(
+                      'Transaction Limits',
+                      style: TextStyle(fontWeight: FontWeight.bold,),
+                    ),
+                  ),
+                  DataColumn(
+                    label: Text(
+                      'Level 1',
+                      style: TextStyle(fontWeight: FontWeight.bold,),
+                    )
+                  ),
+                  DataColumn(
+                    label: Text(
+                      'Level 2',
+                      style: TextStyle(fontWeight: FontWeight.bold,),
+                    )
+                  ),
+                  DataColumn(
+                    label: Text(
+                      'Level 3',
+                      style: TextStyle(fontWeight: FontWeight.bold,),
+                    )
+                  ),
+                ],
+                rows: [
+                  DataRow(cells: [
+                    DataCell(Text('Wallet Size')),
+                    DataCell(Text('50K')),
+                    DataCell(Text('75K')),
+                    DataCell(Text('100K')),
+                  ]),
+                  DataRow(cells: [
+                    DataCell(Text('Incoming Limit')),
+                    DataCell(Text('50K')),
+                    DataCell(Text('75K')),
+                    DataCell(Text('100K')),
+                  ]),
+                  DataRow(cells: [
+                    DataCell(Text('Outgoing Limit')),
+                    DataCell(Text('50K')),
+                    DataCell(Text('75K')),
+                    DataCell(Text('100K')),
+                  ]),
+                ],
               ),
-            ) 
-          : new Container(
-            
-            ),
+            )
+          )
+
         ],
       )
     );
