@@ -81,8 +81,6 @@ class VerificationLevelsComponentState extends State<VerificationLevelsComponent
   List<Widget> _buildForm(BuildContext context) {
     Form form = new Form(
       key: _formKey,
-
-      
       child: ListView(
         padding: const EdgeInsets.symmetric(horizontal: 12.0),
         children: <Widget>[
@@ -181,6 +179,7 @@ class VerificationLevelsComponentState extends State<VerificationLevelsComponent
               )
             ),
           ),
+          SizedBox(height: 30.0,),
           OutlineButton(
             onPressed: () {
               setState(() {
@@ -216,6 +215,375 @@ class VerificationLevelsComponentState extends State<VerificationLevelsComponent
               borderRadius: BorderRadius.circular(3.0)
             )
           ),
+          Visibility(
+            visible: levelUp,
+            child: Padding (
+              padding: EdgeInsets.symmetric(horizontal: 10.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  SizedBox(height: 20.0,),
+                  Row(
+                    children: <Widget>[
+                      Icon(Icons.security, color: Colors.redAccent,),
+                      Padding(
+                        padding: EdgeInsets.only(left: 8.0,),
+                        child: Text(
+                          "Level 1",
+                          style: TextStyle(fontWeight: FontWeight.w500),
+                        ),
+                      )
+                    ]
+                  ),
+                  SizedBox(height: 10.0,),
+                  Text(
+                    "Register to Paytaca",
+                    style: TextStyle(fontStyle: FontStyle.italic),
+                  ),
+                  SizedBox(height: 25.0,),
+                  Row(
+                    children: <Widget>[
+                      Icon(Icons.security, color: Colors.redAccent,),
+                      Padding(
+                        padding: EdgeInsets.only(left: 8.0,),
+                        child: Text(
+                          "Level 2",
+                          style: TextStyle(fontWeight: FontWeight.w500),
+                        ),
+                      )
+                    ]
+                  ),
+                  SizedBox(height: 10.0,),
+                  Container(
+                    height: 80,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(3.0),
+                      color: Colors.grey[200],
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: <Widget>[
+                        Expanded(
+                          child: Padding(
+                            padding: EdgeInsets.only(top: 12.0),
+                            child: Column(
+                              children: <Widget>[
+                                Icon(Icons.email, color: Colors.redAccent,),
+                                Text(
+                                  "Register",
+                                  style: TextStyle(fontSize: 10.0),
+                                ),
+                                Text(
+                                  "email",
+                                  style: TextStyle(fontSize: 10.0),
+                                )                           
+                              ],
+                            ),
+                          ),
+                        ),
+                        Padding(
+                          padding: EdgeInsets.only(bottom: 30.0),
+                          child: Row(
+                            children: <Widget>[
+                              Text(
+                                "- -",
+                                style: TextStyle(fontSize: 10.0),
+                              ),
+                              Text(
+                                " > ",
+                                style: TextStyle(fontSize: 10.0),
+                              ),
+                              Text(
+                                "- -",
+                                style: TextStyle(fontSize: 10.0),
+                              ),
+                            ],
+                          ),
+                        ),
+                        Expanded(
+                          child: Padding(
+                            padding: EdgeInsets.only(top: 12.0),
+                            child: Column(
+                              children: <Widget>[
+                                Icon(Icons.contact_mail, color: Colors.redAccent,),
+                                Text(
+                                  "Confirm",
+                                  style: TextStyle(
+                                    fontSize: 10.0,
+                                  ),
+                                ),
+                                Text(
+                                  "email",
+                                  style: TextStyle(
+                                    fontSize: 10.0,
+                                  ),
+                                )
+                              ],
+                            ),
+                          ),
+                        ),
+                        Padding(
+                          padding: EdgeInsets.only(bottom: 30.0),
+                          child: Row(
+                            children: <Widget>[
+                              Text(
+                                "   ",
+                                style: TextStyle(fontSize: 10.0),
+                              ),
+                              Text(
+                                "   ",
+                                style: TextStyle(fontSize: 10.0),
+                              ),
+                              Text(
+                                "   ",
+                                style: TextStyle(fontSize: 10.0),
+                              ),
+                            ],
+                          ),
+                        ),
+                        Expanded(
+                          child: Padding(
+                            padding: EdgeInsets.only(top: 12.0),
+                            child: Column(
+                              children: <Widget>[
+                                //Icon(Icons.security, color: Colors.redAccent,),
+                                Text(
+                                  "",
+                                  style: TextStyle(
+                                    fontSize: 10.0,
+                                  ),
+                                ),
+                                Text(
+                                  "",
+                                  style: TextStyle(
+                                    fontSize: 10.0,
+                                  ),
+                                )
+                              ],
+                            ),
+                          ),
+                        ),
+                        Padding(
+                          padding: EdgeInsets.only(bottom: 30.0),
+                          child: Row(
+                            children: <Widget>[
+                              Text(
+                                "   ",
+                                style: TextStyle(fontSize: 10.0),
+                              ),
+                              Text(
+                                "   ",
+                                style: TextStyle(fontSize: 10.0),
+                              ),
+                              Text(
+                                "   ",
+                                style: TextStyle(fontSize: 10.0),
+                              ),
+                            ],
+                          ),
+                        ),
+                        Expanded(
+                          child: Padding(
+                            padding: EdgeInsets.only(top: 12.0),
+                            child: Column(
+                              children: <Widget>[
+                                //Icon(Icons.security, color: Colors.redAccent,),
+                                Text(
+                                  "",
+                                  style: TextStyle(
+                                    fontSize: 10.0,
+                                  ),
+                                ),
+                                Text(
+                                  "",
+                                  style: TextStyle(
+                                    fontSize: 10.0,
+                                  ),
+                                )
+                              ],
+                            ),
+                          ),
+                        ),
+                      ]
+                    ),
+                  ),
+                  SizedBox(height: 10.0,),
+                  Text(
+                    "Valid only for 1 year or until you reach the 100,000 incoming limit. "
+                    "After this, your account will return to Level 1 status.",
+                    style: TextStyle(fontStyle: FontStyle.italic),
+                  ),
+                  SizedBox(height: 25.0,),
+                  Row(
+                    children: <Widget>[
+                      Icon(Icons.security, color: Colors.redAccent,),
+                      Padding(
+                        padding: EdgeInsets.only(left: 8.0,),
+                        child: Text(
+                          "Level 3",
+                          style: TextStyle(fontWeight: FontWeight.w500),
+                        ),
+                      )
+                    ]
+                  ),
+                  SizedBox(height: 10.0,),
+                  Container(
+                    height: 80,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(3.0),
+                      color: Colors.grey[200],
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: <Widget>[
+                        Expanded(
+                          child: Padding(
+                            padding: EdgeInsets.only(top: 12.0),
+                            child: Column(
+                              children: <Widget>[
+                                Icon(Icons.photo, color: Colors.redAccent,),
+                                Text(
+                                  "Take ID",
+                                  style: TextStyle(fontSize: 10.0),
+                                ),
+                                Text(
+                                  "photo",
+                                  style: TextStyle(fontSize: 10.0),
+                                )                           
+                              ],
+                            ),
+                          ),
+                        ),
+                        Padding(
+                          padding: EdgeInsets.only(bottom: 30.0),
+                          child: Row(
+                            children: <Widget>[
+                              Text(
+                                "- -",
+                                style: TextStyle(fontSize: 10.0),
+                              ),
+                              Text(
+                                " > ",
+                                style: TextStyle(fontSize: 10.0),
+                              ),
+                              Text(
+                                "- -",
+                                style: TextStyle(fontSize: 10.0),
+                              ),
+                            ],
+                          ),
+                        ),
+                        Expanded(
+                          child: Padding(
+                            padding: EdgeInsets.only(top: 12.0),
+                            child: Column(
+                              children: <Widget>[
+                                Icon(Icons.account_box, color: Colors.redAccent,),
+                                Text(
+                                  "Take",
+                                  style: TextStyle(
+                                    fontSize: 10.0,
+                                  ),
+                                ),
+                                Text(
+                                  "selfie",
+                                  style: TextStyle(
+                                    fontSize: 10.0,
+                                  ),
+                                )
+                              ],
+                            ),
+                          ),
+                        ),
+                        Padding(
+                          padding: EdgeInsets.only(bottom: 30.0),
+                          child: Row(
+                            children: <Widget>[
+                              Text(
+                                "- -",
+                                style: TextStyle(fontSize: 10.0),
+                              ),
+                              Text(
+                                " > ",
+                                style: TextStyle(fontSize: 10.0),
+                              ),
+                              Text(
+                                "- -",
+                                style: TextStyle(fontSize: 10.0),
+                              ),
+                            ],
+                          ),
+                        ),
+                        Expanded(
+                          child: Padding(
+                            padding: EdgeInsets.only(top: 12.0),
+                            child: Column(
+                              children: <Widget>[
+                                Icon(Icons.playlist_add, color: Colors.redAccent,),
+                                Text(
+                                  "Fill",
+                                  style: TextStyle(
+                                    fontSize: 10.0,
+                                  ),
+                                ),
+                                Text(
+                                  "information",
+                                  style: TextStyle(
+                                    fontSize: 10.0,
+                                  ),
+                                )
+                              ],
+                            ),
+                          ),
+                        ),
+                        Padding(
+                          padding: EdgeInsets.only(bottom: 30.0),
+                          child: Row(
+                            children: <Widget>[
+                              Text(
+                                "- -",
+                                style: TextStyle(fontSize: 10.0),
+                              ),
+                              Text(
+                                " > ",
+                                style: TextStyle(fontSize: 10.0),
+                              ),
+                              Text(
+                                "- -",
+                                style: TextStyle(fontSize: 10.0),
+                              ),
+                            ],
+                          ),
+                        ),
+                        Expanded(
+                          child: Padding(
+                            padding: EdgeInsets.only(top: 12.0),
+                            child: Column(
+                              children: <Widget>[
+                                Icon(Icons.playlist_add_check, color: Colors.redAccent,),
+                                Text(
+                                  "Submit",
+                                  style: TextStyle(
+                                    fontSize: 10.0,
+                                  ),
+                                ),
+                                Text(
+                                  "application",
+                                  style: TextStyle(
+                                    fontSize: 10.0,
+                                  ),
+                                )
+                              ],
+                            ),
+                          ),
+                        ),
+                      ]
+                    ),
+                  )
+                ]
+              )
+            )
+          )
         ],
       )
     );
