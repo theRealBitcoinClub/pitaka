@@ -122,6 +122,7 @@ class VerificationLevelsComponentState extends State<VerificationLevelsComponent
               borderRadius: BorderRadius.circular(3.0)
             )
           ),
+          SizedBox(height: 10,),
           Visibility(
             visible: transactionLimitsTable,
             child: SingleChildScrollView(
@@ -131,48 +132,193 @@ class VerificationLevelsComponentState extends State<VerificationLevelsComponent
                   columnSpacing: 0,
                   columns: [
                     DataColumn(
-                      label: Text(
-                        'Transaction Limits',
-                        style: TextStyle(fontWeight: FontWeight.bold,),
-                      ),
-                    ),
-                    DataColumn(
-                      label: Text(
-                        'Level 1',
-                        style: TextStyle(fontWeight: FontWeight.bold,),
+                      label: Padding(
+                        padding: EdgeInsets.only(top: 12.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: <Widget>[
+                            Text(
+                              'Transaction          ',
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: Colors.black,
+                                fontSize: 15.0,
+                              ),
+                            ),
+                            Text(
+                              'Limits                    ',
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: Colors.black,
+                                fontSize: 15.0,
+                              ),
+                            )
+                          ]
+                        )
                       )
                     ),
                     DataColumn(
-                      label: Text(
-                        'Level 2',
-                        style: TextStyle(fontWeight: FontWeight.bold,),
+                      label: Padding(
+                        padding: EdgeInsets.only(top: 8.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: <Widget>[
+                            Icon(Icons.security, color: Colors.red[200],),
+                            Text(
+                              'Level 1',
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: Colors.black,
+                              ),
+                            )
+                          ]
+                        )
                       )
                     ),
                     DataColumn(
-                      label: Text(
-                        'Level 3',
-                        style: TextStyle(fontWeight: FontWeight.bold,),
+                      label: Padding(
+                        padding: EdgeInsets.only(top: 8.0), 
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: <Widget>[
+                            Icon(Icons.security, color: Colors.red[300],),
+                            Text(
+                              'Level 2',
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: Colors.black,
+                              ),
+                            )
+                          ]
+                        )
+                      )
+                    ),
+                    DataColumn(
+                      label: Padding(
+                        padding: EdgeInsets.only(top: 8.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: <Widget>[
+                            Icon(Icons.security, color: Colors.red[400],),
+                            Text(
+                              'Level 3',
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: Colors.black,
+                              ),
+                            )
+                          ]
+                        )
                       )
                     ),
                   ],
                   rows: [
                     DataRow(cells: [
-                      DataCell(Text('Wallet Size')),
+                      DataCell(
+                        Text(
+                          'Wallet Size', 
+                          style: TextStyle(
+                            fontWeight: FontWeight.w500,
+                          ),
+                        )
+                      ),
                       DataCell(Text('50K')),
                       DataCell(Text('75K')),
                       DataCell(Text('100K')),
                     ]),
                     DataRow(cells: [
-                      DataCell(Text('Incoming Limit')),
-                      DataCell(Text('50K')),
-                      DataCell(Text('75K')),
-                      DataCell(Text('100K')),
+                      DataCell(
+                        Column(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          children: <Widget>[
+                            Text(
+                              'Incoming Limit',
+                              style: TextStyle(
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                            Text('- Monthly    '),
+                            Text('- Yearly        '),
+                          ] 
+                        )
+                      ),
+                      DataCell(
+                        Column(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          children: <Widget>[
+                            Text(''),
+                            Text('50K'),
+                            Text('50K'),
+                          ] 
+                        )
+                      ),
+                      DataCell(
+                        Column(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          children: <Widget>[
+                            Text(''),
+                            Text('100K'),
+                            Text('100K'),
+                          ] 
+                        )
+                      ),
+                      DataCell(
+                        Column(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          children: <Widget>[
+                            Text(''),
+                            Text('100K'),
+                            Text('100K'),
+                          ] 
+                        )
+                      ),
                     ]),
                     DataRow(cells: [
-                      DataCell(Text('Outgoing Limit')),
-                      DataCell(Text('50K')),
-                      DataCell(Text('75K')),
-                      DataCell(Text('100K')),
+                      DataCell(
+                        Column(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          children: <Widget>[
+                            Text(
+                              'Outgoing Limit',
+                              style: TextStyle(
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                            Text('- Daily          '),
+                            Text('- Monthly    '),
+                          ] 
+                        )
+                      ),
+                      DataCell(
+                        Column(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          children: <Widget>[
+                            Text(''),
+                            Text('40K'),
+                            Text('100K'),
+                          ] 
+                        )
+                      ),
+                      DataCell(
+                        Column(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          children: <Widget>[
+                            Text(''),
+                            Text('75K'),
+                            Text('75K'),
+                          ] 
+                        )
+                      ),
+                      DataCell(
+                        Column(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          children: <Widget>[
+                            Text(''),
+                            Text('100K'),
+                            Text('100K'),
+                          ] 
+                        )
+                      ),
                     ]),
                   ],
                 ),
@@ -225,7 +371,7 @@ class VerificationLevelsComponentState extends State<VerificationLevelsComponent
                   SizedBox(height: 20.0,),
                   Row(
                     children: <Widget>[
-                      Icon(Icons.security, color: Colors.redAccent,),
+                      Icon(Icons.security, color: Colors.red[200],),
                       Padding(
                         padding: EdgeInsets.only(left: 8.0,),
                         child: Text(
@@ -238,12 +384,15 @@ class VerificationLevelsComponentState extends State<VerificationLevelsComponent
                   SizedBox(height: 10.0,),
                   Text(
                     "Register to Paytaca",
-                    style: TextStyle(fontStyle: FontStyle.italic),
+                    style: TextStyle(
+                      fontStyle: FontStyle.italic,
+                      fontSize: 12.0,
+                    ),
                   ),
                   SizedBox(height: 25.0,),
                   Row(
                     children: <Widget>[
-                      Icon(Icons.security, color: Colors.redAccent,),
+                      Icon(Icons.security, color: Colors.red[300],),
                       Padding(
                         padding: EdgeInsets.only(left: 8.0,),
                         child: Text(
@@ -410,13 +559,17 @@ class VerificationLevelsComponentState extends State<VerificationLevelsComponent
                   SizedBox(height: 10.0,),
                   Text(
                     "Valid only for 1 year or until you reach the 100,000 incoming limit. "
-                    "After this, your account will return to Level 1 status.",
-                    style: TextStyle(fontStyle: FontStyle.italic),
+                    "After this, your account will return to Level 1 status. "
+                    "Fully verify your account to continue enjoying all Paytaca.",
+                    style: TextStyle(
+                      fontStyle: FontStyle.italic,
+                      fontSize: 12.0,
+                    ),
                   ),
                   SizedBox(height: 25.0,),
                   Row(
                     children: <Widget>[
-                      Icon(Icons.security, color: Colors.redAccent,),
+                      Icon(Icons.security, color: Colors.red[400],),
                       Padding(
                         padding: EdgeInsets.only(left: 8.0,),
                         child: Text(
