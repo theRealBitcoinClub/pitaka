@@ -331,8 +331,7 @@ class UserProfileComponentState extends State<UserProfileComponent> {
                                     style: TextStyle(color: Colors.white),
                                   ),
                                   onPressed: () {
-                                    //Code to execute when Floating Action Button is clicked
-                                    //...
+                                    Application.router.navigateTo(context, "/verifyidentity");
                                   },
                                 ),
                               )

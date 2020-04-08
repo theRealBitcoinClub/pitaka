@@ -28,118 +28,124 @@ class Routes {
   static String verificationLevels = "/verificationlevels";
   static String registerEmailForm = "/registeremailform";
   static String verifyEmailForm = "/verifyemailform";
+  static String verifyIdentity = "/verifyidentity";
 
   static void configureRoutes(Router router) {
     router.notFoundHandler = new Handler(
-        handlerFunc: (BuildContext context, Map<String, dynamic> params) {
+      handlerFunc: (BuildContext context, Map<String, dynamic> params) {
       print("ROUTE WAS NOT FOUND!");
     });
     router.define(root,
-        handler: rootHandler, transitionType: TransitionType.fadeIn);
+      handler: rootHandler, transitionType: TransitionType.fadeIn);
     router.define(onboardingRequest,
-       handler: onboardingRequestHandler,
-        transitionType: TransitionType.fadeIn);
+      handler: onboardingRequestHandler,
+      transitionType: TransitionType.fadeIn);
     router.define(onboardingVerify,
-        handler: onboardingVerifyHandler,
-        transitionType: TransitionType.fadeIn);
+      handler: onboardingVerifyHandler,
+      transitionType: TransitionType.fadeIn);
     router.define(onboardingRegister,
-        handler: onboardingRegisterHandler,
-        transitionType: TransitionType.fadeIn);
+      handler: onboardingRegisterHandler,
+      transitionType: TransitionType.fadeIn);
     router.define(account,
-        handler: accountHandler, transitionType: TransitionType.fadeIn);
+      handler: accountHandler, transitionType: TransitionType.fadeIn);
     router.define(
-        terms,
-        handler: termsHandler,
-        transitionType: TransitionType.fadeIn
+      terms,
+      handler: termsHandler,
+      transitionType: TransitionType.fadeIn
     );
     router.define(
-        home,
-        handler: homeHandler,
-        transitionType: TransitionType.fadeIn
+      home,
+      handler: homeHandler,
+      transitionType: TransitionType.fadeIn
     );
     router.define(
-        send,
-        handler: sendHandler,
-        transitionType: TransitionType.fadeIn
+      send,
+      handler: sendHandler,
+      transitionType: TransitionType.fadeIn
     );
     router.define(
-        authenticate,
-        handler: authenticateHandler,
-        transitionType: TransitionType.fadeIn
+      authenticate,
+      handler: authenticateHandler,
+      transitionType: TransitionType.fadeIn
     );
     router.define(
-        receive,
-        handler: receiveHandler,
-        transitionType: TransitionType.fadeIn
+      receive,
+      handler: receiveHandler,
+      transitionType: TransitionType.fadeIn
     );
     router.define(businessRegistration,
-        handler: businessRegistrationHandler,
-        transitionType: TransitionType.fadeIn
+      handler: businessRegistrationHandler,
+      transitionType: TransitionType.fadeIn
     );
     router.define(businessTools,
-        handler: businessToolsHandler,
-        transitionType: TransitionType.fadeIn
+      handler: businessToolsHandler,
+      transitionType: TransitionType.fadeIn
     );
     router.define(setBusinessAccount,
-        handler: setBusinessAccountHandler,
-        transitionType: TransitionType.fadeIn
+      handler: setBusinessAccountHandler,
+      transitionType: TransitionType.fadeIn
     );
     router.define(proofOfPayment,
-        handler: proofOfPaymentAccountHandler,
-        transitionType: TransitionType.fadeIn
+      handler: proofOfPaymentAccountHandler,
+      transitionType: TransitionType.fadeIn
     );
     router.define(businesses,
-        handler: businessesHandler,
-        transitionType: TransitionType.fadeIn
+      handler: businessesHandler,
+      transitionType: TransitionType.fadeIn
     );
     router.define(addAccount,
-        handler: addAccountHandler,
-        transitionType: TransitionType.fadeIn
+      handler: addAccountHandler,
+      transitionType: TransitionType.fadeIn
     );
     router.define(
-        settings,
-        handler: settingsHandler,
-        transitionType: TransitionType.fadeIn
+      settings,
+      handler: settingsHandler,
+      transitionType: TransitionType.fadeIn
     );
     router.define(
-        addPinCode,
-        handler: addPinCodeHandler,
-        transitionType: TransitionType.fadeIn
+      addPinCode,
+      handler: addPinCodeHandler,
+      transitionType: TransitionType.fadeIn
     );
     router.define(
-        checkPinCode,
-        handler: checkPinCodeHandler,
-        transitionType: TransitionType.fadeIn
+      checkPinCode,
+      handler: checkPinCodeHandler,
+      transitionType: TransitionType.fadeIn
     );
     router.define(
-        contactList,
-        handler: contactListHandler,
-        transitionType: TransitionType.fadeIn
+      contactList,
+      handler: contactListHandler,
+      transitionType: TransitionType.fadeIn
     );
     router.define(
-        sendContact,
-        handler: sendContactHandler,
-        transitionType: TransitionType.fadeIn
+      sendContact,
+      handler: sendContactHandler,
+      transitionType: TransitionType.fadeIn
     );
     router.define(
-        userProfile,
-        handler: userProfileHandler,
-        transitionType: TransitionType.fadeIn
+      userProfile,
+      handler: userProfileHandler,
+      transitionType: TransitionType.fadeIn
     );
     router.define(
-        verificationLevels,
-        handler: verificationLevelsHandler,
-        transitionType: TransitionType.fadeIn
+      verificationLevels,
+      handler: verificationLevelsHandler,
+      transitionType: TransitionType.fadeIn
     );
     router.define(
-        registerEmailForm,
-        handler: registerEmailFormHandler,
-        transitionType: TransitionType.fadeIn
+      registerEmailForm,
+      handler: registerEmailFormHandler,
+      transitionType: TransitionType.fadeIn
     );
     router.define(
-        verifyEmailForm,
-        handler: verifyEmailFormHandler,
-        transitionType: TransitionType.fadeIn
+      verifyEmailForm,
+      handler: verifyEmailFormHandler,
+      transitionType: TransitionType.fadeIn
+    );
+    router.define(
+      verifyIdentity,
+      handler: verifyIdentityHandler,
+      transitionType: TransitionType.fadeIn
     );
   }
 }
