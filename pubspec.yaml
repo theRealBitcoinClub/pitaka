@@ -43,6 +43,7 @@ dependencies:
   url_launcher: ^5.2.7
   flutter_udid: ^1.0.1
   overlay_support: ^1.0.3
+  webview_flutter: ^0.3.3
 
   easy_dialog:
     git:

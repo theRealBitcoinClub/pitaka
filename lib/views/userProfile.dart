@@ -9,6 +9,7 @@ import '../utils/globals.dart';
 import '../utils/dialogs.dart';
 import '../utils/database_helper.dart';
 import '../utils/globals.dart' as globals;
+import '../views/verifyIdentity.dart';
 
 
 class UserProfileComponent extends StatefulWidget {
@@ -129,17 +130,17 @@ class UserProfileComponentState extends State<UserProfileComponent> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(
-          title: Text('User Profile'),
-          centerTitle: true,
-          leading: IconButton(icon:Icon(Icons.arrow_back),
-            onPressed:() => Navigator.pop(context, false),
-          ),
+      appBar: AppBar(
+        title: Text('User Profile'),
+        centerTitle: true,
+        leading: IconButton(icon:Icon(Icons.arrow_back),
+          onPressed:() => Navigator.pop(context, false),
         ),
-        body: new Builder(builder: (BuildContext context) {
-          return new Stack(children: _buildForm(context));
-        }),
-      );
+      ),
+      body: new Builder(builder: (BuildContext context) {
+        return new Stack(children: _buildForm(context));
+      }),
+    );
   }
 
   List<Widget> _buildForm(BuildContext context) {
@@ -331,7 +332,11 @@ class UserProfileComponentState extends State<UserProfileComponent> {
                                     style: TextStyle(color: Colors.white),
                                   ),
                                   onPressed: () {
-                                    Application.router.navigateTo(context, "/verifyidentity");
+                                    Navigator.of(context).push(MaterialPageRoute(
+                                      builder: (BuildContext context) => WebViewFlutter(
+                                        websiteUrl: "https://www.paytaca.com/",
+                                      )
+                                    ));
                                   },
                                 ),
                               )
