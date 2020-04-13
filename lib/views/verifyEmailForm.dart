@@ -16,7 +16,6 @@ import '../utils/globals.dart' as globals;
 import '../views/app.dart';
 
 
-
 class VerifyEmailFormComponent extends StatefulWidget {
   @override
   VerifyEmailFormComponentState createState() => VerifyEmailFormComponentState();
@@ -98,7 +97,7 @@ class VerifyEmailFormComponentState extends State<VerifyEmailFormComponent> {
                 hintText: 'Enter 6-digit code',
                 labelText: 'Code',
               ),
-              keyboardType: TextInputType.emailAddress,
+              keyboardType: TextInputType.phone,
               validator: validateName,
               onSaved: (String val) {
                 code = val;
