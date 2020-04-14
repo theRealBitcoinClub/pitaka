@@ -15,10 +15,11 @@ import './../utils/helpers.dart';
 import '../utils/globals.dart' as globals;
 import '../views/app.dart';
 
-
+// Pop twice to go back first userProfile page
 class VerifyEmailFormComponent extends StatefulWidget {
   @override
-  VerifyEmailFormComponentState createState() => VerifyEmailFormComponentState();
+  VerifyEmailFormComponentState createState() =>
+      VerifyEmailFormComponentState();
 }
 
 class VerifyEmailFormComponentState extends State<VerifyEmailFormComponent> {
@@ -38,8 +39,9 @@ class VerifyEmailFormComponentState extends State<VerifyEmailFormComponent> {
       appBar: AppBar(
         title: Text('Verify Email'),
         centerTitle: true,
-        leading: IconButton(icon:Icon(Icons.arrow_back),
-          onPressed:() => Navigator.pop(context, false),
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back),
+          onPressed: () => Navigator.pop(context, false),
         ),
       ),
       // Changed the return body to work with modal progress indicator
@@ -58,33 +60,32 @@ class VerifyEmailFormComponentState extends State<VerifyEmailFormComponent> {
         padding: const EdgeInsets.all(12.0),
         child: Column(
           children: <Widget>[
-            SizedBox(height: 10.0,),
+            SizedBox(
+              height: 10.0,
+            ),
             Text("We sent a verification email to:"),
             Text(
               "$email",
-              style: TextStyle(fontWeight: FontWeight.bold,),
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+              ),
             ),
             Text("Check your email and type the code here."),
             Center(
               child: RichText(
                 text: TextSpan(
                   text: "Did not receive email? Click",
-                  style: TextStyle(
-                    color: Colors.black, 
-                    fontSize: 14
-                  ),
+                  style: TextStyle(color: Colors.black, fontSize: 14),
                   children: <TextSpan>[
-                    TextSpan(text: ' resend email.',
-                      style: TextStyle(
-                        color: Colors.redAccent, 
-                        fontSize: 14
-                      ),
+                    TextSpan(
+                      text: ' resend email.',
+                      style: TextStyle(color: Colors.redAccent, fontSize: 14),
                       recognizer: TapGestureRecognizer()
                         ..onTap = () {
                           _reSendEmailVerification();
-                        }
+                        },
                     )
-                  ]
+                  ],
                 ),
               ),
             ),
@@ -101,7 +102,7 @@ class VerifyEmailFormComponentState extends State<VerifyEmailFormComponent> {
               validator: validateName,
               onSaved: (String val) {
                 code = val;
-              }
+              },
             ),
             SizedBox(height: 15.0),
             SizedBox(
@@ -113,14 +114,14 @@ class VerifyEmailFormComponentState extends State<VerifyEmailFormComponent> {
                 onPressed: () {
                   _sendToServer();
                   // Dismiss the keyboard after clicking the button
-                  FocusScope.of(context).requestFocus(FocusNode());             
+                  FocusScope.of(context).requestFocus(FocusNode());
                 },
                 child: Text('Submit'),
-              )
+              ),
             )
           ],
-        )
-      )
+        ),
+      ),
     );
 
     var l = new List<Widget>();
@@ -140,7 +141,7 @@ class VerifyEmailFormComponentState extends State<VerifyEmailFormComponent> {
       );
       l.add(modal);
     }
-    return l;  
+    return l;
   }
 
   void getEmail() async {
@@ -151,9 +152,9 @@ class VerifyEmailFormComponentState extends State<VerifyEmailFormComponent> {
   Future<Null> _authenticate() async {
     try {
       authenticated = await auth.authenticateWithBiometrics(
-        localizedReason: 'Scan your fingerprint to authenticate',
-        useErrorDialogs: true,
-        stickyAuth: false);
+          localizedReason: 'Scan your fingerprint to authenticate',
+          useErrorDialogs: true,
+          stickyAuth: false);
     } on PlatformException catch (e) {
       if (e.code == auth_error.notAvailable) {
         authenticated = true;
@@ -204,7 +205,7 @@ class VerifyEmailFormComponentState extends State<VerifyEmailFormComponent> {
       codePayload["public_key"] = publicKey;
       codePayload["txn_hash"] = txnHash;
       codePayload["signature"] = signature;
-      
+
       var emailCode = await verifyEmail(codePayload);
 
       // If success is true pop the page, display email and change button to verify
@@ -213,6 +214,8 @@ class VerifyEmailFormComponentState extends State<VerifyEmailFormComponent> {
         await prefs.setBool('registerEmailBtn', false);
         await prefs.setBool('verifyEmailBtn', false);
         await prefs.setBool('verifyIdentityBtn', true);
+        // Pop twice to go back first userProfile page
+        Navigator.of(context).pop();
         Navigator.of(context).pop();
         Application.router.navigateTo(context, "/userprofile");
         // When response is success, dismiss loading progress
@@ -228,7 +231,6 @@ class VerifyEmailFormComponentState extends State<VerifyEmailFormComponent> {
         });
         showInvalidCodelDialog(context);
       }
-
     } else {
       // validation error
       setState(() {

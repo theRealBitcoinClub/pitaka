@@ -4,13 +4,14 @@ import './../api/endpoints.dart';
 import '../utils/dialogs.dart';
 import '../views/app.dart';
 
-
 class RegisterEmailFormComponent extends StatefulWidget {
   @override
-  RegisterEmailFormComponentState createState() => RegisterEmailFormComponentState();
+  RegisterEmailFormComponentState createState() =>
+      RegisterEmailFormComponentState();
 }
 
-class RegisterEmailFormComponentState extends State<RegisterEmailFormComponent> {
+class RegisterEmailFormComponentState
+    extends State<RegisterEmailFormComponent> {
   GlobalKey<FormState> _key = new GlobalKey();
   bool _loading = false;
   bool _validate = false;
@@ -22,8 +23,9 @@ class RegisterEmailFormComponentState extends State<RegisterEmailFormComponent> 
       appBar: AppBar(
         title: Text('Register an Email'),
         centerTitle: true,
-        leading: IconButton(icon:Icon(Icons.arrow_back),
-          onPressed:() => Navigator.pop(context, false),
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back),
+          onPressed: () => Navigator.pop(context, false),
         ),
       ),
       // Changed the return body to work with modal progress indicator
@@ -42,7 +44,9 @@ class RegisterEmailFormComponentState extends State<RegisterEmailFormComponent> 
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: <Widget>[
-            SizedBox(height: 30.0,),
+            SizedBox(
+              height: 30.0,
+            ),
             TextFormField(
               autofocus: true,
               decoration: InputDecoration(
@@ -54,7 +58,7 @@ class RegisterEmailFormComponentState extends State<RegisterEmailFormComponent> 
               validator: validateEmail,
               onSaved: (String val) {
                 email = val;
-              }
+              },
             ),
             SizedBox(height: 15.0),
             SizedBox(
@@ -69,13 +73,13 @@ class RegisterEmailFormComponentState extends State<RegisterEmailFormComponent> 
                   FocusScope.of(context).requestFocus(FocusNode());
                 },
                 child: new Text('Submit'),
-              )
+              ),
             ),
           ],
-        )
-      )
+        ),
+      ),
     );
-    
+
     var l = new List<Widget>();
     l.add(form);
 
@@ -93,17 +97,18 @@ class RegisterEmailFormComponentState extends State<RegisterEmailFormComponent> 
       );
       l.add(modal);
     }
-    return l;   
+    return l;
   }
 
   String validateEmail(String value) {
-    String pattern = r'^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$';
+    String pattern =
+        r'^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$';
     RegExp regExp = new RegExp(pattern);
     if (value.length == 0) {
       return "Email is Required";
-    } else if(!regExp.hasMatch(value)){
+    } else if (!regExp.hasMatch(value)) {
       return "Invalid Email";
-    }else {
+    } else {
       return null;
     }
   }
@@ -120,7 +125,7 @@ class RegisterEmailFormComponentState extends State<RegisterEmailFormComponent> 
       var emailPayload = {
         "email": "$email",
       };
-      
+
       var user = await registerEmail(emailPayload);
 
       // If success is true pop the page, display email and change button to verify
@@ -129,6 +134,8 @@ class RegisterEmailFormComponentState extends State<RegisterEmailFormComponent> 
         await prefs.setBool('registerEmailBtn', false);
         await prefs.setBool('verifyEmailBtn', true);
         await prefs.setBool('verifyIdentityBtn', false);
+        // Pop twice to go back first userProfile page
+        Navigator.of(context).pop();
         Navigator.of(context).pop();
         Application.router.navigateTo(context, "/userprofile");
         // When response is success, dismiss loading progress
@@ -152,7 +159,6 @@ class RegisterEmailFormComponentState extends State<RegisterEmailFormComponent> 
         });
         showDuplicateEmailDialog(context);
       }
-
     } else {
       // validation error
       setState(() {
