@@ -382,6 +382,10 @@ Future<BalancesResponse> getOffLineBalances() async {
 }
 
 Future<BalancesResponse> getOnlineBalances() async {
+  // Read public and private key from global storage
+  // To be use to re-login user when session expires
+  String publicKey = await globals.storage.read(key: "publicKey");
+  String privateKey = await globals.storage.read(key: "privateKey");
   final String url = globals.baseUrl + '/api/wallet/balance';
   var response;
   try {
@@ -424,6 +428,15 @@ Future<BalancesResponse> getOnlineBalances() async {
       return BalancesResponse.connectTimeoutError(resp);
     }
     else if (respErrorType == "unauthorized") {
+      // Re-login
+      String loginSignature =
+        await signTransaction("hello world", privateKey);
+      var loginPayload = {
+        "public_key": publicKey,
+        "session_key": "hello world",
+        "signature": loginSignature,
+      };
+      await loginUser(loginPayload);
       // Parse response into BalanceResponse
       return BalancesResponse.unauthorizedError(resp);
     }
