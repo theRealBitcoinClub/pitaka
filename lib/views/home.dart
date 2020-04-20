@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_udid/flutter_udid.dart';
 import '../api/endpoints.dart';
+import '../utils/helpers.dart';
 import '../utils/dialogs.dart';
 import '../utils/globals.dart';
 import '../utils/database_helper.dart';
@@ -84,6 +85,22 @@ class HomeComponentState extends State<HomeComponent> {
     });
   }
 
+  void reLogin() async {
+    // Read public and private key from global storage
+    // To be use to re-login user when session expires
+    String publicKey = await globals.storage.read(key: "publicKey");
+    String privateKey = await globals.storage.read(key: "privateKey");
+    // Re-login
+    String loginSignature =
+      await signTransaction("hello world", privateKey);
+    var loginPayload = {
+      "public_key": publicKey,
+      "session_key": "hello world",
+      "signature": loginSignature,
+    };
+    loginUser(loginPayload);
+  }
+
   @override
   void dispose() {
    // _connectivitySubscription.cancel();
@@ -132,6 +149,10 @@ class HomeComponentState extends State<HomeComponent> {
                         if (snapshot.data.success) {
                           return hometabs.buildBalancesList(balances);
                         } 
+                        // If error is unauthorized, re-login
+                        else if (snapshot.data.error == 'unauthorized') {
+                          reLogin();
+                        }
                         // When connect timeout error, show message
                         // ANDing with globals.online prevents showing the dialog 
                         // during manually swithing to airplane mode
