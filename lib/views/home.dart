@@ -22,12 +22,14 @@ class HomeComponent extends StatefulWidget {
 class HomeComponentState extends State<HomeComponent> {
   DatabaseHelper databaseHelper = DatabaseHelper();
   StreamSubscription _connectionChangeStream;
+  StreamSubscription _syncingChangeStream;
   final formatCurrency = new NumberFormat.currency(symbol: 'PHP ');
   String path = "/home";
   String storedUdid;
   String freshUdid;
   bool online = globals.online;
   bool syncing = globals.syncing;
+  bool loading = false;
   bool isOffline = false;
   bool _executeFuture = false;
   bool _popDialog = false;
@@ -38,6 +40,11 @@ class HomeComponentState extends State<HomeComponent> {
     // Fires whenever connectivity state changes
     ConnectionStatusSingleton connectionStatus = ConnectionStatusSingleton.getInstance();
     _connectionChangeStream = connectionStatus.connectionChange.listen(connectionChanged);
+
+    // Subscribe to Notifier Stream from ConnectionStatusSingleton class in globals.dart
+    // Fires whenever connectivity state changes
+    SyncingStatusSingleton syncingStatus = SyncingStatusSingleton.getInstance();
+    _syncingChangeStream = syncingStatus.syncingChange.listen(syncingChanged);
 
     ReceiveComponentState comp = new ReceiveComponentState();
 
@@ -57,6 +64,20 @@ class HomeComponentState extends State<HomeComponent> {
     }
   }
 
+  void syncingChanged(dynamic isSyncing) {
+    setState(() {
+      loading = isSyncing;
+      if (loading == true) {
+        globals.syncing = true;
+        print("It's syncing!");
+      }
+      else {
+        globals.syncing = false;
+        print("It's NOT syncing!");
+      }
+    });
+  }
+
   void connectionChanged(dynamic hasConnection) {
     setState(() {
       isOffline = !hasConnection;
@@ -64,7 +85,6 @@ class HomeComponentState extends State<HomeComponent> {
         online = !online;
         globals.online = online;
         syncing = true;
-        globals.syncing = true;
         globals.syncing = true;
         print("Online");
       } else {

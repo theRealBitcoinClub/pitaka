@@ -216,7 +216,7 @@ class DatabaseHelper {
   }
 
   Future <bool> synchToServer() async {
-    globals.syncing = true;
+    //globals.syncing = true;
     Database db = await this.database;
     var transactions = await db.query(
       'OfflineTransaction',
