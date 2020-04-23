@@ -12,7 +12,6 @@ import '../utils/globals.dart' as globals;
 class DatabaseHelper {
   static DatabaseHelper _databaseHelper;    // Singleton DatabaseHelper
 	static Database _database;                // Singleton Database
-  bool syncing = globals.syncing;
 
 	DatabaseHelper._createInstance(); // Named constructor to create instance of DatabaseHelper
 
@@ -216,7 +215,6 @@ class DatabaseHelper {
   }
 
   Future <bool> synchToServer() async {
-    //globals.syncing = true;
     Database db = await this.database;
     var transactions = await db.query(
       'OfflineTransaction',
@@ -240,7 +238,6 @@ class DatabaseHelper {
     // Don't delete database during syncing
     //await db.delete('OfflineTransaction');
     //await db.delete('Balance');
-    globals.syncing = false;
     return true;
   }
 
