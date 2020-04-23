@@ -174,7 +174,8 @@ class ContactListComponentState extends State<ContactListComponent> {
                         } 
                         else {
                           return Text(
-                            "You're contact list is empty. Create by tapping the '+ person' icon button."
+                            "You're contact list is empty. Create by tapping the '+ person' icon button.",
+                            textAlign: TextAlign.center,
                           );
                         }
                       } else {
