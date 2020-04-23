@@ -39,7 +39,6 @@ set online(bool value) {
     if (syncing == false) {
       databaseHelper.synchToServer();
     }
-    syncing = true;
   } else {
     syncing = false;
   }
@@ -135,4 +134,50 @@ class ConnectionStatusSingleton {
 
     return hasConnection;
   }
+}
+
+// Syncing Status Notifier
+class SyncingStatusSingleton {
+  // This creates the single instance by calling the `_internal` constructor specified below
+  static final SyncingStatusSingleton _singleton = new SyncingStatusSingleton._internal();
+  SyncingStatusSingleton._internal();
+
+  // This is what's used to retrieve the instance through the app
+  static SyncingStatusSingleton getInstance() => _singleton;
+
+  // This tracks the current connection status
+  bool isSyncing = false;
+
+  // This is how we'll allow subscribing to connection changes
+  StreamController syncingChangeController = new StreamController.broadcast();
+
+  void initialize() {
+    checkSyncing();
+  }
+
+  Stream get syncingChange => syncingChangeController.stream;
+
+  // A clean up method to close our StreamController
+  // Because this is meant to exist through the entire application life cycle this isn't
+  // really an issue
+  void dispose() {
+    syncingChangeController.close();
+  }
+
+  Future<bool> checkSyncing() async {
+    bool notSyncing = isSyncing;
+
+    if (syncing) {
+      isSyncing = true;
+    }
+    else {
+      isSyncing = false;
+    }
+
+    if (notSyncing != isSyncing) {
+      syncingChangeController.add(isSyncing);
+    }
+
+    return isSyncing;
+  }  
 }

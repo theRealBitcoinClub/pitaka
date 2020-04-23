@@ -63,15 +63,10 @@ class HomeComponentState extends State<HomeComponent> {
       if(isOffline == false) {
         online = !online;
         globals.online = online;
-        syncing = true;
-        globals.syncing = true;
-        globals.syncing = true;
         print("Online");
       } else {
         online = false;
         globals.online = online;
-        syncing = false;
-        globals.syncing = false;
         print("Offline");
         // For dismissing the dialog
         if (_executeFuture) {
@@ -142,76 +137,95 @@ class HomeComponentState extends State<HomeComponent> {
                   // Added condition, when both syncing and online are true get offline balances
                   future: globals.syncing && globals.online ? getOffLineBalances() : globals.online == false ? getOffLineBalances() : getOnlineBalances(),
                   builder: (BuildContext context, AsyncSnapshot snapshot) {
-                    if (snapshot.hasData) {
-                      if (snapshot.data != null) {
-                        print("The value of snapshot.data.error is: ${snapshot.data.error}");
-                        var balances = snapshot.data.balances;
-                        if (snapshot.data.success) {
-                          return hometabs.buildBalancesList(balances);
-                        } 
-                        // If error is unauthorized, re-login
-                        else if (snapshot.data.error == 'unauthorized') {
-                          reLogin();
+                    // To show progress loading view add switch statment to handle connnection states.
+                    switch (snapshot.connectionState) {
+                      case ConnectionState.waiting:
+                        {
+                          // Show loading view in waiting state.
+                          return loadingView();
                         }
-                        // When connect timeout error, show message
-                        // ANDing with globals.online prevents showing the dialog 
-                        // during manually swithing to airplane mode
-                        else if (snapshot.data.error == 'connect_timeout' && globals.online) {
-                          //print("The value of snapshot.data in getting balances is: ${snapshot.data.error}");
-                          return Padding(
-                            padding: EdgeInsets.all(16.0),
-                            child: Text(
-                              "You don't seem to have internet connection, or it's too slow. " 
-                              "Switch your phone to Airplane mode to keep using the app in offline mode.",
-                              textAlign: TextAlign.center,
-                            ),
-                          );
+                      case ConnectionState.active:
+                        {
+                          break;
                         }
-                        // When maintainance mode error, show message
-                        // ANDing with globals.online prevents showing the dialog 
-                        // during manually swithing to airplane mode
-                        else if (snapshot.data.error == 'maintenance_mode' && globals.online) {
-                          return Padding(
-                            padding: EdgeInsets.all(16.0),
-                            child: Text(
-                              "Server is down for maintenance. " 
-                              "Please try again later or switch your phone to Airplane mode to keep using the app in offline mode.",
-                              textAlign: TextAlign.center,
-                            ),
-                          );
-                        }
-                        // When app version error, show dialog
-                        // ANDing with globals.online prevents showing the dialog 
-                        // during manually swithing to airplane mode
-                        else if (snapshot.data.error == 'outdated_app_version' && globals.online) {
-                          Future.delayed(Duration(milliseconds: 100), () async {
-                            _executeFuture = true;
-                            if(_executeFuture){
-                              showOutdatedAppVersionDialog(context);
+                      case ConnectionState.done:
+                        {
+                          if (snapshot.hasData) {
+                            if (snapshot.data != null) {
+                              print("The value of snapshot.data.error is: ${snapshot.data.error}");
+                              var balances = snapshot.data.balances;
+                              if (snapshot.data.success) {
+                                return hometabs.buildBalancesList(balances);
+                              } 
+                              // If error is unauthorized, re-login
+                              else if (snapshot.data.error == 'unauthorized') {
+                                reLogin();
+                              }
+                              // When connect timeout error, show message
+                              // ANDing with globals.online prevents showing the dialog 
+                              // during manually swithing to airplane mode
+                              else if (snapshot.data.error == 'connect_timeout' && globals.online) {
+                                //print("The value of snapshot.data in getting balances is: ${snapshot.data.error}");
+                                return Padding(
+                                  padding: EdgeInsets.all(16.0),
+                                  child: Text(
+                                    "You don't seem to have internet connection, or it's too slow. " 
+                                    "Switch your phone to Airplane mode to keep using the app in offline mode.",
+                                    textAlign: TextAlign.center,
+                                  ),
+                                );
+                              }
+                              // When maintainance mode error, show message
+                              // ANDing with globals.online prevents showing the dialog 
+                              // during manually swithing to airplane mode
+                              else if (snapshot.data.error == 'maintenance_mode' && globals.online) {
+                                return Padding(
+                                  padding: EdgeInsets.all(16.0),
+                                  child: Text(
+                                    "Server is down for maintenance. " 
+                                    "Please try again later or switch your phone to Airplane mode to keep using the app in offline mode.",
+                                    textAlign: TextAlign.center,
+                                  ),
+                                );
+                              }
+                              // When app version error, show dialog
+                              // ANDing with globals.online prevents showing the dialog 
+                              // during manually swithing to airplane mode
+                              else if (snapshot.data.error == 'outdated_app_version' && globals.online) {
+                                Future.delayed(Duration(milliseconds: 100), () async {
+                                  _executeFuture = true;
+                                  if(_executeFuture){
+                                    showOutdatedAppVersionDialog(context);
+                                  }
+                                });
+                              }
+                              // When invalid device ID error, show dialog
+                              // ANDing with globals.online prevents showing the dialog 
+                              // during manually swithing to airplane mode
+                              else if (snapshot.data.error == 'invalid_device_id' && globals.online) {
+                                Future.delayed(Duration(milliseconds: 100), () async {
+                                  _executeFuture = true;
+                                  if(_executeFuture){
+                                    showUnregisteredUdidDialog(context);
+                                  }
+                                });
+                              } 
+                              else {
+                                return noDataView("No data found");
+                              }
+                            } else {
+                                return noDataView("No data found");
                             }
-                          });
+                          } else {
+                            return noDataView("No data found");
+                          }
+                          return new Container();
                         }
-                        // When invalid device ID error, show dialog
-                        // ANDing with globals.online prevents showing the dialog 
-                        // during manually swithing to airplane mode
-                        else if (snapshot.data.error == 'invalid_device_id' && globals.online) {
-                          Future.delayed(Duration(milliseconds: 100), () async {
-                            _executeFuture = true;
-                            if(_executeFuture){
-                              showUnregisteredUdidDialog(context);
-                            }
-                          });
-                        } 
-                        else {
-                          return new CircularProgressIndicator();
+                      case ConnectionState.none:
+                        {
+                          break;
                         }
-                      } else {
-                        return new CircularProgressIndicator();
-                      }
-                    } else {
-                      return new CircularProgressIndicator();
                     }
-                    return new Container();
                   }
                 )
               );
@@ -223,70 +237,88 @@ class HomeComponentState extends State<HomeComponent> {
                 child: new FutureBuilder(
                   future: globals.online ? getOnlineTransactions() : getOffLineTransactions(),
                   builder: (BuildContext context, AsyncSnapshot snapshot) {
-                    if (snapshot.hasData) {
-                      if (snapshot.data != null) {
-                        if (snapshot.data.transactions.length > 0) {
-                          return hometabs.buildTransactionsList(snapshot.data.transactions);
+                    // To show progress loading view add switch statment to handle connnection states.
+                    switch (snapshot.connectionState) {
+                      case ConnectionState.waiting:
+                        {
+                          // Show loading view in waiting state.
+                          return loadingView();
                         }
-                        // When connect timeout error, show message
-                        // ANDing with globals.online prevents showing the dialog 
-                        // during manually swithing to airplane mode 
-                        else if (snapshot.data.error == 'connect_timeout' && globals.online) {
-                          return Padding(
-                            padding: EdgeInsets.all(16.0),
-                            child: Text(
-                              "You don't seem to have internet connection, or it's too slow. " 
-                              "Switch your phone to Airplane mode to keep using the app in offline mode.",
-                              textAlign: TextAlign.center,
-                            ),
-                          );
+                      case ConnectionState.active:
+                        {
+                          break;
                         }
-                        // When maintainance mode error, show message
-                        // ANDing with globals.online prevents showing the dialog 
-                        // during manually swithing to airplane mode
-                        else if (snapshot.data.error == 'maintenance_mode' && globals.online) {
-                          return Padding(
-                            padding: EdgeInsets.all(16.0),
-                            child: Text(
-                              "Server is down for maintenance. " 
-                              "Please try again later or switch your phone to Airplane mode to keep using the app in offline mode.",
-                              textAlign: TextAlign.center,
-                            ),
-                          );
-                        }
-                        // When app version error, show dialog
-                        // ANDing with globals.online prevents showing the dialog 
-                        // during manually swithing to airplane mode
-                        else if (snapshot.data.error == 'outdated_app_version' && globals.online) {
-                          Future.delayed(Duration(milliseconds: 100), () async {
-                            _executeFuture = true;
-                            if(_executeFuture){
-                              showOutdatedAppVersionDialog(context);
+                      case ConnectionState.done:
+                        {
+                          if (snapshot.hasData) {
+                            if (snapshot.data != null) {
+                              if (snapshot.data.transactions.length > 0) {
+                                return hometabs.buildTransactionsList(snapshot.data.transactions);
+                              }
+                              // When connect timeout error, show message
+                              // ANDing with globals.online prevents showing the dialog 
+                              // during manually swithing to airplane mode 
+                              else if (snapshot.data.error == 'connect_timeout' && globals.online) {
+                                return Padding(
+                                  padding: EdgeInsets.all(16.0),
+                                  child: Text(
+                                    "You don't seem to have internet connection, or it's too slow. " 
+                                    "Switch your phone to Airplane mode to keep using the app in offline mode.",
+                                    textAlign: TextAlign.center,
+                                  ),
+                                );
+                              }
+                              // When maintainance mode error, show message
+                              // ANDing with globals.online prevents showing the dialog 
+                              // during manually swithing to airplane mode
+                              else if (snapshot.data.error == 'maintenance_mode' && globals.online) {
+                                return Padding(
+                                  padding: EdgeInsets.all(16.0),
+                                  child: Text(
+                                    "Server is down for maintenance. " 
+                                    "Please try again later or switch your phone to Airplane mode to keep using the app in offline mode.",
+                                    textAlign: TextAlign.center,
+                                  ),
+                                );
+                              }
+                              // When app version error, show dialog
+                              // ANDing with globals.online prevents showing the dialog 
+                              // during manually swithing to airplane mode
+                              else if (snapshot.data.error == 'outdated_app_version' && globals.online) {
+                                Future.delayed(Duration(milliseconds: 100), () async {
+                                  _executeFuture = true;
+                                  if(_executeFuture){
+                                    showOutdatedAppVersionDialog(context);
+                                  }
+                                });
+                              }
+                              // When invalid device ID error, show dialog
+                              // ANDing with globals.online prevents showing the dialog 
+                              // during manually swithing to airplane mode
+                              else if (snapshot.data.error == 'invalid_device_id' && globals.online) {
+                                Future.delayed(Duration(milliseconds: 100), () async {
+                                  _executeFuture = true;
+                                  if(_executeFuture){
+                                    showUnregisteredUdidDialog(context);
+                                  }
+                                });
+                              } 
+                              else {
+                                return Text('No transactions to display');
+                              }
+                            } else {
+                              return noDataView("No data found");  
                             }
-                          });
+                          } else {
+                            return noDataView("No data found");
+                          }
+                          return new Container();
                         }
-                        // When invalid device ID error, show dialog
-                        // ANDing with globals.online prevents showing the dialog 
-                        // during manually swithing to airplane mode
-                        else if (snapshot.data.error == 'invalid_device_id' && globals.online) {
-                          Future.delayed(Duration(milliseconds: 100), () async {
-                            _executeFuture = true;
-                            if(_executeFuture){
-                              showUnregisteredUdidDialog(context);
-                            }
-                          });
-                        } 
-                        else {
-                          return Text('No transactions to display');
+                      case ConnectionState.none:
+                        {
+                          break;
                         }
-                      } else {
-                        return new CircularProgressIndicator();  
-                      }
-                    } else {
-                      // return new Container();
-                      return new CircularProgressIndicator();
                     }
-                    return new Container();
                   }
                 )
               );
@@ -297,4 +329,17 @@ class HomeComponentState extends State<HomeComponent> {
       )
     );
   }
+
+  // Progress indicator widget to show loading.
+  Widget loadingView() => Center(
+        child: CircularProgressIndicator(), 
+      );
+
+  // View to empty data message
+  Widget noDataView(String msg) => Center(
+        child: Text(
+          msg,
+          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
+        ),
+      );
 }
