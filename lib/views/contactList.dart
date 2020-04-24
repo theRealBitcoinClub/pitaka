@@ -1,5 +1,6 @@
-import 'package:flutter/material.dart';
 import 'dart:async';
+import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../components/drawer.dart';
 import '../components/bottomNavigation.dart';
 import '../utils/globals.dart';
@@ -24,6 +25,7 @@ class ContactListComponent extends StatefulWidget {
 class ContactListComponentState extends State<ContactListComponent> {
   String path = "/receive";
   String _error;
+  String _ownNumber;
   String selectedPaytacaAccount;
   int accountIndex = 0;
   bool online = globals.online;
@@ -62,6 +64,9 @@ class ContactListComponentState extends State<ContactListComponent> {
         contactDetails = {};
       }
     });
+
+    // Get stored mobile number
+    getMobileNumber();
     
     // Subscribe to Notifier Stream from ConnectionStatusSingleton class in globals.dart
     // Fires whenever connectivity state changes
@@ -214,11 +219,23 @@ class ContactListComponentState extends State<ContactListComponent> {
     );
   }
 
+  Future<String> getMobileNumber() async {
+    // Get stored mobile number and used to compare the user input
+    SharedPreferences prefs =  await SharedPreferences.getInstance();
+    // Convert "+63" to "09" format
+    _ownNumber = "0" + prefs.getString('mobileNumber').substring(3,13);
+    return _ownNumber;
+  }
+
   String validateMobile(String value) {
     if (value == '0000 - 000 - 0000') {
       return null;
     } else {
-      if (value.startsWith('09')){
+      // Check if user is searching its own number
+      if (value == _ownNumber) {
+        return "It's your own number!";
+      }
+      else if (value.startsWith('09')){
         return null;
       } else {
         return 'Invalid phone number';
@@ -247,6 +264,7 @@ class ContactListComponentState extends State<ContactListComponent> {
             height: 10.0,
           ),
           new TextFormField(
+            autofocus: true,
             controller: _controller,
             keyboardType: TextInputType.phone,
             validator: validateMobile,
