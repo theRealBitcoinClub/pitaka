@@ -332,7 +332,7 @@ class UserProfileComponentState extends State<UserProfileComponent> {
                                     style: TextStyle(color: Colors.white),
                                   ),
                                   onPressed: () {
-                                    
+                                    Application.router.navigateTo(context, "/verifyidentity");
                                   },
                                 ),
                               )
