@@ -18,6 +18,22 @@ const String phpAssetId = '3A8F594F-D736-4673-945C-5465E0209AF0';
 // App version
 const String appVersion = 'v0.2.0';
 
+const SCANBOT_SDK_LICENSE_KEY =
+  "eV1Zf7LUb4lYV7gKEx2akrpqgmGtiA" +
+  "PSeoarA1NdoYZAqPnsRTLphoMkecn0" +
+  "koVs2ij0qQjvJGVAPN3+BescgZ84X6" +
+  "upjZuQBEbFpde0dc7Kht+0mNA6qYBX" +
+  "7k+VQdsbFa8lXgeaa4k3oqLE0qq9zE" +
+  "3JU/KWUASoLnPuGvWNqy1xllnuj6Bj" +
+  "dRZv8gWlWAW3d/2KyL/rIh6etv7tAS" +
+  "FhZQQg4Zhb/usWHC3PkrALKHjIlrQK" +
+  "kXkPNeIx/tY8wSrRMHE942RxWgYlWl" +
+  "vqlTsIR7v+LC4B/RzW1TMu+/DaKKJa" +
+  "7tefAz6qxfEhGmzMP1APnY4m3NQ9Ea" +
+  "/+EErqxOoDMw==\nU2NhbmJvdFNESw" +
+  "pjb20ucGF5dGFjYS5hcHAKMTU5MDcx" +
+  "MDM5OQo1OTAKMw==\n";
+
 int offlineTime;
 int timeDiff;
 bool _maxOfflineTime = false;
