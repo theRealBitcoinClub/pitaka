@@ -332,11 +332,7 @@ class UserProfileComponentState extends State<UserProfileComponent> {
                                     style: TextStyle(color: Colors.white),
                                   ),
                                   onPressed: () {
-                                    Navigator.of(context).push(MaterialPageRoute(
-                                      builder: (BuildContext context) => WebViewFlutter(
-                                        websiteUrl: "https://www.paytaca.com/",
-                                      )
-                                    ));
+                                    
                                   },
                                 ),
                               )
