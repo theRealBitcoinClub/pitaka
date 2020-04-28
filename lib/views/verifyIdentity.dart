@@ -21,43 +21,70 @@ import './../utils/helpers.dart';
 import '../utils/globals.dart' as globals;
 import '../views/app.dart';
 
-
 class VerifyIdentityComponent extends StatefulWidget {
-  VerifyIdentityComponent({Key key, this.title}) : super(key: key);
-
-  final String title;
-
   @override
-  VerifyIdentityComponentState createState() =>
-      VerifyIdentityComponentState();
+  VerifyIdentityComponentState createState() => VerifyIdentityComponentState();
 }
 
 class VerifyIdentityComponentState extends State<VerifyIdentityComponent> {
+  Image currentPreviewImageFront;
+  Image currentPreviewImageBack;
 
-  Image currentPreviewImage;
+  var config = DocumentScannerConfiguration(
+    multiPageEnabled: false,
+    bottomBarBackgroundColor: Colors.redAccent,
+    cancelButtonTitle: "Cancel",
+    polygonColor: Colors.redAccent,
+    shutterButtonAutoOuterColor: Colors.red[600],
+    shutterButtonManualOuterColor: Colors.red[600],
+    orientationLockMode: CameraOrientationMode.PORTRAIT,
+    maxNumberOfPages: 1,
+    cameraPreviewMode: CameraPreviewMode.FILL_IN,
+  );
 
-  void scanDocument() async {
-    if (!await checkLicenseStatus()) { return; }
+  void scanDocumentFront() async {
+    if (!await checkLicenseStatus()) {
+      return;
+    }
 
-    var config = DocumentScannerConfiguration(
-      multiPageEnabled: false,
-      bottomBarBackgroundColor: Colors.redAccent,
-      cancelButtonTitle: "Cancel",
-      polygonColor: Colors.redAccent,
-      // see further configs ...
-    );
-    var result = await ScanbotSdkUi.startDocumentScanner(config);
+    var result1 = await ScanbotSdkUi.startDocumentScanner(config);
 
-    if (result.operationResult == OperationResult.SUCCESS) {
+    if (result1.operationResult == OperationResult.SUCCESS) {
       // get and use the scanned images as pages: result.pages[n] ...
-      displayPageImage(result.pages[0]);
+      displayPageImageFront(result1.pages[0]);
     }
   }
 
-  void displayPageImage(Page page) {
+ void scanDocumentBack() async {
+    if (!await checkLicenseStatus()) {
+      return;
+    }
+    
+    var result2 = await ScanbotSdkUi.startDocumentScanner(config);
+
+    if (result2.operationResult == OperationResult.SUCCESS) {
+      // get and use the scanned images as pages: result.pages[n] ...
+      displayPageImageBack(result2.pages[0]);
+    }
+  }
+
+  void displayPageImageFront(Page page) {
     setState(() {
-      currentPreviewImage = Image.file(
-          File.fromUri(page.documentPreviewImageFileUri), width: 300, height: 300);
+      currentPreviewImageFront = Image.file(
+        File.fromUri(page.documentPreviewImageFileUri),
+        width: 300,
+        height: 200,
+      );
+    });
+  }
+
+  void displayPageImageBack(Page page) {
+    setState(() {
+      currentPreviewImageBack = Image.file(
+        File.fromUri(page.documentPreviewImageFileUri),
+        width: 300,
+        height: 200,
+      );
     });
   }
 
@@ -72,22 +99,142 @@ class VerifyIdentityComponentState extends State<VerifyIdentityComponent> {
       appBar: AppBar(
         title: Text('Verify Identity'),
       ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+      body: ListView(
+        padding: EdgeInsets.all(12.0),
+          //mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            FlatButton(
-              child: Text("Scan a Document"),
-              onPressed: scanDocument,
+            SizedBox(height: 10.0),
+            Align(
+              alignment: Alignment.centerLeft,
+              child: Container(
+                child: Text(
+                  "Scan your ID",
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 18.0,
+                  ),
+                ),
+              ),
             ),
-            if (currentPreviewImage != null) ... [
-              Text("Document image:"),
-              currentPreviewImage,
-            ],
+            SizedBox(height: 20.0),
+            Container(
+              height: 320.0,
+              width: 350.0,
+              decoration: BoxDecoration(
+                color: Colors.grey[200],
+                borderRadius: BorderRadius.circular(3.0),
+              ),
+              child: Column(
+                children: <Widget>[
+                  SizedBox(height: 20.0),
+                  Padding(
+                    padding: EdgeInsets.only(left: 20.0),
+                    child: Align(
+                      alignment: Alignment.centerLeft,
+                      child: Container(
+                        child: Text(
+                          "Front Image",
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                          ),                                                         
+                        ),
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: 10.0),
+                  Container(
+                    height: 200.0,
+                    width: 290,                                      
+                    decoration: BoxDecoration(
+                      color: Colors.grey[400],
+                      borderRadius: BorderRadius.circular(3.0),
+                    ),
+                    child:
+                      currentPreviewImageFront != null ?
+                        currentPreviewImageFront
+                      :
+                        Container(),
+                  ),
+                  SizedBox(height: 5.0),
+                  Padding(
+                    padding: EdgeInsets.only(left: 22.0, right: 22.0),
+                    child: SizedBox(
+                      width: double.infinity,
+                      child: FlatButton(
+                        color: Colors.red,
+                        child: Text(
+                          "Scan Front ID Image",
+                          style: TextStyle(color: Colors.white,),
+                        ),
+                        onPressed: scanDocumentFront,
+                      ),
+                    ),
+                  ),
+                ]
+              ),
+            ),
+
+            SizedBox(height: 20.0),
+            Container(
+              height: 320.0,
+              width: 350.0,
+              decoration: BoxDecoration(
+                color: Colors.grey[200],
+                borderRadius: BorderRadius.circular(3.0),
+              ),
+              child: Column(
+                children: <Widget>[
+                  SizedBox(height: 20.0),
+                  Padding(
+                    padding: EdgeInsets.only(left: 20.0),
+                    child: Align(
+                      alignment: Alignment.centerLeft,
+                      child: Container(
+                        child: Text(
+                          "Back Image",
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                          ),                                                         
+                        ),
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: 10.0),
+                  Container(
+                    height: 200.0,
+                    width: 290,                                      
+                    decoration: BoxDecoration(
+                      color: Colors.grey[400],
+                      borderRadius: BorderRadius.circular(3.0),
+                    ),
+                    child:
+                      currentPreviewImageBack != null ?
+                        currentPreviewImageBack
+                      :
+                        Container(),
+                  ),
+                  SizedBox(height: 5.0),
+                  Padding(
+                    padding: EdgeInsets.only(left: 22.0, right: 22.0),
+                    child: SizedBox(
+                      width: double.infinity,
+                      child: FlatButton(
+                        color: Colors.red,
+                        child: Text(
+                          "Scan Back ID Image",
+                          style: TextStyle(color: Colors.white,),
+                        ),
+                        onPressed: scanDocumentBack,
+                      ),
+                    ),
+                  ),
+                ]
+              ),
+            ),
+
             // or alternatively via short inline condition:
             // currentPreviewImage ?? Text("Image place holder"),
           ],
-        ),
       ),
     );
   }
@@ -97,7 +244,8 @@ class VerifyIdentityComponentState extends State<VerifyIdentityComponent> {
     if (result.isLicenseValid) {
       return true;
     }
-    await showAlertDialog(message: 'Scanbot SDK trial period or license has expired.');
+    await showAlertDialog(
+        message: 'Scanbot SDK trial period or license has expired.');
     return false;
   }
 

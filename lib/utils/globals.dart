@@ -18,6 +18,7 @@ const String phpAssetId = '3A8F594F-D736-4673-945C-5465E0209AF0';
 // App version
 const String appVersion = 'v0.2.0';
 
+// Scanbot SDK license key
 const SCANBOT_SDK_LICENSE_KEY =
   "eV1Zf7LUb4lYV7gKEx2akrpqgmGtiA" +
   "PSeoarA1NdoYZAqPnsRTLphoMkecn0" +
