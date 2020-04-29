@@ -21,6 +21,7 @@ class VerifyIdentityComponentState extends State<VerifyIdentityComponent> {
   Image currentPreviewImageBack;
   String base64ImageFront;
   String base64ImageBack;
+  String _dropDownValue;
   bool _loading = false;
 
   var config = DocumentScannerConfiguration(
@@ -124,6 +125,76 @@ class VerifyIdentityComponentState extends State<VerifyIdentityComponent> {
               alignment: Alignment.centerLeft,
               child: Container(
                 child: Text(
+                  "Take a Selfie",
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 18.0,
+                  ),
+                ),
+              ),
+            ),
+            SizedBox(height: 20.0),
+            Container(
+              height: 320.0,
+              width: 350.0,
+              decoration: BoxDecoration(
+                color: Colors.grey[200],
+                borderRadius: BorderRadius.circular(3.0),
+              ),
+              child: Column(
+                children: <Widget>[
+                  SizedBox(height: 20.0),
+                  Padding(
+                    padding: EdgeInsets.only(left: 20.0),
+                    child: Align(
+                      alignment: Alignment.centerLeft,
+                      child: Container(
+                        child: Text(
+                          "Selfie Image",
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                          ),                                                         
+                        ),
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: 10.0),
+                  Container(
+                    height: 200.0,
+                    width: 290,                                      
+                    decoration: BoxDecoration(
+                      color: Colors.grey[400],
+                      borderRadius: BorderRadius.circular(3.0),
+                    ),
+                    child:
+                      currentPreviewImageFront != null ?
+                        currentPreviewImageFront
+                      :
+                        Container(),
+                  ),
+                  SizedBox(height: 5.0),
+                  Padding(
+                    padding: EdgeInsets.only(left: 22.0, right: 22.0),
+                    child: SizedBox(
+                      width: double.infinity,
+                      child: FlatButton(
+                        color: Colors.red,
+                        child: Text(
+                          "Take a Picture of your Face",
+                          style: TextStyle(color: Colors.white,),
+                        ),
+                        onPressed: scanDocumentFront,
+                      ),
+                    ),
+                  ),
+                ]
+              ),
+            ),
+            SizedBox(height: 30.0),
+            Align(
+              alignment: Alignment.centerLeft,
+              child: Container(
+                child: Text(
                   "Scan your ID",
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
@@ -131,6 +202,41 @@ class VerifyIdentityComponentState extends State<VerifyIdentityComponent> {
                   ),
                 ),
               ),
+            ),
+            SizedBox(height: 10.0),
+            DropdownButton(
+              hint: _dropDownValue == null ? 
+                Text(
+                  'Select ID Type',
+                  style: TextStyle(fontWeight: FontWeight.bold,),
+                )
+                : 
+                Text(
+                  _dropDownValue,
+                  style: TextStyle(color: Colors.red),
+                ),
+              isExpanded: true,
+              iconSize: 30.0,
+              items: [
+                'DrivingLicense', 
+                'IdentityCard', 
+                'Passport',
+                'VoterID'
+              ].map(
+                (val) {
+                  return DropdownMenuItem<String>(
+                    value: val,
+                    child: Text(val),
+                  );
+                },
+              ).toList(),
+              onChanged: (val) {
+                setState(
+                  () {
+                    _dropDownValue = val;
+                  },
+                );
+              },
             ),
             SizedBox(height: 20.0),
             Container(
@@ -277,6 +383,8 @@ class VerifyIdentityComponentState extends State<VerifyIdentityComponent> {
     var payload = {
       'front_image': base64ImageFront,
       'back_image': base64ImageBack,
+      'live_photo': "",
+      'document_type': "DrivingLicense",
     };
 
    var response = await verifyDocument(payload);

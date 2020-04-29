@@ -7,13 +7,13 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../utils/database_helper.dart';
 
 
-// For dev server
-const String baseUrl = 'https://lantaka-dev.paytaca.com';
-const String phpAssetId = '3A8F594F-D736-4673-945C-5465E0209AF0';
+// // For dev server
+// const String baseUrl = 'https://lantaka-dev.paytaca.com';
+// const String phpAssetId = '3A8F594F-D736-4673-945C-5465E0209AF0';
 
-// For local server, testing/debugging
-// const String baseUrl = 'https://e7be2f67.ngrok.io';
-// const String phpAssetId = 'C7F4D976-9204-47DC-B998-754C29B043C5';
+//For local server, testing/debugging
+const String baseUrl = 'https://db93d84f.ngrok.io';
+const String phpAssetId = 'C7F4D976-9204-47DC-B998-754C29B043C5';
 
 // App version
 const String appVersion = 'v0.2.0';
