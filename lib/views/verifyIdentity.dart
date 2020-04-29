@@ -1,25 +1,15 @@
 import 'dart:io';
 import 'dart:async';
-import 'dart:typed_data';
-import "package:hex/hex.dart";
-import 'package:flutter/services.dart';
+import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:flutter/gestures.dart';
-import 'package:local_auth/local_auth.dart';
 import 'package:scanbot_sdk/common_data.dart';
 import 'package:scanbot_sdk/scanbot_sdk.dart';
 import 'package:scanbot_sdk/scanbot_sdk_ui.dart';
 import 'package:scanbot_sdk/scanbot_sdk_models.dart';
 import 'package:scanbot_sdk/document_scan_data.dart';
-import 'package:flutter_sodium/flutter_sodium.dart';
-import 'package:overlay_support/overlay_support.dart';
-import 'package:local_auth/error_codes.dart' as auth_error;
-import 'package:shared_preferences/shared_preferences.dart';
-import '../utils/dialogs.dart';
-import './../api/endpoints.dart';
-import './../utils/helpers.dart';
 import '../utils/globals.dart' as globals;
-import '../views/app.dart';
+import '../api/endpoints.dart';
+
 
 class VerifyIdentityComponent extends StatefulWidget {
   @override
@@ -29,6 +19,9 @@ class VerifyIdentityComponent extends StatefulWidget {
 class VerifyIdentityComponentState extends State<VerifyIdentityComponent> {
   Image currentPreviewImageFront;
   Image currentPreviewImageBack;
+  String base64ImageFront;
+  String base64ImageBack;
+  bool _loading = false;
 
   var config = DocumentScannerConfiguration(
     multiPageEnabled: false,
@@ -59,7 +52,7 @@ class VerifyIdentityComponentState extends State<VerifyIdentityComponent> {
     if (!await checkLicenseStatus()) {
       return;
     }
-    
+
     var result2 = await ScanbotSdkUi.startDocumentScanner(config);
 
     if (result2.operationResult == OperationResult.SUCCESS) {
@@ -76,6 +69,17 @@ class VerifyIdentityComponentState extends State<VerifyIdentityComponent> {
         height: 200,
       );
     });
+    // Get the file path from the captured image
+    var imageFrontPath = currentPreviewImageFront.image.toString().split('"')[1];
+
+    // Load it from my filesystem
+    File imagefileFront = new File(imageFrontPath); 
+
+    // Convert image file to base64
+    List<int> imageBytesFront = imagefileFront.readAsBytesSync();
+    base64ImageFront = base64Encode(imageBytesFront);
+    print("The front image base64 format is:");
+    print(base64ImageFront);
   }
 
   void displayPageImageBack(Page page) {
@@ -86,6 +90,18 @@ class VerifyIdentityComponentState extends State<VerifyIdentityComponent> {
         height: 200,
       );
     });
+
+    // Get the file path from the captured image
+    var imageFrontPath = currentPreviewImageBack.image.toString().split('"')[1];
+
+    // Load it from my filesystem
+    File imagefileFront = new File(imageFrontPath); 
+
+    // Convert image file to base64
+    List<int> imageBytesFront = imagefileFront.readAsBytesSync();
+    base64ImageFront = base64Encode(imageBytesFront);
+    print("The back image base64 format is:");
+    print(base64ImageFront);
   }
 
   @override
@@ -231,12 +247,46 @@ class VerifyIdentityComponentState extends State<VerifyIdentityComponent> {
                 ]
               ),
             ),
-
+            SizedBox(height: 10.0),
+            // Padding(
+            //   padding: EdgeInsets.only(left: 22.0, right: 22.0),
+              SizedBox(
+                width: double.infinity,
+                child: FlatButton(
+                  color: Colors.red,
+                  child: Text(
+                    "Submit",
+                    style: TextStyle(color: Colors.white,),
+                  ),
+                  onPressed: _sendToServer,
+                ),
+              ),
             // or alternatively via short inline condition:
             // currentPreviewImage ?? Text("Image place holder"),
           ],
       ),
     );
+  }
+
+  _sendToServer() async {
+    setState(() {
+      _loading = true;
+    });
+
+    // Create the payload
+    var payload = {
+      'front_image': base64ImageFront,
+      'back_image': base64ImageBack,
+    };
+
+   var response = await verifyDocument(payload);
+    
+    if (response.success) {
+      // When response is success, dismiss loading progress
+      setState(() {
+        _loading = false;
+      });
+    }
   }
 
   Future<bool> checkLicenseStatus() async {

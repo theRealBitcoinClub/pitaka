@@ -106,10 +106,10 @@ Future<dynamic> sendGetRequest(url) async {
   return response;
 }
 
-Future<GenericCreateResponse> verifyIdentity(payload) async {
-  print("The value of payload in verifyIdentity() in endpoints.dart is: $payload");
+Future<GenericCreateResponse> verifyDocument(payload) async {
+  print("The value of payload in verifyDocument() in endpoints.dart is: $payload");
   try {
-    final String url = globals.baseUrl + '/api/users/verify-identity';
+    final String url = globals.baseUrl + '/api/users/verify-document';
     final response = await sendPostRequest(url, payload);
     if (response.data['success']) {
       // Save and mark level3 after identity verification success
