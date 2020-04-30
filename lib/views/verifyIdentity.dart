@@ -10,19 +10,33 @@ import 'package:scanbot_sdk/document_scan_data.dart';
 import '../utils/globals.dart' as globals;
 import '../api/endpoints.dart';
 
+import '../utils/image_picker_dialog.dart';
+import '../utils/image_picker_handler.dart';
+
+import 'package:image_picker/image_picker.dart';
+
 
 class VerifyIdentityComponent extends StatefulWidget {
   @override
   VerifyIdentityComponentState createState() => VerifyIdentityComponentState();
 }
 
-class VerifyIdentityComponentState extends State<VerifyIdentityComponent> {
+class VerifyIdentityComponentState extends State<VerifyIdentityComponent> 
+    with TickerProviderStateMixin,ImagePickerListener {
   Image currentPreviewImageFront;
   Image currentPreviewImageBack;
+  Image currentPreviewImageSelfie;
   String base64ImageFront;
   String base64ImageBack;
+  String base64ImageSelfie;
   String _dropDownValue;
   bool _loading = false;
+
+  File _image;
+  AnimationController _controller;
+  //ImagePickerHandler imagePicker;
+
+  ImagePickerDialog imagePicker;
 
   var config = DocumentScannerConfiguration(
     multiPageEnabled: false,
@@ -35,6 +49,24 @@ class VerifyIdentityComponentState extends State<VerifyIdentityComponent> {
     maxNumberOfPages: 1,
     cameraPreviewMode: CameraPreviewMode.FILL_IN,
   );
+
+  // @override
+  // void initState() {
+  //   super.initState();
+  //   _controller = new AnimationController(
+  //     vsync: this,
+  //     duration: const Duration(milliseconds: 500),
+  //   );
+
+  //   imagePicker=new ImagePickerHandler(this,_controller);
+  //   imagePicker.init();
+  // }
+
+  // @override
+  // void dispose() {
+  //   _controller.dispose();
+  //   super.dispose();
+  // }
 
   void scanDocumentFront() async {
     if (!await checkLicenseStatus()) {
@@ -59,6 +91,19 @@ class VerifyIdentityComponentState extends State<VerifyIdentityComponent> {
     if (result2.operationResult == OperationResult.SUCCESS) {
       // get and use the scanned images as pages: result.pages[n] ...
       displayPageImageBack(result2.pages[0]);
+    }
+  }
+
+  void takeASelfie() async {
+    if (!await checkLicenseStatus()) {
+      return;
+    }
+
+    var result3 = await ScanbotSdkUi.startDocumentScanner(config);
+
+    if (result3.operationResult == OperationResult.SUCCESS) {
+      // get and use the scanned images as pages: result.pages[n] ...
+      displaySelfieImage(result3.pages[0]);
     }
   }
 
@@ -103,6 +148,33 @@ class VerifyIdentityComponentState extends State<VerifyIdentityComponent> {
     base64ImageFront = base64Encode(imageBytesFront);
     print("The back image base64 format is:");
     print(base64ImageFront);
+  }
+
+  void displaySelfieImage(Page page) {
+    setState(() {
+      currentPreviewImageSelfie = Image.file(
+        File.fromUri(page.documentPreviewImageFileUri),
+        width: 300,
+        height: 200,
+      );
+    });
+
+    // Get the file path from the captured image
+    var imageSelfiePath = currentPreviewImageSelfie.image.toString().split('"')[1];
+
+    // Load it from my filesystem
+    File imagefileSelfie = new File(imageSelfiePath); 
+
+    // Convert image file to base64
+    List<int> imageBytesFront = imagefileSelfie.readAsBytesSync();
+    base64ImageFront = base64Encode(imageBytesFront);
+    print("The back image base64 format is:");
+    print(base64ImageSelfie);
+  }
+
+  openCamera() async {
+    await ImagePicker.pickImage(source: ImageSource.camera);
+    //cropImage(image);
   }
 
   @override
@@ -167,8 +239,8 @@ class VerifyIdentityComponentState extends State<VerifyIdentityComponent> {
                       borderRadius: BorderRadius.circular(3.0),
                     ),
                     child:
-                      currentPreviewImageFront != null ?
-                        currentPreviewImageFront
+                      currentPreviewImageSelfie != null ?
+                        currentPreviewImageSelfie
                       :
                         Container(),
                   ),
@@ -183,7 +255,7 @@ class VerifyIdentityComponentState extends State<VerifyIdentityComponent> {
                           "Take a Picture of your Face",
                           style: TextStyle(color: Colors.white,),
                         ),
-                        onPressed: scanDocumentFront,
+                        onPressed: openCamera,
                       ),
                     ),
                   ),
@@ -402,35 +474,43 @@ class VerifyIdentityComponentState extends State<VerifyIdentityComponent> {
     if (result.isLicenseValid) {
       return true;
     }
-    await showAlertDialog(
-        message: 'Scanbot SDK trial period or license has expired.');
+    // await showAlertDialog(
+    //     message: 'Scanbot SDK trial period or license has expired.');
     return false;
   }
 
-  Future<void> showAlertDialog({String title = 'Info', String message}) async {
-    return showDialog<void>(
-      context: context,
-      barrierDismissible: false,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text(title),
-          content: SingleChildScrollView(
-            child: ListBody(
-              children: <Widget>[
-                Text(message),
-              ],
-            ),
-          ),
-          actions: <Widget>[
-            FlatButton(
-              child: Text('OK'),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-            ),
-          ],
-        );
-      },
-    );
+  // Future<void> showAlertDialog({String title = 'Info', String message}) async {
+  //   return showDialog<void>(
+  //     context: context,
+  //     barrierDismissible: false,
+  //     builder: (BuildContext context) {
+  //       return AlertDialog(
+  //         title: Text(title),
+  //         content: SingleChildScrollView(
+  //           child: ListBody(
+  //             children: <Widget>[
+  //               Text(message),
+  //             ],
+  //           ),
+  //         ),
+  //         actions: <Widget>[
+  //           FlatButton(
+  //             child: Text('OK'),
+  //             onPressed: () {
+  //               Navigator.of(context).pop();
+  //             },
+  //           ),
+  //         ],
+  //       );
+  //     },
+  //   );
+  // }
+
+  @override
+  userImage(File _image) {
+    setState(() {
+      this._image = _image;
+    });
   }
+
 }
