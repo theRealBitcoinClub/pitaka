@@ -3,6 +3,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:overlay_support/overlay_support.dart';
 import '../api/endpoints.dart';
 import '../utils/image_picker_dialog.dart';
 import '../utils/image_picker_handler.dart';
@@ -15,14 +16,18 @@ class VerifyIdentityComponent extends StatefulWidget {
 
 class VerifyIdentityComponentState extends State<VerifyIdentityComponent> 
     with TickerProviderStateMixin,ImagePickerListener {
-  Image currentPreviewImageFront;
-  Image currentPreviewImageBack;
-  Image currentPreviewImageSelfie;
+  final _formKey = GlobalKey<FormState>();
   String _frontIdImageBase64;
   String _backIdImageBase64;
   String _selfieImageBase64;
   String _dropDownValue;
+  String _dropDownError;
   bool _loading = false;
+  bool disableSubmitButton = false;
+
+  bool noSelfieErrorText = false;
+  bool noFrontIdErrorText = false;
+  bool noBackIdErrorText = false;
 
   File _selfieImage;
   File _backIdImage;
@@ -95,6 +100,12 @@ class VerifyIdentityComponentState extends State<VerifyIdentityComponent>
     print(_selfieImageBase64);
   }
 
+  String validateDocumentType(String value) {
+    if (value == null || value == "") {
+      return 'This field is required.';
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     // This method is rerun every time setState is called.
@@ -102,258 +113,320 @@ class VerifyIdentityComponentState extends State<VerifyIdentityComponent>
       appBar: AppBar(
         title: Text('Verify Identity'),
       ),
-      body: ListView(
-        padding: EdgeInsets.all(12.0),
-          //mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            SizedBox(height: 10.0),
-            Align(
-              alignment: Alignment.centerLeft,
-              child: Container(
-                child: Text(
-                  "Take a Selfie",
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 18.0,
-                  ),
-                ),
-              ),
-            ),
-            SizedBox(height: 20.0),
-            Container(
-              height: 320.0,
-              width: 350.0,
-              decoration: BoxDecoration(
-                color: Colors.grey[200],
-                borderRadius: BorderRadius.circular(3.0),
-              ),
-              child: Column(
-                children: <Widget>[
-                  SizedBox(height: 20.0),
-                  Padding(
-                    padding: EdgeInsets.only(left: 20.0),
-                    child: Align(
-                      alignment: Alignment.centerLeft,
-                      child: Container(
-                        child: Text(
-                          "Selfie Image",
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                          ),                                                         
-                        ),
-                      ),
-                    ),
-                  ),
-                  SizedBox(height: 10.0),
-                  Container(
-                    height: 200.0,
-                    width: 290,                                      
-                    decoration: BoxDecoration(
-                      color: Colors.grey[400],
-                      borderRadius: BorderRadius.circular(3.0),
-                    ),
-                    child: _selfieImage != null ?
-                        Image.file(_selfieImage)
-                      :
-                        Container()
-                  ),
-                  SizedBox(height: 5.0),
-                  Padding(
-                    padding: EdgeInsets.only(left: 22.0, right: 22.0),
-                    child: SizedBox(
-                      width: double.infinity,
-                      child: FlatButton(
-                        color: Colors.red,
-                        child: Text(
-                          "Take a Picture of your Face",
-                          style: TextStyle(color: Colors.white,),
-                        ),
-                        onPressed: takeASelfie,
-                      ),
-                    ),
-                  ),
-                ]
-              ),
-            ),
-            SizedBox(height: 30.0),
-            Align(
-              alignment: Alignment.centerLeft,
-              child: Container(
-                child: Text(
-                  "Scan your ID",
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 18.0,
-                  ),
-                ),
-              ),
-            ),
-            SizedBox(height: 10.0),
-            DropdownButton(
-              hint: _dropDownValue == null ? 
-                Text(
-                  'Select ID Type',
-                  style: TextStyle(fontWeight: FontWeight.bold,),
-                )
-                : 
-                Text(
-                  _dropDownValue,
-                  style: TextStyle(color: Colors.red),
-                ),
-              isExpanded: true,
-              iconSize: 30.0,
-              items: [
-                'DrivingLicense', 
-                'IdentityCard', 
-                'Passport',
-                'VoterID'
-              ].map(
-                (val) {
-                  return DropdownMenuItem<String>(
-                    value: val,
-                    child: Text(val),
-                  );
-                },
-              ).toList(),
-              onChanged: (val) {
-                setState(
-                  () {
-                    _dropDownValue = val;
-                  },
-                );
-              },
-            ),
-            SizedBox(height: 20.0),
-            Container(
-              height: 320.0,
-              width: 350.0,
-              decoration: BoxDecoration(
-                color: Colors.grey[200],
-                borderRadius: BorderRadius.circular(3.0),
-              ),
-              child: Column(
-                children: <Widget>[
-                  SizedBox(height: 20.0),
-                  Padding(
-                    padding: EdgeInsets.only(left: 20.0),
-                    child: Align(
-                      alignment: Alignment.centerLeft,
-                      child: Container(
-                        child: Text(
-                          "Front Image",
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                          ),                                                         
-                        ),
-                      ),
-                    ),
-                  ),
-                  SizedBox(height: 10.0),
-                  Container(
-                    height: 200.0,
-                    width: 290,                                      
-                    decoration: BoxDecoration(
-                      color: Colors.grey[400],
-                      borderRadius: BorderRadius.circular(3.0),
-                    ),
-                    child: _frontIdImage != null ?
-                        Image.file(_frontIdImage)
-                      :
-                        Container(),
-                  ),
-                  SizedBox(height: 5.0),
-                  Padding(
-                    padding: EdgeInsets.only(left: 22.0, right: 22.0),
-                    child: SizedBox(
-                      width: double.infinity,
-                      child: FlatButton(
-                        color: Colors.red,
-                        child: Text(
-                          "Scan Front ID Image",
-                          style: TextStyle(color: Colors.white,),
-                        ),
-                        onPressed: scanFrontID,
-                      ),
-                    ),
-                  ),
-                ]
-              ),
-            ),
-
-            SizedBox(height: 20.0),
-            Container(
-              height: 320.0,
-              width: 350.0,
-              decoration: BoxDecoration(
-                color: Colors.grey[200],
-                borderRadius: BorderRadius.circular(3.0),
-              ),
-              child: Column(
-                children: <Widget>[
-                  SizedBox(height: 20.0),
-                  Padding(
-                    padding: EdgeInsets.only(left: 20.0),
-                    child: Align(
-                      alignment: Alignment.centerLeft,
-                      child: Container(
-                        child: Text(
-                          "Back Image",
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                          ),                                                         
-                        ),
-                      ),
-                    ),
-                  ),
-                  SizedBox(height: 10.0),
-                  Container(
-                    height: 200.0,
-                    width: 290,                                      
-                    decoration: BoxDecoration(
-                      color: Colors.grey[400],
-                      borderRadius: BorderRadius.circular(3.0),
-                    ),
-                    child: _backIdImage != null ?
-                        Image.file(_backIdImage)
-                      :
-                        Container(),
-                  ),
-                  SizedBox(height: 5.0),
-                  Padding(
-                    padding: EdgeInsets.only(left: 22.0, right: 22.0),
-                    child: SizedBox(
-                      width: double.infinity,
-                      child: FlatButton(
-                        color: Colors.red,
-                        child: Text(
-                          "Scan Back ID Image",
-                          style: TextStyle(color: Colors.white,),
-                        ),
-                        onPressed: scanBackID,
-                      ),
-                    ),
-                  ),
-                ]
-              ),
-            ),
-            SizedBox(height: 10.0),
-            // Padding(
-            //   padding: EdgeInsets.only(left: 22.0, right: 22.0),
-              SizedBox(
-                width: double.infinity,
-                child: FlatButton(
-                  color: Colors.red,
+      body: Form(
+        key: _formKey,
+        child: ListView(
+          padding: EdgeInsets.all(12.0),
+            //mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              SizedBox(height: 10.0),
+              Align(
+                alignment: Alignment.centerLeft,
+                child: Container(
                   child: Text(
-                    "Submit",
-                    style: TextStyle(color: Colors.white,),
+                    "Take a Selfie",
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 18.0,
+                    ),
                   ),
-                  onPressed: _sendToServer,
                 ),
               ),
-            // or alternatively via short inline condition:
-            // currentPreviewImage ?? Text("Image place holder"),
-          ],
-      ),
+              SizedBox(height: 20.0),
+              Container(
+                height: 320.0,
+                width: 350.0,
+                decoration: BoxDecoration(
+                  color: Colors.grey[200],
+                  borderRadius: BorderRadius.circular(3.0),
+                ),
+                child: Column(
+                  children: <Widget>[
+                    SizedBox(height: 20.0),
+                    Padding(
+                      padding: EdgeInsets.only(left: 20.0),
+                      child: Align(
+                        alignment: Alignment.centerLeft,
+                        child: Container(
+                          child: Text(
+                            "Selfie Image",
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                            ),                                                         
+                          ),
+                        ),
+                      ),
+                    ),
+                    SizedBox(height: 10.0),
+                    Container(
+                      height: 200.0,
+                      width: 290,                                      
+                      decoration: BoxDecoration(
+                        color: Colors.grey[400],
+                        borderRadius: BorderRadius.circular(3.0),
+                      ),
+                      child: _selfieImage != null ?
+                          Image.file(_selfieImage)
+                        :
+                          Visibility(
+                            visible: noSelfieErrorText,
+                            child: Center(
+                              child: Text(
+                                "Selfie picture is required!",
+                                style: TextStyle(color: Colors.red,),
+                                textAlign: TextAlign.center,
+                              ),
+                            ),
+                          )
+                    ),
+                    SizedBox(height: 5.0),
+                    Padding(
+                      padding: EdgeInsets.only(left: 22.0, right: 22.0),
+                      child: SizedBox(
+                        width: double.infinity,
+                        child: FlatButton(
+                          color: Colors.red,
+                          splashColor: Colors.red[100],
+                          child: Text(
+                            "Take a Picture of your Face",
+                            style: TextStyle(color: Colors.white,),
+                          ),
+                          onPressed: takeASelfie,
+                        ),
+                      ),
+                    ),
+                  ]
+                ),
+              ),
+              SizedBox(height: 30.0),
+              Align(
+                alignment: Alignment.centerLeft,
+                child: Container(
+                  child: Text(
+                    "Scan your ID",
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 18.0,
+                    ),
+                  ),
+                ),
+              ),
+              SizedBox(height: 10.0),
+              FormField(
+                validator: (value){
+                  if (value == null) {
+                    return 'This field is required.';
+                  } else {
+                    return null;
+                  }
+                },
+                builder: (FormFieldState state) {
+                  return InputDecorator(
+                    decoration: InputDecoration(
+                      errorText: state.errorText,
+                    ),
+                    child: new DropdownButtonHideUnderline(
+                      child: DropdownButton(
+                        hint: Text('Select ID Type'),
+                        iconEnabledColor: Colors.red,
+                        value: _dropDownValue,
+                        isExpanded: true,
+                        isDense: true,
+                        iconSize: 30.0,
+                        items: [
+                          'DrivingLicense', 
+                          'IdentityCard', 
+                          'Passport',
+                          'VoterID'
+                        ].map(
+                          (val) {
+                            return DropdownMenuItem<String>(
+                              value: val,
+                              child: Text(val),
+                            );
+                          },
+                        ).toList(),
+                        onChanged: (val) {
+                          setState(
+                            () {
+                              _dropDownValue = val;
+                            },
+                          );
+                        },
+                      ),
+                    )
+                  );
+                }
+              ),
+              SizedBox(height: 20.0),
+              Container(
+                height: 320.0,
+                width: 350.0,
+                decoration: BoxDecoration(
+                  color: Colors.grey[200],
+                  borderRadius: BorderRadius.circular(3.0),
+                ),
+                child: Column(
+                  children: <Widget>[
+                    SizedBox(height: 20.0),
+                    Padding(
+                      padding: EdgeInsets.only(left: 20.0),
+                      child: Align(
+                        alignment: Alignment.centerLeft,
+                        child: Container(
+                          child: Text(
+                            "Front Image",
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                            ),                                                         
+                          ),
+                        ),
+                      ),
+                    ),
+                    SizedBox(height: 10.0),
+                    Container(
+                      height: 200.0,
+                      width: 290,                                      
+                      decoration: BoxDecoration(
+                        color: Colors.grey[400],
+                        borderRadius: BorderRadius.circular(3.0),
+                      ),
+                      child: _frontIdImage != null ?
+                          Image.file(_frontIdImage)
+                        :
+                          Visibility(
+                            visible: noFrontIdErrorText,
+                            child: Center(
+                              child: Text(
+                                "Front ID picture is required!",
+                                style: TextStyle(color: Colors.red,),
+                                textAlign: TextAlign.center,
+                              ),
+                            ),
+                          )
+                    ),
+                    SizedBox(height: 5.0),
+                    Padding(
+                      padding: EdgeInsets.only(left: 22.0, right: 22.0),
+                      child: SizedBox(
+                        width: double.infinity,
+                        child: FlatButton(
+                          color: Colors.red,
+                          splashColor: Colors.red[100],
+                          child: Text(
+                            "Scan Front ID Image",
+                            style: TextStyle(color: Colors.white,),
+                          ),
+                          onPressed: scanFrontID,
+                        ),
+                      ),
+                    ),
+                  ]
+                ),
+              ),
+
+              SizedBox(height: 20.0),
+              Container(
+                height: 320.0,
+                width: 350.0,
+                decoration: BoxDecoration(
+                  color: Colors.grey[200],
+                  borderRadius: BorderRadius.circular(3.0),
+                ),
+                child: Column(
+                  children: <Widget>[
+                    SizedBox(height: 20.0),
+                    Padding(
+                      padding: EdgeInsets.only(left: 20.0),
+                      child: Align(
+                        alignment: Alignment.centerLeft,
+                        child: Container(
+                          child: Text(
+                            "Back Image",
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                            ),                                                         
+                          ),
+                        ),
+                      ),
+                    ),
+                    SizedBox(height: 10.0),
+                    Container(
+                      height: 200.0,
+                      width: 290,                                      
+                      decoration: BoxDecoration(
+                        color: Colors.grey[400],
+                        borderRadius: BorderRadius.circular(3.0),
+                      ),
+                      child: _backIdImage != null ?
+                          Image.file(_backIdImage)
+                        :
+                          Visibility(
+                            visible: noBackIdErrorText,
+                            child: Center(
+                              child: Text(
+                                "Back ID picture is required!",
+                                style: TextStyle(color: Colors.red,),
+                                textAlign: TextAlign.center,
+                              ),
+                            ),
+                          )
+                    ),
+                    SizedBox(height: 5.0),
+                    Padding(
+                      padding: EdgeInsets.only(left: 22.0, right: 22.0),
+                      child: SizedBox(
+                        width: double.infinity,
+                        child: FlatButton(
+                          color: Colors.red,
+                          splashColor: Colors.red[100],
+                          child: Text(
+                            "Scan Back ID Image",
+                            style: TextStyle(color: Colors.white,),
+                          ),
+                          onPressed: scanBackID,
+                        ),
+                      ),
+                    ),
+                  ]
+                ),
+              ),
+              SizedBox(height: 10.0),
+              // Padding(
+              //   padding: EdgeInsets.only(left: 22.0, right: 22.0),
+                SizedBox(
+                  width: double.infinity,
+                  child: FlatButton(
+                    color: Colors.red,
+                    splashColor: Colors.red[100],
+                    child: Text(
+                      "Submit",
+                      style: TextStyle(color: Colors.white,),
+                    ),
+                    onPressed: () {
+                      if (_formKey.currentState.validate()) {}
+                        if (_selfieImage != null && _frontIdImage != null && _backIdImage != null
+                            && _dropDownValue != null) {
+                          _sendToServer();
+                        } else {
+                          setState(() {
+                            noSelfieErrorText = true;
+                            noFrontIdErrorText = true;
+                            noBackIdErrorText = true;                          
+                          });
+                          showSimpleNotification(
+                            Text("Please correct errors in the form"),
+                            background: Colors.red[600],
+                          );
+                        }
+                    }
+                  ),
+                ),
+              // or alternatively via short inline condition:
+              // currentPreviewImage ?? Text("Image place holder"),
+            ],
+        ),
+      )
     );
   }
 
@@ -367,10 +440,10 @@ class VerifyIdentityComponentState extends State<VerifyIdentityComponent>
       'front_image': _frontIdImageBase64,
       'back_image': _backIdImageBase64,
       'live_photo': _selfieImageBase64,
-      'document_type': "DrivingLicense",
+      'document_type': _dropDownValue,
     };
 
-   var response = await verifyDocument(payload);
+  var response = await verifyDocument(payload);
     
     if (response.success) {
       // When response is success, dismiss loading progress
