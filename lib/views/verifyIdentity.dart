@@ -2,18 +2,10 @@ import 'dart:io';
 import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:scanbot_sdk/common_data.dart';
-import 'package:scanbot_sdk/scanbot_sdk.dart';
-import 'package:scanbot_sdk/scanbot_sdk_ui.dart';
-import 'package:scanbot_sdk/scanbot_sdk_models.dart';
-import 'package:scanbot_sdk/document_scan_data.dart';
-import '../utils/globals.dart' as globals;
+import 'package:image_picker/image_picker.dart';
 import '../api/endpoints.dart';
-
 import '../utils/image_picker_dialog.dart';
 import '../utils/image_picker_handler.dart';
-
-import 'package:image_picker/image_picker.dart';
 
 
 class VerifyIdentityComponent extends StatefulWidget {
@@ -26,163 +18,85 @@ class VerifyIdentityComponentState extends State<VerifyIdentityComponent>
   Image currentPreviewImageFront;
   Image currentPreviewImageBack;
   Image currentPreviewImageSelfie;
-  String base64ImageFront;
-  String base64ImageBack;
-  String base64ImageSelfie;
+  String _frontIdImageBase64;
+  String _backIdImageBase64;
+  String _selfieImageBase64;
   String _dropDownValue;
   bool _loading = false;
 
+  File _selfieImage;
+  File _backIdImage;
+  File _frontIdImage;
+
   File _image;
+
   AnimationController _controller;
   //ImagePickerHandler imagePicker;
 
   ImagePickerDialog imagePicker;
 
-  var config = DocumentScannerConfiguration(
-    multiPageEnabled: false,
-    bottomBarBackgroundColor: Colors.redAccent,
-    cancelButtonTitle: "Cancel",
-    polygonColor: Colors.redAccent,
-    shutterButtonAutoOuterColor: Colors.red[600],
-    shutterButtonManualOuterColor: Colors.red[600],
-    orientationLockMode: CameraOrientationMode.PORTRAIT,
-    maxNumberOfPages: 1,
-    cameraPreviewMode: CameraPreviewMode.FILL_IN,
-  );
+  Future scanFrontID() async {
+    var image = await ImagePicker.pickImage(source: ImageSource.camera);
 
-  // @override
-  // void initState() {
-  //   super.initState();
-  //   _controller = new AnimationController(
-  //     vsync: this,
-  //     duration: const Duration(milliseconds: 500),
-  //   );
-
-  //   imagePicker=new ImagePickerHandler(this,_controller);
-  //   imagePicker.init();
-  // }
-
-  // @override
-  // void dispose() {
-  //   _controller.dispose();
-  //   super.dispose();
-  // }
-
-  void scanDocumentFront() async {
-    if (!await checkLicenseStatus()) {
-      return;
-    }
-
-    var result1 = await ScanbotSdkUi.startDocumentScanner(config);
-
-    if (result1.operationResult == OperationResult.SUCCESS) {
-      // get and use the scanned images as pages: result.pages[n] ...
-      displayPageImageFront(result1.pages[0]);
-    }
-  }
-
- void scanDocumentBack() async {
-    if (!await checkLicenseStatus()) {
-      return;
-    }
-
-    var result2 = await ScanbotSdkUi.startDocumentScanner(config);
-
-    if (result2.operationResult == OperationResult.SUCCESS) {
-      // get and use the scanned images as pages: result.pages[n] ...
-      displayPageImageBack(result2.pages[0]);
-    }
-  }
-
-  void takeASelfie() async {
-    if (!await checkLicenseStatus()) {
-      return;
-    }
-
-    var result3 = await ScanbotSdkUi.startDocumentScanner(config);
-
-    if (result3.operationResult == OperationResult.SUCCESS) {
-      // get and use the scanned images as pages: result.pages[n] ...
-      displaySelfieImage(result3.pages[0]);
-    }
-  }
-
-  void displayPageImageFront(Page page) {
     setState(() {
-      currentPreviewImageFront = Image.file(
-        File.fromUri(page.documentPreviewImageFileUri),
-        width: 300,
-        height: 200,
-      );
+      _frontIdImage = image;
     });
+
     // Get the file path from the captured image
-    var imageFrontPath = currentPreviewImageFront.image.toString().split('"')[1];
+    var _frontIdImagePath = _frontIdImage.toString().split("'")[1];
 
     // Load it from my filesystem
-    File imagefileFront = new File(imageFrontPath); 
+    File _frontIdImagefile = new File(_frontIdImagePath); 
 
     // Convert image file to base64
-    List<int> imageBytesFront = imagefileFront.readAsBytesSync();
-    base64ImageFront = base64Encode(imageBytesFront);
+    List<int> _frontIdImageBytes = _frontIdImagefile.readAsBytesSync();
+    _frontIdImageBase64 = base64Encode(_frontIdImageBytes);
     print("The front image base64 format is:");
-    print(base64ImageFront);
+    print(_frontIdImageBase64);
   }
 
-  void displayPageImageBack(Page page) {
+  Future scanBackID() async {
+    var image = await ImagePicker.pickImage(source: ImageSource.camera);
+
     setState(() {
-      currentPreviewImageBack = Image.file(
-        File.fromUri(page.documentPreviewImageFileUri),
-        width: 300,
-        height: 200,
-      );
+      _backIdImage = image;
     });
 
     // Get the file path from the captured image
-    var imageFrontPath = currentPreviewImageBack.image.toString().split('"')[1];
+    var _backIdImagePath = _backIdImage.toString().split("'")[1];
 
     // Load it from my filesystem
-    File imagefileFront = new File(imageFrontPath); 
+    File _backIdImagefile = new File(_backIdImagePath); 
 
     // Convert image file to base64
-    List<int> imageBytesFront = imagefileFront.readAsBytesSync();
-    base64ImageFront = base64Encode(imageBytesFront);
+    List<int> _backIdImageBytes = _backIdImagefile.readAsBytesSync();
+    _backIdImageBase64 = base64Encode(_backIdImageBytes);
     print("The back image base64 format is:");
-    print(base64ImageFront);
+    print(_backIdImageBase64);
   }
 
-  void displaySelfieImage(Page page) {
+  Future takeASelfie() async {
+    var image = await ImagePicker.pickImage(source: ImageSource.camera);
+
     setState(() {
-      currentPreviewImageSelfie = Image.file(
-        File.fromUri(page.documentPreviewImageFileUri),
-        width: 300,
-        height: 200,
-      );
+      _selfieImage = image;
     });
 
     // Get the file path from the captured image
-    var imageSelfiePath = currentPreviewImageSelfie.image.toString().split('"')[1];
+    var _selfieImagePath = _selfieImage.toString().split("'")[1];
 
     // Load it from my filesystem
-    File imagefileSelfie = new File(imageSelfiePath); 
+    File _selfieImagefile = new File(_selfieImagePath); 
 
     // Convert image file to base64
-    List<int> imageBytesFront = imagefileSelfie.readAsBytesSync();
-    base64ImageFront = base64Encode(imageBytesFront);
-    print("The back image base64 format is:");
-    print(base64ImageSelfie);
-  }
-
-  openCamera() async {
-    await ImagePicker.pickImage(source: ImageSource.camera);
-    //cropImage(image);
+    List<int> _selfieImageBytes = _selfieImagefile.readAsBytesSync();
+    _selfieImageBase64 = base64Encode(_selfieImageBytes);
+    print("The selfie image base64 format is:");
+    print(_selfieImageBase64);
   }
 
   @override
   Widget build(BuildContext context) {
-    ScanbotSdk.initScanbotSdk(ScanbotSdkConfig(
-      loggingEnabled: true,
-      licenseKey: globals.SCANBOT_SDK_LICENSE_KEY,
-    ));
     // This method is rerun every time setState is called.
     return Scaffold(
       appBar: AppBar(
@@ -238,11 +152,10 @@ class VerifyIdentityComponentState extends State<VerifyIdentityComponent>
                       color: Colors.grey[400],
                       borderRadius: BorderRadius.circular(3.0),
                     ),
-                    child:
-                      currentPreviewImageSelfie != null ?
-                        currentPreviewImageSelfie
+                    child: _selfieImage != null ?
+                        Image.file(_selfieImage)
                       :
-                        Container(),
+                        Container()
                   ),
                   SizedBox(height: 5.0),
                   Padding(
@@ -255,7 +168,7 @@ class VerifyIdentityComponentState extends State<VerifyIdentityComponent>
                           "Take a Picture of your Face",
                           style: TextStyle(color: Colors.white,),
                         ),
-                        onPressed: openCamera,
+                        onPressed: takeASelfie,
                       ),
                     ),
                   ),
@@ -343,9 +256,8 @@ class VerifyIdentityComponentState extends State<VerifyIdentityComponent>
                       color: Colors.grey[400],
                       borderRadius: BorderRadius.circular(3.0),
                     ),
-                    child:
-                      currentPreviewImageFront != null ?
-                        currentPreviewImageFront
+                    child: _frontIdImage != null ?
+                        Image.file(_frontIdImage)
                       :
                         Container(),
                   ),
@@ -360,7 +272,7 @@ class VerifyIdentityComponentState extends State<VerifyIdentityComponent>
                           "Scan Front ID Image",
                           style: TextStyle(color: Colors.white,),
                         ),
-                        onPressed: scanDocumentFront,
+                        onPressed: scanFrontID,
                       ),
                     ),
                   ),
@@ -401,9 +313,8 @@ class VerifyIdentityComponentState extends State<VerifyIdentityComponent>
                       color: Colors.grey[400],
                       borderRadius: BorderRadius.circular(3.0),
                     ),
-                    child:
-                      currentPreviewImageBack != null ?
-                        currentPreviewImageBack
+                    child: _backIdImage != null ?
+                        Image.file(_backIdImage)
                       :
                         Container(),
                   ),
@@ -418,7 +329,7 @@ class VerifyIdentityComponentState extends State<VerifyIdentityComponent>
                           "Scan Back ID Image",
                           style: TextStyle(color: Colors.white,),
                         ),
-                        onPressed: scanDocumentBack,
+                        onPressed: scanBackID,
                       ),
                     ),
                   ),
@@ -453,9 +364,9 @@ class VerifyIdentityComponentState extends State<VerifyIdentityComponent>
 
     // Create the payload
     var payload = {
-      'front_image': base64ImageFront,
-      'back_image': base64ImageBack,
-      'live_photo': "",
+      'front_image': _frontIdImageBase64,
+      'back_image': _backIdImageBase64,
+      'live_photo': _selfieImageBase64,
       'document_type': "DrivingLicense",
     };
 
@@ -468,43 +379,6 @@ class VerifyIdentityComponentState extends State<VerifyIdentityComponent>
       });
     }
   }
-
-  Future<bool> checkLicenseStatus() async {
-    var result = await ScanbotSdk.getLicenseStatus();
-    if (result.isLicenseValid) {
-      return true;
-    }
-    // await showAlertDialog(
-    //     message: 'Scanbot SDK trial period or license has expired.');
-    return false;
-  }
-
-  // Future<void> showAlertDialog({String title = 'Info', String message}) async {
-  //   return showDialog<void>(
-  //     context: context,
-  //     barrierDismissible: false,
-  //     builder: (BuildContext context) {
-  //       return AlertDialog(
-  //         title: Text(title),
-  //         content: SingleChildScrollView(
-  //           child: ListBody(
-  //             children: <Widget>[
-  //               Text(message),
-  //             ],
-  //           ),
-  //         ),
-  //         actions: <Widget>[
-  //           FlatButton(
-  //             child: Text('OK'),
-  //             onPressed: () {
-  //               Navigator.of(context).pop();
-  //             },
-  //           ),
-  //         ],
-  //       );
-  //     },
-  //   );
-  // }
 
   @override
   userImage(File _image) {
