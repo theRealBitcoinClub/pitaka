@@ -6,8 +6,8 @@ import 'package:image_picker/image_picker.dart';
 import 'package:overlay_support/overlay_support.dart';
 import '../api/endpoints.dart';
 import '../utils/dialogs.dart';
-import '../utils/image_picker_dialog.dart';
-import '../utils/image_picker_handler.dart';
+import '../utils/imagePickerDialog.dart';
+import '../utils/imagePickerHandler.dart';
 
 
 class VerifyIdentityComponent extends StatefulWidget {
@@ -32,7 +32,28 @@ class VerifyIdentityComponentState extends State<VerifyIdentityComponent>
   File _frontIdImage;
   File _image;
 
-  ImagePickerDialog imagePicker;
+  //ImagePickerDialog imagePicker;
+  ImagePickerHandler imagePicker;
+  AnimationController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 500),
+    );
+
+    imagePicker = ImagePickerHandler(this,_controller);
+    imagePicker.init();
+
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
 
   Future scanFrontID() async {
     var image = await ImagePicker.pickImage(source: ImageSource.camera);
@@ -185,7 +206,7 @@ class VerifyIdentityComponentState extends State<VerifyIdentityComponent>
                           "Take a Picture of your Face",
                           style: TextStyle(color: Colors.white,),
                         ),
-                        onPressed: takeASelfie,
+                        onPressed: () => imagePicker.showDialog(context),
                       ),
                     ),
                   ),

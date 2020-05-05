@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 import 'package:flutter/material.dart';
-import '../utils/image_picker_dialog.dart';
+import '../utils/imagePickerDialog.dart';
 //import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
 
