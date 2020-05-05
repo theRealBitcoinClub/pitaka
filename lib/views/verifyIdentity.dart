@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:overlay_support/overlay_support.dart';
 import '../api/endpoints.dart';
+import '../utils/dialogs.dart';
 import '../utils/image_picker_dialog.dart';
 import '../utils/image_picker_handler.dart';
 
@@ -21,7 +22,7 @@ class VerifyIdentityComponentState extends State<VerifyIdentityComponent>
   String _frontIdImageBase64;
   String _backIdImageBase64;
   String _selfieImageBase64;
-  String _dropDownValue;
+  String _documentType;
   bool _submitting = false;
   bool noSelfieErrorText = false;
   bool noFrontIdErrorText = false;
@@ -30,9 +31,6 @@ class VerifyIdentityComponentState extends State<VerifyIdentityComponent>
   File _backIdImage;
   File _frontIdImage;
   File _image;
-
-  AnimationController _controller;
-  //ImagePickerHandler imagePicker;
 
   ImagePickerDialog imagePicker;
 
@@ -225,7 +223,7 @@ class VerifyIdentityComponentState extends State<VerifyIdentityComponent>
                     child: DropdownButton(
                       hint: Text('Select ID Type'),
                       iconEnabledColor: Colors.red,
-                      value: _dropDownValue,
+                      value: _documentType,
                       isExpanded: true,
                       isDense: true,
                       iconSize: 30.0,
@@ -245,7 +243,7 @@ class VerifyIdentityComponentState extends State<VerifyIdentityComponent>
                       onChanged: (val) {
                         setState(
                           () {
-                            _dropDownValue = val;
+                            _documentType = val;
                           },
                         );
                       },
@@ -402,7 +400,7 @@ class VerifyIdentityComponentState extends State<VerifyIdentityComponent>
                   onPressed: () {
                     if (_formKey.currentState.validate()) {}
                       if (_selfieImage != null && _frontIdImage != null && _backIdImage != null
-                          && _dropDownValue != null) {
+                          && _documentType != null) {
                         _sendToServer();
                       } else {
                         setState(() {
@@ -454,7 +452,7 @@ class VerifyIdentityComponentState extends State<VerifyIdentityComponent>
       'front_image': _frontIdImageBase64,
       'back_image': _backIdImageBase64,
       'live_photo': _selfieImageBase64,
-      'document_type': _dropDownValue,
+      'document_type': _documentType,
     };
 
   var response = await verifyDocument(payload);
@@ -464,6 +462,8 @@ class VerifyIdentityComponentState extends State<VerifyIdentityComponent>
       setState(() {
         _submitting = false;
       });
+      // Show dialog
+      showIdentitySubmitSuccesslDialog(context);
     }
   }
 

@@ -1,8 +1,8 @@
   
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:easy_dialog/easy_dialog.dart'; 
 import 'package:url_launcher/url_launcher.dart'; 
-import 'package:flutter/services.dart';
 import '../views/app.dart';
 
 
@@ -10,7 +10,7 @@ import '../views/app.dart';
 // to download the latest version of Paytaca app 
 _launchURL() async {
   const url = 'https://play.google.com/store/apps/details?id=com.paytaca.app&hl=en';
-  if (await canLaunch(url)) {
+  if (await canLaunch(url)) {   
     await launch(url, forceWebView: true);
   } else {
     throw 'Could not launch $url';
@@ -32,6 +32,43 @@ _launchPaytacaURL() async {
 
 onDialogClose() {
   // Not use
+}
+
+// Dialog for identity submit success
+showIdentitySubmitSuccesslDialog(context) {
+  EasyDialog(
+    title: Text(
+      "Success!",
+      style: TextStyle(fontWeight: FontWeight.bold),
+      textScaleFactor: 1.2,
+    ),
+    description: Text(
+      "Please allow up to 1 business day for our team to review your ID submission. "
+      "We'll update you on the status of your verification by email and on your account limits page.",
+      textScaleFactor: 1.1,
+      textAlign: TextAlign.center,
+    ),
+    height: 160,
+    closeButton: false,
+    contentList: [
+      Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: <Widget>[
+          new FlatButton(
+            padding: EdgeInsets.all(8),
+            textColor: Colors.lightBlue,
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+            child: new Text("OK",
+              textScaleFactor: 1.2,
+              textAlign: TextAlign.center,
+            ),
+          ),
+        ],
+      )
+    ]
+  ).show(context, onDialogClose);
 }
 
 // Alert dialog for error in sending email
