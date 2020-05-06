@@ -6,8 +6,9 @@ import 'package:image_picker/image_picker.dart';
 import 'package:overlay_support/overlay_support.dart';
 import '../api/endpoints.dart';
 import '../utils/dialogs.dart';
-import '../utils/imagePickerDialog.dart';
 import '../utils/imagePickerHandler.dart';
+import '../utils/frontImagePickerHandler.dart';
+import '../utils/backImagePickerHandler.dart';
 
 
 class VerifyIdentityComponent extends StatefulWidget {
@@ -16,24 +17,25 @@ class VerifyIdentityComponent extends StatefulWidget {
 }
 
 class VerifyIdentityComponentState extends State<VerifyIdentityComponent> 
-    with TickerProviderStateMixin,ImagePickerListener {
+    with TickerProviderStateMixin, ImagePickerListener, FrontImagePickerListener, 
+    BackImagePickerListener {
 
   final _formKey = GlobalKey<FormState>();
-  String _frontIdImageBase64;
-  String _backIdImageBase64;
-  String _selfieImageBase64;
+  String _frontImageBase64;
+  String _backImageBase64;
+  String _imageBase64;
   String _documentType;
   bool _submitting = false;
   bool noSelfieErrorText = false;
   bool noFrontIdErrorText = false;
   bool noBackIdErrorText = false;
-  File _selfieImage;
-  File _backIdImage;
-  File _frontIdImage;
   File _image;
+  File _frontImage;
+  File _backImage;
 
-  //ImagePickerDialog imagePicker;
   ImagePickerHandler imagePicker;
+  FrontImagePickerHandler frontImagePicker;
+  BackImagePickerHandler backImagePicker;
   AnimationController _controller;
 
   @override
@@ -44,8 +46,14 @@ class VerifyIdentityComponentState extends State<VerifyIdentityComponent>
       duration: const Duration(milliseconds: 500),
     );
 
-    imagePicker = ImagePickerHandler(this,_controller);
+    imagePicker = ImagePickerHandler(this, _controller);
     imagePicker.init();
+
+    frontImagePicker = FrontImagePickerHandler(this, _controller);
+    frontImagePicker.init();
+
+    backImagePicker = BackImagePickerHandler(this, _controller);
+    backImagePicker.init();
 
   }
 
@@ -55,65 +63,25 @@ class VerifyIdentityComponentState extends State<VerifyIdentityComponent>
     super.dispose();
   }
 
-  Future scanFrontID() async {
-    var image = await ImagePicker.pickImage(source: ImageSource.camera);
+  // Future takeASelfie() async {
+  //   var image = await ImagePicker.pickImage(source: ImageSource.camera);
 
-    setState(() {
-      _frontIdImage = image;
-    });
+  //   setState(() {
+  //     _selfieImage = image;
+  //   });
 
-    // Get the file path from the captured image
-    var _frontIdImagePath = _frontIdImage.toString().split("'")[1];
+  //   // Get the file path from the captured image
+  //   var _selfieImagePath = _selfieImage.toString().split("'")[1];
 
-    // Load it from my filesystem
-    File _frontIdImagefile = new File(_frontIdImagePath); 
+  //   // Load it from my filesystem
+  //   File _selfieImagefile = new File(_selfieImagePath); 
 
-    // Convert image file to base64
-    List<int> _frontIdImageBytes = _frontIdImagefile.readAsBytesSync();
-    _frontIdImageBase64 = base64Encode(_frontIdImageBytes);
-    print("The front image base64 format is:");
-    print(_frontIdImageBase64);
-  }
-
-  Future scanBackID() async {
-    var image = await ImagePicker.pickImage(source: ImageSource.camera);
-
-    setState(() {
-      _backIdImage = image;
-    });
-
-    // Get the file path from the captured image
-    var _backIdImagePath = _backIdImage.toString().split("'")[1];
-
-    // Load it from my filesystem
-    File _backIdImagefile = new File(_backIdImagePath); 
-
-    // Convert image file to base64
-    List<int> _backIdImageBytes = _backIdImagefile.readAsBytesSync();
-    _backIdImageBase64 = base64Encode(_backIdImageBytes);
-    print("The back image base64 format is:");
-    print(_backIdImageBase64);
-  }
-
-  Future takeASelfie() async {
-    var image = await ImagePicker.pickImage(source: ImageSource.camera);
-
-    setState(() {
-      _selfieImage = image;
-    });
-
-    // Get the file path from the captured image
-    var _selfieImagePath = _selfieImage.toString().split("'")[1];
-
-    // Load it from my filesystem
-    File _selfieImagefile = new File(_selfieImagePath); 
-
-    // Convert image file to base64
-    List<int> _selfieImageBytes = _selfieImagefile.readAsBytesSync();
-    _selfieImageBase64 = base64Encode(_selfieImageBytes);
-    print("The selfie image base64 format is:");
-    print(_selfieImageBase64);
-  }
+  //   // Convert image file to base64
+  //   List<int> _selfieImageBytes = _selfieImagefile.readAsBytesSync();
+  //   _selfieImageBase64 = base64Encode(_selfieImageBytes);
+  //   print("The selfie image base64 format is:");
+  //   print(_selfieImageBase64);
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -180,8 +148,22 @@ class VerifyIdentityComponentState extends State<VerifyIdentityComponent>
                       color: Colors.grey[400],
                       borderRadius: BorderRadius.circular(3.0),
                     ),
-                    child: _selfieImage != null ?
-                        Image.file(_selfieImage)
+                    child: _image != null ?
+                        Container(
+                          height: 160.0,
+                          width: 160.0,
+                          decoration: BoxDecoration(
+                            color: const Color(0xff7c94b6),
+                            image: DecorationImage(
+                              image: ExactAssetImage(_image.path),
+                              fit: BoxFit.contain,
+                            ),
+                            border:
+                                Border.all(color: Colors.red, width: 2.0),
+                            borderRadius:
+                                BorderRadius.all(const Radius.circular(5.0)),
+                          ),
+                        )
                       :
                         Visibility(
                           visible: noSelfieErrorText,
@@ -306,8 +288,22 @@ class VerifyIdentityComponentState extends State<VerifyIdentityComponent>
                       color: Colors.grey[400],
                       borderRadius: BorderRadius.circular(3.0),
                     ),
-                    child: _frontIdImage != null ?
-                        Image.file(_frontIdImage)
+                    child: _frontImage != null ?
+                        Container(
+                          height: 160.0,
+                          width: 160.0,
+                          decoration: BoxDecoration(
+                            color: const Color(0xff7c94b6),
+                            image: DecorationImage(
+                              image: ExactAssetImage(_frontImage.path),
+                              fit: BoxFit.contain,
+                            ),
+                            border:
+                                Border.all(color: Colors.red, width: 2.0),
+                            borderRadius:
+                                BorderRadius.all(const Radius.circular(5.0)),
+                          ),
+                        )
                       :
                         Visibility(
                           visible: noFrontIdErrorText,
@@ -332,7 +328,7 @@ class VerifyIdentityComponentState extends State<VerifyIdentityComponent>
                           "Scan Front ID Image",
                           style: TextStyle(color: Colors.white,),
                         ),
-                        onPressed: scanFrontID,
+                        onPressed: () => frontImagePicker.showDialog(context),
                       ),
                     ),
                   ),
@@ -373,8 +369,22 @@ class VerifyIdentityComponentState extends State<VerifyIdentityComponent>
                       color: Colors.grey[400],
                       borderRadius: BorderRadius.circular(3.0),
                     ),
-                    child: _backIdImage != null ?
-                        Image.file(_backIdImage)
+                    child: _backImage != null ?
+                        Container(
+                          height: 160.0,
+                          width: 160.0,
+                          decoration: BoxDecoration(
+                            color: const Color(0xff7c94b6),
+                            image: DecorationImage(
+                              image: ExactAssetImage(_backImage.path),
+                              fit: BoxFit.contain,
+                            ),
+                            border:
+                                Border.all(color: Colors.red, width: 2.0),
+                            borderRadius:
+                                BorderRadius.all(const Radius.circular(5.0)),
+                          ),
+                        )
                       :
                         Visibility(
                           visible: noBackIdErrorText,
@@ -399,7 +409,7 @@ class VerifyIdentityComponentState extends State<VerifyIdentityComponent>
                           "Scan Back ID Image",
                           style: TextStyle(color: Colors.white,),
                         ),
-                        onPressed: scanBackID,
+                        onPressed: () => backImagePicker.showDialog(context),
                       ),
                     ),
                   ),
@@ -420,7 +430,7 @@ class VerifyIdentityComponentState extends State<VerifyIdentityComponent>
                   ),
                   onPressed: () {
                     if (_formKey.currentState.validate()) {}
-                      if (_selfieImage != null && _frontIdImage != null && _backIdImage != null
+                      if (_image != null && _frontImage != null && _backImage != null
                           && _documentType != null) {
                         _sendToServer();
                       } else {
@@ -464,19 +474,41 @@ class VerifyIdentityComponentState extends State<VerifyIdentityComponent>
   }
 
   _sendToServer() async {
+    // Set _submitting to true to show circular progress indicator
     setState(() {
       _submitting = true;
     });
 
+    // Get the file path from the captured image
+    var _imagePath = _image.toString().split("'")[1];
+    var _frontImagePath = _frontImage.toString().split("'")[1];
+    var _backImagePath = _backImage.toString().split("'")[1];
+
+    // Load from filesystem
+    File _imagefile = new File(_imagePath); 
+    File _frontImagefile = new File(_frontImagePath);
+    File _backImagefile = new File(_backImagePath);  
+
+    // Convert image file to base64
+    List<int> _imageBytes = _imagefile.readAsBytesSync();
+    _imageBase64 = base64Encode(_imageBytes);
+
+    List<int> _frontImageBytes = _frontImagefile.readAsBytesSync();
+    _frontImageBase64 = base64Encode(_frontImageBytes);
+
+    List<int> _backImageBytes = _backImagefile.readAsBytesSync();
+    _backImageBase64 = base64Encode(_backImageBytes);
+
+
     // Create the payload
     var payload = {
-      'front_image': _frontIdImageBase64,
-      'back_image': _backIdImageBase64,
-      'live_photo': _selfieImageBase64,
+      'front_image': _frontImageBase64,
+      'back_image': _backImageBase64,
+      'live_photo': _imageBase64,
       'document_type': _documentType,
     };
 
-  var response = await verifyDocument(payload);
+    var response = await verifyDocument(payload);
     
     if (response.success) {
       // When response is success, dismiss loading progress
@@ -492,6 +524,20 @@ class VerifyIdentityComponentState extends State<VerifyIdentityComponent>
   userImage(File _image) {
     setState(() {
       this._image = _image;
+    });
+  }
+
+  @override
+  frontImage(File _frontImage) {
+    setState(() {
+      this._frontImage = _frontImage;
+    });
+  }
+
+  @override
+  backImage(File _backImage) {
+    setState(() {
+      this._backImage = _backImage;
     });
   }
 

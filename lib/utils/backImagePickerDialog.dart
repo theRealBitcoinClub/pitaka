@@ -1,40 +1,40 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import '../utils/imagePickerHandler.dart';
+import '../utils/backImagePickerHandler.dart';
 
 
-class ImagePickerDialog extends StatelessWidget {
+class BackImagePickerDialog extends StatelessWidget {
 
-  ImagePickerHandler _listener;
-  AnimationController _controller;
+  BackImagePickerHandler _backListener;
+  AnimationController _backController;
   BuildContext context;
 
-  ImagePickerDialog(this._listener, this._controller);
+  BackImagePickerDialog(this._backListener, this._backController);
 
   Animation<double> _drawerContentsOpacity;
   Animation<Offset> _drawerDetailsPosition;
 
   void initState() {
     _drawerContentsOpacity = CurvedAnimation(
-      parent: ReverseAnimation(_controller),
+      parent: ReverseAnimation(_backController),
       curve: Curves.fastOutSlowIn,
     );
-    _drawerDetailsPosition = new Tween<Offset>(
+    _drawerDetailsPosition = Tween<Offset>(
       begin: const Offset(0.0, 1.0),
       end: Offset.zero,
     ).animate(CurvedAnimation(
-      parent: _controller,
+      parent: _backController,
       curve: Curves.fastOutSlowIn,
     ));
   }
 
   getImage(BuildContext context) {
-    if (_controller == null ||
+    if (_backController == null ||
         _drawerDetailsPosition == null ||
         _drawerContentsOpacity == null) {
       return;
     }
-    _controller.forward();
+    _backController.forward();
     showDialog(
       context: context,
       builder: (BuildContext context) => SlideTransition(
@@ -48,7 +48,7 @@ class ImagePickerDialog extends StatelessWidget {
   }
 
   void dispose() {
-    _controller.dispose();
+    _backController.dispose();
   }
 
   startTime() async {
@@ -61,7 +61,7 @@ class ImagePickerDialog extends StatelessWidget {
   }
 
   dismissDialog() {
-    _controller.reverse();
+    _backController.reverse();
     startTime();
   }
 
@@ -79,7 +79,7 @@ class ImagePickerDialog extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.end,
               children: <Widget>[
                 GestureDetector(
-                  onTap: () => _listener.openCamera(),
+                  onTap: () => _backListener.openCamera(),
                   child: roundedButton(
                       "Take a Photo",
                       EdgeInsets.fromLTRB(0.0, 10.0, 0.0, 0.0),
@@ -87,7 +87,7 @@ class ImagePickerDialog extends StatelessWidget {
                       const Color(0xFFFFFFFF)),
                 ),
                 GestureDetector(
-                  onTap: () => _listener.openGallery(),
+                  onTap: () => _backListener.openGallery(),
                   child: roundedButton(
                       "Choose from Gallery",
                       EdgeInsets.fromLTRB(0.0, 10.0, 0.0, 0.0),
