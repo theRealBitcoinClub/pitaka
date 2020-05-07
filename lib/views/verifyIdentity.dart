@@ -147,18 +147,11 @@ class VerifyIdentityComponentState extends State<VerifyIdentityComponent>
                     ),
                     child: _selfieImage != null ?
                         Container(
-                          height: 160.0,
-                          width: 160.0,
                           decoration: BoxDecoration(
-                            color: const Color(0xff7c94b6),
                             image: DecorationImage(
-                              image: ExactAssetImage(_selfieImage.path),
+                              image: FileImage(_selfieImage),
                               fit: BoxFit.contain,
                             ),
-                            border:
-                                Border.all(color: Colors.red, width: 2.0),
-                            borderRadius:
-                                BorderRadius.all(const Radius.circular(5.0)),
                           ),
                         )
                       :
@@ -359,18 +352,11 @@ class VerifyIdentityComponentState extends State<VerifyIdentityComponent>
                     ),
                     child: _frontImage != null ?
                         Container(
-                          height: 160.0,
-                          width: 160.0,
                           decoration: BoxDecoration(
-                            color: const Color(0xff7c94b6),
                             image: DecorationImage(
-                              image: ExactAssetImage(_frontImage.path),
+                              image: FileImage(_frontImage),
                               fit: BoxFit.contain,
                             ),
-                            border:
-                                Border.all(color: Colors.red, width: 2.0),
-                            borderRadius:
-                                BorderRadius.all(const Radius.circular(5.0)),
                           ),
                         )
                       :
@@ -508,18 +494,11 @@ class VerifyIdentityComponentState extends State<VerifyIdentityComponent>
                     ),
                     child: _backImage != null ?
                         Container(
-                          height: 160.0,
-                          width: 160.0,
                           decoration: BoxDecoration(
-                            color: const Color(0xff7c94b6),
                             image: DecorationImage(
-                              image: ExactAssetImage(_backImage.path),
+                              image: FileImage(_backImage),
                               fit: BoxFit.contain,
                             ),
-                            border:
-                                Border.all(color: Colors.red, width: 2.0),
-                            borderRadius:
-                                BorderRadius.all(const Radius.circular(5.0)),
                           ),
                         )
                       :
