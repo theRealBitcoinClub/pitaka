@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:overlay_support/overlay_support.dart';
 import '../api/endpoints.dart';
 import '../utils/dialogs.dart';
-import '../utils/imagePickerHandler.dart';
+import '../utils/selfieImagePickerHandler.dart';
 import '../utils/frontImagePickerHandler.dart';
 import '../utils/backImagePickerHandler.dart';
 
@@ -29,13 +29,13 @@ class VerifyIdentityComponent extends StatefulWidget {
 }
 
 class VerifyIdentityComponentState extends State<VerifyIdentityComponent> 
-    with TickerProviderStateMixin, ImagePickerListener, FrontImagePickerListener, 
+    with TickerProviderStateMixin, SelfieImagePickerListener, FrontImagePickerListener, 
     BackImagePickerListener {
 
   final _formKey = GlobalKey<FormState>();
   String _frontImageBase64;
   String _backImageBase64;
-  String _imageBase64;
+  String _selfieImageBase64;
   String _documentType;
   bool _submitting = false;
   bool noSelfieErrorText = false;
@@ -44,11 +44,11 @@ class VerifyIdentityComponentState extends State<VerifyIdentityComponent>
   double containerHeight = 320.0;
   double frontContainerHeight = 320.0;
   double backContainerHeight = 320.0;
-  File _image;
+  File _selfieImage;
   File _frontImage;
   File _backImage;
 
-  ImagePickerHandler imagePicker;
+  SelfieImagePickerHandler selfieImagePicker;
   FrontImagePickerHandler frontImagePicker;
   BackImagePickerHandler backImagePicker;
   AnimationController _controller;
@@ -61,8 +61,8 @@ class VerifyIdentityComponentState extends State<VerifyIdentityComponent>
       duration: const Duration(milliseconds: 500),
     );
 
-    imagePicker = ImagePickerHandler(this, _controller);
-    imagePicker.init();
+    selfieImagePicker = SelfieImagePickerHandler(this, _controller);
+    selfieImagePicker.init();
 
     frontImagePicker = FrontImagePickerHandler(this, _controller);
     frontImagePicker.init();
@@ -110,6 +110,9 @@ class VerifyIdentityComponentState extends State<VerifyIdentityComponent>
               ),
             ),
             SizedBox(height: 20.0),
+            //
+            // Selfie Container
+            //
             Container(
               height: containerHeight,
               width: 350.0,
@@ -142,14 +145,14 @@ class VerifyIdentityComponentState extends State<VerifyIdentityComponent>
                       color: Colors.grey[400],
                       borderRadius: BorderRadius.circular(3.0),
                     ),
-                    child: _image != null ?
+                    child: _selfieImage != null ?
                         Container(
                           height: 160.0,
                           width: 160.0,
                           decoration: BoxDecoration(
                             color: const Color(0xff7c94b6),
                             image: DecorationImage(
-                              image: ExactAssetImage(_image.path),
+                              image: ExactAssetImage(_selfieImage.path),
                               fit: BoxFit.contain,
                             ),
                             border:
@@ -171,7 +174,7 @@ class VerifyIdentityComponentState extends State<VerifyIdentityComponent>
                         )
                   ),
                   SizedBox(height: 10.0),
-                  _image != null ?
+                  _selfieImage != null ?
                     Column(
                       children: <Widget>[
                         Padding(
@@ -226,7 +229,7 @@ class VerifyIdentityComponentState extends State<VerifyIdentityComponent>
                                 "Change Image",
                                 style: TextStyle(color: Colors.white,),
                               ),
-                              onPressed: () => imagePicker.showDialog(context),
+                              onPressed: () => selfieImagePicker.showDialog(context),
                             ),
                           ),
                         ),
@@ -245,7 +248,7 @@ class VerifyIdentityComponentState extends State<VerifyIdentityComponent>
                             style: TextStyle(color: Colors.white,),
                           ),
                           onPressed: () {
-                            imagePicker.showDialog(context);
+                            selfieImagePicker.showDialog(context);
                             // Adjust the height of container to accomodate the texts and button
                             containerHeight = 420.0;
                           } 
@@ -269,6 +272,9 @@ class VerifyIdentityComponentState extends State<VerifyIdentityComponent>
               ),
             ),
             SizedBox(height: 10.0),
+            //
+            // Document type dropdown FormField
+            //
             FormField(
               validator: (value){
                 if (value == null) {
@@ -316,6 +322,9 @@ class VerifyIdentityComponentState extends State<VerifyIdentityComponent>
               }
             ),
             SizedBox(height: 20.0),
+            //
+            // Front ID Container
+            //
             Container(
               height: frontContainerHeight,
               width: 350.0,
@@ -462,6 +471,9 @@ class VerifyIdentityComponentState extends State<VerifyIdentityComponent>
               ),
             ),
             SizedBox(height: 20.0),
+            //
+            // Back ID Container
+            //
             Container(
               height: backContainerHeight,
               width: 350.0,
@@ -608,6 +620,9 @@ class VerifyIdentityComponentState extends State<VerifyIdentityComponent>
               ),
             ),
             SizedBox(height: 10.0),
+            //
+            // Submit button SizeBox
+            //
             SizedBox(
               width: double.infinity,
               child: FlatButton(
@@ -619,7 +634,7 @@ class VerifyIdentityComponentState extends State<VerifyIdentityComponent>
                 ),
                 onPressed: () {
                   if (_formKey.currentState.validate()) {}
-                    if (_image != null && _frontImage != null && _backImage != null
+                    if (_selfieImage != null && _frontImage != null && _backImage != null
                         && _documentType != null) {
                       _sendToServer();
                     } else {
@@ -669,18 +684,18 @@ class VerifyIdentityComponentState extends State<VerifyIdentityComponent>
     });
 
     // Get the file path from the captured image
-    var _imagePath = _image.toString().split("'")[1];
+    var _selfieImagePath = _selfieImage.toString().split("'")[1];
     var _frontImagePath = _frontImage.toString().split("'")[1];
     var _backImagePath = _backImage.toString().split("'")[1];
 
     // Load from filesystem
-    File _imagefile = new File(_imagePath); 
+    File _selfieImagefile = new File(_selfieImagePath); 
     File _frontImagefile = new File(_frontImagePath);
     File _backImagefile = new File(_backImagePath);  
 
     // Convert image file to base64
-    List<int> _imageBytes = _imagefile.readAsBytesSync();
-    _imageBase64 = base64Encode(_imageBytes);
+    List<int> _selfieImageBytes = _selfieImagefile.readAsBytesSync();
+    _selfieImageBase64 = base64Encode(_selfieImageBytes);
 
     List<int> _frontImageBytes = _frontImagefile.readAsBytesSync();
     _frontImageBase64 = base64Encode(_frontImageBytes);
@@ -693,7 +708,7 @@ class VerifyIdentityComponentState extends State<VerifyIdentityComponent>
     var payload = {
       'front_image': _frontImageBase64,
       'back_image': _backImageBase64,
-      'live_photo': _imageBase64,
+      'live_photo': _selfieImageBase64,
       'document_type': _documentType,
     };
 
@@ -710,9 +725,9 @@ class VerifyIdentityComponentState extends State<VerifyIdentityComponent>
   }
 
   @override
-  userImage(File _image) {
+  selfieImage(File _selfieImage) {
     setState(() {
-      this._image = _image;
+      this._selfieImage = _selfieImage;
     });
   }
 
