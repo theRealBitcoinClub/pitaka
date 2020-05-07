@@ -1,8 +1,6 @@
 import 'dart:io';
-import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:overlay_support/overlay_support.dart';
 import '../api/endpoints.dart';
 import '../utils/dialogs.dart';
@@ -10,6 +8,20 @@ import '../utils/imagePickerHandler.dart';
 import '../utils/frontImagePickerHandler.dart';
 import '../utils/backImagePickerHandler.dart';
 
+// Costum bullet used in the list
+class Bullet extends StatelessWidget{
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: 10.0,
+      width: 10.0,
+      decoration: BoxDecoration(
+        color: Colors.black45,
+        shape: BoxShape.circle,
+      ),
+    );
+  }
+}
 
 class VerifyIdentityComponent extends StatefulWidget {
   @override
@@ -29,6 +41,9 @@ class VerifyIdentityComponentState extends State<VerifyIdentityComponent>
   bool noSelfieErrorText = false;
   bool noFrontIdErrorText = false;
   bool noBackIdErrorText = false;
+  double containerHeight = 320.0;
+  double frontContainerHeight = 320.0;
+  double backContainerHeight = 320.0;
   File _image;
   File _frontImage;
   File _backImage;
@@ -63,26 +78,6 @@ class VerifyIdentityComponentState extends State<VerifyIdentityComponent>
     super.dispose();
   }
 
-  // Future takeASelfie() async {
-  //   var image = await ImagePicker.pickImage(source: ImageSource.camera);
-
-  //   setState(() {
-  //     _selfieImage = image;
-  //   });
-
-  //   // Get the file path from the captured image
-  //   var _selfieImagePath = _selfieImage.toString().split("'")[1];
-
-  //   // Load it from my filesystem
-  //   File _selfieImagefile = new File(_selfieImagePath); 
-
-  //   // Convert image file to base64
-  //   List<int> _selfieImageBytes = _selfieImagefile.readAsBytesSync();
-  //   _selfieImageBase64 = base64Encode(_selfieImageBytes);
-  //   print("The selfie image base64 format is:");
-  //   print(_selfieImageBase64);
-  // }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -100,7 +95,6 @@ class VerifyIdentityComponentState extends State<VerifyIdentityComponent>
       key: _formKey,
       child: ListView(
         padding: EdgeInsets.all(12.0),
-          //mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
             SizedBox(height: 10.0),
             Align(
@@ -117,7 +111,7 @@ class VerifyIdentityComponentState extends State<VerifyIdentityComponent>
             ),
             SizedBox(height: 20.0),
             Container(
-              height: 320.0,
+              height: containerHeight,
               width: 350.0,
               decoration: BoxDecoration(
                 color: Colors.grey[200],
@@ -135,7 +129,7 @@ class VerifyIdentityComponentState extends State<VerifyIdentityComponent>
                           "Selfie Image",
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
-                          ),                                                         
+                          ),
                         ),
                       ),
                     ),
@@ -176,22 +170,88 @@ class VerifyIdentityComponentState extends State<VerifyIdentityComponent>
                           ),
                         )
                   ),
-                  SizedBox(height: 5.0),
-                  Padding(
-                    padding: EdgeInsets.only(left: 22.0, right: 22.0),
-                    child: SizedBox(
-                      width: double.infinity,
-                      child: FlatButton(
-                        color: Colors.red,
-                        splashColor: Colors.red[100],
-                        child: Text(
-                          "Take a Picture of your Face",
-                          style: TextStyle(color: Colors.white,),
+                  SizedBox(height: 10.0),
+                  _image != null ?
+                    Column(
+                      children: <Widget>[
+                        Padding(
+                          padding: EdgeInsets.only(left: 24.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: <Widget>[
+                              Text(
+                                "Check the following:",
+                                style: TextStyle(
+                                  fontWeight: FontWeight.w500,
+                                  fontSize: 16.0,
+                                ),
+                                textAlign: TextAlign.left,
+                              ),
+                              SizedBox(height: 10.0),
+                              Row(
+                                children: <Widget>[
+                                  Bullet(),
+                                  SizedBox(width: 10),
+                                  Text("Not wearing a hat and/or glasses"),
+                                ],
+                              ),
+                              SizedBox(height: 10.0),
+                              Row(
+                                children: <Widget>[
+                                  Bullet(),
+                                  SizedBox(width: 10),
+                                  Text("Not wearing a heavy make-up"),
+                                ],
+                              ),
+                              SizedBox(height: 10.0),
+                              Row(
+                                children: <Widget>[
+                                  Bullet(),
+                                  SizedBox(width: 10),
+                                  Text("Image is clear"),
+                                ],
+                              ),
+                            ]
+                          ),
                         ),
-                        onPressed: () => imagePicker.showDialog(context),
+                        SizedBox(height: 10.0),
+                        Padding(
+                          padding: EdgeInsets.only(left: 22.0, right: 22.0),
+                          child: SizedBox(
+                            width: double.infinity,
+                            child: FlatButton(
+                              color: Colors.red,
+                              splashColor: Colors.red[100],
+                              child: Text(
+                                "Change Image",
+                                style: TextStyle(color: Colors.white,),
+                              ),
+                              onPressed: () => imagePicker.showDialog(context),
+                            ),
+                          ),
+                        ),
+                      ]
+                    )
+                  :
+                    Padding(
+                      padding: EdgeInsets.only(left: 22.0, right: 22.0),
+                      child: SizedBox(
+                        width: double.infinity,
+                        child: FlatButton(
+                          color: Colors.red,
+                          splashColor: Colors.red[100],
+                          child: Text(
+                            "Take a Picture of your Face",
+                            style: TextStyle(color: Colors.white,),
+                          ),
+                          onPressed: () {
+                            imagePicker.showDialog(context);
+                            // Adjust the height of container to accomodate the texts and button
+                            containerHeight = 420.0;
+                          } 
+                        ),
                       ),
                     ),
-                  ),
                 ]
               ),
             ),
@@ -257,7 +317,7 @@ class VerifyIdentityComponentState extends State<VerifyIdentityComponent>
             ),
             SizedBox(height: 20.0),
             Container(
-              height: 320.0,
+              height: frontContainerHeight,
               width: 350.0,
               decoration: BoxDecoration(
                 color: Colors.grey[200],
@@ -316,29 +376,94 @@ class VerifyIdentityComponentState extends State<VerifyIdentityComponent>
                           ),
                         )
                   ),
-                  SizedBox(height: 5.0),
-                  Padding(
-                    padding: EdgeInsets.only(left: 22.0, right: 22.0),
-                    child: SizedBox(
-                      width: double.infinity,
-                      child: FlatButton(
-                        color: Colors.red,
-                        splashColor: Colors.red[100],
-                        child: Text(
-                          "Scan Front ID Image",
-                          style: TextStyle(color: Colors.white,),
+                  SizedBox(height: 10.0),
+                  _frontImage != null ?
+                    Column(
+                      children: <Widget>[
+                        Padding(
+                          padding: EdgeInsets.only(left: 24.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: <Widget>[
+                              Text(
+                                "Check the following:",
+                                style: TextStyle(
+                                  fontWeight: FontWeight.w500,
+                                  fontSize: 16.0,
+                                ),
+                                textAlign: TextAlign.left,
+                              ),
+                              SizedBox(height: 10.0),
+                              Row(
+                                children: <Widget>[
+                                  Bullet(),
+                                  SizedBox(width: 10),
+                                  Text("Valid unexpired ID"),
+                                ],
+                              ),
+                              SizedBox(height: 10.0),
+                              Row(
+                                children: <Widget>[
+                                  Bullet(),
+                                  SizedBox(width: 10),
+                                  Text("All four corners are showing"),
+                                ],
+                              ),
+                              SizedBox(height: 10.0),
+                              Row(
+                                children: <Widget>[
+                                  Bullet(),
+                                  SizedBox(width: 10),
+                                  Text("Text is clear"),
+                                ],
+                              ),
+                            ]
+                          ),
                         ),
-                        onPressed: () => frontImagePicker.showDialog(context),
+                        SizedBox(height: 10.0),
+                        Padding(
+                          padding: EdgeInsets.only(left: 22.0, right: 22.0),
+                          child: SizedBox(
+                            width: double.infinity,
+                            child: FlatButton(
+                              color: Colors.red,
+                              splashColor: Colors.red[100],
+                              child: Text(
+                                "Change Image",
+                                style: TextStyle(color: Colors.white,),
+                              ),
+                              onPressed: () => frontImagePicker.showDialog(context),
+                            ),
+                          ),
+                        ),
+                      ]
+                    )
+                  :
+                    Padding(
+                      padding: EdgeInsets.only(left: 22.0, right: 22.0),
+                      child: SizedBox(
+                        width: double.infinity,
+                        child: FlatButton(
+                          color: Colors.red,
+                          splashColor: Colors.red[100],
+                          child: Text(
+                            "Scan Front ID Image",
+                            style: TextStyle(color: Colors.white,),
+                          ),
+                          onPressed: () {
+                            frontImagePicker.showDialog(context);
+                            // Adjust the height of container to accomodate the texts and button
+                            frontContainerHeight = 420.0;
+                          } 
+                        ),
                       ),
                     ),
-                  ),
                 ]
               ),
             ),
-
             SizedBox(height: 20.0),
             Container(
-              height: 320.0,
+              height: backContainerHeight,
               width: 350.0,
               decoration: BoxDecoration(
                 color: Colors.grey[200],
@@ -397,56 +522,120 @@ class VerifyIdentityComponentState extends State<VerifyIdentityComponent>
                           ),
                         )
                   ),
-                  SizedBox(height: 5.0),
-                  Padding(
-                    padding: EdgeInsets.only(left: 22.0, right: 22.0),
-                    child: SizedBox(
-                      width: double.infinity,
-                      child: FlatButton(
-                        color: Colors.red,
-                        splashColor: Colors.red[100],
-                        child: Text(
-                          "Scan Back ID Image",
-                          style: TextStyle(color: Colors.white,),
+                  SizedBox(height: 10.0),
+                  _backImage != null ?
+                    Column(
+                      children: <Widget>[
+                        Padding(
+                          padding: EdgeInsets.only(left: 24.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: <Widget>[
+                              Text(
+                                "Check the following:",
+                                style: TextStyle(
+                                  fontWeight: FontWeight.w500,
+                                  fontSize: 16.0,
+                                ),
+                                textAlign: TextAlign.left,
+                              ),
+                              SizedBox(height: 10.0),
+                              Row(
+                                children: <Widget>[
+                                  Bullet(),
+                                  SizedBox(width: 10),
+                                  Text("Valid unexpired ID"),
+                                ],
+                              ),
+                              SizedBox(height: 10.0),
+                              Row(
+                                children: <Widget>[
+                                  Bullet(),
+                                  SizedBox(width: 10),
+                                  Text("All four corners are showing"),
+                                ],
+                              ),
+                              SizedBox(height: 10.0),
+                              Row(
+                                children: <Widget>[
+                                  Bullet(),
+                                  SizedBox(width: 10),
+                                  Text("Text is clear"),
+                                ],
+                              ),
+                            ]
+                          ),
                         ),
-                        onPressed: () => backImagePicker.showDialog(context),
+                        SizedBox(height: 10.0),
+                        Padding(
+                          padding: EdgeInsets.only(left: 22.0, right: 22.0),
+                          child: SizedBox(
+                            width: double.infinity,
+                            child: FlatButton(
+                              color: Colors.red,
+                              splashColor: Colors.red[100],
+                              child: Text(
+                                "Change Image",
+                                style: TextStyle(color: Colors.white,),
+                              ),
+                              onPressed: () => backImagePicker.showDialog(context),
+                            ),
+                          ),
+                        ),
+                      ]
+                    )
+                  :
+                    Padding(
+                      padding: EdgeInsets.only(left: 22.0, right: 22.0),
+                      child: SizedBox(
+                        width: double.infinity,
+                        child: FlatButton(
+                          color: Colors.red,
+                          splashColor: Colors.red[100],
+                          child: Text(
+                            "Scan Back ID Image",
+                            style: TextStyle(color: Colors.white,),
+                          ),
+                          onPressed: () {
+                            backImagePicker.showDialog(context);
+                            // Adjust the height of container to accomodate the texts and button
+                            backContainerHeight = 420.0;
+                          } 
+                        ),
                       ),
                     ),
-                  ),
                 ]
               ),
             ),
             SizedBox(height: 10.0),
-            // Padding(
-            //   padding: EdgeInsets.only(left: 22.0, right: 22.0),
-              SizedBox(
-                width: double.infinity,
-                child: FlatButton(
-                  color: Colors.red,
-                  splashColor: Colors.red[100],
-                  child: Text(
-                    "Submit",
-                    style: TextStyle(color: Colors.white,),
-                  ),
-                  onPressed: () {
-                    if (_formKey.currentState.validate()) {}
-                      if (_image != null && _frontImage != null && _backImage != null
-                          && _documentType != null) {
-                        _sendToServer();
-                      } else {
-                        setState(() {
-                          noSelfieErrorText = true;
-                          noFrontIdErrorText = true;
-                          noBackIdErrorText = true;                          
-                        });
-                        showSimpleNotification(
-                          Text("Please correct errors below."),
-                          background: Colors.red[600],
-                        );
-                      }
-                  }
+            SizedBox(
+              width: double.infinity,
+              child: FlatButton(
+                color: Colors.red,
+                splashColor: Colors.red[100],
+                child: Text(
+                  "Submit",
+                  style: TextStyle(color: Colors.white,),
                 ),
+                onPressed: () {
+                  if (_formKey.currentState.validate()) {}
+                    if (_image != null && _frontImage != null && _backImage != null
+                        && _documentType != null) {
+                      _sendToServer();
+                    } else {
+                      setState(() {
+                        noSelfieErrorText = true;
+                        noFrontIdErrorText = true;
+                        noBackIdErrorText = true;                          
+                      });
+                      showSimpleNotification(
+                        Text("Please correct errors below."),
+                        background: Colors.red[600],
+                      );
+                    }
+                }
               ),
+            ),
           ],
       ),
     );
