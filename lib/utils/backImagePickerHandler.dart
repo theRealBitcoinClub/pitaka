@@ -15,22 +15,18 @@ class BackImagePickerHandler {
   openCamera() async {
     backImagePicker.dismissDialog();
     var backImage = await ImagePicker.pickImage(source: ImageSource.camera);
-    loadImage(backImage);
+    _backListener.backImage(backImage);
   }
 
   openGallery() async {
     backImagePicker.dismissDialog();
     var backImage = await ImagePicker.pickImage(source: ImageSource.gallery);
-    loadImage(backImage);
+    _backListener.backImage(backImage);
   }
 
   void init() {
     backImagePicker = BackImagePickerDialog(this, _backController);
     backImagePicker.initState();
-  }
-
-  Future loadImage(File backImage) async {
-    _backListener.backImage(backImage);
   }
 
   showDialog(BuildContext context) {

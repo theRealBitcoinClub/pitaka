@@ -15,22 +15,18 @@ class FrontImagePickerHandler {
   openCamera() async {
     frontImagePicker.dismissDialog();
     var frontImage = await ImagePicker.pickImage(source: ImageSource.camera);
-    loadImage(frontImage);
+    _frontListener.frontImage(frontImage);
   }
 
   openGallery() async {
     frontImagePicker.dismissDialog();
     var frontImage = await ImagePicker.pickImage(source: ImageSource.gallery);
-    loadImage(frontImage);
+    _frontListener.frontImage(frontImage);
   }
 
   void init() {
     frontImagePicker = FrontImagePickerDialog(this, _frontController);
     frontImagePicker.initState();
-  }
-
-  Future loadImage(File frontImage) async {
-    _frontListener.frontImage(frontImage);
   }
 
   showDialog(BuildContext context) {

@@ -14,22 +14,18 @@ class SelfieImagePickerHandler {
   openCamera() async {
     selfieImagePicker.dismissDialog();
     var selfieImage = await ImagePicker.pickImage(source: ImageSource.camera);
-    loadImage(selfieImage);
+    _selfieListener.selfieImage(selfieImage);
   }
 
   openGallery() async {
     selfieImagePicker.dismissDialog();
     var selfieImage = await ImagePicker.pickImage(source: ImageSource.gallery);
-    loadImage(selfieImage);
+    _selfieListener.selfieImage(selfieImage);
   }
 
   void init() {
     selfieImagePicker = SelfieImagePickerDialog(this, _selfieController);
     selfieImagePicker.initState();
-  }
-
-  Future loadImage(File selfieImage) async {
-    _selfieListener.selfieImage(selfieImage);
   }
 
   showDialog(BuildContext context) {
