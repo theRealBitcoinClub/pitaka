@@ -41,6 +41,7 @@ class VerifyIdentityComponentState extends State<VerifyIdentityComponent>
   bool noSelfieErrorText = false;
   bool noFrontIdErrorText = false;
   bool noBackIdErrorText = false;
+  bool noDocumentTypeValueErrorText = false;
   double containerHeight = 320.0;
   double frontContainerHeight = 320.0;
   double backContainerHeight = 320.0;
@@ -264,7 +265,19 @@ class VerifyIdentityComponentState extends State<VerifyIdentityComponent>
                 ),
               ),
             ),
-            SizedBox(height: 10.0),
+            SizedBox(height: 15.0),
+            Align(
+              alignment: Alignment.centerLeft,
+              child: Container(
+                child: Text(
+                  "ID Type:",
+                  style: TextStyle(
+                    fontWeight: FontWeight.w600,
+                    fontSize: 17.0,
+                  ),
+                ),
+              ),
+            ),
             //
             // Document type dropdown FormField
             //
@@ -281,7 +294,7 @@ class VerifyIdentityComponentState extends State<VerifyIdentityComponent>
                   decoration: InputDecoration(
                     errorText: state.errorText,
                   ),
-                  child: new DropdownButtonHideUnderline(
+                  child: DropdownButtonHideUnderline(
                     child: DropdownButton(
                       hint: Text('Select ID Type'),
                       iconEnabledColor: Colors.red,
@@ -290,10 +303,10 @@ class VerifyIdentityComponentState extends State<VerifyIdentityComponent>
                       isDense: true,
                       iconSize: 30.0,
                       items: [
-                        'DrivingLicense', 
-                        'IdentityCard', 
-                        'Passport',
-                        'VoterID'
+                        "Driver's License", 
+                        "Identity Card", 
+                        "Passport",
+                        "Voter's ID"
                       ].map(
                         (val) {
                           return DropdownMenuItem<String>(
@@ -314,6 +327,20 @@ class VerifyIdentityComponentState extends State<VerifyIdentityComponent>
                 );
               }
             ),
+            SizedBox(height: 5.0),
+            _documentType != null ?
+                Container()
+              :
+                Visibility(
+                  visible: noDocumentTypeValueErrorText,
+                  child: Container(
+                    child: Text(
+                      "This field is required!",
+                      style: TextStyle(color: Colors.red,),
+                      textAlign: TextAlign.left,
+                    ),
+                  ),
+                ),
             SizedBox(height: 20.0),
             //
             // Front ID Container
@@ -612,21 +639,22 @@ class VerifyIdentityComponentState extends State<VerifyIdentityComponent>
                   style: TextStyle(color: Colors.white,),
                 ),
                 onPressed: () {
-                  if (_formKey.currentState.validate()) {}
-                    if (_selfieImage != null && _frontImage != null && _backImage != null
-                        && _documentType != null) {
-                      _sendToServer();
-                    } else {
-                      setState(() {
-                        noSelfieErrorText = true;
-                        noFrontIdErrorText = true;
-                        noBackIdErrorText = true;                          
-                      });
-                      showSimpleNotification(
-                        Text("Please correct errors below."),
-                        background: Colors.red[600],
-                      );
-                    }
+                  //if (_formKey.currentState.validate()) {}
+                  if (_selfieImage != null && _frontImage != null && _backImage != null
+                      && _documentType != null) {
+                    _sendToServer();
+                  } else {
+                    setState(() {
+                      noSelfieErrorText = true;
+                      noFrontIdErrorText = true;
+                      noBackIdErrorText = true;
+                      noDocumentTypeValueErrorText = true;                          
+                    });
+                    showSimpleNotification(
+                      Text("Please correct errors below."),
+                      background: Colors.red[600],
+                    );
+                  }
                 }
               ),
             ),
