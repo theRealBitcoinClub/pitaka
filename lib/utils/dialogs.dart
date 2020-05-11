@@ -3,7 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:easy_dialog/easy_dialog.dart'; 
 import 'package:url_launcher/url_launcher.dart'; 
+import 'package:overlay_support/overlay_support.dart';
 import '../views/app.dart';
+import '../utils/globals.dart' as globals;
 
 
 // Function that will redirect to Google Play Store 
@@ -32,6 +34,97 @@ _launchPaytacaURL() async {
 
 onDialogClose() {
   // Not use
+}
+
+// Dialog for backing up private key
+savePrivateKeyDialog(context) async {
+  String privateKey = await globals.storage.read(key: "privateKey");
+  EasyDialog(
+    cornerRadius: 10.0,
+    fogOpacity: 0.5,
+    width: 280,
+    height: 310,
+    contentPadding: EdgeInsets.only(top: 6.0), // Needed for the button design
+    contentList: [
+      Center(
+        child: Text(
+          "Backup Private Key!",
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: 18.0,
+          ),
+        )
+      ),
+      SizedBox(height: 20.0),
+      Padding(
+        padding: EdgeInsets.only(left: 15.0),
+        child: Align(
+          alignment: Alignment.centerLeft,
+          child: Text(
+            "Private Key:",
+            style: TextStyle(
+              fontWeight: FontWeight.w600,
+              fontSize: 16.0,
+            ),
+            textAlign: TextAlign.left,
+          ),
+        ),
+      ),
+      SizedBox(height: 6.0),
+      GestureDetector(
+        onTap: () {
+          Clipboard.setData(ClipboardData(text: privateKey));
+          showSimpleNotification(
+            Text("Private key copied to clipboard."),
+            background: Colors.red[600],
+          );
+        },
+        child: Padding(
+          padding: EdgeInsets.only(left: 15.0, right: 15.0),
+          child: Align(
+            alignment: Alignment.centerLeft,
+            child: Text(
+              "$privateKey",
+              style: TextStyle(fontStyle: FontStyle.italic,),
+              textAlign: TextAlign.left,
+            ),
+          ),
+        ),
+      ),
+      SizedBox(height: 15.0),
+      Padding(
+        padding: EdgeInsets.only(left: 10.0, right: 10.0),
+        child: Center(
+          child: Text(
+            "Save this private key somewhere safe as a backup. "
+            "You can restore your wallet using this key. "
+            "Tap the text to copy.",
+            style: TextStyle(fontSize: 16.0,),
+            textAlign: TextAlign.center,
+          ),
+        ),
+      ),
+      SizedBox(height: 10.0),
+      Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: <Widget>[
+          FlatButton(
+            padding: EdgeInsets.all(8),
+            textColor: Colors.lightBlue,
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+            child: Text("OK",
+              textScaleFactor: 1.2,
+              textAlign: TextAlign.center,
+            ),
+          ),
+        ],
+      )
+    ]
+  ).show(context, onDialogClose);
+
+
 }
 
 // Dialog for identity submit success
