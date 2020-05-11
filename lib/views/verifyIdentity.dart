@@ -281,51 +281,35 @@ class VerifyIdentityComponentState extends State<VerifyIdentityComponent>
             //
             // Document type dropdown FormField
             //
-            FormField(
-              validator: (value){
-                if (value == null) {
-                  return 'This field is required.';
-                } else {
-                  return null;
-                }
-              },
-              builder: (FormFieldState state) {
-                return InputDecorator(
-                  decoration: InputDecoration(
-                    errorText: state.errorText,
-                  ),
-                  child: DropdownButtonHideUnderline(
-                    child: DropdownButton(
-                      hint: Text('Select ID Type'),
-                      iconEnabledColor: Colors.red,
-                      value: _documentType,
-                      isExpanded: true,
-                      isDense: true,
-                      iconSize: 30.0,
-                      items: [
-                        "Driver's License", 
-                        "Identity Card", 
-                        "Passport",
-                        "Voter's ID"
-                      ].map(
-                        (val) {
-                          return DropdownMenuItem<String>(
-                            value: val,
-                            child: Text(val),
-                          );
-                        },
-                      ).toList(),
-                      onChanged: (val) {
-                        setState(
-                          () {
-                            _documentType = val;
-                          },
-                        );
-                      },
-                    ),
-                  )
-                );
-              }
+            DropdownButtonHideUnderline(
+              child: DropdownButton(
+                hint: Text('Select ID Type'),
+                iconEnabledColor: Colors.red,
+                value: _documentType,
+                isExpanded: true,
+                isDense: true,
+                iconSize: 30.0,
+                items: [
+                  "Driver's License", 
+                  "Identity Card", 
+                  "Passport",
+                  "Voter's ID"
+                ].map(
+                  (val) {
+                    return DropdownMenuItem<String>(
+                      value: val,
+                      child: Text(val),
+                    );
+                  },
+                ).toList(),
+                onChanged: (val) {
+                  setState(
+                    () {
+                      _documentType = val;
+                    },
+                  );
+                },
+              ),
             ),
             SizedBox(height: 5.0),
             _documentType != null ?
@@ -639,7 +623,6 @@ class VerifyIdentityComponentState extends State<VerifyIdentityComponent>
                   style: TextStyle(color: Colors.white,),
                 ),
                 onPressed: () {
-                  //if (_formKey.currentState.validate()) {}
                   if (_selfieImage != null && _frontImage != null && _backImage != null
                       && _documentType != null) {
                     _sendToServer();
