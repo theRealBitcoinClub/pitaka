@@ -44,6 +44,8 @@ class RequestComponentState extends State<RequestComponent> {
   String validateMobile(String value) {
     if (value == '0000 - 000 - 0000') {
       return null;
+    } else if (value.length < 11) {
+      return 'Mobile number must be 11 characters';
     } else {
       if (value.startsWith('09')){
         return null;
