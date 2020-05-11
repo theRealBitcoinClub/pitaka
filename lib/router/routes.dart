@@ -28,6 +28,7 @@ class Routes {
   static String verificationLevels = "/verificationlevels";
   static String registerEmailForm = "/registeremailform";
   static String verifyEmailForm = "/verifyemailform";
+  static String verifyIdentity = "/verifyidentity";
 
   static void configureRoutes(Router router) {
     router.notFoundHandler = new Handler(
@@ -139,6 +140,11 @@ class Routes {
     router.define(
       verifyEmailForm,
       handler: verifyEmailFormHandler,
+      transitionType: TransitionType.fadeIn
+    );
+    router.define(
+      verifyIdentity,
+      handler: verifyIdentityHandler,
       transitionType: TransitionType.fadeIn
     );
   }

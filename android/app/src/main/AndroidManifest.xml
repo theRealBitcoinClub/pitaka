@@ -10,6 +10,7 @@
     <uses-permission android:name="android.permission.USE_FINGERPRINT"/>
     <uses-permission android:name="android.permission.CAMERA" />
     <application
+        android:largeHeap="true"
         android:name="io.flutter.app.FlutterApplication"
         android:label="Paytaca"
         android:icon="@mipmap/launcher_icon">
