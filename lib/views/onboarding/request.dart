@@ -23,6 +23,7 @@ class RequestComponentState extends State<RequestComponent> {
   FocusNode focusNode = FocusNode();
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _accountController = new TextEditingController();
+  String privateKey;
   bool _submitting = false;
   bool _showPrivateKeyInput = false;
 
@@ -109,6 +110,50 @@ class RequestComponentState extends State<RequestComponent> {
     }
   }
 
+  void _validatePrivteKeyInput(BuildContext context) async {
+    bool proceed = false;
+    if (_formKey.currentState.validate()) {
+      _formKey.currentState.save();
+      // Close the on-screen keyboard by removing focus from the form's inputs
+      FocusScope.of(context).requestFocus(new FocusNode());
+      setState(() {
+        _submitting = true;
+      });
+
+      print("Sending Private Key.......");
+
+      // if (newMobile.number == '0000 - 000 - 0000') {
+      //   proceed = true;
+      // } else {
+      //   newMobile.number = "+63" + newMobile.number.substring(1).replaceAll(" - ", "");
+        var payload = {
+          "private_key": privateKey,
+        };
+
+        var resp = await sendPrivateKey(payload);
+
+      //   // Save mobile number in shared preferences
+      //   SharedPreferences prefs = await SharedPreferences.getInstance();
+      //   await prefs.setString('mobileNumber', newMobile.number);
+
+        // Catch app version compatibility
+        if (resp.error == "outdated_app_version") {
+          showOutdatedAppVersionDialog(context);
+        }
+        
+        if (resp.success) {
+          proceed = true;
+        } 
+
+      // if (proceed) {
+      //   Application.router
+      //       .navigateTo(context, "/onboarding/verify/${newMobile.number}");
+      // }
+    } else {
+      _showSnackBar("Please correct errors in the form");
+    }
+  }
+
   void _showSnackBar(String message) {
     final snackBar =
         new SnackBar(content: new Text(message), backgroundColor: Colors.red);
@@ -158,7 +203,7 @@ class RequestComponentState extends State<RequestComponent> {
                       validator: validatePrivateKey,
                       autofocus: false,
                       onSaved: (value) {
-                        newMobile.number = value;
+                        privateKey = value;
                       },
                       maxLength: 128,
                       style: TextStyle(
@@ -178,7 +223,7 @@ class RequestComponentState extends State<RequestComponent> {
                         color: Colors.red,
                         splashColor: Colors.red[100],
                         onPressed: () {
-                          _validateInputs(context);
+                          _validatePrivteKeyInput(context);
                         },
                         child: Text(
                           'Submit',
