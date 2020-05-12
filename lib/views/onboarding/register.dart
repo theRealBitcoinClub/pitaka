@@ -192,7 +192,7 @@ class RegisterComponentState extends State<RegisterComponent> {
           databaseHelper.initializeDatabase();
 
           // Show dialog for taking note of private key
-          savePrivateKeyDialog(context);
+          savePrivatePublicKeyDialog(context);
 
         }
       } else {

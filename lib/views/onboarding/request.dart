@@ -23,7 +23,7 @@ class RequestComponentState extends State<RequestComponent> {
   FocusNode focusNode = FocusNode();
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _accountController = new TextEditingController();
-  String privateKey;
+  String keys;
   bool _submitting = false;
   bool _showPrivateKeyInput = false;
 
@@ -58,9 +58,9 @@ class RequestComponentState extends State<RequestComponent> {
     }
   }
 
-  String validatePrivateKey(String value) {
-    if (value.length < 11) {
-      return 'Private key must be 128 alphanumeric characters';
+  String _validatePublicKey(String value) {
+    if (value.length < 194) {
+      return 'Private & Public keys must be 194 alphanumeric characters';
     } 
   }
 
@@ -110,7 +110,7 @@ class RequestComponentState extends State<RequestComponent> {
     }
   }
 
-  void _validatePrivteKeyInput(BuildContext context) async {
+  void _validatePublicKeyInput(BuildContext context) async {
     bool proceed = false;
     if (_formKey.currentState.validate()) {
       _formKey.currentState.save();
@@ -120,17 +120,17 @@ class RequestComponentState extends State<RequestComponent> {
         _submitting = true;
       });
 
-      print("Sending Private Key.......");
+      print("Sending Public Key.......");
+      print("########################### $keys ########################");
 
-      // if (newMobile.number == '0000 - 000 - 0000') {
-      //   proceed = true;
-      // } else {
-      //   newMobile.number = "+63" + newMobile.number.substring(1).replaceAll(" - ", "");
-        var payload = {
-          "private_key": privateKey,
-        };
+      // Extract public key from keys
+      var publicKey = keys.split('::')[1];
 
-        var resp = await sendPrivateKey(payload);
+      var payload = {
+        "public_key": publicKey,
+      };
+
+      var resp = await sendPublicKey(payload);
 
       //   // Save mobile number in shared preferences
       //   SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -189,28 +189,29 @@ class RequestComponentState extends State<RequestComponent> {
                     SizedBox(height: 30.0,),
                     Center(
                       child: Text(
-                        "Private Key Verification",
+                        "Private & Public Key Verification",
                         style: TextStyle(
                         fontSize: 24.0,
-                        )
+                        ),
+                        textAlign: TextAlign.center,
                       )
                     ),
                     SizedBox(height: 10.0,),
                     TextFormField(
                       controller: _accountController,
                       textAlign: TextAlign.center,
-                      keyboardType: TextInputType.text,
-                      validator: validatePrivateKey,
+                      keyboardType: TextInputType.multiline,
+                      validator: _validatePublicKey,
                       autofocus: false,
                       onSaved: (value) {
-                        privateKey = value;
+                        keys = value;
                       },
-                      maxLength: 128,
+                      maxLength: 194,
                       style: TextStyle(
                         fontSize: 24.0
                       ),
                       decoration: const InputDecoration(
-                        hintText: 'Enter or Paste Private Key',
+                        hintText: 'Enter or Paste Private & Public Key',
                         hintStyle: TextStyle(
                           fontSize: 15.0
                         ),
@@ -223,7 +224,7 @@ class RequestComponentState extends State<RequestComponent> {
                         color: Colors.red,
                         splashColor: Colors.red[100],
                         onPressed: () {
-                          _validatePrivteKeyInput(context);
+                          _validatePublicKeyInput(context);
                         },
                         child: Text(
                           'Submit',
@@ -343,7 +344,10 @@ class RequestComponentState extends State<RequestComponent> {
           title: Text("Welcome to Paytaca"),
           automaticallyImplyLeading: false,
           centerTitle: true,
-        ),
+        ),      // if (newMobile.number == '0000 - 000 - 0000') {
+      //   proceed = true;
+      // } else {
+      //   newMobile.number = "+63" + newMobile.number.substring(1).replaceAll(" - ", "");
         body: Builder(builder: (BuildContext context) {
           _scaffoldContext = context;
           return Stack(children: _buildMobileNumberForm(context));

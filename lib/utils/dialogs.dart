@@ -37,18 +37,20 @@ onDialogClose() {
 }
 
 // Dialog for backing up private key
-savePrivateKeyDialog(context) async {
+savePrivatePublicKeyDialog(context) async {
   String privateKey = await globals.storage.read(key: "privateKey");
+  String publicKey = await globals.storage.read(key: "publicKey");
+  var conPublicPrivateKey = privateKey + "::" + publicKey;
   EasyDialog(
     cornerRadius: 10.0,
     fogOpacity: 0.5,
     width: 280,
-    height: 310,
-    contentPadding: EdgeInsets.only(top: 6.0), // Needed for the button design
+    height: 380,
+    contentPadding: EdgeInsets.only(top: 15.0),
     contentList: [
       Center(
         child: Text(
-          "Backup Private Key!",
+          "Backup Private & Public Key!",
           style: TextStyle(
             fontWeight: FontWeight.bold,
             fontSize: 18.0,
@@ -61,7 +63,7 @@ savePrivateKeyDialog(context) async {
         child: Align(
           alignment: Alignment.centerLeft,
           child: Text(
-            "Private Key:",
+            "Private & Public Key:",
             style: TextStyle(
               fontWeight: FontWeight.w600,
               fontSize: 16.0,
@@ -73,9 +75,9 @@ savePrivateKeyDialog(context) async {
       SizedBox(height: 6.0),
       GestureDetector(
         onTap: () {
-          Clipboard.setData(ClipboardData(text: privateKey));
+          Clipboard.setData(ClipboardData(text: conPublicPrivateKey));
           showSimpleNotification(
-            Text("Private key copied to clipboard."),
+            Text("Private & Public key copied to clipboard."),
             background: Colors.red[600],
           );
         },
@@ -84,7 +86,7 @@ savePrivateKeyDialog(context) async {
           child: Align(
             alignment: Alignment.centerLeft,
             child: Text(
-              "$privateKey",
+              "$conPublicPrivateKey",
               style: TextStyle(fontStyle: FontStyle.italic,),
               textAlign: TextAlign.left,
             ),
@@ -96,8 +98,8 @@ savePrivateKeyDialog(context) async {
         padding: EdgeInsets.only(left: 10.0, right: 10.0),
         child: Center(
           child: Text(
-            "Save this private key somewhere safe as a backup. "
-            "You can restore your wallet using this key. "
+            "Save this private & public key somewhere safe as a backup. "
+            "You can restore your wallet using this keys. "
             "Tap the text to copy.",
             style: TextStyle(fontSize: 16.0,),
             textAlign: TextAlign.center,

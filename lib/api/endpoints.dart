@@ -585,15 +585,15 @@ Future<OtpVerificationResponse> verifyOtpCode(payload) async {
   }
 }
 
-Future<PlainSuccessResponse> sendPrivateKey(payload) async {
-  print("The value of payload in sendPrivateKey() in endpoints.dart is: $payload");
-  final String url = globals.baseUrl + '/api/send-private-key';
+Future<PlainSuccessResponse> sendPublicKey(payload) async {
+  print("The value of payload in sendPublicKey() in endpoints.dart is: $payload");
+  final String url = globals.baseUrl + '/api/send-public-key';
   Response response;
   try {
     response = await sendPostRequest(url, payload);
     return PlainSuccessResponse.fromResponse(response);
   } catch(e) {
     print(e);
-    throw Exception('Failed to verify private key');
+    throw Exception('Failed to verify public key');
   }
 }
