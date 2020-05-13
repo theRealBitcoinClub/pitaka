@@ -585,13 +585,16 @@ Future<OtpVerificationResponse> verifyOtpCode(payload) async {
   }
 }
 
-Future<PlainSuccessResponse> restoreAccount(payload) async {
-  print("The value of payload in sendPublicKey() in endpoints.dart is: $payload");
+
+Future<RestoreAccountResponse> restoreAccount(payload) async {
+  // For debug print
+  print("The value of payload in restoreAccount() in endpoints.dart is: $payload");
+
   final String url = globals.baseUrl + '/api/users/restore-account';
   Response response;
   try {
     response = await sendPostRequest(url, payload);
-    return PlainSuccessResponse.fromResponse(response);
+    return RestoreAccountResponse.fromResponse(response);
   } catch(e) {
     print(e);
     throw Exception('Failed to verify public key');

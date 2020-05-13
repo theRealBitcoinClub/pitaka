@@ -1,6 +1,7 @@
 import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/gestures.dart';
+import 'package:flutter_udid/flutter_udid.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:back_button_interceptor/back_button_interceptor.dart';
 import '../app.dart';
@@ -25,6 +26,7 @@ class RequestComponentState extends State<RequestComponent> {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _accountController = new TextEditingController();
   String keys;
+  String udid;
   bool _submitting = false;
   bool _showPrivateKeyInput = false;
 
@@ -123,6 +125,12 @@ class RequestComponentState extends State<RequestComponent> {
       print("Sending Public Key.......");
       print("########################### $keys ########################");
 
+      // Generate using the flutter_udid library
+      udid = await FlutterUdid.consistentUdid;
+      print("The value of udid in generateUdid() in register.dart is: $udid");
+      // Store UDID in global storage
+      await globals.storage.write(key: "udid", value: udid);
+
       // Extract private & public key from keys
       var privateKey = keys.split('::')[0];
       var publicKey = keys.split('::')[1];
@@ -146,7 +154,18 @@ class RequestComponentState extends State<RequestComponent> {
       }
       
       if (resp.success) {
+        // Save user ID in global storage
+        await globals.storage.write(key: "userId", value: resp.user["id"]);
+
+        // Save mobile number in shared preferences
         SharedPreferences prefs = await SharedPreferences.getInstance();
+        await prefs.setString('firstName', resp.user["firstName"]);
+        await prefs.setString('lastName', resp.user["lastName"]);
+        await prefs.setString('mobileNumber', resp.user["mobileNumber"]);
+        await prefs.setString('email', resp.user["email"]);
+        await prefs.setString('birthday', resp.user["birthday"]);
+        await prefs.setString('deviceID', resp.user["deviceID"]);
+
         await prefs.setBool('installed', true);
         Application.router.navigateTo(context, "/addpincodeacctres");
         databaseHelper.initializeDatabase();
