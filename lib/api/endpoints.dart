@@ -585,9 +585,9 @@ Future<OtpVerificationResponse> verifyOtpCode(payload) async {
   }
 }
 
-Future<PlainSuccessResponse> sendPublicKey(payload) async {
+Future<PlainSuccessResponse> restoreAccount(payload) async {
   print("The value of payload in sendPublicKey() in endpoints.dart is: $payload");
-  final String url = globals.baseUrl + '/api/send-public-key';
+  final String url = globals.baseUrl + '/api/users/restore-account';
   Response response;
   try {
     response = await sendPostRequest(url, payload);

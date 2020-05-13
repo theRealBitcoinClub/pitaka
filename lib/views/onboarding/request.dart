@@ -6,6 +6,7 @@ import 'package:back_button_interceptor/back_button_interceptor.dart';
 import '../app.dart';
 import '../../api/endpoints.dart';
 import '../../utils/dialogs.dart';
+import '../../utils/globals.dart' as globals;
 
 
 class Mobile {
@@ -111,7 +112,6 @@ class RequestComponentState extends State<RequestComponent> {
   }
 
   void _validatePublicKeyInput(BuildContext context) async {
-    bool proceed = false;
     if (_formKey.currentState.validate()) {
       _formKey.currentState.save();
       // Close the on-screen keyboard by removing focus from the form's inputs
@@ -123,32 +123,35 @@ class RequestComponentState extends State<RequestComponent> {
       print("Sending Public Key.......");
       print("########################### $keys ########################");
 
-      // Extract public key from keys
+      // Extract private & public key from keys
+      var privateKey = keys.split('::')[0];
       var publicKey = keys.split('::')[1];
-
+      // Store private & public key in global storage
+      await globals.storage.write(key: "publicKey", value: publicKey);
+      await globals.storage.write(key: "privateKey", value: privateKey);
+      // Create payload
       var payload = {
         "public_key": publicKey,
       };
-
-      var resp = await sendPublicKey(payload);
+      // Send public key as payload to restore user
+      var resp = await restoreAccount(payload);
 
       //   // Save mobile number in shared preferences
       //   SharedPreferences prefs = await SharedPreferences.getInstance();
       //   await prefs.setString('mobileNumber', newMobile.number);
 
         // Catch app version compatibility
-        if (resp.error == "outdated_app_version") {
-          showOutdatedAppVersionDialog(context);
-        }
-        
-        if (resp.success) {
-          proceed = true;
-        } 
+      if (resp.error == "outdated_app_version") {
+        showOutdatedAppVersionDialog(context);
+      }
+      
+      if (resp.success) {
+        SharedPreferences prefs = await SharedPreferences.getInstance();
+        await prefs.setBool('installed', true);
+        Application.router.navigateTo(context, "/addpincode");
+        databaseHelper.initializeDatabase();
+      } 
 
-      // if (proceed) {
-      //   Application.router
-      //       .navigateTo(context, "/onboarding/verify/${newMobile.number}");
-      // }
     } else {
       _showSnackBar("Please correct errors in the form");
     }
