@@ -21,6 +21,7 @@ class Routes {
   static String addAccount = "/addAccount";
   static String settings = "/settings";
   static String addPinCode = "/addpincode";
+  static String addPinCodeAcctRes = "/addpincodeacctres";
   static String checkPinCode = "/checkpincode";
   static String contactList = "/contactlist"; 
   static String sendContact = "/sendcontact";
@@ -105,6 +106,11 @@ class Routes {
     router.define(
       addPinCode,
       handler: addPinCodeHandler,
+      transitionType: TransitionType.fadeIn
+    );
+    router.define(
+      addPinCodeAcctRes,
+      handler: addPinCodeAcctResHandler,
       transitionType: TransitionType.fadeIn
     );
     router.define(

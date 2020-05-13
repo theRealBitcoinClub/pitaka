@@ -18,6 +18,7 @@ import '../views/business/businesses.dart';
 import '../views/addAccount.dart';
 import '../views/settings.dart';
 import '../views/addPinCode.dart';
+import '../views/addPinCodeAcctRes.dart';
 import '../views/checkPinCode.dart';
 import '../views/contactList.dart';
 import '../views/sendContact.dart';
@@ -117,6 +118,11 @@ var settingsHandler = new Handler(
 var addPinCodeHandler = new Handler(
     handlerFunc: (BuildContext context, Map<String, dynamic> params) {
       return new AddPincodeComponent();
+});
+
+var addPinCodeAcctResHandler = new Handler(
+    handlerFunc: (BuildContext context, Map<String, dynamic> params) {
+      return new AddPincodeAcctResComponent();
 });
 
 var checkPinCodeHandler = new Handler(

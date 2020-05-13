@@ -148,7 +148,7 @@ class RequestComponentState extends State<RequestComponent> {
       if (resp.success) {
         SharedPreferences prefs = await SharedPreferences.getInstance();
         await prefs.setBool('installed', true);
-        Application.router.navigateTo(context, "/addpincode");
+        Application.router.navigateTo(context, "/addpincodeacctres");
         databaseHelper.initializeDatabase();
       } 
 
