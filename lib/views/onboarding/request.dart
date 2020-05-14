@@ -164,8 +164,17 @@ class RequestComponentState extends State<RequestComponent> {
         // Check what level is user at
         if (resp.user["level"] == 2) {
           await prefs.setBool('level2', true);
+          // Hide register and verify email buttons when level2
+          await prefs.setBool('registerEmailBtn', false);
+          await prefs.setBool('verifyEmailBtn', false);
+          // Show verify identity button
+          await prefs.setBool('verifyIdentityBtn', true);
         } else if (resp.user["level"] == 3) {
           await prefs.setBool('level3', true);
+          // Hide all buttons when level3
+          await prefs.setBool('registerEmailBtn', false);
+          await prefs.setBool('verifyEmailBtn', false);
+          await prefs.setBool('verifyIdentityBtn', false);
         }
 
         await prefs.setBool('installed', true);
