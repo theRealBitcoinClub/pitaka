@@ -163,7 +163,7 @@ class RequestComponentState extends State<RequestComponent> {
         await prefs.setString('lastName', resp.user["lastName"]);
         await prefs.setString('mobileNumber', resp.user["mobileNumber"]);
         await prefs.setString('email', resp.user["email"]);
-        await prefs.setString('birthday', resp.user["birthday"]);
+        await prefs.setString('birthDate', resp.user["birthday"]);
         await prefs.setString('deviceID', resp.user["deviceID"]);
 
         await prefs.setBool('installed', true);
