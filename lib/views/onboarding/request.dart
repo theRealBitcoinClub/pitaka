@@ -144,10 +144,6 @@ class RequestComponentState extends State<RequestComponent> {
       // Send public key as payload to restore user
       var resp = await restoreAccount(payload);
 
-      //   // Save mobile number in shared preferences
-      //   SharedPreferences prefs = await SharedPreferences.getInstance();
-      //   await prefs.setString('mobileNumber', newMobile.number);
-
         // Catch app version compatibility
       if (resp.error == "outdated_app_version") {
         showOutdatedAppVersionDialog(context);
@@ -157,7 +153,7 @@ class RequestComponentState extends State<RequestComponent> {
         // Save user ID in global storage
         await globals.storage.write(key: "userId", value: resp.user["id"]);
 
-        // Save mobile number in shared preferences
+        // Save user details in shared preferences
         SharedPreferences prefs = await SharedPreferences.getInstance();
         await prefs.setString('firstName', resp.user["firstName"]);
         await prefs.setString('lastName', resp.user["lastName"]);
@@ -165,6 +161,12 @@ class RequestComponentState extends State<RequestComponent> {
         await prefs.setString('email', resp.user["email"]);
         await prefs.setString('birthDate', resp.user["birthday"]);
         await prefs.setString('deviceID', resp.user["deviceID"]);
+        // Check what level is user at
+        if (resp.user["level"] == 2) {
+          await prefs.setBool('level2', true);
+        } else if (resp.user["level"] == 3) {
+          await prefs.setBool('level3', true);
+        }
 
         await prefs.setBool('installed', true);
         Application.router.navigateTo(context, "/addpincodeacctres");
