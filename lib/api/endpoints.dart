@@ -49,6 +49,7 @@ Future<dynamic> sendPostRequest(url, payload) async {
   return response;
 }
 
+
 Future<dynamic> sendGetRequest(url) async {
   // Read public and private key from global storage
   // To be use to re-login user when session expires
@@ -106,6 +107,7 @@ Future<dynamic> sendGetRequest(url) async {
   return response;
 }
 
+
 Future<GenericCreateResponse> verifyDocument(payload) async {
   print("The value of payload in verifyDocument() in endpoints.dart is: $payload");
   try {
@@ -121,6 +123,7 @@ Future<GenericCreateResponse> verifyDocument(payload) async {
     throw Exception(e);
   }
 }
+
 
 Future<GenericCreateResponse> reSendEmailVerification(payload) async {
   print("The value of payload in verifyEmail() in endpoints.dart is: $payload");
@@ -139,6 +142,7 @@ Future<GenericCreateResponse> reSendEmailVerification(payload) async {
   }
 }
 
+
 Future<GenericCreateResponse> verifyEmail(payload) async {
   print("The value of payload in verifyEmail() in endpoints.dart is: $payload");
   try {
@@ -155,6 +159,7 @@ Future<GenericCreateResponse> verifyEmail(payload) async {
     throw Exception(e);
   }
 }
+
 
 Future<GenericCreateResponse> registerEmail(payload) async {
   print("The value of payload in registerEmail() in endpoints.dart is: $payload");
@@ -173,6 +178,7 @@ Future<GenericCreateResponse> registerEmail(payload) async {
   }
 }
 
+
 Future<GenericCreateResponse> createUser(payload) async {
   print("The value of payload in createUser() in endpoints.dart is: $payload");
   try {
@@ -188,6 +194,7 @@ Future<GenericCreateResponse> createUser(payload) async {
     throw Exception(e);
   }
 }
+
 
 // Endpoint for creating contact list
 // This is called from contactList.dart in _validateInputs()
@@ -214,12 +221,14 @@ Future<ContactResponse> searchContact(payload) async {
   return response;
 }
 
+
 // Endpoint for getting contact list from database
 // This is called from contactList.dart in _FutureBuilder()
 Future<ContactListResponse> getContacts() async {
   var response = await databaseHelper.getContactList();
   return ContactListResponse.fromDatabase(response);
 }
+
 
 Future<ContactResponse> saveContact(payload) async {
   final String url = globals.baseUrl + "/api/contacts/create";
@@ -240,6 +249,7 @@ Future<ContactResponse> saveContact(payload) async {
   }
 }
 
+
 Future<GenericCreateResponse> registerBusiness(payload) async {
   try {
     String publicKey = await globals.storage.read(key:"publicKey");
@@ -256,6 +266,7 @@ Future<GenericCreateResponse> registerBusiness(payload) async {
     throw Exception(e);
   }
 }
+
 
 Future<GenericCreateResponse> linkBusinessToAccount(payload) async {
   try {
@@ -274,6 +285,7 @@ Future<GenericCreateResponse> linkBusinessToAccount(payload) async {
   }
 }
 
+
 Future<GenericCreateResponse> createAccount(payload) async {
   try {
     final String url = globals.baseUrl + '/api/accounts/create';
@@ -283,6 +295,7 @@ Future<GenericCreateResponse> createAccount(payload) async {
     throw Exception(e);
   }
 }
+
 
 // Nowhere to found where this function is called
 // Not yet deleted for reference
@@ -295,6 +308,7 @@ Future<GenericCreateResponse> addAccount(payload) async {
     throw Exception(e);
   }
 }
+
 
 Future<PlainSuccessResponse> loginUser(payload) async {
   print("The value of payload in loginUser() in endpoints.dart is: $payload");
@@ -315,6 +329,7 @@ Future<PlainSuccessResponse> loginUser(payload) async {
   }
 }
 
+
 // Nowhere to found where this function is called
 // Not yet deleted for reference
 Future<void> sendLoginRequest() async {
@@ -328,6 +343,7 @@ Future<void> sendLoginRequest() async {
   };
   await loginUser(loginPayload);
 }
+
 
 Future getBusinessList(List list) async {
   for (final q in list) {
@@ -358,6 +374,7 @@ Future getBusinessList(List list) async {
   }
 }
 
+
 Future getAccountsList() async {
   final String url = globals.baseUrl + "/api/accounts/list-not-linked-to-business";
   List data = List();
@@ -376,10 +393,12 @@ Future getAccountsList() async {
   return data;
 }
 
+
 Future<BalancesResponse> getOffLineBalances() async {
   var resp = await databaseHelper.offLineBalances();
   return BalancesResponse.fromDatabase(resp);
 }
+
 
 Future<BalancesResponse> getOnlineBalances() async {
   // Read public and private key from global storage
@@ -444,6 +463,7 @@ Future<BalancesResponse> getOnlineBalances() async {
   return response;
 }
 
+
 Future<TransactionsResponse> getOnlineTransactions() async {
   final String url = globals.baseUrl + '/api/wallet/transactions';
   var response;
@@ -472,10 +492,12 @@ Future<TransactionsResponse> getOnlineTransactions() async {
   return response;
 }
 
+
 Future<TransactionsResponse> getOffLineTransactions() async {
   var resp = await databaseHelper.offLineTransactions();
   return TransactionsResponse.fromDatabase(resp);
 }
+
 
 Future<AccountsResponse> getAccounts() async {
   final String url = globals.baseUrl + '/api/accounts/list';
@@ -487,10 +509,12 @@ Future<AccountsResponse> getAccounts() async {
   }
 }
 
+
 Future getBusinesReferences() async {
   await getBusinessList(['all', 'false']);
   await getAccountsList();
 }
+
 
 Future<PlainSuccessResponse> transferAsset(Map payload) async {
   var response;
@@ -525,6 +549,7 @@ Future<PlainSuccessResponse> transferAsset(Map payload) async {
   return response;
 }
 
+
 // This is called in "authenticate.dart" in sendAuthentication()
 Future<PlainSuccessResponse> authWebApp(Map payload) async {
   // Check if online
@@ -548,6 +573,7 @@ Future<PlainSuccessResponse> authWebApp(Map payload) async {
   } 
 }
 
+
 // This is called in "receive.dart" in scanQrcode() function
 Future<PlainSuccessResponse> receiveAsset(Map payload) async {
   // Check if online
@@ -562,6 +588,7 @@ Future<PlainSuccessResponse> receiveAsset(Map payload) async {
   }
 }
 
+
 Future<PlainSuccessResponse> requestOtpCode(payload) async {
   final String url = globals.baseUrl + '/api/otp/request';
   Response response;
@@ -573,6 +600,7 @@ Future<PlainSuccessResponse> requestOtpCode(payload) async {
     throw Exception('Failed to generate OTP code');
   }
 }
+
 
 Future<OtpVerificationResponse> verifyOtpCode(payload) async {
   final String url = globals.baseUrl + '/api/otp/verify';

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../views/landing.dart';
 import '../views/onboarding/request.dart';
 import '../views/onboarding/verify.dart';
+import '../views/onboarding/requestOTP.dart';
 import '../views/onboarding/register.dart';
 import '../views/onboarding/account.dart';
 import '../views/terms.dart';
@@ -42,6 +43,11 @@ var onboardingRequestHandler = new Handler(
 var onboardingVerifyHandler = new Handler(
     handlerFunc: (BuildContext context, Map<String, dynamic> params) {
   return new VerifyComponent(mobileNumber: params["mobilenumber"][0]);
+});
+
+var requestOTPHandler = Handler(
+    handlerFunc: (BuildContext context, Map<String, dynamic> params) {
+  return RequestOTPComponent(mobileNumber: params["mobilenumber"][0]);
 });
 
 var onboardingRegisterHandler = new Handler(

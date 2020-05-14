@@ -122,9 +122,6 @@ class RequestComponentState extends State<RequestComponent> {
         _submitting = true;
       });
 
-      print("Sending Public Key.......");
-      print("########################### $keys ########################");
-
       // Generate using the flutter_udid library
       udid = await FlutterUdid.consistentUdid;
       print("The value of udid in generateUdid() in register.dart is: $udid");
@@ -178,8 +175,24 @@ class RequestComponentState extends State<RequestComponent> {
         }
 
         await prefs.setBool('installed', true);
-        Application.router.navigateTo(context, "/addpincodeacctres");
-        databaseHelper.initializeDatabase();
+
+        // Request OTP using the mobile number of the user
+        var numberPayload = {
+          "mobile_number": resp.user["mobileNumber"],
+        };
+        var response = await requestOtpCode(numberPayload);
+
+        //Application.router.navigateTo(context, "/addpincodeacctres");
+        // var parseMobileNumber = (resp.user["mobileNumber"]).substring(3, 13);
+        // print("@@@@@@@@@@@@@@@@@@@@@@@@@ 0$parseMobileNumber @@@@@@@@@@@@@@@@@@@@@@@@");
+        if (response.success) {
+          Application.router
+            .navigateTo(context, "/requestotp/${resp.user['mobileNumber']}");
+          databaseHelper.initializeDatabase();
+        }
+        // Application.router
+        //   .navigateTo(context, "/requestotp/0$parseMobileNumber");
+        // databaseHelper.initializeDatabase();
       } 
 
     } else {
