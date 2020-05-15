@@ -176,20 +176,20 @@ class RequestComponentState extends State<RequestComponent> {
 
         await prefs.setBool('installed', true);
 
-        // Request OTP using the mobile number of the user
-        var numberPayload = {
-          "mobile_number": resp.user["mobileNumber"],
-        };
-        var response = await requestOtpCode(numberPayload);
+        // // Request OTP using the mobile number of the user
+        // var numberPayload = {
+        //   "mobile_number": resp.user["mobileNumber"],
+        // };
+        // var response = await requestOtpCode(numberPayload);
 
         //Application.router.navigateTo(context, "/addpincodeacctres");
         // var parseMobileNumber = (resp.user["mobileNumber"]).substring(3, 13);
         // print("@@@@@@@@@@@@@@@@@@@@@@@@@ 0$parseMobileNumber @@@@@@@@@@@@@@@@@@@@@@@@");
-        if (response.success) {
-          Application.router
-            .navigateTo(context, "/requestotp/${resp.user['mobileNumber']}");
-          databaseHelper.initializeDatabase();
-        }
+
+        Application.router
+          .navigateTo(context, "/requestotp/${resp.user['mobileNumber']}");
+        databaseHelper.initializeDatabase();
+
         // Application.router
         //   .navigateTo(context, "/requestotp/0$parseMobileNumber");
         // databaseHelper.initializeDatabase();

@@ -1,6 +1,8 @@
 
 import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/gestures.dart';
+import 'package:overlay_support/overlay_support.dart';
 import 'package:back_button_interceptor/back_button_interceptor.dart';
 import '../app.dart';
 import '../../api/endpoints.dart';
@@ -100,17 +102,67 @@ class RequestOTPComponentState extends State<RequestOTPComponent> {
     Scaffold.of(_scaffoldContext).showSnackBar(snackBar);
   }
 
+  _reSendOTPCode() async {
+    var payload = {
+      "mobile_number": widget.mobileNumber,
+    };
+
+    var resp = await requestOtpCode(payload);
+
+    if (resp.success) {
+      showSimpleNotification(
+        Text("Code was sent to your mobile number."),
+        background: Colors.red[600],
+      );
+    }
+  }
+
   List<Widget> _buildOtpCodeForm(BuildContext context) {
     Form form = Form(
       key: _formKey,
       autovalidate: false,
       child: Center(
           child: Container(
-            alignment: Alignment.center,
+            alignment: Alignment.topCenter,
             child: ListView(
               shrinkWrap: true,
               padding: const EdgeInsets.symmetric(horizontal: 30.0),
               children: <Widget>[
+                SizedBox(height: 20.0),
+                Center(
+                  child: Text("We've sent an OTP code to:"),
+                ),
+                Center(
+                  child: Text(
+                    "${widget.mobileNumber}",
+                    style: TextStyle(
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+                Center(
+                  child: Text("Check your inbox and type the code here."),
+                ),
+                SizedBox(height: 5.0,),
+                Center(
+                  child: RichText(
+                    text: TextSpan(
+                      text: "Did not received the code? Click",
+                      style: TextStyle(color: Colors.black, fontSize: 14),
+                      children: <TextSpan>[
+                        TextSpan(
+                          text: ' resend code.',
+                          style: TextStyle(color: Colors.redAccent, fontSize: 14),
+                          recognizer: TapGestureRecognizer()
+                            ..onTap = () {
+                              _reSendOTPCode();
+                            },
+                        )
+                      ],
+                    ),
+                  ),
+                ),
+                SizedBox(height: 30.0),
                 Center(
                   child: Text("Enter the Verification Code",
                     style: TextStyle(
@@ -138,10 +190,15 @@ class RequestOTPComponentState extends State<RequestOTPComponent> {
                 ),
                 SizedBox(height: 30.0,),
                 RaisedButton(
+                  color: Colors.red,
+                  splashColor: Colors.red[100],
                   onPressed: () {
                     _validateInputs(context);
                   },
-                  child: Text('Submit'),
+                  child: Text(
+                    'Submit',
+                    style: TextStyle(color: Colors.white,),
+                  ),
                 ),
                 SizedBox(height: 50.0,)
               ]

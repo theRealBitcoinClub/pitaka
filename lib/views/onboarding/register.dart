@@ -205,7 +205,7 @@ class RegisterComponentState extends State<RegisterComponent> {
 
   void _showSnackBar(String message) {
     final snackBar =
-        new SnackBar(content: new Text(message), backgroundColor: Colors.red);
+        SnackBar(content: new Text(message), backgroundColor: Colors.red);
     Scaffold.of(_scaffoldContext).showSnackBar(snackBar);
   }
 
@@ -216,17 +216,13 @@ class RegisterComponentState extends State<RegisterComponent> {
         child: ListView(
             padding: const EdgeInsets.symmetric(horizontal: 16.0),
             children: <Widget>[
-              SizedBox(
-                height: 30.0,
-              ),
+              SizedBox(height: 30.0,),
               Center(
                   child: Text("Sign up to create your wallet",
                       style: TextStyle(
                         fontSize: 20.0,
                       ))),
-              SizedBox(
-                height: 10.0,
-              ),
+              SizedBox(height: 10.0,),
               TextFormField(
                 keyboardType: TextInputType.text,
                 validator: validateName,
@@ -284,9 +280,7 @@ class RegisterComponentState extends State<RegisterComponent> {
                           )),
                     ),
                   )),
-              SizedBox(
-                height: 20.0,
-              ),
+              SizedBox(height: 20.0,),
               CheckboxListTile(
                   title: GestureDetector(
                       onTap: () {
@@ -312,14 +306,17 @@ class RegisterComponentState extends State<RegisterComponent> {
                   value: _termsChecked,
                   onChanged: (bool value) =>
                       setState(() => _termsChecked = value)),
-              SizedBox(
-                height: 15.0,
-              ),
+              SizedBox(height: 15.0,),
               RaisedButton(
+                color: Colors.red,
+                splashColor: Colors.red[100],
                 onPressed: () {
                   _validateInputs(context);
                 },
-                child: Text('Submit'),
+                child: Text(
+                  'Submit',
+                  style: TextStyle(color: Colors.white,),
+                ),
               )
             ]));
 

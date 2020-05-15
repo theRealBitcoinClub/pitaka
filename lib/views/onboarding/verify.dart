@@ -1,9 +1,11 @@
 
 import 'package:flutter/material.dart';
-import 'package:back_button_interceptor/back_button_interceptor.dart';
 import 'package:flutter/services.dart';
-import '../../api/endpoints.dart';
+import 'package:flutter/gestures.dart';
+import 'package:overlay_support/overlay_support.dart';
+import 'package:back_button_interceptor/back_button_interceptor.dart';
 import '../app.dart';
+import '../../api/endpoints.dart';
 import '../../utils/dialogs.dart';
 
 
@@ -16,11 +18,11 @@ class VerifyComponent extends StatefulWidget {
   VerifyComponent({Key key, this.mobileNumber}) : super(key: key);
 
   @override
-  VerifyComponentState createState() => new VerifyComponentState();
+  VerifyComponentState createState() => VerifyComponentState();
 }
 
 class VerifyComponentState extends State<VerifyComponent> {
-  final TextEditingController textController = new TextEditingController();
+  final TextEditingController textController = TextEditingController();
   @override
   void initState() {
     super.initState();
@@ -100,28 +102,76 @@ class VerifyComponentState extends State<VerifyComponent> {
     Scaffold.of(_scaffoldContext).showSnackBar(snackBar);
   }
 
+  _reSendOTPCode() async {
+    var payload = {
+      "mobile_number": widget.mobileNumber,
+    };
+
+    var resp = await requestOtpCode(payload);
+
+    if (resp.success) {
+      showSimpleNotification(
+        Text("Code was sent to your mobile number."),
+        background: Colors.red[600],
+      );
+    }
+  }
+
   List<Widget> _buildOtpCodeForm(BuildContext context) {
-    Form form = new Form(
+    Form form = Form(
       key: _formKey,
       autovalidate: false,
       child: Center(
           child: Container(
-            alignment: Alignment.center,
-            child: new ListView(
+            alignment: Alignment.topCenter,
+            child: ListView(
               shrinkWrap: true,
               padding: const EdgeInsets.symmetric(horizontal: 30.0),
               children: <Widget>[
-                new Center(
-                  child: new Text("Enter the Verification Code",
+                SizedBox(height: 20.0),
+                Center(
+                  child: Text("We've sent an OTP code to:"),
+                ),
+                Center(
+                  child: Text(
+                    "${widget.mobileNumber}",
+                    style: TextStyle(
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+                Center(
+                  child: Text("Check your inbox and type the code here."),
+                ),
+                SizedBox(height: 5.0,),
+                Center(
+                  child: RichText(
+                    text: TextSpan(
+                      text: "Did not received the code? Click",
+                      style: TextStyle(color: Colors.black, fontSize: 14),
+                      children: <TextSpan>[
+                        TextSpan(
+                          text: ' resend code.',
+                          style: TextStyle(color: Colors.redAccent, fontSize: 14),
+                          recognizer: TapGestureRecognizer()
+                            ..onTap = () {
+                              _reSendOTPCode();
+                            },
+                        )
+                      ],
+                    ),
+                  ),
+                ),
+                SizedBox(height: 30.0),
+                Center(
+                  child: Text("Enter the Verification Code",
                       style: TextStyle(
                         fontSize: 20.0,
                       )
                     )
-                  ),
-                new SizedBox(
-                  height: 10.0,
                 ),
-                new TextFormField(
+                SizedBox(height: 10.0,),
+                TextFormField(
                   autofocus: true,
                   controller: textController,
                   textAlign: TextAlign.center,
@@ -138,36 +188,37 @@ class VerifyComponentState extends State<VerifyComponent> {
                   ),
                   maxLength: 6,
                 ),
-                new SizedBox(
-                  height: 30.0,
-                ),
-                new RaisedButton(
+                SizedBox(height: 30.0,),
+                RaisedButton(
+                  color: Colors.red,
+                  splashColor: Colors.red[100],
                   onPressed: () {
                     _validateInputs(context);
                   },
-                  child: new Text('Submit'),
+                  child: Text(
+                    'Submit',
+                    style: TextStyle(color: Colors.white,),
+                  ),
                 ),
-                new SizedBox(
-                  height: 50.0,
-                )
+                SizedBox(height: 50.0,)
               ]
             )
           )
         )
       );
 
-    var ws = new List<Widget>();
+    var ws = List<Widget>();
     ws.add(form);
 
     if (_submitting) {
-      var modal = new Stack(
+      var modal = Stack(
         children: [
-          new Opacity(
+          Opacity(
             opacity: 0.8,
             child: const ModalBarrier(dismissible: false, color: Colors.grey),
           ),
-          new Center(
-            child: new CircularProgressIndicator(),
+          Center(
+            child: CircularProgressIndicator(),
           ),
         ],
       );
@@ -178,22 +229,22 @@ class VerifyComponentState extends State<VerifyComponent> {
 
   @override
   Widget build(BuildContext context) {
-    return new Scaffold(
-      appBar: new AppBar(
-        title: new Text("Welcome to Paytaca"),
+    return Scaffold(
+      appBar: AppBar(
+        title: Text("Welcome to Paytaca"),
         automaticallyImplyLeading: true,
         centerTitle: true,
-        leading: new IconButton(
-          icon: new Icon(Icons.arrow_back, color: Colors.white),
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back, color: Colors.white),
           onPressed: () {
             Application.router
               .navigateTo(context, "/onboarding/request");
           }
         ), 
       ),
-      body: new Builder(builder: (BuildContext context) {
+      body: Builder(builder: (BuildContext context) {
           _scaffoldContext = context;
-          return new Stack(children: _buildOtpCodeForm(context));
+          return Stack(children: _buildOtpCodeForm(context));
         }
       )
     );
