@@ -3,10 +3,12 @@ import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/gestures.dart';
 import 'package:overlay_support/overlay_support.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:back_button_interceptor/back_button_interceptor.dart';
 import '../app.dart';
 import '../../api/endpoints.dart';
 import '../../utils/dialogs.dart';
+import '../../utils/globals.dart' as globals;
 
 
 class Code {
@@ -15,7 +17,8 @@ class Code {
 
 class RequestOTPComponent extends StatefulWidget {
   final String mobileNumber;
-  RequestOTPComponent({Key key, this.mobileNumber}) : super(key: key);
+  final String publicKey;
+  RequestOTPComponent({Key key, this.mobileNumber, this.publicKey}) : super(key: key);
 
   @override
   RequestOTPComponentState createState() => RequestOTPComponentState();
@@ -64,28 +67,54 @@ class RequestOTPComponentState extends State<RequestOTPComponent> {
         _submitting = true;
       });
 
+      String publicKey = await globals.storage.read(key: "publicKey");
+
       if (newCode.value == '123456') {
         proceed = true;
       } else {
-        var codePayload = {
-          "mobile_number": "${widget.mobileNumber}",
+        var payload = {
+          "public_key": publicKey,
           "code": newCode.value,
         };
-        var resp = await verifyOtpCode(codePayload);
+        var resp = await restoreAccount(payload);
 
         // Catch app version compatibility
         if (resp.error == "outdated_app_version") {
           showOutdatedAppVersionDialog(context);
         }
 
-        if (resp.verified) {
+        if (resp.success) {
           proceed = true;
+
+        // Save user details in shared preferences
+        SharedPreferences prefs = await SharedPreferences.getInstance();
+        await prefs.setString('firstName', resp.user["firstName"]);
+        await prefs.setString('lastName', resp.user["lastName"]);
+        await prefs.setString('mobileNumber', resp.user["mobileNumber"]);
+        await prefs.setString('email', resp.user["email"]);
+        await prefs.setString('birthDate', resp.user["birthday"]);
+        await prefs.setString('deviceID', resp.user["deviceID"]);
+        // Check what level is user at
+        if (resp.user["level"] == 2) {
+          await prefs.setBool('level2', true);
+          // Hide register and verify email buttons when level2
+          await prefs.setBool('registerEmailBtn', false);
+          await prefs.setBool('verifyEmailBtn', false);
+          // Show verify identity button
+          await prefs.setBool('verifyIdentityBtn', true);
+        } else if (resp.user["level"] == 3) {
+          await prefs.setBool('level3', true);
+          // Hide all buttons when level3
+          await prefs.setBool('registerEmailBtn', false);
+          await prefs.setBool('verifyEmailBtn', false);
+          await prefs.setBool('verifyIdentityBtn', false);
+        }
         }
       }
 
       if (proceed) {
         Application.router
-            .navigateTo(context, "/onboarding/register/${widget.mobileNumber}");
+            .navigateTo(context, "/addpincodeacctres");
       } else {
         setState(() {
           _submitting = false;
@@ -98,16 +127,18 @@ class RequestOTPComponentState extends State<RequestOTPComponent> {
 
   void _showSnackBar(String message) {
     final snackBar =
-        new SnackBar(content: Text(message), backgroundColor: Colors.red);
+        SnackBar(content: Text(message), backgroundColor: Colors.red);
     Scaffold.of(_scaffoldContext).showSnackBar(snackBar);
   }
 
   _reSendOTPCode() async {
+    String publicKey = await globals.storage.read(key: "publicKey");
+    // Create payload
     var payload = {
-      "mobile_number": widget.mobileNumber,
+      "public_key": publicKey,
     };
-
-    var resp = await requestOtpCode(payload);
+    // Send public key as payload to restore user
+    var resp = await requestOTPAccountRestore(payload);
 
     if (resp.success) {
       showSimpleNotification(

@@ -88,6 +88,27 @@ class RestoreAccountResponse {
 }
 
 
+class RequestOTPAccountRestoreResponse {
+  final bool success;
+  final String error;
+  final String mobileNumber;
+ 
+  RequestOTPAccountRestoreResponse({
+    this.success, 
+    this.error, 
+    this.mobileNumber,
+  });
+
+  factory RequestOTPAccountRestoreResponse.fromResponse(Response response) {
+    return RequestOTPAccountRestoreResponse(
+      success: response.data['success'], 
+      error: response.data['error'], 
+      mobileNumber: response.data['mobile_number'],
+    );
+  }
+}
+
+
 class OtpVerificationResponse {
   final bool success;
   final bool verified;

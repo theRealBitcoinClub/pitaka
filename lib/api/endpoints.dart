@@ -628,3 +628,18 @@ Future<RestoreAccountResponse> restoreAccount(payload) async {
     throw Exception('Failed to verify public key');
   }
 }
+
+Future<RequestOTPAccountRestoreResponse> requestOTPAccountRestore(payload) async {
+  // For debug print
+  print("The value of payload in requestOTPAccountRestore() in endpoints.dart is: $payload");
+
+  final String url = globals.baseUrl + '/api/otp/restore';
+  Response response;
+  try {
+    response = await sendPostRequest(url, payload);
+    return RequestOTPAccountRestoreResponse.fromResponse(response);
+  } catch(e) {
+    print(e);
+    throw Exception('Failed to send OTP!');
+  }
+}

@@ -139,7 +139,7 @@ class RequestComponentState extends State<RequestComponent> {
         "public_key": publicKey,
       };
       // Send public key as payload to restore user
-      var resp = await restoreAccount(payload);
+      var resp = await requestOTPAccountRestore(payload);
 
         // Catch app version compatibility
       if (resp.error == "outdated_app_version") {
@@ -147,52 +147,13 @@ class RequestComponentState extends State<RequestComponent> {
       }
       
       if (resp.success) {
-        // Save user ID in global storage
-        await globals.storage.write(key: "userId", value: resp.user["id"]);
-
-        // Save user details in shared preferences
+        // Mark installed to true 
         SharedPreferences prefs = await SharedPreferences.getInstance();
-        await prefs.setString('firstName', resp.user["firstName"]);
-        await prefs.setString('lastName', resp.user["lastName"]);
-        await prefs.setString('mobileNumber', resp.user["mobileNumber"]);
-        await prefs.setString('email', resp.user["email"]);
-        await prefs.setString('birthDate', resp.user["birthday"]);
-        await prefs.setString('deviceID', resp.user["deviceID"]);
-        // Check what level is user at
-        if (resp.user["level"] == 2) {
-          await prefs.setBool('level2', true);
-          // Hide register and verify email buttons when level2
-          await prefs.setBool('registerEmailBtn', false);
-          await prefs.setBool('verifyEmailBtn', false);
-          // Show verify identity button
-          await prefs.setBool('verifyIdentityBtn', true);
-        } else if (resp.user["level"] == 3) {
-          await prefs.setBool('level3', true);
-          // Hide all buttons when level3
-          await prefs.setBool('registerEmailBtn', false);
-          await prefs.setBool('verifyEmailBtn', false);
-          await prefs.setBool('verifyIdentityBtn', false);
-        }
-
         await prefs.setBool('installed', true);
 
-        // // Request OTP using the mobile number of the user
-        // var numberPayload = {
-        //   "mobile_number": resp.user["mobileNumber"],
-        // };
-        // var response = await requestOtpCode(numberPayload);
-
-        //Application.router.navigateTo(context, "/addpincodeacctres");
-        // var parseMobileNumber = (resp.user["mobileNumber"]).substring(3, 13);
-        // print("@@@@@@@@@@@@@@@@@@@@@@@@@ 0$parseMobileNumber @@@@@@@@@@@@@@@@@@@@@@@@");
-
         Application.router
-          .navigateTo(context, "/requestotp/${resp.user['mobileNumber']}");
+          .navigateTo(context, "/requestotp/${resp.mobileNumber}");
         databaseHelper.initializeDatabase();
-
-        // Application.router
-        //   .navigateTo(context, "/requestotp/0$parseMobileNumber");
-        // databaseHelper.initializeDatabase();
       } 
 
     } else {
@@ -318,10 +279,15 @@ class RequestComponentState extends State<RequestComponent> {
                     SizedBox(
                       width: double.infinity,
                       child: RaisedButton(
+                        color: Colors.red,
+                        splashColor: Colors.red[100],
                         onPressed: () {
                           _validateInputs(context);
                         },
-                        child: Text('Submit'),
+                        child: Text(
+                          'Submit',
+                          style: TextStyle(color: Colors.white,),
+                        ),
                       ),
                     ),
                     SizedBox(height: 25.0,),

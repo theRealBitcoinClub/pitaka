@@ -77,13 +77,13 @@ class AddPincodeAcctResComponentState extends State<AddPincodeAcctResComponent> 
   }
 
   List<Widget> _buildAccountForm(BuildContext context) {
-    Form form = new Form(
+    Form form = Form(
         key: _formKey,
         autovalidate: _autoValidate,
-        child: new ListView(
+        child: ListView(
           padding: const EdgeInsets.symmetric(horizontal: 16.0),
           children: <Widget>[
-            new SizedBox(
+            SizedBox(
               height: 30.0,
             ),
 
@@ -95,7 +95,7 @@ class AddPincodeAcctResComponentState extends State<AddPincodeAcctResComponent> 
               ),
             ),
 
-            new SizedBox(
+            SizedBox(
               height: 30.0,
             ),
 
@@ -119,7 +119,7 @@ class AddPincodeAcctResComponentState extends State<AddPincodeAcctResComponent> 
               ),
             ),
 
-            new SizedBox(
+            SizedBox(
               height: 30.0,
             ),
 
@@ -156,7 +156,7 @@ class AddPincodeAcctResComponentState extends State<AddPincodeAcctResComponent> 
                 ),
               ),
 
-            new SizedBox(
+            SizedBox(
               height: 30.0,
             ),
 
@@ -191,17 +191,17 @@ class AddPincodeAcctResComponentState extends State<AddPincodeAcctResComponent> 
           ],
         )
     );
-    var ws = new List<Widget>();
+    var ws = List<Widget>();
     ws.add(form);
     if (_submitting) {
-      var modal = new Stack(
+      var modal = Stack(
         children: [
-          new Opacity(
+          Opacity(
             opacity: 0.8,
             child: const ModalBarrier(dismissible: false, color: Colors.grey),
           ),
-          new Center(
-            child: new CircularProgressIndicator(),
+          Center(
+            child: CircularProgressIndicator(),
           ),
         ],
       );
@@ -218,8 +218,8 @@ class AddPincodeAcctResComponentState extends State<AddPincodeAcctResComponent> 
           automaticallyImplyLeading: false,
           centerTitle: true,
         ),
-        body: new Builder(builder: (BuildContext context) {
-          return new Stack(children: _buildAccountForm(context));
+        body: Builder(builder: (BuildContext context) {
+          return Stack(children: _buildAccountForm(context));
         }));
   }
 
