@@ -36,6 +36,43 @@ onDialogClose() {
   // Not use
 }
 
+// Alert dialog for error in sending email
+showPublicKeyNotFoundDialog(context) {
+  EasyDialog(
+    title: Text(
+      "Public Key Not Found!",
+      style: TextStyle(fontWeight: FontWeight.bold),
+      textScaleFactor: 1.2,
+    ),
+    description: Text(
+      "The public key you've entered is not found. "
+      "Please make sure that the public key is correct.",
+      textScaleFactor: 1.1,
+      textAlign: TextAlign.center,
+    ),
+    height: 160,
+    closeButton: false,
+    contentList: [
+      Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: <Widget>[
+          FlatButton(
+            padding: EdgeInsets.all(8),
+            textColor: Colors.lightBlue,
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+            child: Text("OK",
+              textScaleFactor: 1.2,
+              textAlign: TextAlign.center,
+            ),
+          ),
+        ],
+      )
+    ]
+  ).show(context, onDialogClose);
+}
+
 // Dialog for backing up private key
 savePrivatePublicKeyDialog(context) async {
   String privateKey = await globals.storage.read(key: "privateKey");

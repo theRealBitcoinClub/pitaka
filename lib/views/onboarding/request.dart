@@ -145,6 +145,15 @@ class RequestComponentState extends State<RequestComponent> {
       if (resp.error == "outdated_app_version") {
         showOutdatedAppVersionDialog(context);
       }
+
+        // Show dialog if no found public key match
+      if (resp.error == "public_key_not_found") {
+        showPublicKeyNotFoundDialog(context);
+        _accountController.clear();
+        setState(() {
+          _submitting = false;
+        });
+      }
       
       if (resp.success) {
         // Mark installed to true 
