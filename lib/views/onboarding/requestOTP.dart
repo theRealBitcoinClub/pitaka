@@ -83,6 +83,12 @@ class RequestOTPComponentState extends State<RequestOTPComponent> {
           showOutdatedAppVersionDialog(context);
         }
 
+        // Show dialog if code is invalid
+        if (resp.error == "invalid_code") {
+          showInvalidCodelDialog(context);
+          textController.clear();
+        }
+
         if (resp.success) {
           proceed = true;
 
@@ -139,6 +145,12 @@ class RequestOTPComponentState extends State<RequestOTPComponent> {
     };
     // Send public key as payload to restore user
     var resp = await requestOTPAccountRestore(payload);
+
+    // Show dialog if code is invalid
+    if (resp.error == "invalid_code") {
+      showInvalidCodelDialog(context);
+      textController.clear();
+    }
 
     if (resp.success) {
       showSimpleNotification(

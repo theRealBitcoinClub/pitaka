@@ -149,13 +149,13 @@ showIdentitySubmitSuccesslDialog(context) {
       Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: <Widget>[
-          new FlatButton(
+          FlatButton(
             padding: EdgeInsets.all(8),
             textColor: Colors.lightBlue,
             onPressed: () {
               Navigator.of(context).pop();
             },
-            child: new Text("OK",
+            child: Text("OK",
               textScaleFactor: 1.2,
               textAlign: TextAlign.center,
             ),
@@ -186,13 +186,13 @@ showInvalidCodelDialog(context) {
       Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: <Widget>[
-          new FlatButton(
+          FlatButton(
             padding: EdgeInsets.all(8),
             textColor: Colors.lightBlue,
             onPressed: () {
               Navigator.of(context).pop();
             },
-            child: new Text("OK",
+            child: Text("OK",
               textScaleFactor: 1.2,
               textAlign: TextAlign.center,
             ),

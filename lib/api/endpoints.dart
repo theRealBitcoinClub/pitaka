@@ -16,13 +16,13 @@ DatabaseHelper databaseHelper = DatabaseHelper();
 String respErrorType = "";
 
 Future<dynamic> sendPostRequest(url, payload) async {
-  var dio = new Dio();
+  var dio = Dio();
   dio.options.connectTimeout = 30000;  // Set connection timeout for 30 seconds
-  dio.transformer = new FlutterTransformer();
+  dio.transformer = FlutterTransformer();
 
   var tempDir = await getTemporaryDirectory();
   String tempPath = tempDir.path;
-  CookieJar cj = new PersistCookieJar(dir: tempPath);
+  CookieJar cj = PersistCookieJar(dir: tempPath);
   dio.interceptors.add(CookieManager(cj));
   
   Response response;
