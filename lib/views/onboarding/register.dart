@@ -191,6 +191,9 @@ class RegisterComponentState extends State<RegisterComponent> {
           Application.router.navigateTo(context, "/addpincode");
           databaseHelper.initializeDatabase();
 
+          // Show dialog for taking note of private key
+          savePrivatePublicKeyDialog(context);
+
         }
       } else {
         _showSnackBar("Please agree to our Terms and Conditions");
@@ -202,29 +205,25 @@ class RegisterComponentState extends State<RegisterComponent> {
 
   void _showSnackBar(String message) {
     final snackBar =
-        new SnackBar(content: new Text(message), backgroundColor: Colors.red);
+        SnackBar(content: new Text(message), backgroundColor: Colors.red);
     Scaffold.of(_scaffoldContext).showSnackBar(snackBar);
   }
 
   List<Widget> _buildRegistrationForm(BuildContext context) {
-    Form form = new Form(
+    Form form = Form(
         key: _formKey,
         autovalidate: false,
-        child: new ListView(
+        child: ListView(
             padding: const EdgeInsets.symmetric(horizontal: 16.0),
             children: <Widget>[
-              new SizedBox(
-                height: 30.0,
-              ),
-              new Center(
-                  child: new Text("Sign up to create your wallet",
+              SizedBox(height: 30.0,),
+              Center(
+                  child: Text("Sign up to create your wallet",
                       style: TextStyle(
                         fontSize: 20.0,
                       ))),
-              new SizedBox(
-                height: 10.0,
-              ),
-              new TextFormField(
+              SizedBox(height: 10.0,),
+              TextFormField(
                 keyboardType: TextInputType.text,
                 validator: validateName,
                 onSaved: (value) {
@@ -236,7 +235,7 @@ class RegisterComponentState extends State<RegisterComponent> {
                   labelText: 'First Name',
                 ),
               ),
-              new TextFormField(
+              TextFormField(
                 keyboardType: TextInputType.text,
                 validator: validateName,
                 onSaved: (value) {
@@ -248,14 +247,14 @@ class RegisterComponentState extends State<RegisterComponent> {
                   labelText: 'Last Name',
                 ),
               ),
-              new GestureDetector(
+              GestureDetector(
                   onTap: () {
                     DatePicker.showDatePicker(context,
                       showTitleActions: true,
                       onChanged: (date) {},
                       onConfirm: (date) {
                         setState(() {
-                          _birthDateController.text = new DateFormat.yMd().format(date);
+                          _birthDateController.text = DateFormat.yMd().format(date);
                         });
                       },
                       currentTime: DateTime.now(),
@@ -263,9 +262,9 @@ class RegisterComponentState extends State<RegisterComponent> {
                     );
                   },
                   behavior: HitTestBehavior.translucent,
-                  child: new Container(
-                    child: new IgnorePointer(
-                      child: new TextFormField(
+                  child: Container(
+                    child: IgnorePointer(
+                      child: TextFormField(
                           controller: _birthDateController,
                           focusNode: focusNode,
                           keyboardType: TextInputType.text,
@@ -281,26 +280,24 @@ class RegisterComponentState extends State<RegisterComponent> {
                           )),
                     ),
                   )),
-              new SizedBox(
-                height: 20.0,
-              ),
-              new CheckboxListTile(
-                  title: new GestureDetector(
+              SizedBox(height: 20.0,),
+              CheckboxListTile(
+                  title: GestureDetector(
                       onTap: () {
                         Application.router.navigateTo(context, "/terms");
                       },
-                      child: new RichText(
-                          text: new TextSpan(children: <TextSpan>[
-                        new TextSpan(
+                      child: RichText(
+                          text: TextSpan(children: <TextSpan>[
+                        TextSpan(
                           text: 'Check the box to agree to our ',
-                          style: new TextStyle(
+                          style: TextStyle(
                             color: Colors.black,
                             fontSize: 16.0,
                           ),
                         ),
-                        new TextSpan(
+                        TextSpan(
                           text: 'Terms and Conditions',
-                          style: new TextStyle(
+                          style: TextStyle(
                             color: Colors.blue,
                             fontSize: 16.0,
                           ),
@@ -309,29 +306,32 @@ class RegisterComponentState extends State<RegisterComponent> {
                   value: _termsChecked,
                   onChanged: (bool value) =>
                       setState(() => _termsChecked = value)),
-              new SizedBox(
-                height: 15.0,
-              ),
-              new RaisedButton(
+              SizedBox(height: 15.0,),
+              RaisedButton(
+                color: Colors.red,
+                splashColor: Colors.red[100],
                 onPressed: () {
                   _validateInputs(context);
                 },
-                child: new Text('Submit'),
+                child: Text(
+                  'Submit',
+                  style: TextStyle(color: Colors.white,),
+                ),
               )
             ]));
 
-    var ws = new List<Widget>();
+    var ws = List<Widget>();
     ws.add(form);
 
     if (_submitting) {
-      var modal = new Stack(
+      var modal = Stack(
         children: [
-          new Opacity(
+          Opacity(
             opacity: 0.8,
             child: const ModalBarrier(dismissible: false, color: Colors.grey),
           ),
-          new Center(
-            child: new CircularProgressIndicator(),
+          Center(
+            child: CircularProgressIndicator(),
           ),
         ],
       );
@@ -343,15 +343,15 @@ class RegisterComponentState extends State<RegisterComponent> {
 
   @override
   Widget build(BuildContext context) {
-    return new Scaffold(
-      appBar: new AppBar(
-        title: new Text("Welcome to Paytaca"),
+    return Scaffold(
+      appBar: AppBar(
+        title: Text("Welcome to Paytaca"),
         automaticallyImplyLeading: false,
         centerTitle: true,
       ),
-      body: new Builder(builder: (BuildContext context) {
+      body: Builder(builder: (BuildContext context) {
         _scaffoldContext = context;
-        return new Stack(children: _buildRegistrationForm(context));
+        return Stack(children: _buildRegistrationForm(context));
       })
     );
   }

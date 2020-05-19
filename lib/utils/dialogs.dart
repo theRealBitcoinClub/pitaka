@@ -3,7 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:easy_dialog/easy_dialog.dart'; 
 import 'package:url_launcher/url_launcher.dart'; 
+import 'package:overlay_support/overlay_support.dart';
 import '../views/app.dart';
+import '../utils/globals.dart' as globals;
 
 
 // Function that will redirect to Google Play Store 
@@ -34,6 +36,136 @@ onDialogClose() {
   // Not use
 }
 
+// Alert dialog for error in sending email
+showPublicKeyNotFoundDialog(context) {
+  EasyDialog(
+    title: Text(
+      "Public Key Not Found!",
+      style: TextStyle(fontWeight: FontWeight.bold),
+      textScaleFactor: 1.2,
+    ),
+    description: Text(
+      "The public key you've entered is not found. "
+      "Please make sure that the public key is correct.",
+      textScaleFactor: 1.1,
+      textAlign: TextAlign.center,
+    ),
+    height: 160,
+    closeButton: false,
+    contentList: [
+      Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: <Widget>[
+          FlatButton(
+            padding: EdgeInsets.all(8),
+            textColor: Colors.lightBlue,
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+            child: Text("OK",
+              textScaleFactor: 1.2,
+              textAlign: TextAlign.center,
+            ),
+          ),
+        ],
+      )
+    ]
+  ).show(context, onDialogClose);
+}
+
+// Dialog for backing up private key
+savePrivatePublicKeyDialog(context) async {
+  String privateKey = await globals.storage.read(key: "privateKey");
+  String publicKey = await globals.storage.read(key: "publicKey");
+  var conPublicPrivateKey = privateKey + "::" + publicKey;
+  EasyDialog(
+    cornerRadius: 10.0,
+    fogOpacity: 0.5,
+    width: 280,
+    height: 380,
+    contentPadding: EdgeInsets.only(top: 15.0),
+    contentList: [
+      Center(
+        child: Text(
+          "Backup Private & Public Key!",
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: 18.0,
+          ),
+        )
+      ),
+      SizedBox(height: 20.0),
+      Padding(
+        padding: EdgeInsets.only(left: 15.0),
+        child: Align(
+          alignment: Alignment.centerLeft,
+          child: Text(
+            "Private & Public Key:",
+            style: TextStyle(
+              fontWeight: FontWeight.w600,
+              fontSize: 16.0,
+            ),
+            textAlign: TextAlign.left,
+          ),
+        ),
+      ),
+      SizedBox(height: 6.0),
+      GestureDetector(
+        onTap: () {
+          Clipboard.setData(ClipboardData(text: conPublicPrivateKey));
+          showSimpleNotification(
+            Text("Private & Public key copied to clipboard."),
+            background: Colors.red[600],
+          );
+        },
+        child: Padding(
+          padding: EdgeInsets.only(left: 15.0, right: 15.0),
+          child: Align(
+            alignment: Alignment.centerLeft,
+            child: Text(
+              "$conPublicPrivateKey",
+              style: TextStyle(fontStyle: FontStyle.italic,),
+              textAlign: TextAlign.left,
+            ),
+          ),
+        ),
+      ),
+      SizedBox(height: 15.0),
+      Padding(
+        padding: EdgeInsets.only(left: 10.0, right: 10.0),
+        child: Center(
+          child: Text(
+            "Save this private & public key somewhere safe as a backup. "
+            "You can restore your wallet using this keys. "
+            "Tap the text to copy.",
+            style: TextStyle(fontSize: 16.0,),
+            textAlign: TextAlign.center,
+          ),
+        ),
+      ),
+      SizedBox(height: 10.0),
+      Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: <Widget>[
+          FlatButton(
+            padding: EdgeInsets.all(8),
+            textColor: Colors.lightBlue,
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+            child: Text("OK",
+              textScaleFactor: 1.2,
+              textAlign: TextAlign.center,
+            ),
+          ),
+        ],
+      )
+    ]
+  ).show(context, onDialogClose);
+
+
+}
+
 // Dialog for identity submit success
 showIdentitySubmitSuccesslDialog(context) {
   EasyDialog(
@@ -54,13 +186,13 @@ showIdentitySubmitSuccesslDialog(context) {
       Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: <Widget>[
-          new FlatButton(
+          FlatButton(
             padding: EdgeInsets.all(8),
             textColor: Colors.lightBlue,
             onPressed: () {
               Navigator.of(context).pop();
             },
-            child: new Text("OK",
+            child: Text("OK",
               textScaleFactor: 1.2,
               textAlign: TextAlign.center,
             ),
@@ -91,13 +223,13 @@ showInvalidCodelDialog(context) {
       Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: <Widget>[
-          new FlatButton(
+          FlatButton(
             padding: EdgeInsets.all(8),
             textColor: Colors.lightBlue,
             onPressed: () {
               Navigator.of(context).pop();
             },
-            child: new Text("OK",
+            child: Text("OK",
               textScaleFactor: 1.2,
               textAlign: TextAlign.center,
             ),

@@ -18,6 +18,7 @@ class GenericCreateResponse {
   }
 }
 
+
 class PlainSuccessResponse {
   final bool success;
   final String error;
@@ -42,6 +43,72 @@ class PlainSuccessResponse {
   }
 }
 
+
+class User {
+  String id;
+  String firstName;
+  String lastName;
+  String mobileNumber;
+  String email;
+  String birthday;
+  String deviceID;
+  int level;
+}
+
+class RestoreAccountResponse {
+  final bool success;
+  final String error;
+  var user = Map();
+ 
+  RestoreAccountResponse({
+    this.success, 
+    this.error, 
+    this.user,
+  });
+
+  factory RestoreAccountResponse.fromResponse(Response response) {
+    var _user = Map();
+    if (response.data['user_info'] != null) {
+      var user = response.data['user_info'];
+      _user['id'] = user['ID'];
+      _user['firstName'] = user['Firstname'];
+      _user['lastName'] = user['Lastname'];
+      _user['mobileNumber'] = user['MobileNumber'];
+      _user['email'] = user['Email'];
+      _user['birthday'] = user['Birthday'];
+      _user['deviceID'] = user['DeviceID'];
+      _user['level'] = user['Level'];
+    }
+    return RestoreAccountResponse(
+      success: response.data['success'], 
+      error: response.data['error'], 
+      user: _user,
+    );
+  }
+}
+
+
+class RequestOTPAccountRestoreResponse {
+  final bool success;
+  final String error;
+  final String mobileNumber;
+ 
+  RequestOTPAccountRestoreResponse({
+    this.success, 
+    this.error, 
+    this.mobileNumber,
+  });
+
+  factory RequestOTPAccountRestoreResponse.fromResponse(Response response) {
+    return RequestOTPAccountRestoreResponse(
+      success: response.data['success'], 
+      error: response.data['error'], 
+      mobileNumber: response.data['mobile_number'],
+    );
+  }
+}
+
+
 class OtpVerificationResponse {
   final bool success;
   final bool verified;
@@ -53,6 +120,7 @@ class OtpVerificationResponse {
     return OtpVerificationResponse(success: response.data['success'], verified: response.data['verified'], error: '');
   }
 }
+
 
 class Balance {
   String accountName;
@@ -165,13 +233,14 @@ class BalancesResponse {
   }
 }
 
-// For contact list
+
 class Contact {
   String firstName;
   String lastName;
   String mobileNumber;
   String transferAccount; 
 }
+
 class ContactResponse {
   final bool success;
   var contact = new Map();
@@ -230,13 +299,14 @@ class ContactResponse {
   }
 }
 
-// For contact list
+
 class ContactList {
   String firstName;
   String lastName;
   String mobileNumber;
   String transferAccount; 
 }
+
 class ContactListResponse {
   final bool success;
   final List<Contact> contacts;
@@ -260,6 +330,7 @@ class ContactListResponse {
     );
   }
 }
+
 
 class Transaction {
   String mode; // send or receive
@@ -376,6 +447,7 @@ class TransactionsResponse {
   }
 }
 
+
 class Account {
   String accountName;
   String accountId;
@@ -402,6 +474,7 @@ class AccountsResponse {
         success: response.data['success'], accounts: _accounts);
   }
 }
+
 
 String test() {
   var now = new DateTime.now();

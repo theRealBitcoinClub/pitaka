@@ -1,28 +1,35 @@
 
-import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/gestures.dart';
 import 'package:overlay_support/overlay_support.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:back_button_interceptor/back_button_interceptor.dart';
 import '../app.dart';
 import '../../api/endpoints.dart';
 import '../../utils/dialogs.dart';
+import '../../utils/globals.dart' as globals;
 
 
 class Code {
   String value;
 }
 
-class VerifyComponent extends StatefulWidget {
+class RequestOTPComponent extends StatefulWidget {
   final String mobileNumber;
-  VerifyComponent({Key key, this.mobileNumber}) : super(key: key);
+  final String publicKey;
+  RequestOTPComponent({Key key, this.mobileNumber, this.publicKey}) : super(key: key);
 
   @override
-  VerifyComponentState createState() => VerifyComponentState();
+  RequestOTPComponentState createState() => RequestOTPComponentState();
 }
 
-class VerifyComponentState extends State<VerifyComponent> {
+class RequestOTPComponentState extends State<RequestOTPComponent> {
   final TextEditingController textController = TextEditingController();
+  BuildContext _scaffoldContext;
+  FocusNode focusNode = FocusNode();
+  bool _submitting = false;
+
   @override
   void initState() {
     super.initState();
@@ -41,7 +48,7 @@ class VerifyComponentState extends State<VerifyComponent> {
   }
 
   final _formKey = GlobalKey<FormState>();
-  Code newCode = new Code();
+  Code newCode = Code();
 
   String validateCode(String value) {
     if (value.length != 6)
@@ -50,42 +57,70 @@ class VerifyComponentState extends State<VerifyComponent> {
       return null;
   }
 
-  BuildContext _scaffoldContext;
-  FocusNode focusNode = FocusNode();
-  bool _submitting = false;
-
   void _validateInputs(BuildContext context) async {
     bool proceed = false;
     if (_formKey.currentState.validate()) {
       _formKey.currentState.save();
       // Close the on-screen keyboard by removing focus from the form's inputs
-      FocusScope.of(context).requestFocus(new FocusNode());
+      FocusScope.of(context).requestFocus(FocusNode());
       setState(() {
         _submitting = true;
       });
 
+      String publicKey = await globals.storage.read(key: "publicKey");
+
       if (newCode.value == '123456') {
         proceed = true;
       } else {
-        var codePayload = {
-          "mobile_number": "${widget.mobileNumber}",
+        var payload = {
+          "public_key": publicKey,
           "code": newCode.value,
         };
-        var resp = await verifyOtpCode(codePayload);
+        var resp = await restoreAccount(payload);
 
         // Catch app version compatibility
         if (resp.error == "outdated_app_version") {
           showOutdatedAppVersionDialog(context);
         }
 
-        if (resp.verified) {
+        // Show dialog if code is invalid
+        if (resp.error == "invalid_code") {
+          showInvalidCodelDialog(context);
+          textController.clear();
+        }
+
+        if (resp.success) {
           proceed = true;
+
+        // Save user details in shared preferences
+        SharedPreferences prefs = await SharedPreferences.getInstance();
+        await prefs.setString('firstName', resp.user["firstName"]);
+        await prefs.setString('lastName', resp.user["lastName"]);
+        await prefs.setString('mobileNumber', resp.user["mobileNumber"]);
+        await prefs.setString('email', resp.user["email"]);
+        await prefs.setString('birthDate', resp.user["birthday"]);
+        await prefs.setString('deviceID', resp.user["deviceID"]);
+        // Check what level is user at
+        if (resp.user["level"] == 2) {
+          await prefs.setBool('level2', true);
+          // Hide register and verify email buttons when level2
+          await prefs.setBool('registerEmailBtn', false);
+          await prefs.setBool('verifyEmailBtn', false);
+          // Show verify identity button
+          await prefs.setBool('verifyIdentityBtn', true);
+        } else if (resp.user["level"] == 3) {
+          await prefs.setBool('level3', true);
+          // Hide all buttons when level3
+          await prefs.setBool('registerEmailBtn', false);
+          await prefs.setBool('verifyEmailBtn', false);
+          await prefs.setBool('verifyIdentityBtn', false);
+        }
         }
       }
 
       if (proceed) {
         Application.router
-            .navigateTo(context, "/onboarding/register/${widget.mobileNumber}");
+            .navigateTo(context, "/addpincodeacctres");
       } else {
         setState(() {
           _submitting = false;
@@ -98,16 +133,24 @@ class VerifyComponentState extends State<VerifyComponent> {
 
   void _showSnackBar(String message) {
     final snackBar =
-        new SnackBar(content: new Text(message), backgroundColor: Colors.red);
+        SnackBar(content: Text(message), backgroundColor: Colors.red);
     Scaffold.of(_scaffoldContext).showSnackBar(snackBar);
   }
 
   _reSendOTPCode() async {
+    String publicKey = await globals.storage.read(key: "publicKey");
+    // Create payload
     var payload = {
-      "mobile_number": widget.mobileNumber,
+      "public_key": publicKey,
     };
+    // Send public key as payload to restore user
+    var resp = await requestOTPAccountRestore(payload);
 
-    var resp = await requestOtpCode(payload);
+    // Show dialog if code is invalid
+    if (resp.error == "invalid_code") {
+      showInvalidCodelDialog(context);
+      textController.clear();
+    }
 
     if (resp.success) {
       showSimpleNotification(
@@ -165,10 +208,10 @@ class VerifyComponentState extends State<VerifyComponent> {
                 SizedBox(height: 30.0),
                 Center(
                   child: Text("Enter the Verification Code",
-                      style: TextStyle(
-                        fontSize: 20.0,
-                      )
+                    style: TextStyle(
+                      fontSize: 20.0,
                     )
+                  )
                 ),
                 SizedBox(height: 10.0,),
                 TextFormField(
@@ -202,10 +245,10 @@ class VerifyComponentState extends State<VerifyComponent> {
                 ),
                 SizedBox(height: 50.0,)
               ]
-            )
           )
         )
-      );
+      )
+    );
 
     var ws = List<Widget>();
     ws.add(form);
