@@ -1,6 +1,6 @@
 import 'views/app.dart';
-import 'package:flutter/material.dart';
 import 'utils/globals.dart';
+import 'package:flutter/material.dart';
 
 
 void main() {
