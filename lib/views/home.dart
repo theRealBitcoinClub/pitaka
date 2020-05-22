@@ -58,7 +58,7 @@ class HomeComponentState extends State<HomeComponent> {
 
     if (deepLink != null) {
       //Navigator.pushNamed(context, deepLink.path);
-      Application.router.navigateTo(context, "/send");
+      Application.router.navigateTo(context, "/sendlink");
     }
 
     FirebaseDynamicLinks.instance.onLink(
@@ -68,7 +68,7 @@ class HomeComponentState extends State<HomeComponent> {
       print("@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ${deepLink.path} @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
 
       if (deepLink != null) {
-        Application.router.navigateTo(context, "/send");
+        Application.router.navigateTo(context, "/sendlink");
         // Navigator.pushNamed(context, "/userprofile");
       }
     }, onError: (OnLinkErrorException e) async {
