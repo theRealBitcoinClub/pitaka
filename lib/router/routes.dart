@@ -26,6 +26,7 @@ class Routes {
   static String checkPinCode = "/checkpincode";
   static String contactList = "/contactlist"; 
   static String sendContact = "/sendcontact";
+  static String sendLink = "/sendlink";
   static String userProfile = "/userprofile";
   static String verificationLevels = "/verificationlevels";
   static String registerEmailForm = "/registeremailform";
@@ -167,6 +168,12 @@ class Routes {
     router.define(
       sendContact,
       handler: sendContactHandler,
+      transitionType: TransitionType.fadeIn
+    );
+
+    router.define(
+      sendLink,
+      handler: sendLinkHandler,
       transitionType: TransitionType.fadeIn
     );
 

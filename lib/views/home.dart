@@ -3,7 +3,10 @@ import 'receive.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_udid/flutter_udid.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:firebase_dynamic_links/firebase_dynamic_links.dart';
 import '../api/endpoints.dart';
+import './app.dart';
 import '../utils/helpers.dart';
 import '../utils/dialogs.dart';
 import '../utils/globals.dart';
@@ -31,6 +34,7 @@ class HomeComponentState extends State<HomeComponent> {
   bool isOffline = false;
   bool _executeFuture = false;
   bool _popDialog = false;
+  String initialAmount;
 
   void initState()  {
     super.initState();
@@ -44,6 +48,52 @@ class HomeComponentState extends State<HomeComponent> {
     comp.getAccounts();
 
     _checkUdid();
+
+    initDynamicLinks();
+  }
+
+  void initDynamicLinks() async {
+    final PendingDynamicLinkData data =
+        await FirebaseDynamicLinks.instance.getInitialLink();
+    final Uri deepLink = data?.link;
+
+    if (deepLink != null) {
+        // Get the value of transferAccount and assign to variable _accountId
+        var _accountId = deepLink.path.split("/")[3];
+        print(_accountId);
+        var _amount = deepLink.path.split("/")[4];
+        print(_amount);
+        // Store the value in shared preferences
+        // This will be used in sendLink page as destinationAccountId
+        SharedPreferences prefs = await SharedPreferences.getInstance();
+        await prefs.setString('transferAccountId', _accountId);
+        await prefs.setString('transferAmount', _amount);
+
+        Application.router.navigateTo(context, "/sendlink");
+    }
+
+    FirebaseDynamicLinks.instance.onLink(
+        onSuccess: (PendingDynamicLinkData dynamicLink) async {
+      final Uri deepLink = dynamicLink?.link;
+
+      if (deepLink != null) {
+        // Get the value of transferAccount and assign to variable _accountId
+        var _accountId = deepLink.path.split("/")[3];
+        print(_accountId);
+        var _amount = deepLink.path.split("/")[4];
+        print(_amount);
+        // Store the value in shared preferences
+        // This will be used in sendLink page as destinationAccountId
+        SharedPreferences prefs = await SharedPreferences.getInstance();
+        await prefs.setString('transferAccountId', _accountId);
+        await prefs.setString('transferAmount', _amount);
+
+        Application.router.navigateTo(context, "/sendlink");
+      }
+    }, onError: (OnLinkErrorException e) async {
+      print('onLinkError');
+      print(e.message);
+    });
   }
 
   void _checkUdid() async {

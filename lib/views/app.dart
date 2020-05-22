@@ -11,7 +11,7 @@ import '../utils/globals.dart' as globals;
 class AppComponent extends StatefulWidget {
   @override
   State createState() {
-    return new AppComponentState();
+    return AppComponentState();
   }
 }
 
@@ -27,8 +27,6 @@ class AppComponentState extends State<AppComponent>
   int timeDiff = globals.timeDiff;
   int offlineTime = globals.offlineTime;
 
-
-
   AppComponentState() {
     final router = new Router();
     Routes.configureRoutes(router);
@@ -41,7 +39,7 @@ class AppComponentState extends State<AppComponent>
     final app = OverlaySupport(child: MaterialApp(
       title: 'Paytaca',
       debugShowCheckedModeBanner: debugMode,
-      theme: new ThemeData(
+      theme: ThemeData(
         primarySwatch: Colors.red,
       ),
       onGenerateRoute: Application.router.generator,
