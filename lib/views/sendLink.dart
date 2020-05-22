@@ -8,7 +8,6 @@ import 'package:crypto/crypto.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter_udid/flutter_udid.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../components/bottomNavigation.dart';
 import '../components/drawer.dart';
 import '../api/endpoints.dart';
 import '../views/app.dart';
