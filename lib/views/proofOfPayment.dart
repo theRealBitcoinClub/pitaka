@@ -87,7 +87,9 @@ class ProofOfPaymentComponentState extends State<ProofOfPaymentComponent> {
 
                     new RaisedButton(
                       onPressed: () {
-                        Application.router.navigateTo(context, '/home');
+                        Navigator.pop(context, false);
+                        Navigator.pop(context, false);
+                        //Application.router.navigateTo(context, '/home');
                         },
                       child: new Text('Back to Wallet'),
                     )

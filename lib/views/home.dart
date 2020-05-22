@@ -56,11 +56,20 @@ class HomeComponentState extends State<HomeComponent> {
     final PendingDynamicLinkData data =
         await FirebaseDynamicLinks.instance.getInitialLink();
     final Uri deepLink = data?.link;
-    print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! $deepLink !!!!!!!!!!!!!!!!!!!!!!!");
 
     if (deepLink != null) {
-      //Navigator.pushNamed(context, deepLink.path);
-      Application.router.navigateTo(context, "/sendlink");
+        // Get the value of transferAccount and assign to variable _accountId
+        var _accountId = deepLink.path.split("/")[3];
+        print(_accountId);
+        var _amount = deepLink.path.split("/")[4];
+        print(_amount);
+        // Store the value in shared preferences
+        // This will be used in sendLink page as destinationAccountId
+        SharedPreferences prefs = await SharedPreferences.getInstance();
+        await prefs.setString('transferAccountId', _accountId);
+        await prefs.setString('transferAmount', _amount);
+
+        Application.router.navigateTo(context, "/sendlink");
     }
 
     FirebaseDynamicLinks.instance.onLink(
@@ -74,19 +83,12 @@ class HomeComponentState extends State<HomeComponent> {
         var _amount = deepLink.path.split("/")[4];
         print(_amount);
         // Store the value in shared preferences
-        // This will be used in sendContact page as destinationAccountId
+        // This will be used in sendLink page as destinationAccountId
         SharedPreferences prefs = await SharedPreferences.getInstance();
         await prefs.setString('transferAccountId', _accountId);
         await prefs.setString('transferAmount', _amount);
 
-        //     // Get the amount stored in shared preferences
-        // initialAmount = prefs.get("transferAmount");
-        // print("################################## $initialAmount ##########################");
-        
-        print("@@@@@@@@@@@@@@@@@@@@@@@@@@@@ $deepLink @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
-        print("@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ${deepLink.path} @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
         Application.router.navigateTo(context, "/sendlink");
-        // Navigator.pushNamed(context, "/userprofile");
       }
     }, onError: (OnLinkErrorException e) async {
       print('onLinkError');

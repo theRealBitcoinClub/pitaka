@@ -19,7 +19,6 @@ import '../utils/database_helper.dart';
 import '../utils/globals.dart' as globals;
 
 
-
 class SendLinkComponent extends StatefulWidget {
   @override
   SendLinkComponentState createState() => new SendLinkComponentState();
@@ -329,6 +328,9 @@ class SendLinkComponentState extends State<SendLinkComponent> {
     return Scaffold(
         appBar: AppBar(
           title: Text('Send to Link'),
+          leading: IconButton(icon:Icon(Icons.arrow_back),
+            onPressed:() => Navigator.pop(context, false),
+          ),
           actions: [
             Padding(
               padding: EdgeInsets.only(right: 20.0),
@@ -357,7 +359,6 @@ class SendLinkComponentState extends State<SendLinkComponent> {
             );
           }  
         }),
-        bottomNavigationBar: buildBottomNavigation(context, path)
       );
   }
 
