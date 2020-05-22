@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:after_layout/after_layout.dart';
 import 'package:overlay_support/overlay_support.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:firebase_dynamic_links/firebase_dynamic_links.dart';
 import '../router/routes.dart';
 import '../utils/globals.dart' as globals;
 
@@ -27,34 +26,6 @@ class AppComponentState extends State<AppComponent>
   bool online = globals.online;
   int timeDiff = globals.timeDiff;
   int offlineTime = globals.offlineTime;
-
-  @override
-  void initState() {
-    super.initState();
-    initDynamicLinks();
-  }
-
-  void initDynamicLinks() async {
-    final PendingDynamicLinkData data =
-        await FirebaseDynamicLinks.instance.getInitialLink();
-    final Uri deepLink = data?.link;
-
-    if (deepLink != null) {
-      Navigator.pushNamed(context, deepLink.path);
-    }
-
-    FirebaseDynamicLinks.instance.onLink(
-        onSuccess: (PendingDynamicLinkData dynamicLink) async {
-      final Uri deepLink = dynamicLink?.link;
-
-      if (deepLink != null) {
-        Navigator.pushNamed(context, deepLink.path);
-      }
-    }, onError: (OnLinkErrorException e) async {
-      print('onLinkError');
-      print(e.message);
-    });
-  }
 
   AppComponentState() {
     final router = new Router();

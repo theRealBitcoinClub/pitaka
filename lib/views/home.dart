@@ -3,7 +3,9 @@ import 'receive.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_udid/flutter_udid.dart';
+import 'package:firebase_dynamic_links/firebase_dynamic_links.dart';
 import '../api/endpoints.dart';
+import './app.dart';
 import '../utils/helpers.dart';
 import '../utils/dialogs.dart';
 import '../utils/globals.dart';
@@ -44,6 +46,35 @@ class HomeComponentState extends State<HomeComponent> {
     comp.getAccounts();
 
     _checkUdid();
+
+    initDynamicLinks();
+  }
+
+  void initDynamicLinks() async {
+    final PendingDynamicLinkData data =
+        await FirebaseDynamicLinks.instance.getInitialLink();
+    final Uri deepLink = data?.link;
+    print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! $deepLink !!!!!!!!!!!!!!!!!!!!!!!");
+
+    if (deepLink != null) {
+      //Navigator.pushNamed(context, deepLink.path);
+      Application.router.navigateTo(context, "/send");
+    }
+
+    FirebaseDynamicLinks.instance.onLink(
+        onSuccess: (PendingDynamicLinkData dynamicLink) async {
+      final Uri deepLink = dynamicLink?.link;
+      print("@@@@@@@@@@@@@@@@@@@@@@@@@@@@ $deepLink @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
+      print("@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ${deepLink.path} @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
+
+      if (deepLink != null) {
+        Application.router.navigateTo(context, "/send");
+        // Navigator.pushNamed(context, "/userprofile");
+      }
+    }, onError: (OnLinkErrorException e) async {
+      print('onLinkError');
+      print(e.message);
+    });
   }
 
   void _checkUdid() async {
