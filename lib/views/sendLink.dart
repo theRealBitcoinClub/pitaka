@@ -33,6 +33,7 @@ class SendLinkComponentState extends State<SendLinkComponent> {
   static double sendAmount;
   static List data = List();
   final _formKey = GlobalKey<FormState>();
+  String _amount;
   String path = '/send';
   String selectedPaytacaAccount;
   String _sourceAccount;
@@ -61,6 +62,10 @@ class SendLinkComponentState extends State<SendLinkComponent> {
     // Get accounts stored in shared preferences
     SharedPreferences prefs = await SharedPreferences.getInstance();
     var _prefAccounts = prefs.get("accounts");
+
+    // Get the amount stored in shared preferences
+    _amount = prefs.get("transferAmount");
+    sendAmount = double.parse(_amount);    
 
     List<Map> _accounts = [];
 
@@ -449,19 +454,30 @@ class SendLinkComponentState extends State<SendLinkComponent> {
                   ),
                   visible: data != null,
                 ),
+                SizedBox(height: 15.0,),
                 Visibility(
-                  child: TextFormField(
-                    validator: validateAmount,
-                    decoration: InputDecoration(labelText: "Enter the amount"),
-                    keyboardType: TextInputType.phone,
-                    onSaved: (value) {
-                      sendAmount = null;
-                      sendAmount = double.parse(value);
-                    },
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: <Widget>[
+                      Text(
+                        "Amount",
+                        style: TextStyle(
+                          fontSize: 17.0, 
+                          color: Colors.black54,
+                        ),
+                      ),
+                      SizedBox(height: 10.0,),
+                      Text(
+                        "$_amount",
+                        style: TextStyle(fontSize: 16.0),
+                      ),
+                      SizedBox(height: 10.0,),
+                      Divider(thickness: 1.0, color: Colors.black38,),
+                    ]
                   ),
                   visible: data != null,
                 ),
-                SizedBox(height: 20.0,),
+                SizedBox(height: 25.0,),
                 Visibility(
                   child: Container(
                     child: ButtonTheme(

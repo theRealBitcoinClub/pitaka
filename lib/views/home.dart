@@ -3,6 +3,7 @@ import 'receive.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_udid/flutter_udid.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:firebase_dynamic_links/firebase_dynamic_links.dart';
 import '../api/endpoints.dart';
 import './app.dart';
@@ -33,6 +34,7 @@ class HomeComponentState extends State<HomeComponent> {
   bool isOffline = false;
   bool _executeFuture = false;
   bool _popDialog = false;
+  String initialAmount;
 
   void initState()  {
     super.initState();
@@ -64,10 +66,25 @@ class HomeComponentState extends State<HomeComponent> {
     FirebaseDynamicLinks.instance.onLink(
         onSuccess: (PendingDynamicLinkData dynamicLink) async {
       final Uri deepLink = dynamicLink?.link;
-      print("@@@@@@@@@@@@@@@@@@@@@@@@@@@@ $deepLink @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
-      print("@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ${deepLink.path} @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
 
       if (deepLink != null) {
+        // Get the value of transferAccount and assign to variable _accountId
+        var _accountId = deepLink.path.split("/")[3];
+        print(_accountId);
+        var _amount = deepLink.path.split("/")[4];
+        print(_amount);
+        // Store the value in shared preferences
+        // This will be used in sendContact page as destinationAccountId
+        SharedPreferences prefs = await SharedPreferences.getInstance();
+        await prefs.setString('transferAccountId', _accountId);
+        await prefs.setString('transferAmount', _amount);
+
+        //     // Get the amount stored in shared preferences
+        // initialAmount = prefs.get("transferAmount");
+        // print("################################## $initialAmount ##########################");
+        
+        print("@@@@@@@@@@@@@@@@@@@@@@@@@@@@ $deepLink @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
+        print("@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ${deepLink.path} @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
         Application.router.navigateTo(context, "/sendlink");
         // Navigator.pushNamed(context, "/userprofile");
       }
