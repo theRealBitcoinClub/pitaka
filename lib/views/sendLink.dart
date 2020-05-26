@@ -43,6 +43,7 @@ class SendLinkComponentState extends State<SendLinkComponent> {
   String toAccount;
   String destinationAccountId;
   String newVal;
+  String balanceCheckError;
   bool validCode = false;
   bool online = globals.online;
   bool isOffline = false;
@@ -63,7 +64,7 @@ class SendLinkComponentState extends State<SendLinkComponent> {
 
     // Get the amount stored in shared preferences
     _amount = prefs.get("transferAmount");
-    sendAmount = double.parse(_amount);    
+    //sendAmount = double.parse(_amount);
 
     List<Map> _accounts = [];
 
@@ -124,7 +125,7 @@ class SendLinkComponentState extends State<SendLinkComponent> {
 
         Future.delayed(Duration(milliseconds: 100), () async {
           // Set offlineTime to zero
-          globals.offlineTime = 0;
+          globals.offlineTime = 0;    validateAmount();
           _save(globals.offlineTime);
           var val = await _read();
           print("It's online, offline timestamp is: $val");
@@ -297,28 +298,34 @@ class SendLinkComponentState extends State<SendLinkComponent> {
     return response.success;
   }
 
-  String validateAmount(String value) {
-    if (value == null || value == "") {
-      return 'This field is required.';
-    } else if (value == '0') {
-      return 'Please enter valid amount.';
+  void validateAmount() async {
+    // Get the amount stored in shared preferences
+    // This is called again here to get widget rebuild
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    _amount = prefs.get("transferAmount");
+    sendAmount = double.parse(_amount);
+
+    // Check if user has enough balance
+    var currentBalance;
+    for(final map in data) {
+      if(selectedPaytacaAccount ==  map['accountId']){
+        currentBalance = map['computedBalance'];
+        break;
+      }
+    }
+    print("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
+    print(currentBalance);
+    print(sendAmount);
+    if (double.parse(currentBalance) < sendAmount) {
+      balanceCheckError = 'Insufficient balance';
+      disableSubmitButton = true;
     } else {
-      var currentBalance;
-      for(final map in data) {
-        if(selectedPaytacaAccount ==  map['accountId']){
-          currentBalance = map['computedBalance'];
-          break;
-        }
-      }
-      if (double.parse(currentBalance) < double.parse(value)) {
-        return 'Insufficient balance';
+      if (sendAmount >= 100000) {
+        balanceCheckError = 'Max limit of Php 100,000.00 per transaction';
+        disableSubmitButton = true;
       } else {
-        if (double.parse(value) >= 100000) {
-          return 'Max limit of Php 100,000.00 per transaction';
-        } else {
-          return null;
-        } 
-      }
+        balanceCheckError = "";
+      } 
     }
   }
 
@@ -428,6 +435,7 @@ class SendLinkComponentState extends State<SendLinkComponent> {
                               value: _sourceAccount,
                               isDense: true,
                               onChanged: (newVal){
+                                validateAmount();
                                 String accountId = newVal.split('::sep::')[0];
                                 String balance = newVal.split('::sep::')[1];
                                 String signature = newVal.split('::sep::')[2];
@@ -473,6 +481,13 @@ class SendLinkComponentState extends State<SendLinkComponent> {
                       ),
                       SizedBox(height: 10.0,),
                       Divider(thickness: 1.0, color: Colors.black38,),
+                      balanceCheckError == null ?
+                        Container()
+                      :
+                        Text(
+                          "$balanceCheckError",
+                          style: TextStyle(color: Colors.red,),
+                        ),
                     ]
                   ),
                   visible: data != null,
