@@ -230,7 +230,7 @@ Future<ContactListResponse> getContacts() async {
 }
 
 
-Future<ContactResponse> saveContact(payload) async {
+Future<CreateContactResponse> saveContact(payload) async {
   final String url = globals.baseUrl + "/api/contacts/create";
   Response response;
   try {
@@ -238,12 +238,12 @@ Future<ContactResponse> saveContact(payload) async {
     if (response.data['success']) {
     }
     else if ((response.data['error']) == 'duplicate_contact') {
-      return ContactResponse.duplicateContact(response);
+      return CreateContactResponse.duplicateContact(response);
     }
     else if ((response.data['error']) == 'unregistered_mobile_number') {
-      return ContactResponse.unregisteredMobileNumber(response);
+      return CreateContactResponse.unregisteredMobileNumber(response);
     }
-    return ContactResponse.fromResponse(response);
+    return CreateContactResponse.fromResponse(response);
   } catch (e) {
     throw Exception(e);
   }

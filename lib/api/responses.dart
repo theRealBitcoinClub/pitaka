@@ -238,61 +238,157 @@ class Contact {
   String firstName;
   String lastName;
   String mobileNumber;
+  String email;
   String transferAccount; 
 }
 
 class ContactResponse {
   final bool success;
-  var contact = new Map();
-  // final List<Contact> contacts;
   final String error;
+  var contact = Map();
 
-  ContactResponse({this.success, this.contact, this.error});
+  ContactResponse({
+    this.success, 
+    this.error, 
+    this.contact
+  });
 
   factory ContactResponse.fromResponse(Response response) {
-    var _contact = new Map();
+    var _contact = Map();
     if (response.data['user_info'] != null) {
       var cont = response.data['user_info'];
       _contact['firstName'] = cont['Firstname'];
       _contact['lastName'] = cont['Lastname'];
       _contact['mobileNumber'] = cont['MobileNumber'];
-      _contact['transferAccount'] = cont['TransferAccounts'][0]['ID'];
+      _contact['email'] = cont['Email'];
+      _contact['transferAccount'] = cont['TransferAccount']['ID'];
     }
     return ContactResponse(
-      success: response.data['success'], contact: _contact, error: ''
+      success: response.data['success'], 
+      error: '',
+      contact: _contact
     );
   }
 
   factory ContactResponse.duplicateContact(Response response) {
-    var _contact = new Map();
+    var _contact = Map();
     if (response.data['user_info'] != null) {
       var cont = response.data['user_info'];
       _contact['firstName'] = cont['Firstname'];
       _contact['lastName'] = cont['Lastname'];
       _contact['mobileNumber'] = cont['MobileNumber'];
+      _contact['email'] = cont['Email'];
       _contact['transferAccount'] = cont['TransferAccounts'][0]['ID'];
     }
     return ContactResponse(
-      success: false, contact: _contact, error: 'This contact is already in your list.'
+      success: false, 
+      contact: _contact, 
+      error: 'This contact is already in your list.'
     );
   }
 
   factory ContactResponse.unregisteredMobileNumber(Response response) {
-    var _contact = new Map();
+    var _contact = Map();
     if (response.data['user_info'] != null) {
       var cont = response.data['user_info'];
       _contact['firstName'] = cont['Firstname'];
       _contact['lastName'] = cont['Lastname'];
       _contact['mobileNumber'] = cont['MobileNumber'];
+      _contact['email'] = cont['Email'];
       _contact['transferAccount'] = cont['TransferAccounts'][0]['ID'];
     }
     return ContactResponse(
-      success: false, contact: _contact, error: 'Unregistered mobile number!'
+      success: false, 
+      contact: _contact, 
+      error: 'Unregistered mobile number!'
     );
   }
 
   factory ContactResponse.connectTimeoutError(){
     return ContactResponse(
+      success: false, 
+      error: "You don't seem to have internet connection, or it's too slow. " 
+    );
+  }
+}
+
+
+class CreateContact {
+  String id;
+  String firstName;
+  String lastName;
+  String mobileNumber;
+  String email;
+  String transferAccount; 
+}
+
+class CreateContactResponse {
+  final bool success;
+  final String error;
+  var contact = Map();
+
+  CreateContactResponse({
+    this.success, 
+    this.error, 
+    this.contact
+  });
+
+  factory CreateContactResponse.fromResponse(Response response) {
+    var _contact = Map();
+    if (response.data['contact_info'] != null) {
+      var cont = response.data['contact_info'];
+      _contact['id'] = cont['ID'];
+      _contact['firstName'] = cont['Firstname'];
+      _contact['lastName'] = cont['Lastname'];
+      _contact['mobileNumber'] = cont['MobileNumber'];
+      _contact['email'] = cont['Email'];
+      _contact['transferAccount'] = cont['TransferAccount']['ID'];
+    }
+    return CreateContactResponse(
+      success: response.data['success'], 
+      error: '',
+      contact: _contact
+    );
+  }
+
+  factory CreateContactResponse.duplicateContact(Response response) {
+    var _contact = Map();
+    if (response.data['contact_info'] != null) {
+      var cont = response.data['contact_info'];
+      _contact['id'] = cont['ID'];
+      _contact['firstName'] = cont['Firstname'];
+      _contact['lastName'] = cont['Lastname'];
+      _contact['mobileNumber'] = cont['MobileNumber'];
+      _contact['email'] = cont['Email'];
+      _contact['transferAccount'] = cont['TransferAccounts'][0]['ID'];
+    }
+    return CreateContactResponse(
+      success: false, 
+      contact: _contact, 
+      error: 'This contact is already in your list.'
+    );
+  }
+
+  factory CreateContactResponse.unregisteredMobileNumber(Response response) {
+    var _contact = Map();
+    if (response.data['contact_info'] != null) {
+      var cont = response.data['contact_info'];
+      _contact['id'] = cont['ID'];
+      _contact['firstName'] = cont['Firstname'];
+      _contact['lastName'] = cont['Lastname'];
+      _contact['mobileNumber'] = cont['MobileNumber'];
+      _contact['email'] = cont['Email'];
+      _contact['transferAccount'] = cont['TransferAccounts'][0]['ID'];
+    }
+    return CreateContactResponse(
+      success: false, 
+      contact: _contact, 
+      error: 'Unregistered mobile number!'
+    );
+  }
+
+  factory CreateContactResponse.connectTimeoutError(){
+    return CreateContactResponse(
       success: false, 
       error: "You don't seem to have internet connection, or it's too slow. " 
     );

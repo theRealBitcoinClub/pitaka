@@ -1,13 +1,13 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../components/drawer.dart';
-import '../components/bottomNavigation.dart';
+import '../api/endpoints.dart';
 import '../utils/globals.dart';
 import '../utils/dialogs.dart';
-import '../api/endpoints.dart';
 import '../utils/database_helper.dart';
 import '../utils/globals.dart' as globals;
+import '../components/drawer.dart';
+import '../components/bottomNavigation.dart';
 import '../components/contactListView.dart' as contactlist;
 
 // Used to access functions in database_helper.dart
@@ -150,13 +150,13 @@ class ContactListComponentState extends State<ContactListComponent> {
         else {
           if (_showContactForm) {
             if (globals.online) {
-              return new Stack(children: _buildContactListForm(context));
+              return Stack(children: _buildContactListForm(context));
             }
             else {
               return Center(
-                child: new Padding(
+                child: Padding(
                   padding: EdgeInsets.all(8.0),
-                  child:new Container(
+                  child: Container(
                     child: Text(
                       "This is not available in offline mode.",
                     )
@@ -167,9 +167,9 @@ class ContactListComponentState extends State<ContactListComponent> {
           }
           else {     
             return Builder(builder: (BuildContext context) {
-              return new Container(
+              return Container(
                 alignment: Alignment.center,
-                child: new FutureBuilder(
+                child: FutureBuilder(
                   future: getContacts(),
                   builder: (BuildContext context, AsyncSnapshot snapshot) {
                     if (snapshot.hasData) {
@@ -184,11 +184,11 @@ class ContactListComponentState extends State<ContactListComponent> {
                           );
                         }
                       } else {
-                        return new CircularProgressIndicator();  
+                        return CircularProgressIndicator();  
                       }
                     } else {
                       // return new Container();
-                      return new CircularProgressIndicator();
+                      return CircularProgressIndicator();
                     }
                   }
                 )
@@ -244,26 +244,22 @@ class ContactListComponentState extends State<ContactListComponent> {
   }
 
   List<Widget> _buildContactListForm(BuildContext context) {
-    Form form = new Form(
+    Form form = Form(
       key: _formKey,
       autovalidate: false,
-      child: new ListView(
+      child: ListView(
         padding: const EdgeInsets.symmetric(horizontal: 16.0),
         children: <Widget>[
-          new SizedBox(
-            height: 30.0,
-          ),
-          new Center(
-            child: new Text("Create contact",
+          SizedBox(height: 30.0,),
+          Center(
+            child: Text("Create contact",
               style: TextStyle(
                 fontSize: 20.0,
               )
             )
           ),
-          new SizedBox(
-            height: 10.0,
-          ),
-          new TextFormField(
+          SizedBox(height: 10.0,),
+          TextFormField(
             autofocus: true,
             controller: _controller,
             keyboardType: TextInputType.phone,
@@ -346,35 +342,33 @@ class ContactListComponentState extends State<ContactListComponent> {
             )
           )
           :
-          new Container(
-            child: new SizedBox(
-              height: 30.0,
-            ),
+          Container(
+            child: SizedBox(height: 30.0,),
           ),
-          new RaisedButton(
+          RaisedButton(
             onPressed: () {
               _validateInputs(context);
               // Clear TextFormField
               _controller.clear();
             },
-            child: new Text('Submit'),
+            child: Text('Submit'),
           )
         ]
       )
     );
 
-    var ws = new List<Widget>();
+    var ws = List<Widget>();
     ws.add(form);
 
     if (_submitting) {
-      var modal = new Stack(
+      var modal = Stack(
         children: [
-          new Opacity(
+          Opacity(
             opacity: 0.8,
             child: const ModalBarrier(dismissible: false, color: Colors.grey),
           ),
-          new Center(
-            child: new CircularProgressIndicator(),
+          Center(
+            child: CircularProgressIndicator(),
           ),
         ],
       );
@@ -467,6 +461,7 @@ class ContactListComponentState extends State<ContactListComponent> {
       // Call createContact request in endpoints.dart 
       // to search registered mobile number
       var contact = await searchContact(contactPayload);
+      
       // If response success is true get contact details.
       // Store the contact details in contactDetails map.
       // If response success is false, get the error.
