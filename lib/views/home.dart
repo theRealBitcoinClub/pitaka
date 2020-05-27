@@ -3,6 +3,7 @@ import 'receive.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_udid/flutter_udid.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:firebase_dynamic_links/firebase_dynamic_links.dart';
 import '../api/endpoints.dart';
@@ -26,6 +27,7 @@ class HomeComponentState extends State<HomeComponent> {
   DatabaseHelper databaseHelper = DatabaseHelper();
   StreamSubscription _connectionChangeStream;
   final formatCurrency = new NumberFormat.currency(symbol: 'PHP ');
+  final FirebaseMessaging _firebaseMessaging = FirebaseMessaging();
   String path = "/home";
   String storedUdid;
   String freshUdid;
@@ -46,10 +48,76 @@ class HomeComponentState extends State<HomeComponent> {
     ReceiveComponentState comp = new ReceiveComponentState();
 
     comp.getAccounts();
-
+    // Generate unique device ID
     _checkUdid();
-
+    // For Firebase dynamic link/deep link
     initDynamicLinks();
+    // For Firebase push notification
+    setupPushNotification();
+  }
+
+  void setupPushNotification() async {
+    // Get device token
+    _firebaseMessaging.getToken().then((token) {
+      print("Device token is: $token");
+    });
+
+    _firebaseMessaging.configure(
+        onMessage: (Map<String, dynamic> message) async {
+          print("onMessage: $message");
+          showDialog(
+              context: context,
+              builder: (context) => AlertDialog(
+                      content: ListTile(
+                      title: Text(message['notification']['title']),
+                      subtitle: Text(message['notification']['body']),
+                      ),
+                      actions: <Widget>[
+                      FlatButton(
+                          child: Text('Ok'),
+                          onPressed: () => Navigator.of(context).pop(),
+                      ),
+                  ],
+              ),
+          );
+      },
+      onLaunch: (Map<String, dynamic> message) async {
+          print("onLaunch: $message");
+          showDialog(
+              context: context,
+              builder: (context) => AlertDialog(
+                      content: ListTile(
+                      title: Text(message['notification']['title']),
+                      subtitle: Text(message['notification']['body']),
+                      ),
+                      actions: <Widget>[
+                      FlatButton(
+                          child: Text('Ok'),
+                          onPressed: () => Navigator.of(context).pop(),
+                      ),
+                  ],
+              ),
+          );
+      },
+      onResume: (Map<String, dynamic> message) async {
+          print("onResume: $message");
+          showDialog(
+              context: context,
+              builder: (context) => AlertDialog(
+                      content: ListTile(
+                      title: Text(message['notification']['title']),
+                      subtitle: Text(message['notification']['body']),
+                      ),
+                      actions: <Widget>[
+                      FlatButton(
+                          child: Text('Ok'),
+                          onPressed: () => Navigator.of(context).pop(),
+                      ),
+                  ],
+              ),
+          );
+      },
+    );
   }
 
   void initDynamicLinks() async {
