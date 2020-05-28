@@ -62,8 +62,37 @@ class HomeComponentState extends State<HomeComponent> {
       onMessage: (Map<String, dynamic> message) async {
         print("onMessage: $message");
         showSimpleNotification(
-          Text(message['notification']['body']),
-          background: Colors.red[600],
+          Padding(
+            padding: EdgeInsets.only(top: 10.0, bottom: 10.0),
+            child: Container(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  Row(
+                    children: <Widget>[
+                      Icon(Icons.notifications_active, color: Colors.red,),
+                      SizedBox(width: 10.0,),
+                      Text(
+                        message['notification']['title'],
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black,
+                        ),
+                      ),
+                    ]
+                  ),
+                  SizedBox(height: 8.0,),
+                  Text(
+                    message['notification']['body'],
+                    style: TextStyle(color: Colors.black,),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          background: Colors.white,
+          autoDismiss: false,
+          slideDismiss: true,
         );
       },
       onLaunch: (Map<String, dynamic> message) async {
