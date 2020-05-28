@@ -57,11 +57,6 @@ class HomeComponentState extends State<HomeComponent> {
   }
 
   void setupPushNotification() async {
-    // Get device token
-    _firebaseMessaging.getToken().then((token) {
-      print("Device token is: $token");
-    });
-
     _firebaseMessaging.configure(
       onMessage: (Map<String, dynamic> message) async {
         print("onMessage: $message");

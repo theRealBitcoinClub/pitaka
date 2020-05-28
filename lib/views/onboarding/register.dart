@@ -12,6 +12,7 @@ import 'package:pitaka/utils/database_helper.dart';
 import 'package:flutter_sodium/flutter_sodium.dart';
 import 'package:local_auth/error_codes.dart' as auth_error;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:back_button_interceptor/back_button_interceptor.dart';
 import 'package:flutter_datetime_picker/flutter_datetime_picker.dart';
 import '../app.dart';
@@ -27,6 +28,7 @@ class User {
   DateTime birthDate;
   String imei;
   String udid;
+  String token;
 }
 
 class RegisterComponent extends StatefulWidget {
@@ -44,6 +46,7 @@ class RegisterComponentState extends State<RegisterComponent> {
   final _formKey = GlobalKey<FormState>();
   final LocalAuthentication auth = LocalAuthentication();
   final TextEditingController _birthDateController = new TextEditingController();
+  final FirebaseMessaging _firebaseMessaging = FirebaseMessaging();
   var circleUIConfig = new CircleUIConfig();
   var keyboardUIConfig = new KeyboardUIConfig();
   String udid;
@@ -60,6 +63,7 @@ class RegisterComponentState extends State<RegisterComponent> {
   void initState() {
     super.initState();
     BackButtonInterceptor.add(interceptBackButton);
+    generateToken();
   }
 
   @override
@@ -109,6 +113,17 @@ class RegisterComponentState extends State<RegisterComponent> {
     await globals.storage.write(key: "udid", value: udid);
   }
 
+  // Generate firebase messaging token
+  void generateToken() async {
+    // Get device token
+    _firebaseMessaging.getToken().then((token) {
+    print("The value of token in generateToken() in register.dart is: $token");
+
+    // Store UDID in global storage
+    globals.storage.write(key: "token", value: token);
+    });
+  }
+
   String validateName(String value) {
     if (value.length < 2)
       return 'Name must be at least 2 characters';
@@ -141,7 +156,7 @@ class RegisterComponentState extends State<RegisterComponent> {
       if (_termsChecked) {
         // If all data are correct then save data to out variables
         _formKey.currentState.save();
-        // Generate KeyPair and UDID
+        // Generate KeyPair, UDID and Firebase token
         await generateKeyPair(context);
         await generateUdid(context);
 
@@ -162,12 +177,14 @@ class RegisterComponentState extends State<RegisterComponent> {
 
           String txnHash = generateTransactionHash(userPayload);
           String signature = await signTransaction(txnHash, privateKey);
+          String token = await globals.storage.read(key: "token");
 
           userPayload["public_key"] = publicKey;
           userPayload["txn_hash"] = txnHash;
           userPayload["signature"] = signature;
           userPayload["device_id"] = udid;
-          
+          userPayload["firebase_messaging_token"] = token;
+
           var user = await createUser(userPayload);
 
           // Catch app version compatibility
