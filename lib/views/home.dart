@@ -63,59 +63,17 @@ class HomeComponentState extends State<HomeComponent> {
     });
 
     _firebaseMessaging.configure(
-        onMessage: (Map<String, dynamic> message) async {
-          print("onMessage: $message");
-          showDialog(
-              context: context,
-              builder: (context) => AlertDialog(
-                      content: ListTile(
-                      title: Text(message['notification']['title']),
-                      subtitle: Text(message['notification']['body']),
-                      ),
-                      actions: <Widget>[
-                      FlatButton(
-                          child: Text('Ok'),
-                          onPressed: () => Navigator.of(context).pop(),
-                      ),
-                  ],
-              ),
-          );
+      onMessage: (Map<String, dynamic> message) async {
+        print("onMessage: $message");
+        showPushNotificationDialog(context, message);
       },
       onLaunch: (Map<String, dynamic> message) async {
-          print("onLaunch: $message");
-          showDialog(
-              context: context,
-              builder: (context) => AlertDialog(
-                      content: ListTile(
-                      title: Text(message['notification']['title']),
-                      subtitle: Text(message['notification']['body']),
-                      ),
-                      actions: <Widget>[
-                      FlatButton(
-                          child: Text('Ok'),
-                          onPressed: () => Navigator.of(context).pop(),
-                      ),
-                  ],
-              ),
-          );
+        print("onLaunch: $message");
+        showPushNotificationDialog(context, message);
       },
       onResume: (Map<String, dynamic> message) async {
-          print("onResume: $message");
-          showDialog(
-              context: context,
-              builder: (context) => AlertDialog(
-                      content: ListTile(
-                      title: Text(message['notification']['title']),
-                      subtitle: Text(message['notification']['body']),
-                      ),
-                      actions: <Widget>[
-                      FlatButton(
-                          child: Text('Ok'),
-                          onPressed: () => Navigator.of(context).pop(),
-                      ),
-                  ],
-              ),
-          );
+        print("onResume: $message");
+        showPushNotificationDialog(context, message);
       },
     );
   }

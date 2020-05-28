@@ -36,6 +36,42 @@ onDialogClose() {
   // Not use
 }
 
+// Alert dialog for push notification
+showPushNotificationDialog(context, message) {
+  EasyDialog(
+    title: Text(
+      message['notification']['title'],
+      style: TextStyle(fontWeight: FontWeight.bold),
+      textScaleFactor: 1.2,
+    ),
+    description: Text(
+      message['notification']['body'],
+      textScaleFactor: 1.1,
+      textAlign: TextAlign.center,
+    ),
+    height: 160,
+    closeButton: false,
+    contentList: [
+      Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: <Widget>[
+          FlatButton(
+            padding: EdgeInsets.all(8),
+            textColor: Colors.lightBlue,
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+            child: Text("OK",
+              textScaleFactor: 1.2,
+              textAlign: TextAlign.center,
+            ),
+          ),
+        ],
+      )
+    ]
+  ).show(context, onDialogClose);
+}
+
 // Alert dialog for error in sending email
 showPublicKeyNotFoundDialog(context) {
   EasyDialog(
