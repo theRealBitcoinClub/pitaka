@@ -36,7 +36,7 @@ class AddAccountComponentState extends State<AddAccountComponent> {
       return null;
   }
 
-  void _validateInputs(BuildContext context) async {
+  void _validateInputsPersonalAccount(BuildContext context) async {
     if (_formKey.currentState.validate()) {
       // Close the on-screen keyboard by removing focus from the form's inputs
       FocusScope.of(context).requestFocus(FocusNode());
@@ -44,6 +44,7 @@ class AddAccountComponentState extends State<AddAccountComponent> {
       _formKey.currentState.save();
       // Send request to create the account
       String userId = await globals.storage.read(key: "userId");
+      print("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ $userId @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
       String publicKey = await globals.storage.read(key: "publicKey");
       String privateKey = await globals.storage.read(key: "privateKey");
       String signature = await signTransaction("helloworld", privateKey);
@@ -52,12 +53,13 @@ class AddAccountComponentState extends State<AddAccountComponent> {
         "name": newAccount.name,
         "public_key": publicKey,
         "txn_hash": "helloworld",
+        "type": _accountType,
         "signature": signature,
       };
       setState(() {
         _submitting = true;
       });
-      var response = await createAccount(accountPayload);
+      var response = await createPersonalAccount(accountPayload);
 
       // Catch app version compatibility
       if (response.error == "outdated_app_version") {
@@ -150,7 +152,7 @@ class AddAccountComponentState extends State<AddAccountComponent> {
                         splashColor: Colors.red[100],
                         textColor: Colors.white,
                         onPressed: () {
-                          _validateInputs(context);
+                          _validateInputsPersonalAccount(context);
                         },
                         child: Text('Create'),
                       )
@@ -195,7 +197,7 @@ class AddAccountComponentState extends State<AddAccountComponent> {
                         splashColor: Colors.red[100],
                         textColor: Colors.white,
                         onPressed: () {
-                          _validateInputs(context);
+                          _validateInputsPersonalAccount(context);
                         },
                         child: Text('Create'),
                       )

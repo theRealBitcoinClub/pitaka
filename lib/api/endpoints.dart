@@ -184,6 +184,7 @@ Future<GenericCreateResponse> createUser(payload) async {
   try {
     final String url = globals.baseUrl + '/api/users/create';
     final response = await sendPostRequest(url, payload);
+    print("############################### $response #################################");
     if (response.data['success']) {
       // Save birthdate in shared preferences
       SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -286,7 +287,9 @@ Future<GenericCreateResponse> linkBusinessToAccount(payload) async {
 }
 
 
-Future<GenericCreateResponse> createAccount(payload) async {
+Future<GenericCreateResponse> createPersonalAccount(payload) async {
+  // For debug print
+  print("The value of payload in createPersonalAccount() in endpoints.dart is: $payload");
   try {
     final String url = globals.baseUrl + '/api/accounts/create';
     final response = await sendPostRequest(url, payload);

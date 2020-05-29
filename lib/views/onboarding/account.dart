@@ -49,7 +49,7 @@ class AccountComponentState extends State<AccountComponent> {
       setState(() {
         _submitting = true;
       });
-      var response = await createAccount(accountPayload);
+      var response = await createPersonalAccount(accountPayload);
       
       // Catch app version compatibility
       if (response.error == "outdated_app_version") {
