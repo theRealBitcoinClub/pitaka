@@ -33,9 +33,9 @@ class AddAccountComponent extends StatefulWidget {
 
 class AddAccountComponentState extends State<AddAccountComponent> {
   StreamSubscription _connectionChangeStream;
-  AddAccount newAccount = new AddAccount();
-  AddBusiness newBusiness = new AddBusiness();
-  AddBusinessAccount newBusinessAccount = new AddBusinessAccount();
+  AddAccount newAccount = AddAccount();
+  AddBusiness newBusiness = AddBusiness();
+  AddBusinessAccount newBusinessAccount = AddBusinessAccount();
   final _formKey = GlobalKey<FormState>();
   String _accountType;
   bool _autoValidate = false;
@@ -52,17 +52,19 @@ class AddAccountComponentState extends State<AddAccountComponent> {
       return null;
   }
 
-  void _validateInputsPersonalAccount(BuildContext context) async {
+  void _createPersonalAccount(BuildContext context) async {
     if (_formKey.currentState.validate()) {
       // Close the on-screen keyboard by removing focus from the form's inputs
       FocusScope.of(context).requestFocus(FocusNode());
       // Save the form
       _formKey.currentState.save();
-      // Send request to create the account
+
+      // Retrive keypair, user ID and create signature
       String userId = await globals.storage.read(key: "userId");
       String publicKey = await globals.storage.read(key: "publicKey");
       String privateKey = await globals.storage.read(key: "privateKey");
       String signature = await signTransaction("helloworld", privateKey);
+
       var accountPayload = {
         "creator": userId,
         "name": newAccount.name,
@@ -97,11 +99,13 @@ class AddAccountComponentState extends State<AddAccountComponent> {
       FocusScope.of(context).requestFocus(FocusNode());
       // Save the form
       _formKey.currentState.save();
-      // Send request to create the account
+
+      // Retrive keypair, user ID and create signature
       String userId = await globals.storage.read(key: "userId");
       String publicKey = await globals.storage.read(key: "publicKey");
       String privateKey = await globals.storage.read(key: "privateKey");
       String signature = await signTransaction("helloworld", privateKey);
+      
       var accountPayload = {
         "creator": userId,
         "name": newBusinessAccount.name,
@@ -125,9 +129,10 @@ class AddAccountComponentState extends State<AddAccountComponent> {
         setState(() {
           _submitting = false;
         });
+
         await globals.storage.write(key: "userBusinessAccountId", value: response.id);
 
-        // Send request to create the account
+        // Retrive keypair, business ID's and create signature
         String account = await globals.storage.read(key: "userBusinessAccountId");
         String business = await globals.storage.read(key: "userBusinessId");
         String publicKey = await globals.storage.read(key: "publicKey");
@@ -160,10 +165,12 @@ class AddAccountComponentState extends State<AddAccountComponent> {
       FocusScope.of(context).requestFocus(FocusNode());
       // Save the form
       _formKey.currentState.save();
-      // Send request to create the account
+
+      // Retrive keypair and create signature
       String publicKey = await globals.storage.read(key: "publicKey");
       String privateKey = await globals.storage.read(key: "privateKey");
       String signature = await signTransaction("helloworld", privateKey);
+
       var payload = {
         "name": newBusiness.name,
         "type": newBusiness.type,
@@ -271,9 +278,9 @@ class AddAccountComponentState extends State<AddAccountComponent> {
                         splashColor: Colors.red[100],
                         textColor: Colors.white,
                         onPressed: () {
-                          _validateInputsPersonalAccount(context);
+                          _createPersonalAccount(context);
                         },
-                        child: Text('Create'),
+                        child: Text('Create Personal Account'),
                       )
                     )
                   ],
