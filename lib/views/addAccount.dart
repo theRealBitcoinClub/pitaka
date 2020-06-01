@@ -13,6 +13,19 @@ class AddAccount {
   String name;
 }
 
+class AddBusiness {
+  String name;
+  String type;
+  String tin;
+  String address;
+}
+
+class AddBusinessAccount {
+  String name;
+  String type;
+  String callbackUrl;
+}
+
 class AddAccountComponent extends StatefulWidget {
   @override
   AddAccountComponentState createState() => AddAccountComponentState();
@@ -21,12 +34,15 @@ class AddAccountComponent extends StatefulWidget {
 class AddAccountComponentState extends State<AddAccountComponent> {
   StreamSubscription _connectionChangeStream;
   AddAccount newAccount = new AddAccount();
+  AddBusiness newBusiness = new AddBusiness();
+  AddBusinessAccount newBusinessAccount = new AddBusinessAccount();
   final _formKey = GlobalKey<FormState>();
   String _accountType;
   bool _autoValidate = false;
   bool online = globals.online;
   bool isOffline = false;
   bool _submitting = false;
+  bool _showCreateBusinessAccountForm = false;
 
 
   String validateName(String value) {
@@ -44,7 +60,6 @@ class AddAccountComponentState extends State<AddAccountComponent> {
       _formKey.currentState.save();
       // Send request to create the account
       String userId = await globals.storage.read(key: "userId");
-      print("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ $userId @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
       String publicKey = await globals.storage.read(key: "publicKey");
       String privateKey = await globals.storage.read(key: "privateKey");
       String signature = await signTransaction("helloworld", privateKey);
@@ -59,7 +74,7 @@ class AddAccountComponentState extends State<AddAccountComponent> {
       setState(() {
         _submitting = true;
       });
-      var response = await createPersonalAccount(accountPayload);
+      var response = await createAccount(accountPayload);
 
       // Catch app version compatibility
       if (response.error == "outdated_app_version") {
@@ -72,6 +87,110 @@ class AddAccountComponentState extends State<AddAccountComponent> {
         });
         await globals.storage.write(key: "defaultAccount", value: response.id);
         Application.router.navigateTo(context, "/home");
+      }
+    }
+  }
+
+  void _createBusinessAccount(BuildContext context) async {
+    if (_formKey.currentState.validate()) {
+      // Close the on-screen keyboard by removing focus from the form's inputs
+      FocusScope.of(context).requestFocus(FocusNode());
+      // Save the form
+      _formKey.currentState.save();
+      // Send request to create the account
+      String userId = await globals.storage.read(key: "userId");
+      String publicKey = await globals.storage.read(key: "publicKey");
+      String privateKey = await globals.storage.read(key: "privateKey");
+      String signature = await signTransaction("helloworld", privateKey);
+      var accountPayload = {
+        "creator": userId,
+        "name": newBusinessAccount.name,
+        "public_key": publicKey,
+        "txn_hash": "helloworld",
+        "type": _accountType,
+        "callback_url": newBusinessAccount.callbackUrl,
+        "signature": signature,
+      };
+      setState(() {
+        _submitting = true;
+      });
+      var response = await createAccount(accountPayload);
+
+      // Catch app version compatibility
+      if (response.error == "outdated_app_version") {
+        showOutdatedAppVersionDialog(context);
+      }
+
+      if(response != null) {
+        setState(() {
+          _submitting = false;
+        });
+        await globals.storage.write(key: "userBusinessAccountId", value: response.id);
+
+        // Send request to create the account
+        String account = await globals.storage.read(key: "userBusinessAccountId");
+        String business = await globals.storage.read(key: "userBusinessId");
+        String publicKey = await globals.storage.read(key: "publicKey");
+        String privateKey = await globals.storage.read(key: "privateKey");
+        String signature = await signTransaction("helloworld", privateKey);
+
+        var payload = {
+          "account": account,
+          "business": business,
+          "public_key": publicKey,
+          "txn_hash": "helloworld",
+          "signature": signature,
+        };
+        setState(() {
+          _submitting = true;
+        });
+
+        var resp = await linkBusinessToAccount(payload);
+
+        if (resp.success) {
+          Application.router.navigateTo(context, "/home");
+        }
+      }
+    }
+  }
+
+  void _registerBusiness(BuildContext context) async {
+    if (_formKey.currentState.validate()) {
+      // Close the on-screen keyboard by removing focus from the form's inputs
+      FocusScope.of(context).requestFocus(FocusNode());
+      // Save the form
+      _formKey.currentState.save();
+      // Send request to create the account
+      String publicKey = await globals.storage.read(key: "publicKey");
+      String privateKey = await globals.storage.read(key: "privateKey");
+      String signature = await signTransaction("helloworld", privateKey);
+      var payload = {
+        "name": newBusiness.name,
+        "type": newBusiness.type,
+        "tin": newBusiness.tin,
+        "address": newBusiness.address,
+        "public_key": publicKey,
+        "txn_hash": "helloworld",
+        "signature": signature,
+      };
+      setState(() {
+        _submitting = true;
+      });
+      var response = await registerBusiness(payload);
+
+      // Catch app version compatibility
+      if (response.error == "outdated_app_version") {
+        showOutdatedAppVersionDialog(context);
+      }
+
+      if(response != null) {
+        setState(() {
+          _submitting = false;
+        });
+        await globals.storage.write(key: "userBusinessId", value: response.id);
+        setState(() {
+          _showCreateBusinessAccountForm = true;
+        });
       }
     }
   }
@@ -160,7 +279,7 @@ class AddAccountComponentState extends State<AddAccountComponent> {
                   ],
                 )
               )
-            : _accountType == "Business" ?
+            : _accountType == "Business" && _showCreateBusinessAccountForm == false ?
               Padding(
                 padding: EdgeInsets.only(left: 8.0, right: 8.0,),
                 child: Column(
@@ -169,24 +288,48 @@ class AddAccountComponentState extends State<AddAccountComponent> {
                       keyboardType: TextInputType.text,
                       validator: validateName,
                       onSaved: (value) {
-                        newAccount.name = value;
+                        newBusiness.name = value;
                       },
                       decoration: const InputDecoration(
-                        icon: const Icon(Icons.attach_money, color: Colors.red,),
-                        hintText: 'Enter account name',
-                        labelText: 'Business Account Name',
+                        icon: const Icon(Icons.business, color: Colors.red,),
+                        hintText: 'Enter business name',
+                        labelText: 'Name',
                       ),
                     ),
                     TextFormField(
                       keyboardType: TextInputType.text,
                       validator: validateName,
                       onSaved: (value) {
-                        newAccount.name = value;
+                        newBusiness.type = value;
                       },
                       decoration: const InputDecoration(
-                        icon: const Icon(Icons.insert_link, color: Colors.red,),
-                        hintText: 'Enter callback URL',
-                        labelText: 'Callback URL',
+                        icon: const Icon(Icons.business_center, color: Colors.red,),
+                        hintText: 'Enter business type',
+                        labelText: 'Type',
+                      ),
+                    ),
+                    TextFormField(
+                      keyboardType: TextInputType.text,
+                      validator: validateName,
+                      onSaved: (value) {
+                        newBusiness.tin = value;
+                      },
+                      decoration: const InputDecoration(
+                        icon: const Icon(Icons.dehaze, color: Colors.red,),
+                        hintText: 'Enter TIN number',
+                        labelText: 'TIN',
+                      ),
+                    ),
+                    TextFormField(
+                      keyboardType: TextInputType.text,
+                      validator: validateName,
+                      onSaved: (value) {
+                        newBusiness.address = value;
+                      },
+                      decoration: const InputDecoration(
+                        icon: const Icon(Icons.location_city, color: Colors.red,),
+                        hintText: 'Enter business address',
+                        labelText: 'Address',
                       ),
                     ),
                     SizedBox(height: 30.0,),
@@ -197,16 +340,63 @@ class AddAccountComponentState extends State<AddAccountComponent> {
                         splashColor: Colors.red[100],
                         textColor: Colors.white,
                         onPressed: () {
-                          _validateInputsPersonalAccount(context);
+                          _registerBusiness(context);
                         },
-                        child: Text('Create'),
+                        child: Text('Register Business'),
                       )
-                    )
+                    ),
                   ],
                 )
               )
             :
-              Container()
+              Container(),
+                    _showCreateBusinessAccountForm ?
+                      Padding(
+                        padding: EdgeInsets.only(left: 8.0, right: 8.0,),
+                        child: Column(
+                          children: <Widget>[
+                            TextFormField(
+                              keyboardType: TextInputType.text,
+                              validator: validateName,
+                              onSaved: (value) {
+                                newAccount.name = value;
+                              },
+                              decoration: const InputDecoration(
+                                icon: const Icon(Icons.business, color: Colors.red,),
+                                hintText: 'Enter account name',
+                                labelText: 'Business Account Name',
+                              ),
+                            ),
+                            TextFormField(
+                              keyboardType: TextInputType.text,
+                              validator: validateName,
+                              onSaved: (value) {
+                                newAccount.name = value;
+                              },
+                              decoration: const InputDecoration(
+                                icon: const Icon(Icons.insert_link, color: Colors.red,),
+                                hintText: 'Enter callback URL',
+                                labelText: 'Callback URL (optional)',
+                              ),
+                            ),
+                            SizedBox(height: 30.0,),
+                            SizedBox(
+                              width: double.infinity,
+                              child: RaisedButton(
+                                color: Colors.red,
+                                splashColor: Colors.red[100],
+                                textColor: Colors.white,
+                                onPressed: () {
+                                  _createBusinessAccount(context);
+                                },
+                                child: Text('Create Business Account'),
+                              )
+                            ),
+                          ]
+                        ),
+                      )
+                    :
+                      Container(),
           ],
         )
       );
