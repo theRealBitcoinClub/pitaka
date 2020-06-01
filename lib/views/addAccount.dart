@@ -366,7 +366,7 @@ class AddAccountComponentState extends State<AddAccountComponent> {
                               keyboardType: TextInputType.text,
                               validator: validateName,
                               onSaved: (value) {
-                                newAccount.name = value;
+                                newBusinessAccount.name = value;
                               },
                               decoration: const InputDecoration(
                                 icon: const Icon(Icons.business, color: Colors.red,),
@@ -378,7 +378,7 @@ class AddAccountComponentState extends State<AddAccountComponent> {
                               keyboardType: TextInputType.text,
                               validator: validateName,
                               onSaved: (value) {
-                                newAccount.name = value;
+                                newBusinessAccount.callbackUrl = value;
                               },
                               decoration: const InputDecoration(
                                 icon: const Icon(Icons.insert_link, color: Colors.red,),
