@@ -173,7 +173,7 @@ class RequestOTPComponentState extends State<RequestOTPComponent> {
               children: <Widget>[
                 SizedBox(height: 20.0),
                 Center(
-                  child: Text("We've sent an OTP code to:"),
+                  child: Text("We've sent OTP code to:"),
                 ),
                 Center(
                   child: Text(
@@ -184,17 +184,17 @@ class RequestOTPComponentState extends State<RequestOTPComponent> {
                   ),
                 ),
                 Center(
-                  child: Text("Check your inbox and type the code here."),
+                  child: Text("Check your SMS inbox and type the code below."),
                 ),
                 SizedBox(height: 5.0,),
                 Center(
                   child: RichText(
                     text: TextSpan(
-                      text: "Did not received the code? Click",
+                      text: "If you did not receive the code,",
                       style: TextStyle(color: Colors.black, fontSize: 14),
                       children: <TextSpan>[
                         TextSpan(
-                          text: ' resend code.',
+                          text: ' click here to resend code.',
                           style: TextStyle(color: Colors.redAccent, fontSize: 14),
                           recognizer: TapGestureRecognizer()
                             ..onTap = () {

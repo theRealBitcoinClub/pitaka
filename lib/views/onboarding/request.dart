@@ -205,7 +205,7 @@ class RequestComponentState extends State<RequestComponent> {
                     SizedBox(height: 30.0,),
                     Center(
                       child: Text(
-                        "Private & Public Key Verification",
+                        "Restore from Master Key",
                         style: TextStyle(
                         fontSize: 24.0,
                         ),
@@ -227,7 +227,7 @@ class RequestComponentState extends State<RequestComponent> {
                         fontSize: 24.0
                       ),
                       decoration: const InputDecoration(
-                        hintText: 'Enter or Paste Private & Public Key',
+                        hintText: 'Type or paste the master key here',
                         hintStyle: TextStyle(
                           fontSize: 15.0
                         ),
