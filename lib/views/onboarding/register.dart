@@ -191,7 +191,7 @@ class RegisterComponentState extends State<RegisterComponent> {
           if (user.error == "outdated_app_version") {
             showOutdatedAppVersionDialog(context);
           }
-          
+          // Store user ID in global storage
           await globals.storage.write(key: "userId", value: user.id);
           // Login
           String loginSignature =

@@ -251,14 +251,8 @@ Future<CreateContactResponse> saveContact(payload) async {
 
 
 Future<GenericCreateResponse> registerBusiness(payload) async {
+  print("The value of payload in registerBusiness() in endpoints.dart is: $payload");
   try {
-    String publicKey = await globals.storage.read(key:"publicKey");
-    String privateKey = await globals.storage.read(key:"privateKey");
-    var txnhash = "${payload['tin']}:message:$publicKey";
-    String signature = await signTransaction(txnhash, privateKey);
-    payload['signature'] = signature;
-    payload['txn_hash'] = txnhash;
-    payload['public_key'] = publicKey;
     final String url = globals.baseUrl + '/api/business/registration';
     final response = await sendPostRequest(url, payload);
     return GenericCreateResponse.fromResponse(response);
@@ -269,14 +263,8 @@ Future<GenericCreateResponse> registerBusiness(payload) async {
 
 
 Future<GenericCreateResponse> linkBusinessToAccount(payload) async {
+  print("The value of payload in linkBusinessToAccount() in endpoints.dart is: $payload");
   try {
-    String publicKey = await globals.storage.read(key:"publicKey");
-    String privateKey = await globals.storage.read(key:"privateKey");
-    var txnhash = "linkToBusiness:message:$publicKey";
-    String signature = await signTransaction(txnhash, privateKey);
-    payload['signature'] = signature;
-    payload['txn_hash'] = txnhash;
-    payload['public_key'] = publicKey;
     final String url = globals.baseUrl + '/api/business/connect-account';
     final response = await sendPostRequest(url, payload);
     return GenericCreateResponse.fromResponse(response);
@@ -287,6 +275,8 @@ Future<GenericCreateResponse> linkBusinessToAccount(payload) async {
 
 
 Future<GenericCreateResponse> createAccount(payload) async {
+  // For debug print
+  print("The value of payload in createPersonalAccount() in endpoints.dart is: $payload");
   try {
     final String url = globals.baseUrl + '/api/accounts/create';
     final response = await sendPostRequest(url, payload);

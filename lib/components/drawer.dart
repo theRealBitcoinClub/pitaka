@@ -220,37 +220,37 @@ Drawer buildDrawer(BuildContext context) {
         ),
         ListTile(
           title: Text('Accounts'),
-          trailing: Icon(Icons.account_balance_wallet),
+          trailing: Icon(Icons.account_balance_wallet, color: Colors.red,),
           onTap: () {
             Application.router.navigateTo(context, "/home");
         }),
         ListTile(
           title: Text('Pay'),
-          trailing: Icon(Icons.send),
+          trailing: Icon(Icons.send, color: Colors.red,),
           onTap: () {
             Application.router.navigateTo(context, "/send");
         }),
         ListTile(
           title: Text('QR Code'),
-          trailing: Icon(Icons.inbox),
+          trailing: Icon(Icons.inbox, color: Colors.red,),
           onTap: () {
             Application.router.navigateTo(context, "/receive");
         }),
         ListTile(
           title: Text('Create Account'),
-          trailing: Icon(Icons.person_outline),
+          trailing: Icon(Icons.person_outline, color: Colors.red,),
           onTap: () {
             Application.router.navigateTo(context, "/addAccount");
         }),
         ListTile(
           title: Text('Aunthenticate'),
-          trailing: Icon(Icons.person_pin),
+          trailing: Icon(Icons.person_pin, color: Colors.red,),
           onTap: () {
             Application.router.navigateTo(context, "/authenticate");
         }),
         ListTile(
           title: Text('Contact List'),
-          trailing: Icon(Icons.contacts),
+          trailing: Icon(Icons.contacts, color: Colors.red,),
           onTap: () {
             Application.router.navigateTo(context, "/contactlist");
         }),
