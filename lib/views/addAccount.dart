@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter_masked_text/flutter_masked_text.dart';
 import '../views/app.dart';
 import '../api/endpoints.dart';
 import '../components/drawer.dart';
@@ -20,12 +21,6 @@ class AddBusiness {
   String address;
 }
 
-class AddBusinessAccount {
-  String name;
-  String type;
-  String callbackUrl;
-}
-
 class AddAccountComponent extends StatefulWidget {
   @override
   AddAccountComponentState createState() => AddAccountComponentState();
@@ -35,19 +30,33 @@ class AddAccountComponentState extends State<AddAccountComponent> {
   StreamSubscription _connectionChangeStream;
   AddAccount newAccount = AddAccount();
   AddBusiness newBusiness = AddBusiness();
-  AddBusinessAccount newBusinessAccount = AddBusinessAccount();
   final _formKey = GlobalKey<FormState>();
   String _accountType;
+  String _businessType;
   bool _autoValidate = false;
   bool online = globals.online;
   bool isOffline = false;
   bool _submitting = false;
-  bool _showCreateBusinessAccountForm = false;
-
+  bool _noBusinessTypeSelected = false;
+  var controller = MaskedTextController(mask: '000-000-000-000');
 
   String validateName(String value) {
     if (value.length < 3)
       return 'Name must be more than 2 charater';
+    else
+      return null;
+  }
+
+  String validateAddress(String value) {
+    if (value.length < 15)
+      return 'Address must be complete';
+    else
+      return null;
+  }
+
+  String validateTIN(String value) {
+    if (value.length < 12)
+      return 'TIN number must be complete';
     else
       return null;
   }
@@ -93,72 +102,6 @@ class AddAccountComponentState extends State<AddAccountComponent> {
     }
   }
 
-  void _createBusinessAccount(BuildContext context) async {
-    if (_formKey.currentState.validate()) {
-      // Close the on-screen keyboard by removing focus from the form's inputs
-      FocusScope.of(context).requestFocus(FocusNode());
-      // Save the form
-      _formKey.currentState.save();
-
-      // Retrive keypair, user ID and create signature
-      String userId = await globals.storage.read(key: "userId");
-      String publicKey = await globals.storage.read(key: "publicKey");
-      String privateKey = await globals.storage.read(key: "privateKey");
-      String signature = await signTransaction("helloworld", privateKey);
-      
-      var accountPayload = {
-        "creator": userId,
-        "name": newBusinessAccount.name,
-        "public_key": publicKey,
-        "txn_hash": "helloworld",
-        "type": _accountType,
-        "callback_url": newBusinessAccount.callbackUrl,
-        "signature": signature,
-      };
-      setState(() {
-        _submitting = true;
-      });
-      var response = await createAccount(accountPayload);
-
-      // Catch app version compatibility
-      if (response.error == "outdated_app_version") {
-        showOutdatedAppVersionDialog(context);
-      }
-
-      if(response != null) {
-        setState(() {
-          _submitting = false;
-        });
-
-        await globals.storage.write(key: "userBusinessAccountId", value: response.id);
-
-        // Retrive keypair, business ID's and create signature
-        String account = await globals.storage.read(key: "userBusinessAccountId");
-        String business = await globals.storage.read(key: "userBusinessId");
-        String publicKey = await globals.storage.read(key: "publicKey");
-        String privateKey = await globals.storage.read(key: "privateKey");
-        String signature = await signTransaction("helloworld", privateKey);
-
-        var payload = {
-          "account": account,
-          "business": business,
-          "public_key": publicKey,
-          "txn_hash": "helloworld",
-          "signature": signature,
-        };
-        setState(() {
-          _submitting = true;
-        });
-
-        var resp = await linkBusinessToAccount(payload);
-
-        if (resp.success) {
-          Application.router.navigateTo(context, "/home");
-        }
-      }
-    }
-  }
-
   void _registerBusiness(BuildContext context) async {
     if (_formKey.currentState.validate()) {
       // Close the on-screen keyboard by removing focus from the form's inputs
@@ -171,18 +114,23 @@ class AddAccountComponentState extends State<AddAccountComponent> {
       String privateKey = await globals.storage.read(key: "privateKey");
       String signature = await signTransaction("helloworld", privateKey);
 
+      // Create the payload
       var payload = {
         "name": newBusiness.name,
-        "type": newBusiness.type,
+        "type": _businessType,
         "tin": newBusiness.tin,
         "address": newBusiness.address,
         "public_key": publicKey,
         "txn_hash": "helloworld",
         "signature": signature,
       };
+
+      // Show progress indicator during request
       setState(() {
         _submitting = true;
       });
+
+      // Call registerBusiness function in endpoint.dart
       var response = await registerBusiness(payload);
 
       // Catch app version compatibility
@@ -190,14 +138,57 @@ class AddAccountComponentState extends State<AddAccountComponent> {
         showOutdatedAppVersionDialog(context);
       }
 
-      if(response != null) {
-        setState(() {
-          _submitting = false;
-        });
+      if(response.success) {
+
         await globals.storage.write(key: "userBusinessId", value: response.id);
-        setState(() {
-          _showCreateBusinessAccountForm = true;
-        });
+
+
+        // Retrive keypair, user ID and create signature
+        String userId = await globals.storage.read(key: "userId");
+        
+        var accountPayload = {
+          "creator": userId,
+          "name": newBusiness.name,
+          "public_key": publicKey,
+          "txn_hash": "helloworld",
+          "type": _accountType,
+          "callback_url": "",
+          "signature": signature,
+        };
+
+        var resp = await createAccount(accountPayload);
+
+        // Catch app version compatibility
+        if (resp.error == "outdated_app_version") {
+          showOutdatedAppVersionDialog(context);
+        }
+
+        if(resp != null) {
+
+          await globals.storage.write(key: "userBusinessAccountId", value: resp.id);
+
+          // Retrive keypair, business ID's and create signature
+          String account = await globals.storage.read(key: "userBusinessAccountId");
+          String business = await globals.storage.read(key: "userBusinessId");
+
+          var payload = {
+            "account": account,
+            "business": business,
+            "public_key": publicKey,
+            "txn_hash": "helloworld",
+            "signature": signature,
+          };
+          // Call linkBusinessToAccount function in endpoint.dart
+          var res = await linkBusinessToAccount(payload);
+          // Hide progress indicator after successful request
+          if (res.success) {
+            setState(() {
+              _submitting = false;
+            });
+            // After successful request navigate to home
+            Application.router.navigateTo(context, "/home");
+          }
+        }
       }
     }
   }
@@ -252,7 +243,7 @@ class AddAccountComponentState extends State<AddAccountComponent> {
                 ]
               ),
             ),
-            SizedBox(height: 20.0,),
+            SizedBox(height: 30.0,),
             _accountType == "Personal" ?
               Padding(
                 padding: EdgeInsets.only(left: 8.0, right: 8.0,),
@@ -286,11 +277,66 @@ class AddAccountComponentState extends State<AddAccountComponent> {
                   ],
                 )
               )
-            : _accountType == "Business" && _showCreateBusinessAccountForm == false ?
+            : _accountType == "Business" ?
               Padding(
                 padding: EdgeInsets.only(left: 8.0, right: 8.0,),
                 child: Column(
                   children: <Widget>[
+                    Stack(
+                      children: <Widget>[
+                        Container(
+                          margin: EdgeInsets.only(top: 6.0,),
+                          child: Icon(
+                            Icons.business_center,
+                            color: Colors.red,
+                          ),
+                        ),
+                        Padding(
+                          padding: EdgeInsets.only(left: 40.0,),
+                          child: DropdownButton(
+                            hint: Text('Select Business Type'),
+                            iconEnabledColor: Colors.red,
+                            value: _businessType,
+                            isExpanded: true,
+                            isDense: true,
+                            iconSize: 30.0,
+                            items: [
+                              "Sole Proprietorship", 
+                              "Partnership", 
+                              "Corporation",
+                            ].map(
+                              (val) {
+                                return DropdownMenuItem<String>(
+                                  value: val,
+                                  child: Text(val),
+                                );
+                              },
+                            ).toList(),
+                            onChanged: (val) {
+                              setState(
+                                () {
+                                  _businessType = val;
+                                },
+                              );
+                            },
+                          ),
+                        ),
+                        Padding(
+                          padding: EdgeInsets.only(top: 38.0, left: 42.0,),
+                          child: Visibility(
+                            visible: _businessType == null && _noBusinessTypeSelected == true,
+                            child: Container(
+                              child: Text(
+                                "This field is required",
+                                style: TextStyle(color: Colors.red, fontSize: 12.0,),
+                                textAlign: TextAlign.left,
+                              ),
+                            ),
+                          ),
+                        )
+                      ],
+                    ),
+                    SizedBox(height: 10.0,),
                     TextFormField(
                       keyboardType: TextInputType.text,
                       validator: validateName,
@@ -304,20 +350,9 @@ class AddAccountComponentState extends State<AddAccountComponent> {
                       ),
                     ),
                     TextFormField(
-                      keyboardType: TextInputType.text,
-                      validator: validateName,
-                      onSaved: (value) {
-                        newBusiness.type = value;
-                      },
-                      decoration: const InputDecoration(
-                        icon: const Icon(Icons.business_center, color: Colors.red,),
-                        hintText: 'Enter business type',
-                        labelText: 'Type',
-                      ),
-                    ),
-                    TextFormField(
-                      keyboardType: TextInputType.text,
-                      validator: validateName,
+                      controller: controller,
+                      keyboardType: TextInputType.phone,
+                      validator: validateTIN,
                       onSaved: (value) {
                         newBusiness.tin = value;
                       },
@@ -329,7 +364,7 @@ class AddAccountComponentState extends State<AddAccountComponent> {
                     ),
                     TextFormField(
                       keyboardType: TextInputType.text,
-                      validator: validateName,
+                      validator: validateAddress,
                       onSaved: (value) {
                         newBusiness.address = value;
                       },
@@ -347,6 +382,11 @@ class AddAccountComponentState extends State<AddAccountComponent> {
                         splashColor: Colors.red[100],
                         textColor: Colors.white,
                         onPressed: () {
+                          if (_businessType == null) {
+                            setState(() {
+                              _noBusinessTypeSelected = true;
+                            });
+                          }
                           _registerBusiness(context);
                         },
                         child: Text('Register Business'),
@@ -356,54 +396,7 @@ class AddAccountComponentState extends State<AddAccountComponent> {
                 )
               )
             :
-              Container(),
-                    _showCreateBusinessAccountForm ?
-                      Padding(
-                        padding: EdgeInsets.only(left: 8.0, right: 8.0,),
-                        child: Column(
-                          children: <Widget>[
-                            TextFormField(
-                              keyboardType: TextInputType.text,
-                              validator: validateName,
-                              onSaved: (value) {
-                                newBusinessAccount.name = value;
-                              },
-                              decoration: const InputDecoration(
-                                icon: const Icon(Icons.business, color: Colors.red,),
-                                hintText: 'Enter account name',
-                                labelText: 'Business Account Name',
-                              ),
-                            ),
-                            TextFormField(
-                              keyboardType: TextInputType.text,
-                              validator: validateName,
-                              onSaved: (value) {
-                                newBusinessAccount.callbackUrl = value;
-                              },
-                              decoration: const InputDecoration(
-                                icon: const Icon(Icons.insert_link, color: Colors.red,),
-                                hintText: 'Enter callback URL',
-                                labelText: 'Callback URL (optional)',
-                              ),
-                            ),
-                            SizedBox(height: 30.0,),
-                            SizedBox(
-                              width: double.infinity,
-                              child: RaisedButton(
-                                color: Colors.red,
-                                splashColor: Colors.red[100],
-                                textColor: Colors.white,
-                                onPressed: () {
-                                  _createBusinessAccount(context);
-                                },
-                                child: Text('Create Business Account'),
-                              )
-                            ),
-                          ]
-                        ),
-                      )
-                    :
-                      Container(),
+              Container(),  
           ],
         )
       );
