@@ -75,11 +75,10 @@ class VerifyComponentState extends State<VerifyComponent> {
         showOutdatedAppVersionDialog(context);
       }
 
-
       if (resp.verified) {
         proceed = true;
       } else {
-        showOutdatedAppVersionDialog(context);
+        showInvalidOTPCodelDialog(context);
       }
 
       if (proceed) {
@@ -145,6 +144,7 @@ class VerifyComponentState extends State<VerifyComponent> {
                 SizedBox(height: 5.0,),
                 Center(
                   child: RichText(
+                    textAlign: TextAlign.center,
                     text: TextSpan(
                       text: "If you did not receive the code,",
                       style: TextStyle(color: Colors.black, fontSize: 14),

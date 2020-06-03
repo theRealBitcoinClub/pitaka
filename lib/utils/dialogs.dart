@@ -229,6 +229,47 @@ showIdentitySubmitSuccesslDialog(context) {
   ).show(context, onDialogClose);
 }
 
+
+// Alert dialog for invalid or wrong OTP code
+showInvalidOTPCodelDialog(context) {
+  EasyDialog(
+    title: Text(
+      "Invalid Code!",
+      style: TextStyle(fontWeight: FontWeight.bold),
+      textScaleFactor: 1.2,
+    ),
+    description: Text(
+      "The code you've entered is invalid. "
+      "You can request another code by entering your mobile number again. "
+      "Please make sure to enter a valid or correct code.",
+      textScaleFactor: 1.1,
+      textAlign: TextAlign.center,
+    ),
+    height: 195,
+    closeButton: false,
+    contentList: [
+      Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: <Widget>[
+          FlatButton(
+            padding: EdgeInsets.all(8),
+            textColor: Colors.lightBlue,
+            onPressed: () {
+              Navigator.of(context).pop();
+              Application.router.navigateTo(context, "/onboarding/requestotpforretry");
+            },
+            child: Text("OK",
+              textScaleFactor: 1.2,
+              textAlign: TextAlign.center,
+            ),
+          ),
+        ],
+      )
+    ]
+  ).show(context, onDialogClose);
+}
+
+
 // Alert dialog for error in sending email
 showInvalidCodelDialog(context) {
   EasyDialog(
@@ -407,6 +448,45 @@ showDuplicateMobileNumberDialog(context) {
             onPressed: () {
               Navigator.of(context).pop();
               Application.router.navigateTo(context, "/onboarding/request");
+            },
+            child: new Text("OK",
+              textScaleFactor: 1.2,
+              textAlign: TextAlign.center,
+            ),
+          ),
+        ],
+      )
+    ]
+  ).show(context, onDialogClose);
+}
+
+
+// Alert dialog for maximum retries of OTP request
+showMaxRetriesReachedDialog(context) {
+  EasyDialog(
+    title: Text(
+      "Max Retries Reached!",
+      style: TextStyle(fontWeight: FontWeight.bold),
+      textScaleFactor: 1.2,
+    ),
+    description: Text(
+      "You've reached the maximum retries. "
+      "Please contact Paytaca for assistance and support.",
+      textScaleFactor: 1.1,
+      textAlign: TextAlign.center,
+    ),
+    height: 160,
+    closeButton: false,
+    contentList: [
+      Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: <Widget>[
+          new FlatButton(
+            padding: EdgeInsets.all(8),
+            textColor: Colors.lightBlue,
+            onPressed: () {
+              _launchPaytacaURL();
+              SystemNavigator.pop();
             },
             child: new Text("OK",
               textScaleFactor: 1.2,

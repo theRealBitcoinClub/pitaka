@@ -635,3 +635,14 @@ Future<RequestOTPAccountRestoreResponse> requestOTPAccountRestore(payload) async
     throw Exception('Failed to send OTP!');
   }
 }
+
+Future<GenericCreateResponse> requestOTPRetry(payload) async {
+  print("The value of payload in requestOTPRetry() in endpoints.dart is: $payload");
+  try {
+    final String url = globals.baseUrl + '/api/otp/resend';
+    final response = await sendPostRequest(url, payload);
+    return GenericCreateResponse.fromResponse(response);
+  } catch (e){
+    throw Exception(e);
+  }
+}

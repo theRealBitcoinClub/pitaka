@@ -5,6 +5,7 @@ import './handlers.dart';
 class Routes {
   static String root = "/";
   static String onboardingRequest = "/onboarding/request";
+  static String onboardingRequestOTPForRetry = "/onboarding/requestotpforretry";
   static String onboardingVerify = "/onboarding/verify/:mobilenumber";
   static String requestOTP = "/requestotp/:mobilenumber";
   static String onboardingRegister = "/onboarding/register/:mobilenumber";
@@ -48,6 +49,12 @@ class Routes {
     router.define(
       onboardingRequest,
       handler: onboardingRequestHandler,
+      transitionType: TransitionType.fadeIn
+    );
+
+    router.define(
+      onboardingRequestOTPForRetry,
+      handler: onboardingRequestOTPForRetryHandler,
       transitionType: TransitionType.fadeIn
     );
 

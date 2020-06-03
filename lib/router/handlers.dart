@@ -2,6 +2,7 @@ import 'package:fluro/fluro.dart';
 import 'package:flutter/material.dart';
 import '../views/landing.dart';
 import '../views/onboarding/request.dart';
+import '../views/onboarding/requestOTPForRetry.dart';
 import '../views/onboarding/verify.dart';
 import '../views/onboarding/requestOTP.dart';
 import '../views/onboarding/register.dart';
@@ -39,6 +40,11 @@ var rootHandler = Handler(
 var onboardingRequestHandler = Handler(
     handlerFunc: (BuildContext context, Map<String, dynamic> params) {
   return RequestComponent();
+});
+
+var onboardingRequestOTPForRetryHandler = Handler(
+    handlerFunc: (BuildContext context, Map<String, dynamic> params) {
+  return RequestOTPForRetryComponent();
 });
 
 var onboardingVerifyHandler = Handler(
