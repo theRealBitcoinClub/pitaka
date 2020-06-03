@@ -1,3 +1,5 @@
+import 'dart:convert';
+import 'package:archive/archive.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/gestures.dart';
@@ -62,8 +64,8 @@ class RequestComponentState extends State<RequestComponent> {
   }
 
   String _validatePublicKey(String value) {
-    if (value.length < 194) {
-      return 'Private & Public keys must be 194 alphanumeric characters';
+    if (value.length < 148) {
+      return 'Master key must be 148 alphanumeric characters';
     } 
   }
 
@@ -128,9 +130,14 @@ class RequestComponentState extends State<RequestComponent> {
       // Store UDID in global storage
       await globals.storage.write(key: "udid", value: udid);
 
+      // Decode private & public keys
+      var baseDecoded = base64.decode(keys);
+      var gzipDecoded = GZipDecoder().decodeBytes(baseDecoded);
+      var utf8Decoded = utf8.decode(gzipDecoded);
+
       // Extract private & public key from keys
-      var privateKey = keys.split('::')[0];
-      var publicKey = keys.split('::')[1];
+      var privateKey = utf8Decoded.split('::')[0];
+      var publicKey = utf8Decoded.split('::')[1];
       // Store private & public key in global storage
       await globals.storage.write(key: "publicKey", value: publicKey);
       await globals.storage.write(key: "privateKey", value: privateKey);
@@ -146,7 +153,7 @@ class RequestComponentState extends State<RequestComponent> {
         showOutdatedAppVersionDialog(context);
       }
 
-        // Show dialog if no found public key match
+      // Show dialog if no found public key match
       if (resp.error == "public_key_not_found") {
         showPublicKeyNotFoundDialog(context);
         _accountController.clear();
@@ -222,7 +229,7 @@ class RequestComponentState extends State<RequestComponent> {
                       onSaved: (value) {
                         keys = value;
                       },
-                      maxLength: 194,
+                      maxLength: 148,
                       style: TextStyle(
                         fontSize: 24.0
                       ),

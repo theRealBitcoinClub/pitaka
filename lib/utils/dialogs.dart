@@ -1,4 +1,5 @@
-  
+import 'dart:convert';
+import 'package:archive/archive.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:easy_dialog/easy_dialog.dart'; 
@@ -114,6 +115,14 @@ savePrivatePublicKeyDialog(context) async {
   String privateKey = await globals.storage.read(key: "privateKey");
   String publicKey = await globals.storage.read(key: "publicKey");
   var conPublicPrivateKey = privateKey + "::" + publicKey;
+  // Encode to base64
+  List<int> stringBytes = utf8.encode(conPublicPrivateKey);
+  List<int> gzipBytes = GZipEncoder().encode(stringBytes);
+  String compressedString = base64.encode(gzipBytes);
+  print("#################################################################");
+  print(compressedString);
+  print("#################################################################");
+  
   EasyDialog(
     cornerRadius: 10.0,
     fogOpacity: 0.5,
@@ -123,45 +132,29 @@ savePrivatePublicKeyDialog(context) async {
     contentList: [
       Center(
         child: Text(
-          "Backup Private & Public Key!",
+          "Backup your Master Key!",
           style: TextStyle(
             fontWeight: FontWeight.bold,
             fontSize: 18.0,
           ),
         )
       ),
-      SizedBox(height: 20.0),
-      Padding(
-        padding: EdgeInsets.only(left: 15.0),
-        child: Align(
-          alignment: Alignment.centerLeft,
-          child: Text(
-            "Private & Public Key:",
-            style: TextStyle(
-              fontWeight: FontWeight.w600,
-              fontSize: 16.0,
-            ),
-            textAlign: TextAlign.left,
-          ),
-        ),
-      ),
-      SizedBox(height: 6.0),
+      SizedBox(height: 20.0,),
       GestureDetector(
         onTap: () {
-          Clipboard.setData(ClipboardData(text: conPublicPrivateKey));
+          Clipboard.setData(ClipboardData(text: compressedString));
           showSimpleNotification(
-            Text("Private & Public key copied to clipboard."),
+            Text("Master key copied to clipboard."),
             background: Colors.red[600],
           );
         },
         child: Padding(
-          padding: EdgeInsets.only(left: 15.0, right: 15.0),
-          child: Align(
-            alignment: Alignment.centerLeft,
+          padding: EdgeInsets.only(left: 10.0, right: 10.0),
+          child: Center(
             child: Text(
-              "$conPublicPrivateKey",
-              style: TextStyle(fontStyle: FontStyle.italic,),
-              textAlign: TextAlign.left,
+              "$compressedString",
+              style: TextStyle(fontFamily: 'RobotoMono',),
+              textAlign: TextAlign.center,
             ),
           ),
         ),
@@ -171,9 +164,9 @@ savePrivatePublicKeyDialog(context) async {
         padding: EdgeInsets.only(left: 10.0, right: 10.0),
         child: Center(
           child: Text(
-            "Save this private & public key somewhere safe as a backup. "
-            "You can restore your wallet using this keys. "
-            "Tap the text to copy.",
+            "Save this master key somewhere safe as a backup. "
+            "You can restore your wallet using this key. "
+            "Tap the text to copy to clipboard.",
             style: TextStyle(fontSize: 16.0,),
             textAlign: TextAlign.center,
           ),

@@ -85,6 +85,13 @@ flutter:
     - assets/images/loading.gif
     - assets/images/default_profile_pic.png
     - assets/texts/terms_and_conditions.txt
+
+  fonts:
+    - family: RobotoMono
+      fonts:
+        - asset: assets/fonts/RobotoMono-Regular.ttf
+
+
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
   # the material Icons class.
