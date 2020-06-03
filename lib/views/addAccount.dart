@@ -138,6 +138,14 @@ class AddAccountComponentState extends State<AddAccountComponent> {
         showOutdatedAppVersionDialog(context);
       }
 
+      // Catch app version compatibility
+      if (response.error == "duplicate_tin") {
+        showDuplicateTINDialog(context);
+        setState(() {
+          _submitting = false;
+        });
+      }
+
       if(response.success) {
 
         await globals.storage.write(key: "userBusinessId", value: response.id);

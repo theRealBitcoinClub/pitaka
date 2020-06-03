@@ -119,9 +119,6 @@ savePrivatePublicKeyDialog(context) async {
   List<int> stringBytes = utf8.encode(conPublicPrivateKey);
   List<int> gzipBytes = GZipEncoder().encode(stringBytes);
   String compressedString = base64.encode(gzipBytes);
-  print("#################################################################");
-  print(compressedString);
-  print("#################################################################");
   
   EasyDialog(
     cornerRadius: 10.0,
@@ -296,6 +293,45 @@ showErrorSendingEmailDialog(context) {
               Navigator.of(context).pop();
             },
             child: new Text("OK",
+              textScaleFactor: 1.2,
+              textAlign: TextAlign.center,
+            ),
+          ),
+        ],
+      )
+    ]
+  ).show(context, onDialogClose);
+}
+
+
+// Alert dialog for duplicate TIN
+showDuplicateTINDialog(context) {
+  EasyDialog(
+    title: Text(
+      "Duplicate TIN!",
+      style: TextStyle(fontWeight: FontWeight.bold),
+      textScaleFactor: 1.2,
+    ),
+    description: Text(
+      "The TIN is already registered. Please double check the number you entered",
+      textScaleFactor: 1.1,
+      textAlign: TextAlign.center,
+    ),
+    height: 160,
+    closeButton: false,
+    contentList: [
+      Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: <Widget>[
+          FlatButton(
+            padding: EdgeInsets.all(8),
+            textColor: Colors.lightBlue,
+            onPressed: () {
+              Navigator.of(context).pop();
+              // Use same mobile number after retry on duplicate email 
+              //Application.router.navigateTo(context, "/onboarding/register/$mobileNumber");
+            },
+            child: Text("OK",
               textScaleFactor: 1.2,
               textAlign: TextAlign.center,
             ),
