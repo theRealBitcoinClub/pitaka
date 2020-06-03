@@ -597,6 +597,8 @@ Future<OtpVerificationResponse> verifyOtpCode(payload) async {
   Response response;
   try {
     response = await sendPostRequest(url, payload);
+    // Debug print
+    print("The value of response in verifyOtpCode() in endpoint.dart is: $response");
     return OtpVerificationResponse.fromResponse(response);
   } catch(e) {
     throw Exception('Failed to verify OTP code');

@@ -22,7 +22,13 @@ class VerifyComponent extends StatefulWidget {
 }
 
 class VerifyComponentState extends State<VerifyComponent> {
+  final _formKey = GlobalKey<FormState>();
   final TextEditingController textController = TextEditingController();
+  BuildContext _scaffoldContext;
+  FocusNode focusNode = FocusNode();
+  Code newCode = Code();
+  bool _submitting = false;
+  
   @override
   void initState() {
     super.initState();
@@ -40,19 +46,12 @@ class VerifyComponentState extends State<VerifyComponent> {
     return true;
   }
 
-  final _formKey = GlobalKey<FormState>();
-  Code newCode = new Code();
-
   String validateCode(String value) {
     if (value.length != 6)
       return 'OTP code must not be exactly 6 digits';
     else
       return null;
   }
-
-  BuildContext _scaffoldContext;
-  FocusNode focusNode = FocusNode();
-  bool _submitting = false;
 
   void _validateInputs(BuildContext context) async {
     bool proceed = false;
@@ -64,23 +63,23 @@ class VerifyComponentState extends State<VerifyComponent> {
         _submitting = true;
       });
 
-      if (newCode.value == '123456') {
+      var codePayload = {
+        "mobile_number": "${widget.mobileNumber}",
+        "code": newCode.value,
+      };
+
+      var resp = await verifyOtpCode(codePayload);
+
+      // Catch app version compatibility
+      if (resp.error == "outdated_app_version") {
+        showOutdatedAppVersionDialog(context);
+      }
+
+
+      if (resp.verified) {
         proceed = true;
       } else {
-        var codePayload = {
-          "mobile_number": "${widget.mobileNumber}",
-          "code": newCode.value,
-        };
-        var resp = await verifyOtpCode(codePayload);
-
-        // Catch app version compatibility
-        if (resp.error == "outdated_app_version") {
-          showOutdatedAppVersionDialog(context);
-        }
-
-        if (resp.verified) {
-          proceed = true;
-        }
+        showOutdatedAppVersionDialog(context);
       }
 
       if (proceed) {

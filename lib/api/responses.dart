@@ -117,7 +117,11 @@ class OtpVerificationResponse {
   OtpVerificationResponse({this.success, this.verified, this.error});
 
   factory OtpVerificationResponse.fromResponse(Response response) {
-    return OtpVerificationResponse(success: response.data['success'], verified: response.data['verified'], error: '');
+    return OtpVerificationResponse(
+      success: response.data['success'], 
+      verified: response.data['verified'], 
+      error: ''
+    );
   }
 }
 
