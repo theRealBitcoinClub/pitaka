@@ -230,8 +230,8 @@ showIdentitySubmitSuccesslDialog(context) {
 }
 
 
-// Alert dialog for invalid or wrong OTP code
-showInvalidOTPCodelDialog(context) {
+// Alert dialog for invalid or wrong OTP code during mobile number registration
+showInvalidOTPCodeDialog(context) {
   EasyDialog(
     title: Text(
       "Invalid Code!",
@@ -257,6 +257,46 @@ showInvalidOTPCodelDialog(context) {
             onPressed: () {
               Navigator.of(context).pop();
               Application.router.navigateTo(context, "/onboarding/requestotpforretry");
+            },
+            child: Text("OK",
+              textScaleFactor: 1.2,
+              textAlign: TextAlign.center,
+            ),
+          ),
+        ],
+      )
+    ]
+  ).show(context, onDialogClose);
+}
+
+
+// Alert dialog for invalid or wrong OTP code during account restoration
+showInvalidOTPCodeAcctResDialog(context) {
+  EasyDialog(
+    title: Text(
+      "Invalid Code!",
+      style: TextStyle(fontWeight: FontWeight.bold),
+      textScaleFactor: 1.2,
+    ),
+    description: Text(
+      "The code you've entered is invalid. "
+      "You can request another code by entering your master key again. "
+      "Please make sure to enter a valid or correct code.",
+      textScaleFactor: 1.1,
+      textAlign: TextAlign.center,
+    ),
+    height: 180,
+    closeButton: false,
+    contentList: [
+      Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: <Widget>[
+          FlatButton(
+            padding: EdgeInsets.all(8),
+            textColor: Colors.lightBlue,
+            onPressed: () {
+              Navigator.of(context).pop();
+              Navigator.of(context).pop();
             },
             child: Text("OK",
               textScaleFactor: 1.2,

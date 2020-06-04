@@ -170,6 +170,10 @@ class RequestComponentState extends State<RequestComponent> {
         Application.router
           .navigateTo(context, "/requestotp/${resp.mobileNumber}");
         databaseHelper.initializeDatabase();
+
+        setState(() {
+          _submitting = false;
+        });
       } 
 
     } else {

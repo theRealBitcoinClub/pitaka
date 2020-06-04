@@ -69,29 +69,34 @@ class RequestOTPComponentState extends State<RequestOTPComponent> {
 
       String publicKey = await globals.storage.read(key: "publicKey");
 
-      if (newCode.value == '123456') {
+      var payload = {
+        "public_key": publicKey,
+        "code": newCode.value,
+      };
+
+      var resp = await restoreAccount(payload);
+
+      // Catch app version compatibility
+      if (resp.error == "outdated_app_version") {
+        showOutdatedAppVersionDialog(context);
+      }
+
+      // Show dialog if code is invalid
+      if (resp.error == "invalid_code") {
+        setState(() {
+          _submitting = false;
+        });
+        textController.clear();
+        showInvalidOTPCodeAcctResDialog(context);
+      }
+
+      // Catch the maximum retries of requesting OTP code
+      if (resp.error == "max_retries_reached") {
+        showMaxRetriesReachedDialog(context);
+      }
+
+      if (resp.success) {
         proceed = true;
-      } else {
-        var payload = {
-          "public_key": publicKey,
-          "code": newCode.value,
-        };
-        var resp = await restoreAccount(payload);
-
-        // Catch app version compatibility
-        if (resp.error == "outdated_app_version") {
-          showOutdatedAppVersionDialog(context);
-        }
-
-        // Show dialog if code is invalid
-        if (resp.error == "invalid_code") {
-          showInvalidCodelDialog(context);
-          textController.clear();
-        }
-
-        if (resp.success) {
-          proceed = true;
-
         // Save user details in shared preferences
         SharedPreferences prefs = await SharedPreferences.getInstance();
         await prefs.setString('firstName', resp.user["firstName"]);
@@ -114,7 +119,6 @@ class RequestOTPComponentState extends State<RequestOTPComponent> {
           await prefs.setBool('registerEmailBtn', false);
           await prefs.setBool('verifyEmailBtn', false);
           await prefs.setBool('verifyIdentityBtn', false);
-        }
         }
       }
 
@@ -189,6 +193,7 @@ class RequestOTPComponentState extends State<RequestOTPComponent> {
                 SizedBox(height: 5.0,),
                 Center(
                   child: RichText(
+                    textAlign: TextAlign.center,
                     text: TextSpan(
                       text: "If you did not receive the code,",
                       style: TextStyle(color: Colors.black, fontSize: 14),

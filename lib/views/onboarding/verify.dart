@@ -78,7 +78,7 @@ class VerifyComponentState extends State<VerifyComponent> {
       if (resp.verified) {
         proceed = true;
       } else {
-        showInvalidOTPCodelDialog(context);
+        showInvalidOTPCodeDialog(context);
       }
 
       if (proceed) {
