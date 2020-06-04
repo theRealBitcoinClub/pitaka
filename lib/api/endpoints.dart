@@ -646,3 +646,14 @@ Future<GenericCreateResponse> requestOTPRetry(payload) async {
     throw Exception(e);
   }
 }
+
+Future<GenericCreateResponse> updateFirebaseMessagingToken(payload) async {
+  print("The value of payload in updateFirebaseMessagingToken() in endpoints.dart is: $payload");
+  try {
+    final String url = globals.baseUrl + '/api/update/token';
+    final response = await sendPostRequest(url, payload);
+    return GenericCreateResponse.fromResponse(response);
+  } catch (e){
+    throw Exception(e);
+  }
+}

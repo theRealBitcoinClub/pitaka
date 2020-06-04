@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/gestures.dart';
 import 'package:overlay_support/overlay_support.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:back_button_interceptor/back_button_interceptor.dart';
 import '../app.dart';
 import '../../api/endpoints.dart';
@@ -25,6 +26,7 @@ class RequestOTPComponent extends StatefulWidget {
 }
 
 class RequestOTPComponentState extends State<RequestOTPComponent> {
+  final FirebaseMessaging _firebaseMessaging = FirebaseMessaging();
   final TextEditingController textController = TextEditingController();
   BuildContext _scaffoldContext;
   FocusNode focusNode = FocusNode();
@@ -40,6 +42,17 @@ class RequestOTPComponentState extends State<RequestOTPComponent> {
   void dispose() {
     BackButtonInterceptor.remove(interceptBackButton);
     super.dispose();
+  }
+
+    // Generate firebase messaging token
+  void generateToken() async {
+    // Get device token
+    _firebaseMessaging.getToken().then((token) {
+      print("The value of token in generateToken() in register.dart is: $token");
+
+      // Store token in global storage
+      globals.storage.write(key: "token", value: token);
+    });
   }
 
   bool interceptBackButton(bool stopDefaultButtonEvent) {
