@@ -1,15 +1,10 @@
-import 'dart:convert';
-import 'package:archive/archive.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/gestures.dart';
-import 'package:flutter_udid/flutter_udid.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:back_button_interceptor/back_button_interceptor.dart';
 import '../app.dart';
 import '../../api/endpoints.dart';
 import '../../utils/dialogs.dart';
-import '../../utils/globals.dart' as globals;
 
 
 class Mobile {
@@ -23,7 +18,7 @@ class RequestOTPForRetryComponent extends StatefulWidget {
 
 class RequestOTPForRetryComponentState extends State<RequestOTPForRetryComponent> {
   BuildContext _scaffoldContext;
-  Mobile newMobile = new Mobile();
+  Mobile newMobile = Mobile();
   FocusNode focusNode = FocusNode();
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _accountController = TextEditingController();
@@ -60,12 +55,6 @@ class RequestOTPForRetryComponentState extends State<RequestOTPForRetryComponent
         return 'Invalid phone number';
       }
     }
-  }
-
-  String _validatePublicKey(String value) {
-    if (value.length < 148) {
-      return 'Master key must be 148 alphanumeric characters';
-    } 
   }
 
   void _validateInputs(BuildContext context) async {
@@ -122,7 +111,7 @@ class RequestOTPForRetryComponentState extends State<RequestOTPForRetryComponent
 
   void _showSnackBar(String message) {
     final snackBar =
-        new SnackBar(content: new Text(message), backgroundColor: Colors.red);
+        SnackBar(content: Text(message), backgroundColor: Colors.red);
     Scaffold.of(_scaffoldContext).showSnackBar(snackBar);
   }
 
@@ -220,10 +209,7 @@ class RequestOTPForRetryComponentState extends State<RequestOTPForRetryComponent
           title: Text("Welcome to Paytaca"),
           automaticallyImplyLeading: false,
           centerTitle: true,
-        ),      // if (newMobile.number == '0000 - 000 - 0000') {
-      //   proceed = true;
-      // } else {
-      //   newMobile.number = "+63" + newMobile.number.substring(1).replaceAll(" - ", "");
+        ),
         body: Builder(builder: (BuildContext context) {
           _scaffoldContext = context;
           return Stack(children: _buildMobileNumberForm(context));
