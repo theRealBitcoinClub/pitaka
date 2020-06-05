@@ -121,7 +121,7 @@ class RegisterComponentState extends State<RegisterComponent> {
     _firebaseMessaging.getToken().then((token) {
     print("The value of token in generateToken() in register.dart is: $token");
 
-    // Store UDID in global storage
+    // Store token in global storage
     globals.storage.write(key: "token", value: token);
     });
   }

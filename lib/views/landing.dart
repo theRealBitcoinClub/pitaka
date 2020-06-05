@@ -1,21 +1,25 @@
 import 'dart:io';
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:after_layout/after_layout.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/services.dart';
 import 'package:local_auth/local_auth.dart';
+import 'package:after_layout/after_layout.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import '../views/app.dart';
+import '../api/endpoints.dart';
 import '../utils/globals.dart' as globals;
 
 
 class LandingComponent extends StatefulWidget {
   @override
-  LandingComponentState createState() => new LandingComponentState();
+  LandingComponentState createState() => LandingComponentState();
 }
 
 class LandingComponentState extends State<LandingComponent>
   with AfterLayoutMixin<LandingComponent> {
+    final FirebaseMessaging _firebaseMessaging = FirebaseMessaging();
+    String _newToken;
 
   @override
   Widget build(BuildContext context) {
@@ -58,6 +62,37 @@ class LandingComponentState extends State<LandingComponent>
   void initState() {
     super.initState();
     globals.checkInternet();
+    listenForNewToken();
+  }
+
+  // Generate firebase messaging token
+  void listenForNewToken() async {
+    // Retrive old token
+    String _oldToken = await globals.storage.read(key: "token");
+    print("Printing the value of OLD token");
+    print("#####################################################################################");
+    print(_oldToken);
+    print("#####################################################################################");
+
+    // Listen for new token
+    Stream<String> fcmStream = _firebaseMessaging.onTokenRefresh;
+    fcmStream.listen((token) {
+      print("Printing the value of NEW token");
+      print("#####################################################################################");
+      print(token);
+      print("#####################################################################################");
+      _newToken = token;
+      // Store token in global storage
+      globals.storage.write(key: "token", value: _newToken);
+    });
+
+    if (_oldToken != _newToken) {
+      var payload = {
+        "token": _newToken,
+      };
+
+      var response = await updateFirebaseMessagingToken(payload); 
+    }
   }
 
   final LocalAuthentication auth = LocalAuthentication();

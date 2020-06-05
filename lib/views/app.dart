@@ -21,11 +21,11 @@ class Application {
 
 class AppComponentState extends State<AppComponent>
   with AfterLayoutMixin<AppComponent> {
-  static bool debugMode = false;
-  bool maxOfflineTime = globals.maxOfflineTime;
-  bool online = globals.online;
-  int timeDiff = globals.timeDiff;
-  int offlineTime = globals.offlineTime;
+    static bool debugMode = false;
+    bool maxOfflineTime = globals.maxOfflineTime;
+    bool online = globals.online;
+    int timeDiff = globals.timeDiff;
+    int offlineTime = globals.offlineTime;
 
   AppComponentState() {
     final router = new Router();
@@ -147,4 +147,5 @@ class AppComponentState extends State<AppComponent>
       await prefs.setBool('verifyIdentityBtn', true);
     }
   }
+
 }
