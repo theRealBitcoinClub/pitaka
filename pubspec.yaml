@@ -7,16 +7,13 @@ description: Paytaca mobile wallet app
 # Both the version and the builder number may be overridden in flutter
 # build by specifying --build-name and --build-number, respectively.
 # Read more about versioning at semver.org.
-version: 1.0.0+1
+version: 0.2.0+8
 
 environment:
   sdk: ">=2.1.0 <3.0.0"
 
 dependencies:
-  qr_flutter:
-    git:
-      url: git://github.com/lukef/qr.flutter.git
-      ref: 2.0.0-dev
+  qr_flutter: ^3.0.1
   flutter_barcode_scanner: ^0.1.5+1
   local_auth: ^0.4.0+1
   flutter_sodium: ^0.0.9
@@ -43,7 +40,22 @@ dependencies:
   screen_state: ^0.1.1
   http: ^0.12.0+2
   uuid: ^2.0.2
+  url_launcher: ^5.2.7
+  flutter_udid: ^1.0.1
+  overlay_support: ^1.0.3
+  image_picker: ^0.6.2+2
+  firebase_dynamic_links: ^0.5.0+8
+  firebase_messaging: ^6.0.3
 
+  easy_dialog:
+    git:
+      url: git@github.com:paytaca/easy_dialog.git
+      ref: master
+
+  virtual_keyboard:
+    git:
+      url: git@github.com:paytaca/virtual_keyboard.git
+      ref: master
 
   flutter:
     sdk: flutter
@@ -71,7 +83,15 @@ flutter:
     - assets/icon/icon.png
     - assets/images/background1.png
     - assets/images/loading.gif
+    - assets/images/default_profile_pic.png
     - assets/texts/terms_and_conditions.txt
+
+  fonts:
+    - family: RobotoMono
+      fonts:
+        - asset: assets/fonts/RobotoMono-Regular.ttf
+
+
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
   # the material Icons class.

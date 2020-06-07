@@ -2,12 +2,15 @@ import 'package:fluro/fluro.dart';
 import 'package:flutter/material.dart';
 import '../views/landing.dart';
 import '../views/onboarding/request.dart';
+import '../views/onboarding/requestOTPForRetry.dart';
 import '../views/onboarding/verify.dart';
+import '../views/onboarding/requestOTP.dart';
 import '../views/onboarding/register.dart';
 import '../views/onboarding/account.dart';
 import '../views/terms.dart';
 import '../views/home.dart';
 import '../views/send.dart';
+import '../views/authenticate.dart';
 import '../views/receive.dart';
 import '../views/business/register.dart';
 import '../views/business/tools.dart';
@@ -16,84 +19,169 @@ import '../views/proofOfPayment.dart';
 import '../views/business/businesses.dart';
 import '../views/addAccount.dart';
 import '../views/settings.dart';
+import '../views/addPinCode.dart';
+import '../views/addPinCodeAcctRes.dart';
+import '../views/checkPinCode.dart';
+import '../views/contactList.dart';
+import '../views/sendContact.dart';
+import '../views/sendLink.dart';
+import '../views/userProfile.dart';
+import '../views/verificationLevels.dart';
+import '../views/registerEmailForm.dart';
+import '../views/verifyEmailForm.dart';
+import '../views/verifyIdentity.dart';
 
-var rootHandler = new Handler(
+
+var rootHandler = Handler(
     handlerFunc: (BuildContext context, Map<String, dynamic> params) {
-  return new LandingComponent();
+  return LandingComponent();
 });
 
-var onboardingRequestHandler = new Handler(
+var onboardingRequestHandler = Handler(
     handlerFunc: (BuildContext context, Map<String, dynamic> params) {
-  return new RequestComponent();
+  return RequestComponent();
 });
 
-var onboardingVerifyHandler = new Handler(
+var onboardingRequestOTPForRetryHandler = Handler(
     handlerFunc: (BuildContext context, Map<String, dynamic> params) {
-  return new VerifyComponent(mobileNumber: params["mobilenumber"][0]);
+  return RequestOTPForRetryComponent();
 });
 
-var onboardingRegisterHandler = new Handler(
+var onboardingVerifyHandler = Handler(
     handlerFunc: (BuildContext context, Map<String, dynamic> params) {
-  return new RegisterComponent(mobileNumber: params["mobilenumber"][0]);
+  return VerifyComponent(mobileNumber: params["mobilenumber"][0]);
 });
 
-var accountHandler = new Handler(
+var requestOTPHandler = Handler(
     handlerFunc: (BuildContext context, Map<String, dynamic> params) {
-  return new AccountComponent();
+  return RequestOTPComponent(mobileNumber: params["mobilenumber"][0]);
 });
 
-var termsHandler = new Handler(
+var onboardingRegisterHandler = Handler(
     handlerFunc: (BuildContext context, Map<String, dynamic> params) {
-  return new TermsComponent();
+  return RegisterComponent(mobileNumber: params["mobilenumber"][0]);
 });
 
-var homeHandler = new Handler(
+var accountHandler = Handler(
     handlerFunc: (BuildContext context, Map<String, dynamic> params) {
-  return new HomeComponent();
+  return AccountComponent();
 });
 
-var sendHandler = new Handler(
+var termsHandler = Handler(
     handlerFunc: (BuildContext context, Map<String, dynamic> params) {
-  return new SendComponent();
+  return TermsComponent();
 });
 
-var receiveHandler = new Handler(
+var homeHandler = Handler(
     handlerFunc: (BuildContext context, Map<String, dynamic> params) {
-  return new ReceiveComponent();
+  return HomeComponent();
 });
 
-var businessRegistrationHandler = new Handler(
+var sendHandler = Handler(
     handlerFunc: (BuildContext context, Map<String, dynamic> params) {
-  return new BusinessRegistrationComponent();
+  return SendComponent();
 });
 
-var businessToolsHandler = new Handler(
+var authenticateHandler = Handler(
     handlerFunc: (BuildContext context, Map<String, dynamic> params) {
-  return new BusinessToolsComponent();
+  return AuthenticateComponent();
 });
 
-var setBusinessAccountHandler = new Handler(
+var receiveHandler = Handler(
     handlerFunc: (BuildContext context, Map<String, dynamic> params) {
-  return new SetBusinessAccountComponent();
+  return ReceiveComponent();
+});
+
+var businessRegistrationHandler = Handler(
+    handlerFunc: (BuildContext context, Map<String, dynamic> params) {
+  return BusinessRegistrationComponent();
+});
+
+var businessToolsHandler = Handler(
+    handlerFunc: (BuildContext context, Map<String, dynamic> params) {
+  return BusinessToolsComponent();
+});
+
+var setBusinessAccountHandler = Handler(
+    handlerFunc: (BuildContext context, Map<String, dynamic> params) {
+  return SetBusinessAccountComponent();
 });
 
 
-var proofOfPaymentAccountHandler = new Handler(
+var proofOfPaymentAccountHandler = Handler(
     handlerFunc: (BuildContext context, Map<String, dynamic> params) {
-  return new ProofOfPaymentComponent();
+  return ProofOfPaymentComponent();
 });
 
-var businessesHandler = new Handler(
+var businessesHandler = Handler(
     handlerFunc: (BuildContext context, Map<String, dynamic> params) {
-  return new BusinessesComponent();
+  return BusinessesComponent();
 });
 
-var addAccountHandler = new Handler(
+var addAccountHandler = Handler(
     handlerFunc: (BuildContext context, Map<String, dynamic> params) {
-  return new AddAccountComponent();
+  return AddAccountComponent();
 });
 
-var settingsHandler = new Handler(
+var settingsHandler = Handler(
     handlerFunc: (BuildContext context, Map<String, dynamic> params) {
-      return new SettingsComponent();
+      return SettingsComponent();
 });
+
+var addPinCodeHandler = Handler(
+    handlerFunc: (BuildContext context, Map<String, dynamic> params) {
+      return AddPincodeComponent();
+});
+
+var addPinCodeAcctResHandler = Handler(
+    handlerFunc: (BuildContext context, Map<String, dynamic> params) {
+      return AddPincodeAcctResComponent();
+});
+
+var checkPinCodeHandler = Handler(
+    handlerFunc: (BuildContext context, Map<String, dynamic> params) {
+      return CheckPincodeComponent();
+});
+
+var contactListHandler = Handler(
+    handlerFunc: (BuildContext context, Map<String, dynamic> params) {
+      return ContactListComponent();
+});
+
+var sendContactHandler = Handler(
+    handlerFunc: (BuildContext context, Map<String, dynamic> params) {
+      return SendContactComponent();
+});
+
+var sendLinkHandler = Handler(
+    handlerFunc: (BuildContext context, Map<String, dynamic> params) {
+      return SendLinkComponent();
+});
+
+var userProfileHandler = Handler(
+    handlerFunc: (BuildContext context, Map<String, dynamic> params) {
+      return UserProfileComponent();
+});
+
+var verificationLevelsHandler = Handler(
+    handlerFunc: (BuildContext context, Map<String, dynamic> params) {
+      return VerificationLevelsComponent();
+});
+
+var registerEmailFormHandler = Handler(
+  handlerFunc: (BuildContext context, Map<String, dynamic> params) {
+    return RegisterEmailFormComponent();
+  }
+);
+
+var verifyEmailFormHandler = Handler(
+  handlerFunc: (BuildContext context, Map<String, dynamic> params) {
+    return VerifyEmailFormComponent();
+  }
+);
+
+var verifyIdentityHandler = Handler(
+  handlerFunc: (BuildContext context, Map<String, dynamic> params) {
+    return VerifyIdentityComponent();
+  }
+);

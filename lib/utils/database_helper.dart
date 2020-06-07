@@ -1,21 +1,17 @@
+import 'dart:io';
+import 'dart:async';
 import 'dart:convert';
-
-import 'package:crypto/crypto.dart';
 import 'package:intl/intl.dart';
 import 'package:sqflite/sqflite.dart';
-import 'dart:async';
-import 'dart:io';
 import 'package:path_provider/path_provider.dart';
 import '../api/responses.dart';
 import '../api/endpoints.dart';
-// import '../utils/helpers.dart';
 import '../utils/globals.dart' as globals;
 
 
 class DatabaseHelper {
   static DatabaseHelper _databaseHelper;    // Singleton DatabaseHelper
 	static Database _database;                // Singleton Database
-
 
 	DatabaseHelper._createInstance(); // Named constructor to create instance of DatabaseHelper
 
@@ -44,7 +40,6 @@ class DatabaseHelper {
 		return pitakaDatabase;
 	}
 
-
 	void _createDb(Database db, int newVersion) async {
     await db.execute("CREATE TABLE Balance ("
       "id INTEGER NOT NULL PRIMARY KEY,"
@@ -55,7 +50,8 @@ class DatabaseHelper {
       "signature TEXT,"
       "datetime TEXT"
       ")");
-    print('balance done');
+    print('Balance table done!');
+
     await db.execute("CREATE TABLE OfflineTransaction ("
       "id INTEGER NOT NULL PRIMARY KEY,"
       "account TEXT,"
@@ -63,14 +59,81 @@ class DatabaseHelper {
       "timestamp TEXT,"
       "mode TEXT,"
       "transactionJson TEXT,"
-      "txnID TEXT,"
-      "time TEXT"
+      "paymentProof TEXT,"
+      "txnID TEXT NOT NULL UNIQUE,"
+      "time TEXT,"
+      "publicKey TEXT"
       ")");
-      print('offlinetransaction done');
+      print('OfflineTransaction table done!');
+
+    // Added table for contact list
+    await db.execute("CREATE TABLE Contact ("
+      "id INTEGER NOT NULL PRIMARY KEY,"
+      "firstName TEXT,"
+      "lastName TEXT,"
+      "mobileNumber TEXT NOT NULL UNIQUE,"
+      "transferAccount TEXT"
+      ")");
+    print('Contact table done!');
 	}
 
+	// Get latest contact of contact objects in database
+	Future <List<Map<String, dynamic>>> getContactList() async {
+		Database db = await this.database;
+    List<Map<String, dynamic>> result = [];
+		List<Map<String, dynamic>> qs = await db.query('Contact', orderBy: "id DESC",);
+
+    try {
+      for (var account in qs) {
+        var info = {
+          'firstName': account['firstName'],
+          'lastName': account['lastName'],
+          'mobileNumber': account['mobileNumber'],
+          'transferAccount': account['transferAccount']
+        };
+
+        if (result.indexOf(info) == -1) {
+          result.add(info);
+        } 
+      }
+    return result;
+    }
+    catch (e) {
+      throw Exception("The value of e is: $e");
+    }
+	}
+
+  // Update Contac table
+  Future<String> updateContactList(contact) async {
+    Database db = await this.database;
+      var values = {
+        'firstName': contact['firstName'],
+        'lastName': contact['lastName'],
+        'mobileNumber': contact['mobileNumber'],
+        'transferAccount': contact['transferAccount']
+      };
+      try {
+        await db.insert(
+          'Contact',
+          values
+        );
+      } catch(e) {
+        print("The error value in updateContactList() is: $e");
+        // Cast error to string type
+        String errorType = e.toString();
+        // Check if "UNIQUE constraint" error is in the string
+        // And return the error type
+        if (errorType.contains("UNIQUE constraint failed")) {
+          return "Contact is already in your list.";
+        } else {
+          return errorType;
+        }
+      }
+		return 'contact save';
+  }
+
   // Update latest balance of balance objects in database
-  Future<String> updateOfflineBalances (List<Balance> balances) async {
+  Future<String> updateOfflineBalances(List<Balance> balances) async {
     Database db = await this.database;
     await db.delete('Balance');
     await db.delete('OfflineTransaction');
@@ -93,16 +156,24 @@ class DatabaseHelper {
         whereArgs: [idHolder]
       );
       if (idCheck.length == 0 ) {
-        await db.insert(
-          'Balance',
-          values
-        );
+        try {
+          await db.insert(
+            'Balance',
+            values
+          );
+        } catch(e) {
+          print(e);
+        }
       }
       idHolder += 1;
     }
 		return 'success';
   }
-
+  
+  Future deleteTransactions() async{
+    Database db = await this.database;
+    await db.delete('OfflineTransaction');
+  }
   
   Future <Map<String, dynamic>> offlineBalanceAnalyser(String accountId, double onlineBalance) async {
     Database db = await this.database;
@@ -130,7 +201,7 @@ class DatabaseHelper {
     };
   }
 
-  Future <bool> ifCleanDB () async {
+  Future <bool> ifCleanDB() async {
     Database db = await this.database;
     var transactions = await db.query(
       'OfflineTransaction',
@@ -143,19 +214,30 @@ class DatabaseHelper {
     }
   }
 
-  Future <bool> synchToServer () async {
+  Future <bool> synchToServer() async {
     Database db = await this.database;
     var transactions = await db.query(
       'OfflineTransaction',
       orderBy: 'id ASC'
     );
+    var prevTxnHash = "";
+    var currTxnHash = "";  
     for (final txn in transactions) {
       var payload = json.decode(txn['transactionJson']);
-      final String url = globals.baseUrl + '/api/assets/transfer';
-      await sendPostRequest(url, payload);
+      currTxnHash = payload['txn_hash'];
+      if (prevTxnHash == currTxnHash) {
+        print("Duplicate TxnHas!");
+        break;
+      } else {
+        final String url = globals.baseUrl + '/api/assets/transfer';
+        await sendPostRequest(url, payload);
+      }
+      prevTxnHash = payload['txn_hash'];
     }
-    await db.delete('OfflineTransaction');
-    globals.syncing = false;
+
+    // Don't delete database during syncing
+    //await db.delete('OfflineTransaction');
+    //await db.delete('Balance');
     return true;
   }
 
@@ -180,24 +262,20 @@ class DatabaseHelper {
         'signature': account['signature'],
         'datetime': account['datetime']
       };
-
       if (result.indexOf(info) == -1) {
         result.add(info);
-      }
-      
+      } 
     }
-    
 		return result;
 	}
 
-  Future <List<Map <String, dynamic>>> offLineTransactions () async {
+  Future <List<Map <String, dynamic>>> offLineTransactions() async {
     Database db = await this.database;
 		List<Map<String, dynamic>> qs = await db.query('OfflineTransaction');
     return qs;
   }
   
-  Future<String> offLineTransfer(Map payload) async{
-    
+  Future<String> offLineTransfer(Map payload) async {
     Database db = await this.database;
     String fromAccount = payload['from_account'];
     String toAccount = payload['to_account'];
@@ -205,27 +283,34 @@ class DatabaseHelper {
     String table2 = 'OfflineTransaction';
     var qs1 = await db.query(table1,where: 'accountId = ?', whereArgs: [fromAccount]);
     var instance = qs1[0];
-    var concatenated = "${instance['balance']}${instance['accountId']}${instance['timestamp']}";
-    var bytes = utf8.encode(concatenated);
-    var hashMessage = sha256.convert(bytes).toString();
-    payload['signed_balance'] =  {
-      'message': hashMessage,
-      'signature': instance['signature'],
-      'balance': instance['balance'],
-      'timestamp': instance['timestamp']
-    };
+    
+    // Commented out below code as it causes error during offline payment
+    // Could not pinpoint the cause of error, it does not send (proof of payment does not display)
+
+    // var concatenated = "${instance['balance']}${instance['accountId']}${instance['timestamp']}";
+    // var bytes = utf8.encode(concatenated);
+    // var hashMessage = sha256.convert(bytes).toString();
+    // payload['signed_balance'] =  {
+    //   'message': hashMessage,
+    //   'signature': instance['signature'],
+    //   'balance': instance['balance'],
+    //   'timestamp': instance['timestamp']
+    // };
+
     var converted = json.encode(payload);
-    var txnTimeStamp = payload['txn_hash'].split(':-:')[1];
+    var txnTimeStamp = payload['txn_str'].split(':-:')[2];
     await db.insert(table2, {
       "account": instance['accountId'],
       "amount":payload['amount'],
       "timestamp":txnTimeStamp,
       "mode":"send",
       "transactionJson": converted,
+      "paymentProof": payload["proof_of_payment"],
       "txnID": payload["transaction_id"],
-      "time": txnTimeStamp
+      "time": payload["transaction_datetime"],
+      "publicKey":payload['public_key'],
     });
-    
+
     // Check if the recipient(toAccount) is in the user's accounts.
     var qs2 = await db.query(table1,where: 'accountId = ?', whereArgs: [toAccount]);
     if (qs2.length == 1) {
@@ -236,14 +321,17 @@ class DatabaseHelper {
         "timestamp":txnTimeStamp,
         "mode":"receive",
         "transactionJson": converted,
+        "paymentProof": payload["proof_of_payment"],
         "txnID": payload["transaction_id"],
-        "time": txnTimeStamp
+        "time": payload["transaction_datetime"],
+        "publicKey":payload['public_key'],
       });
     }
     return 'success';
   }
-
-  Future<int>acceptPayment(Map payload) async {
+  
+  // This is called in "endpoints.dart" in receiveAsset if offline only
+  Future<int>acceptOfflinePayment(Map payload) async {
     Database db = await this.database;
     String table1 = 'Balance';
     String table2 = 'OfflineTransaction';
@@ -258,12 +346,13 @@ class DatabaseHelper {
         "timestamp":instance['timestamp'],
         "mode":"receive",
         "transactionJson": converted,
+        "paymentProof": payload["proof_of_payment"],
         "txnID": payload["transaction_id"],
-        "time": instance['timestamp']
+        "time": payload["transaction_datetime"],
+        "publicKey":payload['public_key'],
       });
     } else {
       return 0;
     }
   }
-
 }

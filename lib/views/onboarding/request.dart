@@ -1,9 +1,16 @@
-import 'package:flutter/material.dart';
-import 'package:back_button_interceptor/back_button_interceptor.dart';
+import 'dart:convert';
+import 'package:archive/archive.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_masked_text/flutter_masked_text.dart';
-import '../../api/endpoints.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/gestures.dart';
+import 'package:flutter_udid/flutter_udid.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:back_button_interceptor/back_button_interceptor.dart';
 import '../app.dart';
+import '../../api/endpoints.dart';
+import '../../utils/dialogs.dart';
+import '../../utils/globals.dart' as globals;
+
 
 class Mobile {
   String number;
@@ -15,6 +22,16 @@ class RequestComponent extends StatefulWidget {
 }
 
 class RequestComponentState extends State<RequestComponent> {
+  BuildContext _scaffoldContext;
+  Mobile newMobile = new Mobile();
+  FocusNode focusNode = FocusNode();
+  final _formKey = GlobalKey<FormState>();
+  final TextEditingController _accountController = new TextEditingController();
+  String keys;
+  String udid;
+  bool _submitting = false;
+  bool _showPrivateKeyInput = false;
+
   @override
   void initState() {
     super.initState();
@@ -32,12 +49,11 @@ class RequestComponentState extends State<RequestComponent> {
     return true;
   }
 
-  final _formKey = GlobalKey<FormState>();
-  Mobile newMobile = new Mobile();
-
   String validateMobile(String value) {
     if (value == '0000 - 000 - 0000') {
       return null;
+    } else if (value.length < 11) {
+      return 'Mobile number must be 11 numeric characters';
     } else {
       if (value.startsWith('09')){
         return null;
@@ -47,9 +63,11 @@ class RequestComponentState extends State<RequestComponent> {
     }
   }
 
-  BuildContext _scaffoldContext;
-  FocusNode focusNode = FocusNode();
-  bool _submitting = false;
+  String _validatePublicKey(String value) {
+    if (value.length < 148) {
+      return 'Master key must be 148 alphanumeric characters';
+    } 
+  }
 
   void _validateInputs(BuildContext context) async {
     bool proceed = false;
@@ -65,11 +83,26 @@ class RequestComponentState extends State<RequestComponent> {
         proceed = true;
       } else {
         newMobile.number = "+63" + newMobile.number.substring(1).replaceAll(" - ", "");
-        var numberPayload = {"mobile_number": newMobile.number};
+        var numberPayload = {
+          "mobile_number": newMobile.number,
+        };
         var resp = await requestOtpCode(numberPayload);
 
+        // Save mobile number in shared preferences
+        SharedPreferences prefs = await SharedPreferences.getInstance();
+        await prefs.setString('mobileNumber', newMobile.number);
+
+        // Catch app version compatibility
+        if (resp.error == "outdated_app_version") {
+          showOutdatedAppVersionDialog(context);
+        }
+        
         if (resp.success) {
           proceed = true;
+        } 
+        // Catch duplicate mobile number in the error
+        else if(resp.error == "duplicate_mobile_number") {
+          showDuplicateMobileNumberDialog(context);
         }
       }
 
@@ -82,101 +115,274 @@ class RequestComponentState extends State<RequestComponent> {
     }
   }
 
+  void _validatePublicKeyInput(BuildContext context) async {
+    if (_formKey.currentState.validate()) {
+      _formKey.currentState.save();
+      // Close the on-screen keyboard by removing focus from the form's inputs
+      FocusScope.of(context).requestFocus(new FocusNode());
+      setState(() {
+        _submitting = true;
+      });
+
+      // Generate using the flutter_udid library
+      udid = await FlutterUdid.consistentUdid;
+      print("The value of udid in generateUdid() in register.dart is: $udid");
+      // Store UDID in global storage
+      await globals.storage.write(key: "udid", value: udid);
+
+      // Decode private & public keys
+      var baseDecoded = base64.decode(keys);
+      var gzipDecoded = GZipDecoder().decodeBytes(baseDecoded);
+      var utf8Decoded = utf8.decode(gzipDecoded);
+
+      // Extract private & public key from keys
+      var privateKey = utf8Decoded.split('::')[0];
+      var publicKey = utf8Decoded.split('::')[1];
+      // Store private & public key in global storage
+      await globals.storage.write(key: "publicKey", value: publicKey);
+      await globals.storage.write(key: "privateKey", value: privateKey);
+      // Create payload
+      var payload = {
+        "public_key": publicKey,
+      };
+      // Send public key as payload to restore user
+      var resp = await requestOTPAccountRestore(payload);
+
+        // Catch app version compatibility
+      if (resp.error == "outdated_app_version") {
+        showOutdatedAppVersionDialog(context);
+      }
+
+      // Show dialog if no found public key match
+      if (resp.error == "public_key_not_found") {
+        showPublicKeyNotFoundDialog(context);
+        _accountController.clear();
+        setState(() {
+          _submitting = false;
+        });
+      }
+      
+      if (resp.success) {
+        // Mark installed to true 
+        SharedPreferences prefs = await SharedPreferences.getInstance();
+        await prefs.setBool('installed', true);
+
+        Application.router
+          .navigateTo(context, "/requestotp/${resp.mobileNumber}");
+        databaseHelper.initializeDatabase();
+
+        setState(() {
+          _submitting = false;
+        });
+      } 
+
+    } else {
+      _showSnackBar("Please correct errors in the form");
+    }
+  }
+
   void _showSnackBar(String message) {
     final snackBar =
         new SnackBar(content: new Text(message), backgroundColor: Colors.red);
     Scaffold.of(_scaffoldContext).showSnackBar(snackBar);
   }
 
-  List<Widget> _buildMobileNumberForm(BuildContext context) {
-    Form form = new Form(
-        key: _formKey,
-        autovalidate: false,
-        child: Center(
-            child: Container(
-              alignment: Alignment.center,
-              child:new ListView(
-                shrinkWrap: true,
-                padding: const EdgeInsets.all(20.0),
-                children: <Widget>[
-                  new Center(
-                    child: new Text(
-                      "Mobile Number Verification",
-                      style: TextStyle(
-                      fontSize: 20.0,
-                      )
-                    )
-                  ),
-                  new SizedBox(
-                    height: 10.0,
-                  ),
-                  new TextFormField(
-                    textAlign: TextAlign.center,
-                    keyboardType: TextInputType.phone,
-                    validator: validateMobile,
-                    onSaved: (value) {
-                      newMobile.number = value;
-                    },
-                    style: TextStyle(
-                      fontSize: 24.0
-                    ),
-                    decoration: const InputDecoration(
-                      hintText: '09** - *** - ****',
-                    ),
-                    controller: new MaskedTextController(
-                      mask: '0000 - 000 - 0000'
-                      ),
-                  ),
-                  new SizedBox(
-                    height: 30.0,
-                  ),
-                  new RaisedButton(
-                    onPressed: () {
-                      _validateInputs(context);
-                    },
-                    child: new Text('Submit'),
-                  ),
-                  new SizedBox(
-                    height: 97.0,
-                  )
-                ]
-              )
-            )
-          )
-        );
+  void _privateKeyInput() {
+    setState(() {
+      if (_showPrivateKeyInput) {
+        _showPrivateKeyInput = false;
+      } else {
+        _showPrivateKeyInput = true;
+      } 
+    });
+    // Dismiss the keyboard after clicking the button
+    FocusScope.of(context).requestFocus(FocusNode());
+  }
 
-    var ws = new List<Widget>();
+  List<Widget> _buildMobileNumberForm(BuildContext context) {
+    Form form = Form(
+      key: _formKey,
+      autovalidate: false,
+      child: Center(
+        child: Container(
+          alignment: Alignment.topCenter,
+          child: ListView(
+            shrinkWrap: true,
+            padding: const EdgeInsets.all(20.0),
+            children: <Widget>[
+              _showPrivateKeyInput ?
+                Column(
+                  children: <Widget>[
+                    SizedBox(height: 30.0,),
+                    Center(
+                      child: Text(
+                        "Restore from Master Key",
+                        style: TextStyle(
+                        fontSize: 24.0,
+                        ),
+                        textAlign: TextAlign.center,
+                      )
+                    ),
+                    SizedBox(height: 10.0,),
+                    TextFormField(
+                      controller: _accountController,
+                      textAlign: TextAlign.center,
+                      keyboardType: TextInputType.multiline,
+                      validator: _validatePublicKey,
+                      autofocus: false,
+                      onSaved: (value) {
+                        keys = value;
+                      },
+                      maxLength: 148,
+                      style: TextStyle(
+                        fontSize: 24.0
+                      ),
+                      decoration: const InputDecoration(
+                        hintText: 'Type or paste the master key here',
+                        hintStyle: TextStyle(
+                          fontSize: 15.0
+                        ),
+                      ),
+                    ),
+                    SizedBox(height: 30.0,),
+                    SizedBox(
+                      width: double.infinity,
+                      child: RaisedButton(
+                        color: Colors.red,
+                        splashColor: Colors.red[100],
+                        onPressed: () {
+                          _validatePublicKeyInput(context);
+                        },
+                        child: Text(
+                          'Submit',
+                          style: TextStyle(color: Colors.white,),
+                        ),
+                      ),
+                    ),
+                    SizedBox(height: 25.0,),
+                  ]
+                )
+              :
+                Column(
+                  children: <Widget>[
+                    SizedBox(height: 30.0,),
+                    Center(
+                      child: Text(
+                        "Mobile Number Verification",
+                        style: TextStyle(
+                        fontSize: 24.0,
+                        )
+                      )
+                    ),
+                    SizedBox(height: 10.0,),
+                    TextFormField(
+                      controller: _accountController,
+                      textAlign: TextAlign.center,
+                      keyboardType: TextInputType.phone,
+                      validator: validateMobile,
+                      autofocus: true,
+                      onSaved: (value) {
+                        newMobile.number = value;
+                      },
+                      maxLength: 11,
+                      style: TextStyle(
+                        fontSize: 24.0
+                      ),
+                      decoration: const InputDecoration(
+                        hintText: 'Enter Mobile Number',
+                        hintStyle: TextStyle(
+                          fontSize: 15.0
+                        ),
+                      ),
+                    ),
+                    SizedBox(height: 30.0,),
+                    SizedBox(
+                      width: double.infinity,
+                      child: RaisedButton(
+                        color: Colors.red,
+                        splashColor: Colors.red[100],
+                        onPressed: () {
+                          _validateInputs(context);
+                        },
+                        child: Text(
+                          'Submit',
+                          style: TextStyle(color: Colors.white,),
+                        ),
+                      ),
+                    ),
+                    SizedBox(height: 25.0,),
+                  ]
+                ),
+              _showPrivateKeyInput ?
+                RichText(
+                  textAlign: TextAlign.center,
+                  text: TextSpan(
+                    text: "Cancel? ",
+                    style: TextStyle(color: Colors.black, fontSize: 14),
+                    children: <TextSpan>[
+                      TextSpan(
+                        text: "Back to Mobile Number Input.",
+                        style: TextStyle(color: Colors.redAccent, fontSize: 14),
+                        recognizer: TapGestureRecognizer()..onTap = () =>_privateKeyInput(),
+                      )
+                    ],
+                  ),
+                )
+              :
+                RichText(
+                  textAlign: TextAlign.center,
+                  text: TextSpan(
+                    text: "Do you already have an account? ",
+                    style: TextStyle(color: Colors.black, fontSize: 14),
+                    children: <TextSpan>[
+                      TextSpan(
+                        text: "Restore an account.",
+                        style: TextStyle(color: Colors.redAccent, fontSize: 14),
+                        recognizer: TapGestureRecognizer()..onTap = () =>_privateKeyInput(),
+                      )
+                    ],
+                  ),
+                )
+            ]
+          )
+        )
+      )
+    );
+
+    var ws = List<Widget>();
     ws.add(form);
 
     if (_submitting) {
-      var modal = new Stack(
+      var modal = Stack(
         children: [
-          new Opacity(
+          Opacity(
             opacity: 0.8,
             child: const ModalBarrier(dismissible: false, color: Colors.grey),
           ),
-          new Center(
-            child: new CircularProgressIndicator(),
+          Center(
+            child: CircularProgressIndicator(),
           ),
         ],
       );
       ws.add(modal);
-    }
-
+    } 
     return ws;
   }
 
   @override
   Widget build(BuildContext context) {
-    return new Scaffold(
-        appBar: new AppBar(
-          title: new Text("Welcome to Paytaca"),
+    return Scaffold(
+        appBar: AppBar(
+          title: Text("Welcome to Paytaca"),
           automaticallyImplyLeading: false,
           centerTitle: true,
-        ),
-        body: new Builder(builder: (BuildContext context) {
+        ),      // if (newMobile.number == '0000 - 000 - 0000') {
+      //   proceed = true;
+      // } else {
+      //   newMobile.number = "+63" + newMobile.number.substring(1).replaceAll(" - ", "");
+        body: Builder(builder: (BuildContext context) {
           _scaffoldContext = context;
-          return new Stack(children: _buildMobileNumberForm(context));
+          return Stack(children: _buildMobileNumberForm(context));
         }
       )
     );

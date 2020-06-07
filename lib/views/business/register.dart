@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import '../../api/endpoints.dart';
 import '../../views/app.dart';
 import 'package:flutter_masked_text/flutter_masked_text.dart';
+import '../../utils/dialogs.dart';
+
 
 class BusinessAccount {
   String name;
@@ -99,12 +101,17 @@ class BusinessRegistrationComponentState extends State<BusinessRegistrationCompo
         "name": businessInfo.name,
         "address": businessInfo.address,
         "type": _selectedType,
-        
       };
       setState(() {
         _submitting = true;
       });
       var response = await registerBusiness(businessToRegister);
+
+      // Catch app version compatibility
+      if (response.error == "outdated_app_version") {
+        showOutdatedAppVersionDialog(context);
+      }
+
       if(response != null) {
         setState(() {
           _submitting = false;

@@ -1,32 +1,36 @@
-import 'package:flutter/material.dart';
-import 'package:flutter_sodium/flutter_sodium.dart';
-import 'package:back_button_interceptor/back_button_interceptor.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:flutter/services.dart';
-import 'package:local_auth/local_auth.dart';
-import 'package:local_auth/error_codes.dart' as auth_error;
+import 'dart:async';
+import 'dart:convert';
+import 'dart:typed_data';
 import "package:hex/hex.dart";
 import 'package:intl/intl.dart';
-import 'dart:typed_data';
-import 'dart:async';
+import 'package:archive/archive.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:local_auth/local_auth.dart';
+import 'package:passcode_screen/circle.dart';
+import 'package:passcode_screen/keyboard.dart';
+import 'package:flutter_udid/flutter_udid.dart';
+import 'package:pitaka/utils/database_helper.dart';
+import 'package:flutter_sodium/flutter_sodium.dart';
+import 'package:local_auth/error_codes.dart' as auth_error;
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:back_button_interceptor/back_button_interceptor.dart';
+import 'package:flutter_datetime_picker/flutter_datetime_picker.dart';
 import '../app.dart';
 import '../../api/endpoints.dart';
 import '../../utils/helpers.dart';
-import 'package:flutter_datetime_picker/flutter_datetime_picker.dart';
-import 'package:pitaka/utils/database_helper.dart';
+import '../../utils/dialogs.dart';
 import '../../utils/globals.dart' as globals;
-import 'package:passcode_screen/passcode_screen.dart';
-import 'package:passcode_screen/circle.dart';
-import 'package:passcode_screen/keyboard.dart';
-
 
 
 class User {
   String firstName;
   String lastName;
-  String emailAddress;
   DateTime birthDate;
   String imei;
+  String udid;
+  String token;
 }
 
 class RegisterComponent extends StatefulWidget {
@@ -38,14 +42,30 @@ class RegisterComponent extends StatefulWidget {
 
 class RegisterComponentState extends State<RegisterComponent> {
   DatabaseHelper databaseHelper = DatabaseHelper();
-
+  User newUser = new User();
+  FocusNode focusNode = FocusNode();
+  BuildContext _scaffoldContext;
+  final _formKey = GlobalKey<FormState>();
+  final LocalAuthentication auth = LocalAuthentication();
+  final TextEditingController _birthDateController = new TextEditingController();
+  final FirebaseMessaging _firebaseMessaging = FirebaseMessaging();
+  var circleUIConfig = new CircleUIConfig();
+  var keyboardUIConfig = new KeyboardUIConfig();
+  String udid;
+  String publicKey;
+  String privateKey;
   String iniPasscode = '';
+  String mobileNumber = "";
+  bool _submitting = false;
+  bool authenticated = false;
+  bool _termsChecked = false;
   bool checkBiometrics = false;
 
   @override
   void initState() {
     super.initState();
     BackButtonInterceptor.add(interceptBackButton);
+    generateToken();
   }
 
   @override
@@ -59,88 +79,19 @@ class RegisterComponentState extends State<RegisterComponent> {
     return true;
   }
 
-  final LocalAuthentication auth = LocalAuthentication();
-  bool authenticated = false;
-  // final StreamController<bool> _verificationNotifier =
-  // StreamController<bool>.broadcast();
-
   Future<Null> _authenticate() async {
     try {
       authenticated = await auth.authenticateWithBiometrics(
-          localizedReason: 'Scan your fingerprint to authenticate',
-          useErrorDialogs: true,
-          stickyAuth: false);
+        localizedReason: 'Scan your fingerprint to authenticate',
+        useErrorDialogs: true,
+        stickyAuth: false);
     } on PlatformException catch (e) {
       if (e.code == auth_error.notAvailable) {
-        // TODO - Automatically authenticate if the phone does not have fingerprint auth
-        // Change this later to custom PIN code authentication
         authenticated = true;
       }
     }
     if (!mounted) return;
   }
-
-  // void askPin() async {
-  //   checkBiometrics = await auth.canCheckBiometrics;
-  //   if(checkBiometrics == false) {
-  //     Navigator.push(
-  //         context,
-  //         PageRouteBuilder(
-  //             opaque: false,
-  //             pageBuilder: (context, animation, secondaryAnimation) =>
-  //                 PasscodeScreen(
-  //                   title: 'Enter Desired PIN Code',
-  //                   passwordDigits: 6,
-  //                   circleUIConfig: circleUIConfig,
-  //                   keyboardUIConfig: keyboardUIConfig,
-  //                   passwordEnteredCallback: _onPassCodeEntered,
-  //                   cancelLocalizedText: 'Cancel',
-  //                   deleteLocalizedText: 'Delete',
-  //                   shouldTriggerVerification: _verificationNotifier.stream,
-  //                   //     cancelCallback: _onPasscodeCancelled,
-  //                 )
-  //         ));
-  //   } else {
-  //     _validateInputs(context);
-  // }
-
-  // void _onPassCodeEntered(String enteredPassCode) {
-  //   iniPasscode = enteredPassCode;
-  //   Navigator.push(
-  //       context,
-  //       PageRouteBuilder(
-  //           opaque: true,
-  //           pageBuilder: (context, animation, secondaryAnimation) =>
-  //               PasscodeScreen(
-  //                 title: 'Re-enter PIN Code',
-  //                 passwordDigits: 6,
-  //               //  backgroundColor: ,
-  //                 circleUIConfig: circleUIConfig,
-  //                 keyboardUIConfig: keyboardUIConfig,
-  //                 passwordEnteredCallback: validatePin,
-  //                 cancelLocalizedText: 'Cancel',
-  //                 deleteLocalizedText: 'Delete',
-  //                 shouldTriggerVerification: _verificationNotifier.stream,
-  //               //  cancelCallback: _onPasscodeCancelled,
-  //               )
-  //       ));
-  // //  validatePin(iniPasscode);
-  // }
-
-  // void validatePin(String enteredPassCode) async{
-
-  //   if(enteredPassCode == iniPasscode) {
-  //     await globals.storage.write(key: "pinCode", value: iniPasscode);
-  //     final read = await globals.storage.read(key: "pinCode");
-  //     Application.router.navigateTo(context, "/account");
-  //   }
-
-  //   else if(enteredPassCode != iniPasscode)
-  //     return null;
-  // }
-
-  String publicKey;
-  String privateKey;
 
   Future<Null> generateKeyPair(BuildContext context) async {
     final keyPair = await CryptoSign.generateKeyPair();
@@ -155,22 +106,29 @@ class RegisterComponentState extends State<RegisterComponent> {
     await globals.storage.write(key: "privateKey", value: privateKey);
   }
 
-  final _formKey = GlobalKey<FormState>();
-  User newUser = new User();
+  // Generate UDID to be stored
+  Future<Null> generateUdid(BuildContext context) async {
+    // Generate using the flutter_udid library
+    udid = await FlutterUdid.consistentUdid;
+    print("The value of udid in generateUdid() in register.dart is: $udid");
+    // Store UDID in global storage
+    await globals.storage.write(key: "udid", value: udid);
+  }
+
+  // Generate firebase messaging token
+  void generateToken() async {
+    // Get device token
+    _firebaseMessaging.getToken().then((token) {
+    print("The value of token in generateToken() in register.dart is: $token");
+
+    // Store token in global storage
+    globals.storage.write(key: "token", value: token);
+    });
+  }
 
   String validateName(String value) {
     if (value.length < 2)
       return 'Name must be at least 2 characters';
-    else
-      return null;
-  }
-
-  String validateEmail(String value) {
-    Pattern pattern =
-        r'^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$';
-    RegExp regex = new RegExp(pattern);
-    if (!regex.hasMatch(value))
-      return 'Enter Valid Email';
     else
       return null;
   }
@@ -183,8 +141,6 @@ class RegisterComponentState extends State<RegisterComponent> {
       return null;
   }
 
-  final TextEditingController _birthDateController = new TextEditingController();
-
   DateTime convertToDate(String input) {
     try {
       var d = new DateFormat.yMd().parseStrict(input);
@@ -194,14 +150,6 @@ class RegisterComponentState extends State<RegisterComponent> {
     }
   }
 
-  BuildContext _scaffoldContext;
-  FocusNode focusNode = FocusNode();
-  bool _termsChecked = false;
-  bool _submitting = false;
-
-  var circleUIConfig = new CircleUIConfig();
-  var keyboardUIConfig = new KeyboardUIConfig();
-
   void _validateInputs(BuildContext context) async {
     if (_formKey.currentState.validate()) {
       // Close the on-screen keyboard by removing focus from the form's inputs
@@ -210,32 +158,46 @@ class RegisterComponentState extends State<RegisterComponent> {
       if (_termsChecked) {
         // If all data are correct then save data to out variables
         _formKey.currentState.save();
+        // Generate KeyPair, UDID and Firebase token
         await generateKeyPair(context);
+        await generateUdid(context);
 
         if (authenticated == true) {
           setState(() {
             _submitting = true;
           });
+          
+          // Get the mobile number from previous route parameter
+          mobileNumber = "${widget.mobileNumber}";
 
           var userPayload = {
             "firstname": newUser.firstName,
             "lastname": newUser.lastName,
             "birthday": "2006-01-02",
-            "email": newUser.emailAddress,
-            "mobile_number": "${widget.mobileNumber}",
+            "mobile_number": mobileNumber,
           };
+
           String txnHash = generateTransactionHash(userPayload);
-          print(txnHash);
           String signature = await signTransaction(txnHash, privateKey);
+          String token = await globals.storage.read(key: "token");
 
           userPayload["public_key"] = publicKey;
           userPayload["txn_hash"] = txnHash;
           userPayload["signature"] = signature;
+          userPayload["device_id"] = udid;
+          userPayload["firebase_messaging_token"] = token;
+
           var user = await createUser(userPayload);
+
+          // Catch app version compatibility
+          if (user.error == "outdated_app_version") {
+            showOutdatedAppVersionDialog(context);
+          }
+          // Store user ID in global storage
           await globals.storage.write(key: "userId", value: user.id);
           // Login
           String loginSignature =
-              await signTransaction("hello world", privateKey);
+            await signTransaction("hello world", privateKey);
           var loginPayload = {
             "public_key": publicKey,
             "session_key": "hello world",
@@ -245,8 +207,11 @@ class RegisterComponentState extends State<RegisterComponent> {
 
           SharedPreferences prefs = await SharedPreferences.getInstance();
           await prefs.setBool('installed', true);
-          Application.router.navigateTo(context, "/account");
+          Application.router.navigateTo(context, "/addpincode");
           databaseHelper.initializeDatabase();
+
+          // Show dialog for taking note of private key
+          savePrivatePublicKeyDialog(context);
 
         }
       } else {
@@ -259,29 +224,25 @@ class RegisterComponentState extends State<RegisterComponent> {
 
   void _showSnackBar(String message) {
     final snackBar =
-        new SnackBar(content: new Text(message), backgroundColor: Colors.red);
+        SnackBar(content: new Text(message), backgroundColor: Colors.red);
     Scaffold.of(_scaffoldContext).showSnackBar(snackBar);
   }
 
   List<Widget> _buildRegistrationForm(BuildContext context) {
-    Form form = new Form(
+    Form form = Form(
         key: _formKey,
         autovalidate: false,
-        child: new ListView(
+        child: ListView(
             padding: const EdgeInsets.symmetric(horizontal: 16.0),
             children: <Widget>[
-              new SizedBox(
-                height: 30.0,
-              ),
-              new Center(
-                  child: new Text("Sign up to create your wallet",
+              SizedBox(height: 30.0,),
+              Center(
+                  child: Text("Sign up to create your wallet",
                       style: TextStyle(
                         fontSize: 20.0,
                       ))),
-              new SizedBox(
-                height: 10.0,
-              ),
-              new TextFormField(
+              SizedBox(height: 10.0,),
+              TextFormField(
                 keyboardType: TextInputType.text,
                 validator: validateName,
                 onSaved: (value) {
@@ -293,7 +254,7 @@ class RegisterComponentState extends State<RegisterComponent> {
                   labelText: 'First Name',
                 ),
               ),
-              new TextFormField(
+              TextFormField(
                 keyboardType: TextInputType.text,
                 validator: validateName,
                 onSaved: (value) {
@@ -305,26 +266,14 @@ class RegisterComponentState extends State<RegisterComponent> {
                   labelText: 'Last Name',
                 ),
               ),
-              new TextFormField(
-                keyboardType: TextInputType.emailAddress,
-                validator: validateEmail,
-                onSaved: (value) {
-                  newUser.emailAddress = value;
-                },
-                decoration: const InputDecoration(
-                  icon: const Icon(Icons.email),
-                  hintText: 'Enter your email address',
-                  labelText: 'Email address',
-                ),
-              ),
-              new GestureDetector(
+              GestureDetector(
                   onTap: () {
                     DatePicker.showDatePicker(context,
                       showTitleActions: true,
                       onChanged: (date) {},
                       onConfirm: (date) {
                         setState(() {
-                          _birthDateController.text = new DateFormat.yMd().format(date);
+                          _birthDateController.text = DateFormat.yMd().format(date);
                         });
                       },
                       currentTime: DateTime.now(),
@@ -332,9 +281,9 @@ class RegisterComponentState extends State<RegisterComponent> {
                     );
                   },
                   behavior: HitTestBehavior.translucent,
-                  child: new Container(
-                    child: new IgnorePointer(
-                      child: new TextFormField(
+                  child: Container(
+                    child: IgnorePointer(
+                      child: TextFormField(
                           controller: _birthDateController,
                           focusNode: focusNode,
                           keyboardType: TextInputType.text,
@@ -350,26 +299,24 @@ class RegisterComponentState extends State<RegisterComponent> {
                           )),
                     ),
                   )),
-              new SizedBox(
-                height: 20.0,
-              ),
-              new CheckboxListTile(
-                  title: new GestureDetector(
+              SizedBox(height: 20.0,),
+              CheckboxListTile(
+                  title: GestureDetector(
                       onTap: () {
                         Application.router.navigateTo(context, "/terms");
                       },
-                      child: new RichText(
-                          text: new TextSpan(children: <TextSpan>[
-                        new TextSpan(
+                      child: RichText(
+                          text: TextSpan(children: <TextSpan>[
+                        TextSpan(
                           text: 'Check the box to agree to our ',
-                          style: new TextStyle(
+                          style: TextStyle(
                             color: Colors.black,
                             fontSize: 16.0,
                           ),
                         ),
-                        new TextSpan(
+                        TextSpan(
                           text: 'Terms and Conditions',
-                          style: new TextStyle(
+                          style: TextStyle(
                             color: Colors.blue,
                             fontSize: 16.0,
                           ),
@@ -378,29 +325,32 @@ class RegisterComponentState extends State<RegisterComponent> {
                   value: _termsChecked,
                   onChanged: (bool value) =>
                       setState(() => _termsChecked = value)),
-              new SizedBox(
-                height: 15.0,
-              ),
-              new RaisedButton(
+              SizedBox(height: 15.0,),
+              RaisedButton(
+                color: Colors.red,
+                splashColor: Colors.red[100],
                 onPressed: () {
                   _validateInputs(context);
                 },
-                child: new Text('Submit'),
+                child: Text(
+                  'Submit',
+                  style: TextStyle(color: Colors.white,),
+                ),
               )
             ]));
 
-    var ws = new List<Widget>();
+    var ws = List<Widget>();
     ws.add(form);
 
     if (_submitting) {
-      var modal = new Stack(
+      var modal = Stack(
         children: [
-          new Opacity(
+          Opacity(
             opacity: 0.8,
             child: const ModalBarrier(dismissible: false, color: Colors.grey),
           ),
-          new Center(
-            child: new CircularProgressIndicator(),
+          Center(
+            child: CircularProgressIndicator(),
           ),
         ],
       );
@@ -412,15 +362,16 @@ class RegisterComponentState extends State<RegisterComponent> {
 
   @override
   Widget build(BuildContext context) {
-    return new Scaffold(
-        appBar: new AppBar(
-          title: new Text("Welcome to Paytaca"),
-          automaticallyImplyLeading: false,
-          centerTitle: true,
-        ),
-        body: new Builder(builder: (BuildContext context) {
-          _scaffoldContext = context;
-          return new Stack(children: _buildRegistrationForm(context));
-        }));
+    return Scaffold(
+      appBar: AppBar(
+        title: Text("Welcome to Paytaca"),
+        automaticallyImplyLeading: false,
+        centerTitle: true,
+      ),
+      body: Builder(builder: (BuildContext context) {
+        _scaffoldContext = context;
+        return Stack(children: _buildRegistrationForm(context));
+      })
+    );
   }
 }

@@ -1,11 +1,11 @@
 import 'dart:convert';
-
+import 'package:intl/intl.dart';
 import 'package:archive/archive.dart';
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:qr_flutter/qr_flutter.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../views/app.dart';
+
 
 class ProofOfPaymentComponent extends StatefulWidget {
   @override
@@ -21,7 +21,7 @@ class ProofOfPaymentComponentState extends State<ProofOfPaymentComponent> {
     List<int> gzipBytes = new GZipEncoder().encode(stringBytes);
     String compressedString = base64.encode(gzipBytes);
     return {
-      'code': compressedString,
+      'code': prefs.getString("_txnProofCode"),
       'datetime': prefs.getString("_txnDateTime"),
       'amount': prefs.getString("_txnAmount"),
       'txnID': prefs.getString("_txnID")
@@ -75,17 +75,21 @@ class ProofOfPaymentComponentState extends State<ProofOfPaymentComponent> {
                     new SizedBox(
                       height: 30.0,
                     ),
+
                     QrImage(
-                      version: 13,
                       data: snapshot.data['code'],
                       size: 0.5 * bodyHeight,
                     ),
+
                     new SizedBox(
                       height: 10.0,
                     ),
+
                     new RaisedButton(
                       onPressed: () {
-                        Application.router.navigateTo(context, '/home');
+                        Navigator.pop(context, false);
+                        Navigator.pop(context, false);
+                        //Application.router.navigateTo(context, '/home');
                         },
                       child: new Text('Back to Wallet'),
                     )
@@ -94,6 +98,7 @@ class ProofOfPaymentComponentState extends State<ProofOfPaymentComponent> {
               );
             }
           }
+          return new Container();
         }
     );
     var ws = new List<Widget>();
@@ -102,17 +107,16 @@ class ProofOfPaymentComponentState extends State<ProofOfPaymentComponent> {
   }
 
   @override
-  Widget build(BuildContext context) {
-    
+  Widget build(BuildContext context) { 
     return Scaffold(
-        appBar: AppBar(
-          title: Text('Payment Proof'),
-          centerTitle: true,
-          automaticallyImplyLeading: false
-        ),
-        body: new Builder(builder: (BuildContext context) {
-          return new Stack(children: _buildAccountForm(context));
-        })
-      );
+      appBar: AppBar(
+        title: Text('Payment Proof'),
+        centerTitle: true,
+        automaticallyImplyLeading: false
+      ),
+      body: new Builder(builder: (BuildContext context) {
+        return new Stack(children: _buildAccountForm(context));
+      })
+    );
   }
 }
