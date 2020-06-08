@@ -247,7 +247,7 @@ class SendContactComponentState extends State<SendContactComponent> {
       'from_account': selectedPaytacaAccount,
       'to_account': toAccount,
       'asset': globals.phpAssetId,
-      'amount': amount.toString(),
+      'amount': amount,
       'public_key': publicKey,
       'txn_hash': txnhash,
       'signature': signature,
