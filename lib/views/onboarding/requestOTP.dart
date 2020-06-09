@@ -48,36 +48,11 @@ class RequestOTPComponentState extends State<RequestOTPComponent> {
 
   // Generate firebase messaging token
   void listenForNewToken() async {
-    // Retrive old token
-    String _oldToken = await globals.storage.read(key: "token");
-    print("Printing the value of OLD token from requestOTP.dart");
-    print("#####################################################################################");
-    print(_oldToken);
-    print("#####################################################################################");
-
     // Listen for new token
     Stream<String> fcmStream = _firebaseMessaging.onTokenRefresh;
     fcmStream.listen((token) {
-      print("Printing the value of NEW token from requestOTP.dart");
-      print("#####################################################################################");
-      print(token);
-      print("#####################################################################################");
       _newToken = token;
-      // Store token in global storage
-      globals.storage.write(key: "token", value: _newToken);
     });
-
-    if (_oldToken != _newToken) {
-      var payload = {
-        "firebase_token": _newToken,
-      };
-
-      var response = await updateFirebaseMessagingToken(payload); 
-
-      if (response.success) {
-        print("Firebase messaging token updated in the server");
-      }
-    }
   }
 
   bool interceptBackButton(bool stopDefaultButtonEvent) {
@@ -147,7 +122,7 @@ class RequestOTPComponentState extends State<RequestOTPComponent> {
         // Check what level is user at
         if (resp.user["level"] == 2) {
           await prefs.setBool('level2', true);
-          // Hide register and verify email buttons when level2
+          // Hide register and verify email buttons when level2firebaseToken
           await prefs.setBool('registerEmailBtn', false);
           await prefs.setBool('verifyEmailBtn', false);
           // Show verify identity button
@@ -159,6 +134,32 @@ class RequestOTPComponentState extends State<RequestOTPComponent> {
           await prefs.setBool('verifyEmailBtn', false);
           await prefs.setBool('verifyIdentityBtn', false);
         }
+
+        // Retrive old token
+        String _oldToken = prefs.getString('firebaseToken');
+        print("Printing the value of OLD token from requestOTP.dart");
+        print("#####################################################################################");
+        print(_oldToken);
+        print("#####################################################################################");
+
+        print("Printing the value of NEW token from requestOTP.dart");
+        print("#####################################################################################");
+        print(_newToken);
+        print("#####################################################################################");
+
+        if (_oldToken != _newToken && _newToken != null) {
+          var payload = {
+            "firebase_token": _newToken,
+          };
+
+          var response = await updateFirebaseMessagingToken(payload); 
+
+          if (response.success) {
+            print("Firebase messaging token updated in the server!");
+            await prefs.setString('firebaseToken', _newToken);
+          }
+        }
+
       }
 
       if (proceed) {

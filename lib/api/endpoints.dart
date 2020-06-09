@@ -182,6 +182,7 @@ Future<GenericCreateResponse> createUser(payload) async {
   try {
     final String url = globals.baseUrl + '/api/users/create';
     final response = await sendPostRequest(url, payload);
+    print("The value of response in createUser() is: $response");
     if (response.data['success']) {
       // Save birthdate in shared preferences
       SharedPreferences prefs = await SharedPreferences.getInstance();

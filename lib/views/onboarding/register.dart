@@ -185,7 +185,7 @@ class RegisterComponentState extends State<RegisterComponent> {
           userPayload["txn_hash"] = txnHash;
           userPayload["signature"] = signature;
           userPayload["device_id"] = udid;
-          userPayload["firebase_messaging_token"] = token;
+          userPayload["firebase_token"] = token;
 
           var user = await createUser(userPayload);
 

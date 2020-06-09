@@ -62,7 +62,7 @@ class LandingComponentState extends State<LandingComponent>
   void initState() {
     super.initState();
     globals.checkInternet();
-    listenForNewToken();
+    //listenForNewToken();
   }
 
   // Generate firebase messaging token
