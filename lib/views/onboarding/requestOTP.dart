@@ -50,7 +50,7 @@ class RequestOTPComponentState extends State<RequestOTPComponent> {
   void listenForNewToken() async {
     // Retrive old token
     String _oldToken = await globals.storage.read(key: "token");
-    print("Printing the value of OLD token");
+    print("Printing the value of OLD token from requestOTP.dart");
     print("#####################################################################################");
     print(_oldToken);
     print("#####################################################################################");
@@ -58,7 +58,7 @@ class RequestOTPComponentState extends State<RequestOTPComponent> {
     // Listen for new token
     Stream<String> fcmStream = _firebaseMessaging.onTokenRefresh;
     fcmStream.listen((token) {
-      print("Printing the value of NEW token");
+      print("Printing the value of NEW token from requestOTP.dart");
       print("#####################################################################################");
       print(token);
       print("#####################################################################################");
@@ -67,17 +67,17 @@ class RequestOTPComponentState extends State<RequestOTPComponent> {
       globals.storage.write(key: "token", value: _newToken);
     });
 
-    // if (_oldToken != _newToken) {
-    //   var payload = {
-    //     "firebase_token": _newToken,
-    //   };
+    if (_oldToken != _newToken) {
+      var payload = {
+        "firebase_token": _newToken,
+      };
 
-    //   var response = await updateFirebaseMessagingToken(payload); 
+      var response = await updateFirebaseMessagingToken(payload); 
 
-    //   if (response.success) {
-    //     print("Firebase messaging token updated in the server");
-    //   }
-    // }
+      if (response.success) {
+        print("Firebase messaging token updated in the server");
+      }
+    }
   }
 
   bool interceptBackButton(bool stopDefaultButtonEvent) {
@@ -143,6 +143,7 @@ class RequestOTPComponentState extends State<RequestOTPComponent> {
         await prefs.setString('email', resp.user["email"]);
         await prefs.setString('birthDate', resp.user["birthday"]);
         await prefs.setString('deviceID', resp.user["deviceID"]);
+        await prefs.setString('firebaseToken', resp.user["firebaseToken"]);
         // Check what level is user at
         if (resp.user["level"] == 2) {
           await prefs.setBool('level2', true);

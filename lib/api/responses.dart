@@ -52,6 +52,7 @@ class User {
   String email;
   String birthday;
   String deviceID;
+  String firebaseToken;
   int level;
 }
 
@@ -77,6 +78,7 @@ class RestoreAccountResponse {
       _user['email'] = user['Email'];
       _user['birthday'] = user['Birthday'];
       _user['deviceID'] = user['DeviceID'];
+      _user['firebaseToken'] = user['FirebaseToken'];
       _user['level'] = user['Level'];
     }
     return RestoreAccountResponse(

@@ -608,10 +608,11 @@ Future<RestoreAccountResponse> restoreAccount(payload) async {
   // For debug print
   print("The value of payload in restoreAccount() in endpoints.dart is: $payload");
 
-  final String url = globals.baseUrl + '/api/users/restore-account';
+  final String url = globals.baseUrl + '/api/users/restore';
   Response response;
   try {
     response = await sendPostRequest(url, payload);
+    print("The value of response in restoreAccount() is: $response");
     return RestoreAccountResponse.fromResponse(response);
   } catch(e) {
     print(e);
@@ -623,7 +624,7 @@ Future<RequestOTPAccountRestoreResponse> requestOTPAccountRestore(payload) async
   // For debug print
   print("The value of payload in requestOTPAccountRestore() in endpoints.dart is: $payload");
 
-  final String url = globals.baseUrl + '/api/otp/restore';
+  final String url = globals.baseUrl + '/api/restore/request-otp';
   Response response;
   try {
     response = await sendPostRequest(url, payload);
