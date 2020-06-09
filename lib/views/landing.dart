@@ -88,10 +88,14 @@ class LandingComponentState extends State<LandingComponent>
 
     if (_oldToken != _newToken) {
       var payload = {
-        "token": _newToken,
+        "firebase_token": _newToken,
       };
 
       var response = await updateFirebaseMessagingToken(payload); 
+
+      if (response.success) {
+        print("Firebase messaging token updated in the server");
+      }
     }
   }
 

@@ -45,7 +45,6 @@ Future<dynamic> sendPostRequest(url, payload) async {
       return errorType;
     }
   }
-  print("The value of response in sendPostRequest() in endpoints.dart is: $response");
   return response;
 }
 
@@ -103,7 +102,6 @@ Future<dynamic> sendGetRequest(url) async {
       return errorType;
     }
   }
-  print("The value of response in sendGetRequest() in endpoints.dart is: $response");
   return response;
 }
 
@@ -647,11 +645,13 @@ Future<GenericCreateResponse> requestOTPRetry(payload) async {
   }
 }
 
+
 Future<GenericCreateResponse> updateFirebaseMessagingToken(payload) async {
   print("The value of payload in updateFirebaseMessagingToken() in endpoints.dart is: $payload");
   try {
-    final String url = globals.baseUrl + '/api/update/token';
+    final String url = globals.baseUrl + '/api/push-notifications/update-token';
     final response = await sendPostRequest(url, payload);
+    print("The value of response in updateFirebaseMessagingToken() is: $response");
     return GenericCreateResponse.fromResponse(response);
   } catch (e){
     throw Exception(e);

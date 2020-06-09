@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/gestures.dart';
 import 'package:overlay_support/overlay_support.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:back_button_interceptor/back_button_interceptor.dart';
 import '../app.dart';
 import '../../api/endpoints.dart';
@@ -25,21 +26,58 @@ class RequestOTPComponent extends StatefulWidget {
 }
 
 class RequestOTPComponentState extends State<RequestOTPComponent> {
+  final FirebaseMessaging _firebaseMessaging = FirebaseMessaging();
   final TextEditingController textController = TextEditingController();
   BuildContext _scaffoldContext;
   FocusNode focusNode = FocusNode();
+  String _newToken;
   bool _submitting = false;
 
   @override
   void initState() {
     super.initState();
     BackButtonInterceptor.add(interceptBackButton);
+    listenForNewToken();
   }
 
   @override
   void dispose() {
     BackButtonInterceptor.remove(interceptBackButton);
     super.dispose();
+  }
+
+  // Generate firebase messaging token
+  void listenForNewToken() async {
+    // Retrive old token
+    String _oldToken = await globals.storage.read(key: "token");
+    print("Printing the value of OLD token");
+    print("#####################################################################################");
+    print(_oldToken);
+    print("#####################################################################################");
+
+    // Listen for new token
+    Stream<String> fcmStream = _firebaseMessaging.onTokenRefresh;
+    fcmStream.listen((token) {
+      print("Printing the value of NEW token");
+      print("#####################################################################################");
+      print(token);
+      print("#####################################################################################");
+      _newToken = token;
+      // Store token in global storage
+      globals.storage.write(key: "token", value: _newToken);
+    });
+
+    // if (_oldToken != _newToken) {
+    //   var payload = {
+    //     "firebase_token": _newToken,
+    //   };
+
+    //   var response = await updateFirebaseMessagingToken(payload); 
+
+    //   if (response.success) {
+    //     print("Firebase messaging token updated in the server");
+    //   }
+    // }
   }
 
   bool interceptBackButton(bool stopDefaultButtonEvent) {
