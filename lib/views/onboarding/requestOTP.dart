@@ -48,9 +48,8 @@ class RequestOTPComponentState extends State<RequestOTPComponent> {
 
   // Generate firebase messaging token
   void listenForNewToken() async {
-    // Listen for new token
-    Stream<String> fcmStream = _firebaseMessaging.onTokenRefresh;
-    fcmStream.listen((token) {
+    _firebaseMessaging.getToken().then((token) {
+      print("The value of token in generateToken() in requestOTP.dart is: $token");
       _newToken = token;
     });
   }
@@ -135,19 +134,7 @@ class RequestOTPComponentState extends State<RequestOTPComponent> {
           await prefs.setBool('verifyIdentityBtn', false);
         }
 
-        // Retrive old token
-        String _oldToken = prefs.getString('firebaseToken');
-        print("Printing the value of OLD token from requestOTP.dart");
-        print("#####################################################################################");
-        print(_oldToken);
-        print("#####################################################################################");
-
-        print("Printing the value of NEW token from requestOTP.dart");
-        print("#####################################################################################");
-        print(_newToken);
-        print("#####################################################################################");
-
-        if (_oldToken != _newToken && _newToken != null) {
+        if (_newToken != null) {
           var payload = {
             "firebase_token": _newToken,
           };
@@ -159,7 +146,6 @@ class RequestOTPComponentState extends State<RequestOTPComponent> {
             await prefs.setString('firebaseToken', _newToken);
           }
         }
-
       }
 
       if (proceed) {
