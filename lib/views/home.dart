@@ -29,7 +29,6 @@ class HomeComponentState extends State<HomeComponent> {
   StreamSubscription _connectionChangeStream;
   final formatCurrency = new NumberFormat.currency(symbol: 'PHP ');
   final FirebaseMessaging _firebaseMessaging = FirebaseMessaging();
-  String _newToken;
   String path = "/home";
   String storedUdid;
   String freshUdid;
@@ -105,38 +104,6 @@ class HomeComponentState extends State<HomeComponent> {
         //showPushNotificationDialog(context, message);
       },
     );
-
-      // Listen for new token
-    Stream<String> fcmStream = _firebaseMessaging.onTokenRefresh;
-    fcmStream.listen((token) {
-      _newToken = token;
-    });
-
-    // Retrive old token
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    String _oldToken = prefs.getString('firebaseToken');
-    print("Printing the value of OLD token from requestOTP.dart");
-    print("#####################################################################################");
-    print(_oldToken);
-    print("#####################################################################################");
-
-    print("Printing the value of NEW token from requestOTP.dart");
-    print("#####################################################################################");
-    print(_newToken);
-    print("#####################################################################################");
-
-    if (_oldToken != _newToken && _newToken != null) {
-      var payload = {
-        "firebase_token": _newToken,
-      };
-
-      var response = await updateFirebaseMessagingToken(payload); 
-
-      if (response.success) {
-        print("Firebase messaging token updated in the server!");
-        await prefs.setString('firebaseToken', _newToken);
-      }
-    }
   }
 
   void initDynamicLinks() async {
