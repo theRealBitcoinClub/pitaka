@@ -398,6 +398,7 @@ Future<BalancesResponse> getOnlineBalances() async {
   var response;
   try {
     response = await sendGetRequest(url);
+    print("The value of response in getOnlineBalances() is: $response");
     // Check for invalid device ID error
     if (response.data['error'] == "invalid_device_id") {
       return BalancesResponse.invalidDeviceIdError(response);

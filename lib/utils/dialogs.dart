@@ -347,6 +347,44 @@ showInvalidCodelDialog(context) {
   ).show(context, onDialogClose);
 }
 
+
+// Alert dialog for sending failure
+showSendingFailureDialog(context) {
+  EasyDialog(
+    title: Text(
+      "Sending Failure!",
+      style: TextStyle(fontWeight: FontWeight.bold),
+      textScaleFactor: 1.2,
+    ),
+    description: Text(
+      "There was a problem in sending the funds. "
+      "Please try again.",
+      textScaleFactor: 1.1,
+      textAlign: TextAlign.center,
+    ),
+    height: 160,
+    closeButton: false,
+    contentList: [
+      Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: <Widget>[
+          FlatButton(
+            padding: EdgeInsets.all(8),
+            textColor: Colors.lightBlue,
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+            child: Text("OK",
+              textScaleFactor: 1.2,
+              textAlign: TextAlign.center,
+            ),
+          ),
+        ],
+      )
+    ]
+  ).show(context, onDialogClose);
+}
+
 // Alert dialog for error in sending email
 showErrorSendingEmailDialog(context) {
   EasyDialog(

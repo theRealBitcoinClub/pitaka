@@ -273,7 +273,12 @@ class SendComponentState extends State<SendComponent> {
       'device_id': udid,
     };
 
-    var response = await transferAsset(payload);
+    var response;
+    if (toAccount != null) {
+      response = await transferAsset(payload);
+    } else {
+      showSendingFailureDialog(context);
+    }
 
     // Catch invalid device ID error
     if (response.error == "invalid_device_id") {
