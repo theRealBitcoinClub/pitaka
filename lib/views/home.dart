@@ -24,11 +24,12 @@ class HomeComponent extends StatefulWidget {
   State createState() => new HomeComponentState();
 }
 
-class HomeComponentState extends State<HomeComponent> {
+class HomeComponentState extends State<HomeComponent> with SingleTickerProviderStateMixin {
   DatabaseHelper databaseHelper = DatabaseHelper();
   StreamSubscription _connectionChangeStream;
   final formatCurrency = new NumberFormat.currency(symbol: 'PHP ');
   final FirebaseMessaging _firebaseMessaging = FirebaseMessaging();
+  TabController _tabController;
   String path = "/home";
   String storedUdid;
   String freshUdid;
@@ -55,6 +56,8 @@ class HomeComponentState extends State<HomeComponent> {
     initDynamicLinks();
     // For Firebase push notification
     setupPushNotification();
+    // For TabController
+    _tabController = TabController(vsync: this, length: 2);
   }
 
   void setupPushNotification() async {
@@ -218,26 +221,28 @@ class HomeComponentState extends State<HomeComponent> {
             Padding(
               padding: EdgeInsets.only(right: 20.0),
               child: GestureDetector(
-                child: globals.online ? new Icon(Icons.wifi): new Icon(Icons.signal_wifi_off),
+                child: globals.online ? Icon(Icons.wifi): Icon(Icons.signal_wifi_off),
               )
             )
           ],
-          bottom: TabBar(tabs: [
-            Tab(
-              text: "Accounts",
-            ),
-            Tab(text: "Transactions"),
-          ]),
+          bottom: TabBar(
+            controller: _tabController,
+            tabs: [
+              Tab(text: "Accounts",),
+              Tab(text: "Transactions",),
+            ]
+          ),
           centerTitle: true,
         ),
         drawer: buildDrawer(context),
         body:  TabBarView(
+          controller: _tabController,
           children: [
             // accountsTab,
-            new Builder(builder: (BuildContext context) {
-              return new Container(
+            Builder(builder: (BuildContext context) {
+              return Container(
                 alignment: Alignment.center,
-                child: new FutureBuilder(
+                child: FutureBuilder(
                   // Added condition, when both syncing and online are true get offline balances
                   future: globals.syncing && globals.online ? getOffLineBalances() : globals.online == false ? getOffLineBalances() : getOnlineBalances(),
                   builder: (BuildContext context, AsyncSnapshot snapshot) {
@@ -323,7 +328,7 @@ class HomeComponentState extends State<HomeComponent> {
                           } else {
                             return noDataView("No data found");
                           }
-                          return new Container();
+                          return Container();
                         }
                       case ConnectionState.none:
                         {
@@ -335,10 +340,10 @@ class HomeComponentState extends State<HomeComponent> {
               );
             }),
             // transactionsTab
-            new Builder(builder: (BuildContext context) {
-              return new Container(
+            Builder(builder: (BuildContext context) {
+              return Container(
                 alignment: Alignment.center,
-                child: new FutureBuilder(
+                child: FutureBuilder(
                   future: globals.online ? getOnlineTransactions() : getOffLineTransactions(),
                   builder: (BuildContext context, AsyncSnapshot snapshot) {
                     // To show progress loading view add switch statment to handle connnection states.
@@ -416,7 +421,7 @@ class HomeComponentState extends State<HomeComponent> {
                           } else {
                             return noDataView("No data found");
                           }
-                          return new Container();
+                          return Container();
                         }
                       case ConnectionState.none:
                         {
@@ -436,14 +441,14 @@ class HomeComponentState extends State<HomeComponent> {
 
   // Progress indicator widget to show loading.
   Widget loadingView() => Center(
-        child: CircularProgressIndicator(), 
-      );
+    child: CircularProgressIndicator(), 
+  );
 
   // View to empty data message
   Widget noDataView(String msg) => Center(
-        child: Text(
-          msg,
-          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
-        ),
-      );
+    child: Text(
+      msg,
+      style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
+    ),
+  );
 }
