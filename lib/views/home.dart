@@ -40,6 +40,10 @@ class HomeComponentState extends State<HomeComponent> with SingleTickerProviderS
   bool _popDialog = false;
   String initialAmount;
 
+  List myList;
+  ScrollController _scrollController = ScrollController();
+  int _currentMax = 10;
+
   void initState()  {
     super.initState();
     // Subscribe to Notifier Stream from ConnectionStatusSingleton class in globals.dart
@@ -58,6 +62,13 @@ class HomeComponentState extends State<HomeComponent> with SingleTickerProviderS
     setupPushNotification();
     // For TabController
     _tabController = TabController(vsync: this, length: 2);
+    // For ScrollController
+    _scrollController.addListener(() {
+      if (_scrollController.position.pixels ==
+          _scrollController.position.maxScrollExtent) {
+        _getMoreData();
+      }
+    });
   }
 
   void setupPushNotification() async {
@@ -203,10 +214,21 @@ class HomeComponentState extends State<HomeComponent> with SingleTickerProviderS
     loginUser(loginPayload);
   }
 
+  _getMoreData() {
+    for (int i = _currentMax; i < _currentMax + 10; i++) {
+      myList.add("Item : ${i + 1}");
+    }
+
+    _currentMax = _currentMax + 10;
+
+    setState(() {});
+  }
+
   @override
   void dispose() {
    // _connectivitySubscription.cancel();
     super.dispose();
+    _tabController.dispose();
   }
 
   @override
