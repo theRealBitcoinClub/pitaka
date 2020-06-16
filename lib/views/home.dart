@@ -1,8 +1,10 @@
 import 'dart:async';
 import 'receive.dart';
 import 'package:intl/intl.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:qr_flutter/qr_flutter.dart';
+import 'package:url_launcher/url_launcher.dart'; 
 import 'package:flutter_udid/flutter_udid.dart';
 import 'package:overlay_support/overlay_support.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -23,7 +25,7 @@ import '../components/homeTabs.dart' as hometabs;
 
 class HomeComponent extends StatefulWidget {
   @override
-  State createState() => new HomeComponentState();
+  State createState() => HomeComponentState();
 }
 
 class HomeComponentState extends State<HomeComponent> with SingleTickerProviderStateMixin {
@@ -31,6 +33,7 @@ class HomeComponentState extends State<HomeComponent> with SingleTickerProviderS
   StreamSubscription _connectionChangeStream;
   final formatCurrency = new NumberFormat.currency(symbol: 'PHP ');
   final FirebaseMessaging _firebaseMessaging = FirebaseMessaging();
+  ScrollController _scrollController = ScrollController();
   TabController _tabController;
   String path = "/home";
   String storedUdid;
@@ -41,10 +44,6 @@ class HomeComponentState extends State<HomeComponent> with SingleTickerProviderS
   bool _executeFuture = false;
   bool _popDialog = false;
   String initialAmount;
-
-  List transactionsList;
-  ScrollController _scrollController = ScrollController();
-  int _currentMax = 10;
 
   void initState()  {
     super.initState();
@@ -216,14 +215,67 @@ class HomeComponentState extends State<HomeComponent> with SingleTickerProviderS
     loginUser(loginPayload);
   }
 
-  _getMoreData() {
-    for (int i = _currentMax; i < _currentMax + 10; i++) {
-      transactionsList.add("Item : ${i + 1}");
+  // Opens up the Paytaca WebWallet
+  _launchPaytacaWebWallet() async {
+    const url = 'https://wallet.paytaca.com/';
+    if (await canLaunch(url)) {
+      await launch(url, forceWebView: false);
+    } else {
+      throw 'Could not launch $url';
     }
-
-    _currentMax = _currentMax + 10;
-
-    setState(() {});
+  }
+  _getMoreData() {
+    showSimpleNotification(
+      Padding(
+        padding: EdgeInsets.only(top: 10.0, bottom: 10.0),
+        child: Container(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              Row(
+                children: <Widget>[
+                  Icon(Icons.event_busy, color: Colors.red,),
+                  SizedBox(width: 10.0,),
+                  Text(
+                    "Exceeds the limit!",
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black,
+                    ),
+                  ),
+                ]
+              ),
+              SizedBox(height: 8.0,),
+              RichText(
+                textAlign: TextAlign.justify,
+                text: TextSpan(
+                  text: "You haved exceeded the 100 transactions limit. "
+                    "To view older transactions, use the web wallet",
+                  style: TextStyle(color: Colors.black, fontSize: 14),
+                  children: <TextSpan>[
+                    TextSpan(
+                      text: ' https://wallet.paytaca.com/',
+                      style: TextStyle(
+                        color: Colors.redAccent, 
+                        fontSize: 14, 
+                        fontWeight: FontWeight.bold,
+                      ),
+                      recognizer: TapGestureRecognizer()
+                        ..onTap = () {
+                          _launchPaytacaWebWallet();
+                        },
+                    )
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+      background: Colors.white,
+      autoDismiss: false,
+      slideDismiss: true,
+    );
   }
 
   String _formatMode(String mode) {

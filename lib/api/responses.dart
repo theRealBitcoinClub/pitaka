@@ -454,6 +454,7 @@ class TransactionsResponse {
 
    factory TransactionsResponse.fromResponse(Response response) {
     List<Transaction> _transactions = [];
+    var reversedList;
     if (response.data['transactions'] != null) {
         for (final txn in response.data['transactions']) {
           var transObj = new Transaction();
@@ -466,6 +467,11 @@ class TransactionsResponse {
           transObj.txnID = txn['TransactionID'];
           transObj.paymentProof = txn['ProofOfPayment'];
           _transactions.add(transObj);
+        }
+        if (_transactions.length > 100) {
+          _transactions = List.from(_transactions.reversed);
+          _transactions = _transactions.take(100).toList();
+          _transactions = List.from(_transactions.reversed);
         }
       }
     return TransactionsResponse(
