@@ -5,6 +5,7 @@ import '../api/responses.dart';
 import '../utils/globals.dart' as globals;
 
 
+ScrollController _scrollController = ScrollController();
 final formatCurrency = new NumberFormat.currency(symbol: 'PHP ');
 var balanceObj = Balance();
 bool syncing = globals.syncing;
@@ -140,8 +141,13 @@ _showProof(List<Transaction> transaction, BuildContext context, int index) async
 
 ListView buildTransactionsList(transactions) {
   return ListView.builder(
+    controller: _scrollController,
+    // itemExtent: 80,
     itemCount: transactions.length,
     itemBuilder: (BuildContext context, int index) {
+      if (index == transactions.length) {
+        return CircularProgressIndicator();
+      }
     return GestureDetector(
       onTap: () => _showProof(transactions, context, index),
       child: Column(

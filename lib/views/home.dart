@@ -1,14 +1,18 @@
 import 'dart:async';
 import 'receive.dart';
 import 'package:intl/intl.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:qr_flutter/qr_flutter.dart';
+import 'package:url_launcher/url_launcher.dart'; 
 import 'package:flutter_udid/flutter_udid.dart';
 import 'package:overlay_support/overlay_support.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:firebase_dynamic_links/firebase_dynamic_links.dart';
-import '../api/endpoints.dart';
 import './app.dart';
+import '../api/endpoints.dart';
+import '../api/responses.dart';
 import '../utils/helpers.dart';
 import '../utils/dialogs.dart';
 import '../utils/globals.dart';
@@ -21,23 +25,26 @@ import '../components/homeTabs.dart' as hometabs;
 
 class HomeComponent extends StatefulWidget {
   @override
-  State createState() => new HomeComponentState();
+  State createState() => HomeComponentState();
 }
 
-class HomeComponentState extends State<HomeComponent> {
+class HomeComponentState extends State<HomeComponent> with SingleTickerProviderStateMixin {
   DatabaseHelper databaseHelper = DatabaseHelper();
   StreamSubscription _connectionChangeStream;
   final formatCurrency = new NumberFormat.currency(symbol: 'PHP ');
   final FirebaseMessaging _firebaseMessaging = FirebaseMessaging();
+  ScrollController _scrollController = ScrollController();
+  TabController _tabController;
   String path = "/home";
   String storedUdid;
   String freshUdid;
+  String initialAmount;
   bool online = globals.online;
   bool syncing = globals.syncing;
   bool isOffline = false;
   bool _executeFuture = false;
   bool _popDialog = false;
-  String initialAmount;
+  int transactionLenght;
 
   void initState()  {
     super.initState();
@@ -46,7 +53,7 @@ class HomeComponentState extends State<HomeComponent> {
     ConnectionStatusSingleton connectionStatus = ConnectionStatusSingleton.getInstance();
     _connectionChangeStream = connectionStatus.connectionChange.listen(connectionChanged);
 
-    ReceiveComponentState comp = new ReceiveComponentState();
+    ReceiveComponentState comp = ReceiveComponentState();
 
     comp.getAccounts();
     // Generate unique device ID
@@ -55,6 +62,15 @@ class HomeComponentState extends State<HomeComponent> {
     initDynamicLinks();
     // For Firebase push notification
     setupPushNotification();
+    // For TabController
+    _tabController = TabController(vsync: this, length: 2);
+    // For ScrollController
+    _scrollController.addListener(() {
+      if (_scrollController.position.pixels ==
+          _scrollController.position.maxScrollExtent) {
+        _getMoreData();
+      }
+    });
   }
 
   void setupPushNotification() async {
@@ -200,10 +216,155 @@ class HomeComponentState extends State<HomeComponent> {
     loginUser(loginPayload);
   }
 
+  // Opens up the Paytaca WebWallet
+  _launchPaytacaWebWallet() async {
+    const url = 'https://wallet.paytaca.com/';
+    if (await canLaunch(url)) {
+      await launch(url, forceWebView: false);
+    } else {
+      throw 'Could not launch $url';
+    }
+  }
+  _getMoreData() {
+    if (transactionLenght == 100) {
+      showSimpleNotification(
+        Padding(
+          padding: EdgeInsets.only(top: 10.0, bottom: 10.0),
+          child: Container(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                Row(
+                  children: <Widget>[
+                    Icon(Icons.event_busy, color: Colors.red,),
+                    SizedBox(width: 10.0,),
+                    Text(
+                      "Exceeds the limit!",
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black,
+                      ),
+                    ),
+                  ]
+                ),
+                SizedBox(height: 8.0,),
+                RichText(
+                  textAlign: TextAlign.justify,
+                  text: TextSpan(
+                    text: "You haved exceeded the 100 transactions limit. "
+                      "To view older transactions, use the web wallet",
+                    style: TextStyle(color: Colors.black, fontSize: 14),
+                    children: <TextSpan>[
+                      TextSpan(
+                        text: ' https://wallet.paytaca.com/',
+                        style: TextStyle(
+                          color: Colors.redAccent, 
+                          fontSize: 14, 
+                          fontWeight: FontWeight.bold,
+                        ),
+                        recognizer: TapGestureRecognizer()
+                          ..onTap = () {
+                            _launchPaytacaWebWallet();
+                          },
+                      )
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+        background: Colors.white,
+        autoDismiss: false,
+        slideDismiss: true,
+      );
+    }
+  }
+
+  String _formatMode(String mode) {
+    String formattedMode;
+    if (mode == 'receive') {
+      formattedMode = 'Received';
+    }
+    if (mode == 'send') {
+      formattedMode = 'Sent';
+    }
+    return formattedMode;
+  }
+
+  _showProof(List<Transaction> transaction, BuildContext context, int index) async {
+    Dialog transacDialog = Dialog(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.0)),
+      child: Container(
+        height: 500.0,
+        width: 400.0,
+
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            QrImage(
+              data: transaction[transaction.length - index -1].paymentProof,
+              size: 250.0
+            ),
+
+            Padding(
+              padding:  EdgeInsets.all(10.0),
+              child: Text("${formatCurrency.format(
+              transaction[transaction.length - index - 1]
+                  .amount)}", style: TextStyle(fontSize: 20.0),
+              ),
+            ),
+            Padding(
+              padding: EdgeInsets.all(5.0),
+              child: Text("${transaction[transaction.length - index -
+                  1].time}", style: TextStyle(fontSize: 20.0),
+              ),
+            ),
+            Padding(
+              padding: EdgeInsets.all(5.0),
+              child: Text("ID: ${transaction[transaction.length -
+                  index - 1].txnID}", style: TextStyle(fontSize: 20.0),
+              ),
+            ),
+            Padding(padding: EdgeInsets.only(top: 20.0)),
+            FlatButton(onPressed: (){
+              Navigator.of(context).pop();
+            },
+                child: Text('Back', style: TextStyle(color: Colors.red, fontSize: 18.0),))
+          ],
+        ),
+      ),
+    );
+
+    if(transaction[transaction.length - index - 1].mode == "send") {
+      showDialog(context: context, builder: (BuildContext context) => transacDialog);
+    }
+  }
+
+  Icon _getModeIcon(String mode) {
+    Icon icon;
+    if (mode == 'receive') {
+      icon = Icon(
+        Icons.add,
+        size: 30.0,
+        color: Colors.green,
+      );
+    }
+    if (mode == 'send') {
+      icon = Icon(
+        Icons.remove,
+        size: 30.0,
+        color: Colors.red,
+      );
+    }
+    return icon;
+  }
+
   @override
   void dispose() {
    // _connectivitySubscription.cancel();
     super.dispose();
+    _tabController.dispose();
   }
 
   @override
@@ -218,26 +379,28 @@ class HomeComponentState extends State<HomeComponent> {
             Padding(
               padding: EdgeInsets.only(right: 20.0),
               child: GestureDetector(
-                child: globals.online ? new Icon(Icons.wifi): new Icon(Icons.signal_wifi_off),
+                child: globals.online ? Icon(Icons.wifi): Icon(Icons.signal_wifi_off),
               )
             )
           ],
-          bottom: TabBar(tabs: [
-            Tab(
-              text: "Accounts",
-            ),
-            Tab(text: "Transactions"),
-          ]),
+          bottom: TabBar(
+            controller: _tabController,
+            tabs: [
+              Tab(text: "Accounts",),
+              Tab(text: "Transactions",),
+            ]
+          ),
           centerTitle: true,
         ),
         drawer: buildDrawer(context),
         body:  TabBarView(
+          controller: _tabController,
           children: [
             // accountsTab,
-            new Builder(builder: (BuildContext context) {
-              return new Container(
+            Builder(builder: (BuildContext context) {
+              return Container(
                 alignment: Alignment.center,
-                child: new FutureBuilder(
+                child: FutureBuilder(
                   // Added condition, when both syncing and online are true get offline balances
                   future: globals.syncing && globals.online ? getOffLineBalances() : globals.online == false ? getOffLineBalances() : getOnlineBalances(),
                   builder: (BuildContext context, AsyncSnapshot snapshot) {
@@ -323,7 +486,7 @@ class HomeComponentState extends State<HomeComponent> {
                           } else {
                             return noDataView("No data found");
                           }
-                          return new Container();
+                          return Container();
                         }
                       case ConnectionState.none:
                         {
@@ -335,10 +498,10 @@ class HomeComponentState extends State<HomeComponent> {
               );
             }),
             // transactionsTab
-            new Builder(builder: (BuildContext context) {
-              return new Container(
+            Builder(builder: (BuildContext context) {
+              return Container(
                 alignment: Alignment.center,
-                child: new FutureBuilder(
+                child: FutureBuilder(
                   future: globals.online ? getOnlineTransactions() : getOffLineTransactions(),
                   builder: (BuildContext context, AsyncSnapshot snapshot) {
                     // To show progress loading view add switch statment to handle connnection states.
@@ -357,7 +520,81 @@ class HomeComponentState extends State<HomeComponent> {
                           if (snapshot.hasData) {
                             if (snapshot.data != null) {
                               if (snapshot.data.transactions.length > 0) {
-                                return hometabs.buildTransactionsList(snapshot.data.transactions);
+                                //return hometabs.buildTransactionsList(snapshot.data.transactions);
+                                transactionLenght = snapshot.data.transactions.length;
+                                return ListView.builder(
+                                  controller: _scrollController,
+                                  // itemExtent: 80,
+                                  itemCount: snapshot.data.transactions.length,
+                                  itemBuilder: (BuildContext context, int index) {
+                                    if (index == snapshot.data.transactions.length) {
+                                      return CircularProgressIndicator();
+                                    }
+                                  return GestureDetector(
+                                    onTap: () => _showProof(snapshot.data.transactions, context, index),
+                                    child: Column(
+                                      children: <Widget>[
+                                        Row(
+                                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                          children: <Widget>[
+                                            Column(
+                                              crossAxisAlignment: CrossAxisAlignment.start,
+                                              children: <Widget>[
+                                                Padding(
+                                                  padding:
+                                                  const EdgeInsets.fromLTRB(15.0, 15.0, 12.0, 4.0),
+                                                  child: Text(
+                                                    "${_formatMode(
+                                                        snapshot.data.transactions[snapshot.data.transactions.length - index - 1]
+                                                            .mode)} - ${formatCurrency.format(
+                                                        snapshot.data.transactions[snapshot.data.transactions.length - index - 1]
+                                                            .amount)}",
+                                                    style: TextStyle(fontSize: 20.0),
+                                                  ),
+                                                ),
+                                                Padding(
+                                                  padding:
+                                                  const EdgeInsets.fromLTRB(15.0, 4.0, 8.0, 4.0),
+                                                  child: Text(
+                                                      "${snapshot.data.transactions[snapshot.data.transactions.length - index -
+                                                          1].time}",
+                                                      style: TextStyle(fontSize: 16.0)
+                                                  ),
+                                                ),
+                                                Padding(
+                                                  padding:
+                                                  const EdgeInsets.fromLTRB(15.0, 4.0, 8.0, 15.0),
+                                                  child: Text(
+                                                      "ID: ${snapshot.data.transactions[snapshot.data.transactions.length -
+                                                          index - 1].txnID}",
+                                                      style: TextStyle(fontSize: 16.0)
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                            Padding(
+                                              padding: const EdgeInsets.all(8.0),
+                                              child: Column(
+                                                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                                children: <Widget>[
+                                                  Padding(
+                                                    padding: const EdgeInsets.all(8.0),
+                                                    child: _getModeIcon(snapshot.data.transactions[snapshot.data.transactions
+                                                        .length - index - 1].mode),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                        Divider(
+                                          height: 2.0,
+                                          color: Colors.grey,
+                                        )
+                                      ],
+                                    )
+                                  );
+                                });
                               }
                               // When connect timeout error, show message
                               // ANDing with globals.online prevents showing the dialog 
@@ -416,7 +653,7 @@ class HomeComponentState extends State<HomeComponent> {
                           } else {
                             return noDataView("No data found");
                           }
-                          return new Container();
+                          return Container();
                         }
                       case ConnectionState.none:
                         {
@@ -436,14 +673,14 @@ class HomeComponentState extends State<HomeComponent> {
 
   // Progress indicator widget to show loading.
   Widget loadingView() => Center(
-        child: CircularProgressIndicator(), 
-      );
+    child: CircularProgressIndicator(), 
+  );
 
   // View to empty data message
   Widget noDataView(String msg) => Center(
-        child: Text(
-          msg,
-          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
-        ),
-      );
+    child: Text(
+      msg,
+      style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
+    ),
+  );
 }
