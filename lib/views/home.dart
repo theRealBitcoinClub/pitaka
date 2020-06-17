@@ -148,15 +148,18 @@ class HomeComponentState extends State<HomeComponent> with SingleTickerProviderS
 
       if (deepLink != null) {
         // Get the value of transferAccount and assign to variable _accountId
-        var _accountId = deepLink.path.split("/")[3];
-        print(_accountId);
+        var _transferAccountId = deepLink.path.split("/")[3];
+        print(_transferAccountId);
         var _amount = deepLink.path.split("/")[4];
         print(_amount);
+        var _merchantOrderId = deepLink.path.split("/")[5];
+        print(_merchantOrderId);
         // Store the value in shared preferences
         // This will be used in sendLink page as destinationAccountId
         SharedPreferences prefs = await SharedPreferences.getInstance();
-        await prefs.setString('transferAccountId', _accountId);
+        await prefs.setString('transferAccountId', _transferAccountId);
         await prefs.setString('transferAmount', _amount);
+        await prefs.setString('merchantOrderId', _merchantOrderId);
 
         Application.router.navigateTo(context, "/sendlink");
       }

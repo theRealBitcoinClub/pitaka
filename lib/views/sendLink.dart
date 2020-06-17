@@ -32,6 +32,8 @@ class SendLinkComponentState extends State<SendLinkComponent> {
   static List data = List();
   final _formKey = GlobalKey<FormState>();
   String _amount;
+  String _merchantOrderId;
+  String _destinationAccountId;
   String path = '/send';
   String selectedPaytacaAccount;
   String _sourceAccount;
@@ -41,7 +43,6 @@ class SendLinkComponentState extends State<SendLinkComponent> {
   String txnID;
   String qrCode;
   String toAccount;
-  String destinationAccountId;
   String newVal;
   String balanceCheckError;
   bool validCode = false;
@@ -62,18 +63,17 @@ class SendLinkComponentState extends State<SendLinkComponent> {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     var _prefAccounts = prefs.get("accounts");
 
-    // Get the amount stored in shared preferences
+    // Get the parameters from dynamic link
     _amount = prefs.get("transferAmount");
+    _merchantOrderId = prefs.get("merchantOrderId");
+    _destinationAccountId = prefs.get("transferAccountId");
     //sendAmount = double.parse(_amount);
 
     List<Map> _accounts = [];
 
-    // Get account stored in shared preferences
-    destinationAccountId = prefs.get("transferAccountId");
-
     for (final acct in _prefAccounts) {
       String accountId = acct.split(' | ')[1];
-      if(accountId != destinationAccountId) {
+      if(accountId != _destinationAccountId) {
         var acctObj = new Map();
         var onlineBalance = acct.split(' | ')[2];
         acctObj['accountName'] = acct.split(' | ')[0];
@@ -209,7 +209,7 @@ class SendLinkComponentState extends State<SendLinkComponent> {
     // Create fresh UDID from flutter_udid library
     String udid = await FlutterUdid.consistentUdid;
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    toAccount = destinationAccountId;
+    toAccount = _destinationAccountId;
 
     // Mark if the sender is online or offline and include in txnhash and QRcode
     // This will be used to check in the reciever in scanning QRcode for proof of payment
@@ -247,11 +247,12 @@ class SendLinkComponentState extends State<SendLinkComponent> {
     List<int> gzipBytes = new GZipEncoder().encode(stringBytes);
     String proofOfPayment = base64.encode(gzipBytes);
     prefs.setString("_txnProofCode", proofOfPayment);
+
     var payload = {
       'from_account': selectedPaytacaAccount,
       'to_account': toAccount,
       'asset': globals.phpAssetId,
-      'amount': amount.toString(),
+      'amount': amount,
       'public_key': publicKey,
       'txn_hash': txnhash,
       'signature': signature,
@@ -260,7 +261,9 @@ class SendLinkComponentState extends State<SendLinkComponent> {
       'proof_of_payment': proofOfPayment,
       'txn_str' : txnstr,
       'device_id': udid,
+      'merchant_order_id': _merchantOrderId,
     };
+
     var response = await transferAsset(payload);
 
     // Catch invalid device ID error
@@ -313,9 +316,6 @@ class SendLinkComponentState extends State<SendLinkComponent> {
         break;
       }
     }
-    print("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
-    print(currentBalance);
-    print(sendAmount);
     if (double.parse(currentBalance) < sendAmount) {
       balanceCheckError = 'Insufficient balance';
       disableSubmitButton = true;
