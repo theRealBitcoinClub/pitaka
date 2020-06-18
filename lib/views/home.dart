@@ -45,6 +45,7 @@ class HomeComponentState extends State<HomeComponent> with SingleTickerProviderS
   bool _executeFuture = false;
   bool _popDialog = false;
   int transactionLenght;
+  int balancesLenght;
 
   void initState()  {
     super.initState();
@@ -200,6 +201,10 @@ class HomeComponentState extends State<HomeComponent> with SingleTickerProviderS
           } 
         }
       }
+      // Check if balance in Accounts tab is empty
+      if (balancesLenght == null) {
+        getOnlineBalances();
+      }
     });
   }
 
@@ -228,6 +233,7 @@ class HomeComponentState extends State<HomeComponent> with SingleTickerProviderS
       throw 'Could not launch $url';
     }
   }
+
   _getMoreData() {
     if (transactionLenght == 100) {
       showSimpleNotification(
@@ -424,6 +430,7 @@ class HomeComponentState extends State<HomeComponent> with SingleTickerProviderS
                             if (snapshot.data != null) {
                               print("The value of snapshot.data.error is: ${snapshot.data.error}");
                               var balances = snapshot.data.balances;
+                              balancesLenght = snapshot.data.balances.length;
                               if (snapshot.data.success) {
                                 return hometabs.buildBalancesList(balances);
                               } 
