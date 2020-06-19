@@ -235,59 +235,7 @@ class HomeComponentState extends State<HomeComponent> with SingleTickerProviderS
   }
 
   _getMoreData() {
-    if (transactionLenght == 100) {
-      showSimpleNotification(
-        Padding(
-          padding: EdgeInsets.only(top: 10.0, bottom: 10.0),
-          child: Container(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                Row(
-                  children: <Widget>[
-                    Icon(Icons.event_busy, color: Colors.red,),
-                    SizedBox(width: 10.0,),
-                    Text(
-                      "Exceeds the limit!",
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black,
-                      ),
-                    ),
-                  ]
-                ),
-                SizedBox(height: 8.0,),
-                RichText(
-                  textAlign: TextAlign.justify,
-                  text: TextSpan(
-                    text: "You haved exceeded the 100 transactions limit. "
-                      "To view older transactions, use the web wallet",
-                    style: TextStyle(color: Colors.black, fontSize: 14),
-                    children: <TextSpan>[
-                      TextSpan(
-                        text: ' https://wallet.paytaca.com/',
-                        style: TextStyle(
-                          color: Colors.redAccent, 
-                          fontSize: 14, 
-                          fontWeight: FontWeight.bold,
-                        ),
-                        recognizer: TapGestureRecognizer()
-                          ..onTap = () {
-                            _launchPaytacaWebWallet();
-                          },
-                      )
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-        background: Colors.white,
-        autoDismiss: false,
-        slideDismiss: true,
-      );
-    }
+    getOffLineTransactions();
   }
 
   String _formatMode(String mode) {
