@@ -454,6 +454,7 @@ class TransactionsResponse {
 
    factory TransactionsResponse.fromResponse(Response response) {
     List<Transaction> _transactions = [];
+    List<Transaction> _reversedTransactions;
     if (response.data['transactions'] != null) {
         for (final txn in response.data['transactions']) {
           var transObj = new Transaction();
@@ -466,10 +467,11 @@ class TransactionsResponse {
           transObj.txnID = txn['TransactionID'];
           transObj.paymentProof = txn['ProofOfPayment'];
           _transactions.add(transObj);
+          _reversedTransactions = List.from(_transactions.reversed);
         }
       }
     return TransactionsResponse(
-      success: response.data['success'], transactions: _transactions);
+      success: response.data['success'], transactions: _reversedTransactions);
   }
 
    factory TransactionsResponse.invalidDeviceIdError(Response response) {

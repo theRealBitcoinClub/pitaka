@@ -57,9 +57,14 @@ Future<dynamic> sendGetRequest(url) async {
   // Get fresh UDID and include in the headers
   String udid = await FlutterUdid.consistentUdid;
 
+  // Get the value of page from shared prerences
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  var page = prefs.get('page');
+
   var payload = {
     'public_key': globals.serverPublicKey,
     'device_id': udid,
+    'page': page,
   };
   var dio = new Dio();
   dio.options.connectTimeout = 30000;  // Set connection timeout for 30 seconds
@@ -454,7 +459,11 @@ Future<BalancesResponse> getOnlineBalances() async {
 }
 
 
-Future<TransactionsResponse> getOnlineTransactions() async {
+Future<TransactionsResponse> getOnlineTransactions(int page) async {
+  // Save page in shared preferences
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  await prefs.setInt('page', page);
+  
   final String url = globals.baseUrl + '/api/wallet/transactions';
   var response;
   try {

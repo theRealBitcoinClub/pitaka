@@ -46,6 +46,7 @@ class HomeComponentState extends State<HomeComponent> with SingleTickerProviderS
   bool _popDialog = false;
   int transactionLenght;
   int balancesLenght;
+  int page = 1;
 
   void initState()  {
     super.initState();
@@ -69,7 +70,8 @@ class HomeComponentState extends State<HomeComponent> with SingleTickerProviderS
     _scrollController.addListener(() {
       if (_scrollController.position.pixels ==
           _scrollController.position.maxScrollExtent) {
-        _getMoreData();
+        _getMoreData(page);
+        page += 1;
       }
     });
   }
@@ -224,18 +226,8 @@ class HomeComponentState extends State<HomeComponent> with SingleTickerProviderS
     loginUser(loginPayload);
   }
 
-  // Opens up the Paytaca WebWallet
-  _launchPaytacaWebWallet() async {
-    const url = 'https://wallet.paytaca.com/';
-    if (await canLaunch(url)) {
-      await launch(url, forceWebView: false);
-    } else {
-      throw 'Could not launch $url';
-    }
-  }
-
-  _getMoreData() {
-    getOffLineTransactions();
+  _getMoreData(page) {
+    getOnlineTransactions(page += 1);
   }
 
   String _formatMode(String mode) {
@@ -457,10 +449,11 @@ class HomeComponentState extends State<HomeComponent> with SingleTickerProviderS
             }),
             // transactionsTab
             Builder(builder: (BuildContext context) {
+              page = 1;
               return Container(
                 alignment: Alignment.center,
                 child: FutureBuilder(
-                  future: globals.online ? getOnlineTransactions() : getOffLineTransactions(),
+                  future: globals.online ? getOnlineTransactions(page) : getOffLineTransactions(),
                   builder: (BuildContext context, AsyncSnapshot snapshot) {
                     // To show progress loading view add switch statment to handle connnection states.
                     switch (snapshot.connectionState) {
