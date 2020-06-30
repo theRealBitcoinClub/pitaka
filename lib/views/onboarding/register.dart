@@ -95,33 +95,25 @@ class RegisterComponentState extends State<RegisterComponent> {
   }
 
   Future<Null> generateKeyPair(BuildContext context) async {
-    final keyPair = await CryptoSign.generateKeyPair();
-
-    Uint8List publicKeyBytes = keyPair.publicKey;
-    Uint8List privateKeyBytes = keyPair.secretKey;
-    publicKey = HEX.encode(publicKeyBytes);
-    privateKey = HEX.encode(privateKeyBytes);
-
-    await _authenticate();
-    await globals.storage.write(key: "publicKey", value: publicKey);
-    await globals.storage.write(key: "privateKey", value: privateKey);
-
+    // Generate seed phrase
     String seedPhrase = bip39.generateMnemonic();
     print("seedPhrase: $seedPhrase");
-
-    //String seed = bip39.mnemonicToSeedHex(randomMnemonic)
-    var seed = bip39.mnemonicToSeed("rude ill idle gravity length happy doctor bullet cash meat bright post", 32);
+    // Generate seed from seed phrase
+    var seed = bip39.mnemonicToSeed(seedPhrase, 32);
     print("seed: $seed");
-
-    //seedKeys(Uint8List seed) => Sodium.cryptoSignSeedKeypair(seed);
-
+    // Generate private and public keys from seed
     Sodium.cryptoSignSeedKeypair(seed).then((value) {
-      var pubKey = HEX.encode(value['pk']);
-      var privKey = HEX.encode(value['sk']);
-      print("publicKey: $pubKey");
-      print("privateKey: $privKey");
+      publicKey = HEX.encode(value['pk']);
+      privateKey = HEX.encode(value['sk']);
+      print("publicKey: $publicKey");
+      print("privateKey: $privateKey");
     });
 
+    await _authenticate();
+    // Store seed phrase, private and public keys in global storage
+    await globals.storage.write(key: "publicKey", value: publicKey);
+    await globals.storage.write(key: "privateKey", value: privateKey);
+    await globals.storage.write(key: "seedPhrase", value: seedPhrase);
   }
 
   // Generate UDID to be stored
