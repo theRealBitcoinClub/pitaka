@@ -1,10 +1,8 @@
 import 'dart:async';
 import 'receive.dart';
 import 'package:intl/intl.dart';
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:qr_flutter/qr_flutter.dart';
-import 'package:url_launcher/url_launcher.dart'; 
 import 'package:flutter_udid/flutter_udid.dart';
 import 'package:overlay_support/overlay_support.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -21,7 +19,6 @@ import '../utils/globals.dart' as globals;
 import '../components/drawer.dart';
 import '../components/bottomNavigation.dart';
 import '../components/homeTabs.dart' as hometabs;
-
 
 class HomeComponent extends StatefulWidget {
   @override

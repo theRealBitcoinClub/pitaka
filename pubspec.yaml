@@ -57,6 +57,11 @@ dependencies:
       url: git@github.com:paytaca/virtual_keyboard.git
       ref: master
 
+  bip39:
+    git:
+      url: git@github.com:paytaca/bip39.git
+      ref: master
+
   flutter:
     sdk: flutter
 

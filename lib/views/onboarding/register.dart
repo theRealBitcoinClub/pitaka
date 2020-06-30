@@ -22,6 +22,7 @@ import '../../api/endpoints.dart';
 import '../../utils/helpers.dart';
 import '../../utils/dialogs.dart';
 import '../../utils/globals.dart' as globals;
+import 'package:bip39/bip39.dart' as bip39;
 
 
 class User {
@@ -104,6 +105,23 @@ class RegisterComponentState extends State<RegisterComponent> {
     await _authenticate();
     await globals.storage.write(key: "publicKey", value: publicKey);
     await globals.storage.write(key: "privateKey", value: privateKey);
+
+    String seedPhrase = bip39.generateMnemonic();
+    print("seedPhrase: $seedPhrase");
+
+    //String seed = bip39.mnemonicToSeedHex(randomMnemonic)
+    var seed = bip39.mnemonicToSeed("rude ill idle gravity length happy doctor bullet cash meat bright post", 32);
+    print("seed: $seed");
+
+    //seedKeys(Uint8List seed) => Sodium.cryptoSignSeedKeypair(seed);
+
+    Sodium.cryptoSignSeedKeypair(seed).then((value) {
+      var pubKey = HEX.encode(value['pk']);
+      var privKey = HEX.encode(value['sk']);
+      print("publicKey: $pubKey");
+      print("privateKey: $privKey");
+    });
+
   }
 
   // Generate UDID to be stored

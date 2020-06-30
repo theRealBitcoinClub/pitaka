@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:archive/archive.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:bip39/bip39.dart' as bip39;
 import 'package:easy_dialog/easy_dialog.dart'; 
 import 'package:url_launcher/url_launcher.dart'; 
 import 'package:overlay_support/overlay_support.dart';
@@ -119,6 +120,35 @@ savePrivatePublicKeyDialog(context) async {
   List<int> stringBytes = utf8.encode(conPublicPrivateKey);
   List<int> gzipBytes = GZipEncoder().encode(stringBytes);
   String compressedString = base64.encode(gzipBytes);
+
+
+
+  // // Only support BIP39 English word list
+  // // uses HEX strings for entropy
+  // String randomMnemonic = bip39.generateMnemonic();
+  // print("randomMnemonic: $randomMnemonic");
+
+  // String seed = bip39.mnemonicToSeedHex("update elbow source spin squeeze horror world become oak assist bomb nuclear");
+  // // => '77e6a9b1236d6b53eaa64e2727b5808a55ce09eb899e1938ed55ef5d4f8153170a2c8f4674eb94ce58be7b75922e48e6e56582d806253bd3d72f4b3d896738a4'
+  // print("seed: $seed");
+
+  // String mnemonic = bip39.entropyToMnemonic('00000000000000000000000000000000');
+  // // => 'abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about'
+  // print("mnemonic: $mnemonic");
+
+  // bool isValid = bip39.validateMnemonic(mnemonic);
+  // // => true
+  // print("isValid: $isValid");
+  
+  // isValid = bip39.validateMnemonic('basket actual');
+  // // => false
+  // print("isValid: $isValid");
+  
+  // String entropy = bip39.mnemonicToEntropy(mnemonic);
+  // // => String '00000000000000000000000000000000'
+  // print("entropy: $entropy");
+
+
   
   EasyDialog(
     cornerRadius: 10.0,
