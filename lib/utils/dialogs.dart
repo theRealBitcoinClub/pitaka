@@ -116,7 +116,7 @@ savePrivatePublicKeyDialog(context) async {
     cornerRadius: 10.0,
     fogOpacity: 0.5,
     width: 280,
-    height: 380,
+    height: 440,
     contentPadding: EdgeInsets.only(top: 15.0),
     contentList: [
       Center(
@@ -139,13 +139,23 @@ savePrivatePublicKeyDialog(context) async {
         },
         child: Padding(
           padding: EdgeInsets.only(left: 10.0, right: 10.0),
-          child: Center(
-            child: Text(
-              "$seedPhrase",
-              style: TextStyle(fontFamily: 'RobotoMono',),
-              textAlign: TextAlign.center,
-            ),
-          ),
+          child: Column(
+            children: <Widget>[
+              Divider(color: Colors.black,),
+              Center(
+                child: Text(
+                  "$seedPhrase",
+                  style: TextStyle(
+                    fontSize: 20.0,
+                    fontFamily: 'RobotoMono',
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+              Divider(color: Colors.black,),
+            ]
+          )
+
         ),
       ),
       SizedBox(height: 20.0),
@@ -154,7 +164,7 @@ savePrivatePublicKeyDialog(context) async {
         child: Center(
           child: Text(
             "Write down or save this seed phrase somewhere safe as a backup. "
-            "This is for recovering your account in case your phone is damage or lost. "
+            "This is for recovering your account in case your phone gets damaged or lost. "
             "Tap the seed phrase text to copy to clipboard.",
             style: TextStyle(fontSize: 16.0,),
             textAlign: TextAlign.center,
