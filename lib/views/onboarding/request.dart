@@ -1,9 +1,12 @@
 import 'dart:convert';
+import "package:hex/hex.dart";
 import 'package:archive/archive.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/gestures.dart';
+import 'package:bip39/bip39.dart' as bip39;
 import 'package:flutter_udid/flutter_udid.dart';
+import 'package:flutter_sodium/flutter_sodium.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:back_button_interceptor/back_button_interceptor.dart';
 import '../app.dart';
@@ -27,8 +30,10 @@ class RequestComponentState extends State<RequestComponent> {
   FocusNode focusNode = FocusNode();
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _accountController = new TextEditingController();
-  String keys;
   String udid;
+  String seedPhrase;
+  String privateKey;
+  String publicKey;
   bool _submitting = false;
   bool _showPrivateKeyInput = false;
 
@@ -63,7 +68,7 @@ class RequestComponentState extends State<RequestComponent> {
     }
   }
 
-  String _validatePublicKey(String value) {
+  String _validateSeedPhrase(String value) {
     if (value.length < 148) {
       return 'Master key must be 148 alphanumeric characters';
     } 
@@ -115,7 +120,7 @@ class RequestComponentState extends State<RequestComponent> {
     }
   }
 
-  void _validatePublicKeyInput(BuildContext context) async {
+  Future<Null> _validateSeedPhraseInput(BuildContext context) async {
     if (_formKey.currentState.validate()) {
       _formKey.currentState.save();
       // Close the on-screen keyboard by removing focus from the form's inputs
@@ -130,17 +135,22 @@ class RequestComponentState extends State<RequestComponent> {
       // Store UDID in global storage
       await globals.storage.write(key: "udid", value: udid);
 
-      // Decode private & public keys
-      var baseDecoded = base64.decode(keys);
-      var gzipDecoded = GZipDecoder().decodeBytes(baseDecoded);
-      var utf8Decoded = utf8.decode(gzipDecoded);
+      // Decode private & public keys through seed phrase
+      var seed = bip39.mnemonicToSeed(seedPhrase, 32);
 
-      // Extract private & public key from keys
-      var privateKey = utf8Decoded.split('::')[0];
-      var publicKey = utf8Decoded.split('::')[1];
-      // Store private & public key in global storage
+      // Generate private and public keys from seed
+      Sodium.cryptoSignSeedKeypair(seed).then((value) {
+        publicKey = HEX.encode(value['pk']);
+        privateKey = HEX.encode(value['sk']);
+      });
+
+      // Added delay to catch the public & private keys values
+      await Future.delayed(Duration(seconds: 5));
+
+      // Store private and public keys in global storage
       await globals.storage.write(key: "publicKey", value: publicKey);
       await globals.storage.write(key: "privateKey", value: privateKey);
+
       // Create payload
       var payload = {
         "public_key": publicKey,
@@ -216,7 +226,7 @@ class RequestComponentState extends State<RequestComponent> {
                     SizedBox(height: 30.0,),
                     Center(
                       child: Text(
-                        "Restore from Master Key",
+                        "Restore from Seed Phrase",
                         style: TextStyle(
                         fontSize: 24.0,
                         ),
@@ -228,17 +238,18 @@ class RequestComponentState extends State<RequestComponent> {
                       controller: _accountController,
                       textAlign: TextAlign.center,
                       keyboardType: TextInputType.multiline,
-                      validator: _validatePublicKey,
+                      //validator: _validateSeedPhrase,
                       autofocus: false,
                       onSaved: (value) {
-                        keys = value;
+                        seedPhrase = value;
                       },
-                      maxLength: 148,
+                      //maxLength: 148,
                       style: TextStyle(
-                        fontSize: 24.0
+                        fontSize: 20.0,
+                        fontFamily: 'RobotoMono',
                       ),
                       decoration: const InputDecoration(
-                        hintText: 'Type or paste the master key here',
+                        hintText: 'Type or paste the seed phrase here',
                         hintStyle: TextStyle(
                           fontSize: 15.0
                         ),
@@ -251,7 +262,7 @@ class RequestComponentState extends State<RequestComponent> {
                         color: Colors.red,
                         splashColor: Colors.red[100],
                         onPressed: () {
-                          _validatePublicKeyInput(context);
+                          _validateSeedPhraseInput(context);
                         },
                         child: Text(
                           'Submit',

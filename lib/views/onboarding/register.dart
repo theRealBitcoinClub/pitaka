@@ -1,11 +1,9 @@
 import 'dart:async';
-import 'dart:convert';
-import 'dart:typed_data';
 import "package:hex/hex.dart";
 import 'package:intl/intl.dart';
-import 'package:archive/archive.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:bip39/bip39.dart' as bip39;
 import 'package:local_auth/local_auth.dart';
 import 'package:passcode_screen/circle.dart';
 import 'package:passcode_screen/keyboard.dart';
@@ -22,7 +20,6 @@ import '../../api/endpoints.dart';
 import '../../utils/helpers.dart';
 import '../../utils/dialogs.dart';
 import '../../utils/globals.dart' as globals;
-import 'package:bip39/bip39.dart' as bip39;
 
 
 class User {
@@ -97,16 +94,14 @@ class RegisterComponentState extends State<RegisterComponent> {
   Future<Null> generateKeyPair(BuildContext context) async {
     // Generate seed phrase
     String seedPhrase = bip39.generateMnemonic();
-    print("seedPhrase: $seedPhrase");
+
     // Generate seed from seed phrase
     var seed = bip39.mnemonicToSeed(seedPhrase, 32);
-    print("seed: $seed");
+
     // Generate private and public keys from seed
     Sodium.cryptoSignSeedKeypair(seed).then((value) {
       publicKey = HEX.encode(value['pk']);
       privateKey = HEX.encode(value['sk']);
-      print("publicKey: $publicKey");
-      print("privateKey: $privateKey");
     });
 
     await _authenticate();

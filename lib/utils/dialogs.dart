@@ -148,14 +148,14 @@ savePrivatePublicKeyDialog(context) async {
           ),
         ),
       ),
-      SizedBox(height: 15.0),
+      SizedBox(height: 20.0),
       Padding(
         padding: EdgeInsets.only(left: 10.0, right: 10.0),
         child: Center(
           child: Text(
-            "Save this seed phrase somewhere safe as a backup. "
+            "Write down or save this seed phrase somewhere safe as a backup. "
             "This is for recovering your account in case your phone is damage or lost. "
-            "Tap the text to copy to clipboard.",
+            "Tap the seed phrase text to copy to clipboard.",
             style: TextStyle(fontSize: 16.0,),
             textAlign: TextAlign.center,
           ),
