@@ -1,6 +1,4 @@
-import 'dart:convert';
 import "package:hex/hex.dart";
-import 'package:archive/archive.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/gestures.dart';
@@ -69,8 +67,9 @@ class RequestComponentState extends State<RequestComponent> {
   }
 
   String _validateSeedPhrase(String value) {
-    if (value.length < 148) {
-      return 'Master key must be 148 alphanumeric characters';
+    List seedWords = value.split(" ");
+    if (seedWords.length < 12 || seedWords.length > 12) {
+      return 'Seed phrase is exactly 12 words';
     } 
   }
 
@@ -238,7 +237,7 @@ class RequestComponentState extends State<RequestComponent> {
                       controller: _accountController,
                       textAlign: TextAlign.center,
                       keyboardType: TextInputType.multiline,
-                      //validator: _validateSeedPhrase,
+                      validator: _validateSeedPhrase,
                       autofocus: false,
                       onSaved: (value) {
                         seedPhrase = value;
