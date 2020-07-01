@@ -456,20 +456,25 @@ class TransactionsResponse {
     List<Transaction> _transactions = [];
     List<Transaction> _reversedTransactions;
     if (response.data['transactions'] != null) {
-        for (final txn in response.data['transactions']) {
-          var transObj = new Transaction();
-          transObj.mode = txn['Mode'];
-          transObj.amount = txn['Amount'].toDouble();
-          transObj.accountID = txn['AccountID'];
-          transObj.timestamp = txn['Timestamp'].toString();
-          transObj.timeslot = DateTime.tryParse(transObj.timestamp).toLocal();
-          transObj.time = DateFormat('y/M/d hh:mm a').format(transObj.timeslot).toString();
-          transObj.txnID = txn['TransactionID'];
-          transObj.paymentProof = txn['ProofOfPayment'];
-          _transactions.add(transObj);
-          _reversedTransactions = List.from(_transactions.reversed);
-        }
+      for (final txn in response.data['transactions']) {
+        var transObj = new Transaction();
+        transObj.mode = txn['Mode'];
+        transObj.amount = txn['Amount'].toDouble();
+        transObj.accountID = txn['AccountID'];
+        transObj.timestamp = txn['Timestamp'].toString();
+        transObj.timeslot = DateTime.tryParse(transObj.timestamp).toLocal();
+        transObj.time = DateFormat('y/M/d hh:mm a').format(transObj.timeslot).toString();
+        transObj.txnID = txn['TransactionID'];
+        transObj.paymentProof = txn['ProofOfPayment'];
+        _transactions.add(transObj);
+        _reversedTransactions = List.from(_transactions.reversed);
       }
+    }
+
+    if (_reversedTransactions.length == null) {
+      _reversedTransactions = [];
+    }
+
     return TransactionsResponse(
       success: response.data['success'], transactions: _reversedTransactions);
   }
