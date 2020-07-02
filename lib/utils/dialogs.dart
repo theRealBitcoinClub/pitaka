@@ -1,5 +1,3 @@
-import 'dart:convert';
-import 'package:archive/archive.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:easy_dialog/easy_dialog.dart'; 
@@ -112,24 +110,18 @@ showPublicKeyNotFoundDialog(context) {
 
 // Dialog for backing up private key
 savePrivatePublicKeyDialog(context) async {
-  String privateKey = await globals.storage.read(key: "privateKey");
-  String publicKey = await globals.storage.read(key: "publicKey");
-  var conPublicPrivateKey = privateKey + "::" + publicKey;
-  // Encode to base64
-  List<int> stringBytes = utf8.encode(conPublicPrivateKey);
-  List<int> gzipBytes = GZipEncoder().encode(stringBytes);
-  String compressedString = base64.encode(gzipBytes);
+  String seedPhrase = await globals.storage.read(key: "seedPhrase");
   
   EasyDialog(
     cornerRadius: 10.0,
     fogOpacity: 0.5,
     width: 280,
-    height: 380,
+    height: 440,
     contentPadding: EdgeInsets.only(top: 15.0),
     contentList: [
       Center(
         child: Text(
-          "Backup your Master Key!",
+          "Backup your Seed Phrase!",
           style: TextStyle(
             fontWeight: FontWeight.bold,
             fontSize: 18.0,
@@ -139,31 +131,41 @@ savePrivatePublicKeyDialog(context) async {
       SizedBox(height: 20.0,),
       GestureDetector(
         onTap: () {
-          Clipboard.setData(ClipboardData(text: compressedString));
+          Clipboard.setData(ClipboardData(text: seedPhrase));
           showSimpleNotification(
-            Text("Master key copied to clipboard."),
+            Text("Seed Phrase copied to clipboard."),
             background: Colors.red[600],
           );
         },
         child: Padding(
           padding: EdgeInsets.only(left: 10.0, right: 10.0),
-          child: Center(
-            child: Text(
-              "$compressedString",
-              style: TextStyle(fontFamily: 'RobotoMono',),
-              textAlign: TextAlign.center,
-            ),
-          ),
+          child: Column(
+            children: <Widget>[
+              Divider(color: Colors.black,),
+              Center(
+                child: Text(
+                  "$seedPhrase",
+                  style: TextStyle(
+                    fontSize: 20.0,
+                    fontFamily: 'RobotoMono',
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+              Divider(color: Colors.black,),
+            ]
+          )
+
         ),
       ),
-      SizedBox(height: 15.0),
+      SizedBox(height: 20.0),
       Padding(
         padding: EdgeInsets.only(left: 10.0, right: 10.0),
         child: Center(
           child: Text(
-            "Save this master key somewhere safe as a backup. "
-            "You can restore your wallet using this key. "
-            "Tap the text to copy to clipboard.",
+            "Write down or save this seed phrase somewhere safe as a backup. "
+            "This is for recovering your account in case your phone gets damaged or lost. "
+            "Tap the seed phrase text to copy to clipboard.",
             style: TextStyle(fontSize: 16.0,),
             textAlign: TextAlign.center,
           ),
