@@ -62,36 +62,30 @@ class LandingComponentState extends State<LandingComponent>
   void initState() {
     super.initState();
     globals.checkInternet();
-    listenForNewToken();
+    checkForNullToken();
   }
 
   // Generate firebase messaging token
-  void listenForNewToken() async {
+  void checkForNullToken() async {
     // Retrive old token
-    String _oldToken = await globals.storage.read(key: "token");
-    print("Printing the value of OLD token");
-    print("#####################################################################################");
-    print(_oldToken);
-    print("#####################################################################################");
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String _oldToken = prefs.getString('firebaseToken');
+    
+    if (_oldToken == null) {
+      _firebaseMessaging.getToken().then((token) {
+        print("The value of token in generateToken() in landing.dart is: $token");
+        _newToken = token;
+      });
 
-    // Listen for new token
-    Stream<String> fcmStream = _firebaseMessaging.onTokenRefresh;
-    fcmStream.listen((token) {
-      print("Printing the value of NEW token");
-      print("#####################################################################################");
-      print(token);
-      print("#####################################################################################");
-      _newToken = token;
-      // Store token in global storage
-      globals.storage.write(key: "token", value: _newToken);
-    });
-
-    if (_oldToken != _newToken) {
       var payload = {
-        "token": _newToken,
+        "firebase_token": _newToken,
       };
 
       var response = await updateFirebaseMessagingToken(payload); 
+
+      if (response.success) {
+        print("Firebase messaging token updated in the server!");
+      }
     }
   }
 

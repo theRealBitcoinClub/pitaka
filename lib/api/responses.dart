@@ -52,6 +52,7 @@ class User {
   String email;
   String birthday;
   String deviceID;
+  String firebaseToken;
   int level;
 }
 
@@ -77,6 +78,7 @@ class RestoreAccountResponse {
       _user['email'] = user['Email'];
       _user['birthday'] = user['Birthday'];
       _user['deviceID'] = user['DeviceID'];
+      _user['firebaseToken'] = user['FirebaseToken'];
       _user['level'] = user['Level'];
     }
     return RestoreAccountResponse(
@@ -452,22 +454,29 @@ class TransactionsResponse {
 
    factory TransactionsResponse.fromResponse(Response response) {
     List<Transaction> _transactions = [];
+    List<Transaction> _reversedTransactions;
     if (response.data['transactions'] != null) {
-        for (final txn in response.data['transactions']) {
-          var transObj = new Transaction();
-          transObj.mode = txn['Mode'];
-          transObj.amount = txn['Amount'].toDouble();
-          transObj.accountID = txn['AccountID'];
-          transObj.timestamp = txn['Timestamp'].toString();
-          transObj.timeslot = DateTime.tryParse(transObj.timestamp).toLocal();
-          transObj.time = DateFormat('y/M/d hh:mm a').format(transObj.timeslot).toString();
-          transObj.txnID = txn['TransactionID'];
-          transObj.paymentProof = txn['ProofOfPayment'];
-          _transactions.add(transObj);
-        }
+      for (final txn in response.data['transactions']) {
+        var transObj = new Transaction();
+        transObj.mode = txn['Mode'];
+        transObj.amount = txn['Amount'].toDouble();
+        transObj.accountID = txn['AccountID'];
+        transObj.timestamp = txn['Timestamp'].toString();
+        transObj.timeslot = DateTime.tryParse(transObj.timestamp).toLocal();
+        transObj.time = DateFormat('y/M/d hh:mm a').format(transObj.timeslot).toString();
+        transObj.txnID = txn['TransactionID'];
+        transObj.paymentProof = txn['ProofOfPayment'];
+        _transactions.add(transObj);
+        _reversedTransactions = List.from(_transactions.reversed);
       }
+    }
+
+    if (_reversedTransactions.length == null) {
+      _reversedTransactions = [];
+    }
+
     return TransactionsResponse(
-      success: response.data['success'], transactions: _transactions);
+      success: response.data['success'], transactions: _reversedTransactions);
   }
 
    factory TransactionsResponse.invalidDeviceIdError(Response response) {

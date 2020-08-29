@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/gestures.dart';
 import 'package:overlay_support/overlay_support.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:back_button_interceptor/back_button_interceptor.dart';
 import '../app.dart';
 import '../../api/endpoints.dart';
@@ -25,21 +26,32 @@ class RequestOTPComponent extends StatefulWidget {
 }
 
 class RequestOTPComponentState extends State<RequestOTPComponent> {
+  final FirebaseMessaging _firebaseMessaging = FirebaseMessaging();
   final TextEditingController textController = TextEditingController();
   BuildContext _scaffoldContext;
   FocusNode focusNode = FocusNode();
+  String _newToken;
   bool _submitting = false;
 
   @override
   void initState() {
     super.initState();
     BackButtonInterceptor.add(interceptBackButton);
+    listenForNewToken();
   }
 
   @override
   void dispose() {
     BackButtonInterceptor.remove(interceptBackButton);
     super.dispose();
+  }
+
+  // Generate firebase messaging token
+  void listenForNewToken() async {
+    _firebaseMessaging.getToken().then((token) {
+      print("The value of token in generateToken() in requestOTP.dart is: $token");
+      _newToken = token;
+    });
   }
 
   bool interceptBackButton(bool stopDefaultButtonEvent) {
@@ -105,10 +117,11 @@ class RequestOTPComponentState extends State<RequestOTPComponent> {
         await prefs.setString('email', resp.user["email"]);
         await prefs.setString('birthDate', resp.user["birthday"]);
         await prefs.setString('deviceID', resp.user["deviceID"]);
+        await prefs.setString('firebaseToken', resp.user["firebaseToken"]);
         // Check what level is user at
         if (resp.user["level"] == 2) {
           await prefs.setBool('level2', true);
-          // Hide register and verify email buttons when level2
+          // Hide register and verify email buttons when level2firebaseToken
           await prefs.setBool('registerEmailBtn', false);
           await prefs.setBool('verifyEmailBtn', false);
           // Show verify identity button
@@ -119,6 +132,19 @@ class RequestOTPComponentState extends State<RequestOTPComponent> {
           await prefs.setBool('registerEmailBtn', false);
           await prefs.setBool('verifyEmailBtn', false);
           await prefs.setBool('verifyIdentityBtn', false);
+        }
+
+        if (_newToken != null) {
+          var payload = {
+            "firebase_token": _newToken,
+          };
+
+          var response = await updateFirebaseMessagingToken(payload); 
+
+          if (response.success) {
+            print("Firebase messaging token updated in the server!");
+            await prefs.setString('firebaseToken', _newToken);
+          }
         }
       }
 

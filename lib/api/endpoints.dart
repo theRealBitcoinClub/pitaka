@@ -45,7 +45,6 @@ Future<dynamic> sendPostRequest(url, payload) async {
       return errorType;
     }
   }
-  print("The value of response in sendPostRequest() in endpoints.dart is: $response");
   return response;
 }
 
@@ -58,9 +57,14 @@ Future<dynamic> sendGetRequest(url) async {
   // Get fresh UDID and include in the headers
   String udid = await FlutterUdid.consistentUdid;
 
+  // Get the value of page from shared prerences
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  var page = prefs.get('page');
+
   var payload = {
     'public_key': globals.serverPublicKey,
     'device_id': udid,
+    'page': page,
   };
   var dio = new Dio();
   dio.options.connectTimeout = 30000;  // Set connection timeout for 30 seconds
@@ -103,7 +107,6 @@ Future<dynamic> sendGetRequest(url) async {
       return errorType;
     }
   }
-  print("The value of response in sendGetRequest() in endpoints.dart is: $response");
   return response;
 }
 
@@ -184,6 +187,7 @@ Future<GenericCreateResponse> createUser(payload) async {
   try {
     final String url = globals.baseUrl + '/api/users/create';
     final response = await sendPostRequest(url, payload);
+    print("The value of response in createUser() is: $response");
     if (response.data['success']) {
       // Save birthdate in shared preferences
       SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -399,6 +403,7 @@ Future<BalancesResponse> getOnlineBalances() async {
   var response;
   try {
     response = await sendGetRequest(url);
+    print("The value of response in getOnlineBalances() is: $response");
     // Check for invalid device ID error
     if (response.data['error'] == "invalid_device_id") {
       return BalancesResponse.invalidDeviceIdError(response);
@@ -454,11 +459,16 @@ Future<BalancesResponse> getOnlineBalances() async {
 }
 
 
-Future<TransactionsResponse> getOnlineTransactions() async {
+Future<TransactionsResponse> getOnlineTransactions(int page) async {
+  // Save page in shared preferences
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  await prefs.setInt('page', page);
+  
   final String url = globals.baseUrl + '/api/wallet/transactions';
   var response;
   try {
     response = await sendGetRequest(url);
+    print("The value of response in getOnlineTransactions() is: $response");
     // Check for invalid device ID error
     if (response.data['error'] == "invalid_device_id") {
       return TransactionsResponse.invalidDeviceIdError(response);
@@ -610,10 +620,11 @@ Future<RestoreAccountResponse> restoreAccount(payload) async {
   // For debug print
   print("The value of payload in restoreAccount() in endpoints.dart is: $payload");
 
-  final String url = globals.baseUrl + '/api/users/restore-account';
+  final String url = globals.baseUrl + '/api/users/restore';
   Response response;
   try {
     response = await sendPostRequest(url, payload);
+    print("The value of response in restoreAccount() is: $response");
     return RestoreAccountResponse.fromResponse(response);
   } catch(e) {
     print(e);
@@ -625,7 +636,7 @@ Future<RequestOTPAccountRestoreResponse> requestOTPAccountRestore(payload) async
   // For debug print
   print("The value of payload in requestOTPAccountRestore() in endpoints.dart is: $payload");
 
-  final String url = globals.baseUrl + '/api/otp/restore';
+  final String url = globals.baseUrl + '/api/restore/request-otp';
   Response response;
   try {
     response = await sendPostRequest(url, payload);
@@ -647,11 +658,13 @@ Future<GenericCreateResponse> requestOTPRetry(payload) async {
   }
 }
 
+
 Future<GenericCreateResponse> updateFirebaseMessagingToken(payload) async {
   print("The value of payload in updateFirebaseMessagingToken() in endpoints.dart is: $payload");
   try {
-    final String url = globals.baseUrl + '/api/update/token';
+    final String url = globals.baseUrl + '/api/push-notifications/update-token';
     final response = await sendPostRequest(url, payload);
+    print("The value of response in updateFirebaseMessagingToken() is: $response");
     return GenericCreateResponse.fromResponse(response);
   } catch (e){
     throw Exception(e);

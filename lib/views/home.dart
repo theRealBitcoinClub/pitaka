@@ -2,13 +2,15 @@ import 'dart:async';
 import 'receive.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
+import 'package:qr_flutter/qr_flutter.dart';
 import 'package:flutter_udid/flutter_udid.dart';
 import 'package:overlay_support/overlay_support.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:firebase_dynamic_links/firebase_dynamic_links.dart';
-import '../api/endpoints.dart';
 import './app.dart';
+import '../api/endpoints.dart';
+import '../api/responses.dart';
 import '../utils/helpers.dart';
 import '../utils/dialogs.dart';
 import '../utils/globals.dart';
@@ -18,26 +20,30 @@ import '../components/drawer.dart';
 import '../components/bottomNavigation.dart';
 import '../components/homeTabs.dart' as hometabs;
 
-
 class HomeComponent extends StatefulWidget {
   @override
-  State createState() => new HomeComponentState();
+  State createState() => HomeComponentState();
 }
 
-class HomeComponentState extends State<HomeComponent> {
+class HomeComponentState extends State<HomeComponent> with SingleTickerProviderStateMixin {
   DatabaseHelper databaseHelper = DatabaseHelper();
   StreamSubscription _connectionChangeStream;
   final formatCurrency = new NumberFormat.currency(symbol: 'PHP ');
   final FirebaseMessaging _firebaseMessaging = FirebaseMessaging();
+  ScrollController _scrollController = ScrollController();
+  TabController _tabController;
   String path = "/home";
   String storedUdid;
   String freshUdid;
+  String initialAmount;
   bool online = globals.online;
   bool syncing = globals.syncing;
   bool isOffline = false;
   bool _executeFuture = false;
   bool _popDialog = false;
-  String initialAmount;
+  int transactionLenght;
+  int balancesLenght;
+  int page = 1;
 
   void initState()  {
     super.initState();
@@ -46,7 +52,7 @@ class HomeComponentState extends State<HomeComponent> {
     ConnectionStatusSingleton connectionStatus = ConnectionStatusSingleton.getInstance();
     _connectionChangeStream = connectionStatus.connectionChange.listen(connectionChanged);
 
-    ReceiveComponentState comp = new ReceiveComponentState();
+    ReceiveComponentState comp = ReceiveComponentState();
 
     comp.getAccounts();
     // Generate unique device ID
@@ -55,6 +61,16 @@ class HomeComponentState extends State<HomeComponent> {
     initDynamicLinks();
     // For Firebase push notification
     setupPushNotification();
+    // For TabController
+    _tabController = TabController(vsync: this, length: 2);
+    // For ScrollController
+    _scrollController.addListener(() {
+      if (_scrollController.position.pixels ==
+          _scrollController.position.maxScrollExtent) {
+        _getMoreData(page);
+        page += 1;
+      }
+    });
   }
 
   void setupPushNotification() async {
@@ -132,15 +148,18 @@ class HomeComponentState extends State<HomeComponent> {
 
       if (deepLink != null) {
         // Get the value of transferAccount and assign to variable _accountId
-        var _accountId = deepLink.path.split("/")[3];
-        print(_accountId);
+        var _transferAccountId = deepLink.path.split("/")[3];
+        print(_transferAccountId);
         var _amount = deepLink.path.split("/")[4];
         print(_amount);
+        var _merchantOrderId = deepLink.path.split("/")[5];
+        print(_merchantOrderId);
         // Store the value in shared preferences
         // This will be used in sendLink page as destinationAccountId
         SharedPreferences prefs = await SharedPreferences.getInstance();
-        await prefs.setString('transferAccountId', _accountId);
+        await prefs.setString('transferAccountId', _transferAccountId);
         await prefs.setString('transferAmount', _amount);
+        await prefs.setString('merchantOrderId', _merchantOrderId);
 
         Application.router.navigateTo(context, "/sendlink");
       }
@@ -181,6 +200,10 @@ class HomeComponentState extends State<HomeComponent> {
           } 
         }
       }
+      // Check if balance in Accounts tab is empty
+      if (balancesLenght == null) {
+        getOnlineBalances();
+      }
     });
   }
 
@@ -200,10 +223,94 @@ class HomeComponentState extends State<HomeComponent> {
     loginUser(loginPayload);
   }
 
+  _getMoreData(page) {
+    getOnlineTransactions(page += 1);
+  }
+
+  String _formatMode(String mode) {
+    String formattedMode;
+    if (mode == 'receive') {
+      formattedMode = 'Received';
+    }
+    if (mode == 'send') {
+      formattedMode = 'Sent';
+    }
+    return formattedMode;
+  }
+
+  _showProof(List<Transaction> transaction, BuildContext context, int index) async {
+    Dialog transacDialog = Dialog(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.0)),
+      child: Container(
+        height: 500.0,
+        width: 400.0,
+
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            QrImage(
+              data: transaction[transaction.length - index -1].paymentProof,
+              size: 250.0
+            ),
+
+            Padding(
+              padding:  EdgeInsets.all(10.0),
+              child: Text("${formatCurrency.format(
+              transaction[transaction.length - index - 1]
+                  .amount)}", style: TextStyle(fontSize: 20.0),
+              ),
+            ),
+            Padding(
+              padding: EdgeInsets.all(5.0),
+              child: Text("${transaction[transaction.length - index -
+                  1].time}", style: TextStyle(fontSize: 20.0),
+              ),
+            ),
+            Padding(
+              padding: EdgeInsets.all(5.0),
+              child: Text("ID: ${transaction[transaction.length -
+                  index - 1].txnID}", style: TextStyle(fontSize: 20.0),
+              ),
+            ),
+            Padding(padding: EdgeInsets.only(top: 20.0)),
+            FlatButton(onPressed: (){
+              Navigator.of(context).pop();
+            },
+                child: Text('Back', style: TextStyle(color: Colors.red, fontSize: 18.0),))
+          ],
+        ),
+      ),
+    );
+
+    if(transaction[transaction.length - index - 1].mode == "send") {
+      showDialog(context: context, builder: (BuildContext context) => transacDialog);
+    }
+  }
+
+  Icon _getModeIcon(String mode) {
+    Icon icon;
+    if (mode == 'receive') {
+      icon = Icon(
+        Icons.add,
+        size: 30.0,
+        color: Colors.green,
+      );
+    }
+    if (mode == 'send') {
+      icon = Icon(
+        Icons.remove,
+        size: 30.0,
+        color: Colors.red,
+      );
+    }
+    return icon;
+  }
+
   @override
   void dispose() {
    // _connectivitySubscription.cancel();
     super.dispose();
+    _tabController.dispose();
   }
 
   @override
@@ -218,26 +325,28 @@ class HomeComponentState extends State<HomeComponent> {
             Padding(
               padding: EdgeInsets.only(right: 20.0),
               child: GestureDetector(
-                child: globals.online ? new Icon(Icons.wifi): new Icon(Icons.signal_wifi_off),
+                child: globals.online ? Icon(Icons.wifi): Icon(Icons.signal_wifi_off),
               )
             )
           ],
-          bottom: TabBar(tabs: [
-            Tab(
-              text: "Accounts",
-            ),
-            Tab(text: "Transactions"),
-          ]),
+          bottom: TabBar(
+            controller: _tabController,
+            tabs: [
+              Tab(text: "Accounts",),
+              Tab(text: "Transactions",),
+            ]
+          ),
           centerTitle: true,
         ),
         drawer: buildDrawer(context),
         body:  TabBarView(
+          controller: _tabController,
           children: [
             // accountsTab,
-            new Builder(builder: (BuildContext context) {
-              return new Container(
+            Builder(builder: (BuildContext context) {
+              return Container(
                 alignment: Alignment.center,
-                child: new FutureBuilder(
+                child: FutureBuilder(
                   // Added condition, when both syncing and online are true get offline balances
                   future: globals.syncing && globals.online ? getOffLineBalances() : globals.online == false ? getOffLineBalances() : getOnlineBalances(),
                   builder: (BuildContext context, AsyncSnapshot snapshot) {
@@ -258,6 +367,7 @@ class HomeComponentState extends State<HomeComponent> {
                             if (snapshot.data != null) {
                               print("The value of snapshot.data.error is: ${snapshot.data.error}");
                               var balances = snapshot.data.balances;
+                              balancesLenght = snapshot.data.balances.length;
                               if (snapshot.data.success) {
                                 return hometabs.buildBalancesList(balances);
                               } 
@@ -323,7 +433,7 @@ class HomeComponentState extends State<HomeComponent> {
                           } else {
                             return noDataView("No data found");
                           }
-                          return new Container();
+                          return Container();
                         }
                       case ConnectionState.none:
                         {
@@ -335,11 +445,12 @@ class HomeComponentState extends State<HomeComponent> {
               );
             }),
             // transactionsTab
-            new Builder(builder: (BuildContext context) {
-              return new Container(
+            Builder(builder: (BuildContext context) {
+              page = 1;
+              return Container(
                 alignment: Alignment.center,
-                child: new FutureBuilder(
-                  future: globals.online ? getOnlineTransactions() : getOffLineTransactions(),
+                child: FutureBuilder(
+                  future: globals.online ? getOnlineTransactions(page) : getOffLineTransactions(),
                   builder: (BuildContext context, AsyncSnapshot snapshot) {
                     // To show progress loading view add switch statment to handle connnection states.
                     switch (snapshot.connectionState) {
@@ -411,12 +522,12 @@ class HomeComponentState extends State<HomeComponent> {
                                 return Text('No transactions to display');
                               }
                             } else {
-                              return noDataView("No data found");  
+                              return Text('No transactions to display');  
                             }
                           } else {
-                            return noDataView("No data found");
+                            return Text('No transactions to display');
                           }
-                          return new Container();
+                          return Container();
                         }
                       case ConnectionState.none:
                         {
@@ -436,14 +547,14 @@ class HomeComponentState extends State<HomeComponent> {
 
   // Progress indicator widget to show loading.
   Widget loadingView() => Center(
-        child: CircularProgressIndicator(), 
-      );
+    child: CircularProgressIndicator(), 
+  );
 
   // View to empty data message
   Widget noDataView(String msg) => Center(
-        child: Text(
-          msg,
-          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
-        ),
-      );
+    child: Text(
+      msg,
+      style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
+    ),
+  );
 }

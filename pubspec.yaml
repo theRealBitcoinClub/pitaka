@@ -7,7 +7,7 @@ description: Paytaca mobile wallet app
 # Both the version and the builder number may be overridden in flutter
 # build by specifying --build-name and --build-number, respectively.
 # Read more about versioning at semver.org.
-version: 0.2.0+8
+version: 0.2.0+12
 
 environment:
   sdk: ">=2.1.0 <3.0.0"
@@ -55,6 +55,11 @@ dependencies:
   virtual_keyboard:
     git:
       url: git@github.com:paytaca/virtual_keyboard.git
+      ref: master
+
+  bip39:
+    git:
+      url: git@github.com:paytaca/bip39.git
       ref: master
 
   flutter:

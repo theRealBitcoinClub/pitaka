@@ -1,11 +1,9 @@
 import 'dart:async';
-import 'dart:convert';
-import 'dart:typed_data';
 import "package:hex/hex.dart";
 import 'package:intl/intl.dart';
-import 'package:archive/archive.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:bip39/bip39.dart' as bip39;
 import 'package:local_auth/local_auth.dart';
 import 'package:passcode_screen/circle.dart';
 import 'package:passcode_screen/keyboard.dart';
@@ -94,16 +92,23 @@ class RegisterComponentState extends State<RegisterComponent> {
   }
 
   Future<Null> generateKeyPair(BuildContext context) async {
-    final keyPair = await CryptoSign.generateKeyPair();
+    // Generate seed phrase
+    String seedPhrase = bip39.generateMnemonic();
 
-    Uint8List publicKeyBytes = keyPair.publicKey;
-    Uint8List privateKeyBytes = keyPair.secretKey;
-    publicKey = HEX.encode(publicKeyBytes);
-    privateKey = HEX.encode(privateKeyBytes);
+    // Generate seed from seed phrase
+    var seed = bip39.mnemonicToSeed(seedPhrase, 32);
+
+    // Generate private and public keys from seed
+    Sodium.cryptoSignSeedKeypair(seed).then((value) {
+      publicKey = HEX.encode(value['pk']);
+      privateKey = HEX.encode(value['sk']);
+    });
 
     await _authenticate();
+    // Store seed phrase, private and public keys in global storage
     await globals.storage.write(key: "publicKey", value: publicKey);
     await globals.storage.write(key: "privateKey", value: privateKey);
+    await globals.storage.write(key: "seedPhrase", value: seedPhrase);
   }
 
   // Generate UDID to be stored
@@ -185,7 +190,7 @@ class RegisterComponentState extends State<RegisterComponent> {
           userPayload["txn_hash"] = txnHash;
           userPayload["signature"] = signature;
           userPayload["device_id"] = udid;
-          userPayload["firebase_messaging_token"] = token;
+          userPayload["firebase_token"] = token;
 
           var user = await createUser(userPayload);
 

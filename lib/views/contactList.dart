@@ -269,7 +269,7 @@ class ContactListComponentState extends State<ContactListComponent> {
             },
             maxLength: 11,
             decoration: const InputDecoration(
-              icon: const Icon(Icons.search),
+              icon: const Icon(Icons.search, color: Colors.red,),
               hintText: '09** - *** - ****',
               labelText: 'Mobile Number',
             ),
@@ -346,12 +346,17 @@ class ContactListComponentState extends State<ContactListComponent> {
             child: SizedBox(height: 30.0,),
           ),
           RaisedButton(
+            color: Colors.red,
+            splashColor: Colors.red[100],
             onPressed: () {
               _validateInputs(context);
               // Clear TextFormField
               _controller.clear();
             },
-            child: Text('Submit'),
+            child: Text(
+              'Submit',
+              style: TextStyle(color: Colors.white,),
+            ),
           )
         ]
       )

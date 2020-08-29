@@ -247,7 +247,7 @@ class SendContactComponentState extends State<SendContactComponent> {
       'from_account': selectedPaytacaAccount,
       'to_account': toAccount,
       'asset': globals.phpAssetId,
-      'amount': amount.toString(),
+      'amount': amount,
       'public_key': publicKey,
       'txn_hash': txnhash,
       'signature': signature,
@@ -257,7 +257,13 @@ class SendContactComponentState extends State<SendContactComponent> {
       'txn_str' : txnstr,
       'device_id': udid,
     };
-    var response = await transferAsset(payload);
+
+    var response;
+    if (toAccount != null) {
+      response = await transferAsset(payload);
+    } else {
+      showSendingFailureDialog(context);
+    }
 
     // Catch invalid device ID error
     if (response.error == "invalid_device_id") {
@@ -295,10 +301,16 @@ class SendContactComponentState extends State<SendContactComponent> {
   }
 
   String validateAmount(String value) {
+    // Convert the string amount to double
+    var amountDouble = double.parse(value);
+    assert(amountDouble is double);
+
     if (value == null || value == "") {
       return 'This field is required.';
     } else if (value == '0') {
       return 'Please enter valid amount.';
+    } else if (amountDouble.isNegative) {
+      return 'Negative number is not allowed.';
     } else {
       var currentBalance;
       for(final map in data) {
