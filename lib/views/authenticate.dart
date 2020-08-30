@@ -26,7 +26,6 @@ class AuthenticateComponentState extends State<AuthenticateComponent> {
   static String _errorMessage;
   bool online = globals.online;
   DatabaseHelper databaseHelper = DatabaseHelper();
-  StreamSubscription _connectionChangeStream;
   bool isOffline = false;
   String newVal;
   bool maxOfflineTime = globals.maxOfflineTime;
@@ -40,7 +39,7 @@ class AuthenticateComponentState extends State<AuthenticateComponent> {
   void initState() {
     super.initState();
     ConnectionStatusSingleton connectionStatus = ConnectionStatusSingleton.getInstance();
-    _connectionChangeStream = connectionStatus.connectionChange.listen(connectionChanged);
+    connectionStatus.connectionChange.listen(connectionChanged);
   }
 
   void connectionChanged(dynamic hasConnection) {
@@ -62,8 +61,6 @@ class AuthenticateComponentState extends State<AuthenticateComponent> {
       }
     });
   }
-
-  final TextEditingController _accountController = new TextEditingController();
 
   Future<bool> sendAuthentication() async {
     // Set _submitting to true for progress indicator to display while sending the request
@@ -108,7 +105,7 @@ class AuthenticateComponentState extends State<AuthenticateComponent> {
 
   void scanBarcode() async {
     allowCamera();
-    String barcode = await FlutterBarcodeScanner.scanBarcode("#ff6666", "Cancel", true,  ScanMode.DEFAULT);
+    String barcode = await FlutterBarcodeScanner.scanBarcode("#ff6666", "Cancel", true);
     setState(() {
       if (barcode.length > 0) {
         sessionKey = barcode;

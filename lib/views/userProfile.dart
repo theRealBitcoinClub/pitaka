@@ -9,7 +9,6 @@ import '../utils/globals.dart';
 import '../utils/dialogs.dart';
 import '../utils/database_helper.dart';
 import '../utils/globals.dart' as globals;
-import '../views/verifyIdentity.dart';
 
 
 class UserProfileComponent extends StatefulWidget {
@@ -18,10 +17,8 @@ class UserProfileComponent extends StatefulWidget {
 }
 
 class UserProfileComponentState extends State<UserProfileComponent> {
-  StreamSubscription _connectionChangeStream;
   DatabaseHelper databaseHelper = DatabaseHelper();
   final _formKey = GlobalKey<FormState>();
-  final TextEditingController _accountController = new TextEditingController();
   static bool _errorFound = false;
   static String _errorMessage;
   String newVal;
@@ -40,7 +37,7 @@ class UserProfileComponentState extends State<UserProfileComponent> {
   void initState() {
     super.initState();
     ConnectionStatusSingleton connectionStatus = ConnectionStatusSingleton.getInstance();
-    _connectionChangeStream = connectionStatus.connectionChange.listen(connectionChanged);
+    connectionStatus.connectionChange.listen(connectionChanged);
 
     // Run getAccounts() function upon widget build
     SchedulerBinding.instance.addPostFrameCallback((_) {
@@ -216,7 +213,7 @@ class UserProfileComponentState extends State<UserProfileComponent> {
                             ),
                             RichText(
                               text: TextSpan(
-                                style: Theme.of(context).textTheme.body1,
+                                style: Theme.of(context).textTheme.bodyText2,
                                 children: [
                                   WidgetSpan(
                                     child: Padding(

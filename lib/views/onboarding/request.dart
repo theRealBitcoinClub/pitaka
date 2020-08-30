@@ -70,7 +70,9 @@ class RequestComponentState extends State<RequestComponent> {
     List seedWords = value.split(" ");
     if (seedWords.length < 12 || seedWords.length > 12) {
       return 'Seed phrase is exactly 12 words';
-    } 
+    }  else {
+      return 'Seed phrase is not 12 words';
+    }
   }
 
   void _validateInputs(BuildContext context) async {

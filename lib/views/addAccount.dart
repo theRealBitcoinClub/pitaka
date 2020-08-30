@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_masked_text/flutter_masked_text.dart';
 import '../views/app.dart';
@@ -27,7 +26,6 @@ class AddAccountComponent extends StatefulWidget {
 }
 
 class AddAccountComponentState extends State<AddAccountComponent> {
-  StreamSubscription _connectionChangeStream;
   AddAccount newAccount = AddAccount();
   AddBusiness newBusiness = AddBusiness();
   final _formKey = GlobalKey<FormState>();
@@ -447,7 +445,7 @@ class AddAccountComponentState extends State<AddAccountComponent> {
   void initState() {
     super.initState();
     ConnectionStatusSingleton connectionStatus = ConnectionStatusSingleton.getInstance();
-    _connectionChangeStream = connectionStatus.connectionChange.listen(connectionChanged);
+    connectionStatus.connectionChange.listen(connectionChanged);
   }
 
 

@@ -2,7 +2,6 @@ import 'dart:async';
 import 'receive.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
-import 'package:qr_flutter/qr_flutter.dart';
 import 'package:flutter_udid/flutter_udid.dart';
 import 'package:overlay_support/overlay_support.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -10,7 +9,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:firebase_dynamic_links/firebase_dynamic_links.dart';
 import './app.dart';
 import '../api/endpoints.dart';
-import '../api/responses.dart';
 import '../utils/helpers.dart';
 import '../utils/dialogs.dart';
 import '../utils/globals.dart';
@@ -27,7 +25,6 @@ class HomeComponent extends StatefulWidget {
 
 class HomeComponentState extends State<HomeComponent> with SingleTickerProviderStateMixin {
   DatabaseHelper databaseHelper = DatabaseHelper();
-  StreamSubscription _connectionChangeStream;
   final formatCurrency = new NumberFormat.currency(symbol: 'PHP ');
   final FirebaseMessaging _firebaseMessaging = FirebaseMessaging();
   ScrollController _scrollController = ScrollController();
@@ -50,7 +47,7 @@ class HomeComponentState extends State<HomeComponent> with SingleTickerProviderS
     // Subscribe to Notifier Stream from ConnectionStatusSingleton class in globals.dart
     // Fires whenever connectivity state changes
     ConnectionStatusSingleton connectionStatus = ConnectionStatusSingleton.getInstance();
-    _connectionChangeStream = connectionStatus.connectionChange.listen(connectionChanged);
+    connectionStatus.connectionChange.listen(connectionChanged);
 
     ReceiveComponentState comp = ReceiveComponentState();
 
@@ -227,84 +224,84 @@ class HomeComponentState extends State<HomeComponent> with SingleTickerProviderS
     getOnlineTransactions(page += 1);
   }
 
-  String _formatMode(String mode) {
-    String formattedMode;
-    if (mode == 'receive') {
-      formattedMode = 'Received';
-    }
-    if (mode == 'send') {
-      formattedMode = 'Sent';
-    }
-    return formattedMode;
-  }
+  // String _formatMode(String mode) {
+  //   String formattedMode;
+  //   if (mode == 'receive') {
+  //     formattedMode = 'Received';
+  //   }
+  //   if (mode == 'send') {
+  //     formattedMode = 'Sent';
+  //   }
+  //   return formattedMode;
+  // }
 
-  _showProof(List<Transaction> transaction, BuildContext context, int index) async {
-    Dialog transacDialog = Dialog(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.0)),
-      child: Container(
-        height: 500.0,
-        width: 400.0,
+  // _showProof(List<Transaction> transaction, BuildContext context, int index) async {
+  //   Dialog transacDialog = Dialog(
+  //     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.0)),
+  //     child: Container(
+  //       height: 500.0,
+  //       width: 400.0,
 
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            QrImage(
-              data: transaction[transaction.length - index -1].paymentProof,
-              size: 250.0
-            ),
+  //       child: Column(
+  //         mainAxisAlignment: MainAxisAlignment.center,
+  //         children: <Widget>[
+  //           QrImage(
+  //             data: transaction[transaction.length - index -1].paymentProof,
+  //             size: 250.0
+  //           ),
 
-            Padding(
-              padding:  EdgeInsets.all(10.0),
-              child: Text("${formatCurrency.format(
-              transaction[transaction.length - index - 1]
-                  .amount)}", style: TextStyle(fontSize: 20.0),
-              ),
-            ),
-            Padding(
-              padding: EdgeInsets.all(5.0),
-              child: Text("${transaction[transaction.length - index -
-                  1].time}", style: TextStyle(fontSize: 20.0),
-              ),
-            ),
-            Padding(
-              padding: EdgeInsets.all(5.0),
-              child: Text("ID: ${transaction[transaction.length -
-                  index - 1].txnID}", style: TextStyle(fontSize: 20.0),
-              ),
-            ),
-            Padding(padding: EdgeInsets.only(top: 20.0)),
-            FlatButton(onPressed: (){
-              Navigator.of(context).pop();
-            },
-                child: Text('Back', style: TextStyle(color: Colors.red, fontSize: 18.0),))
-          ],
-        ),
-      ),
-    );
+  //           Padding(
+  //             padding:  EdgeInsets.all(10.0),
+  //             child: Text("${formatCurrency.format(
+  //             transaction[transaction.length - index - 1]
+  //                 .amount)}", style: TextStyle(fontSize: 20.0),
+  //             ),
+  //           ),
+  //           Padding(
+  //             padding: EdgeInsets.all(5.0),
+  //             child: Text("${transaction[transaction.length - index -
+  //                 1].time}", style: TextStyle(fontSize: 20.0),
+  //             ),
+  //           ),
+  //           Padding(
+  //             padding: EdgeInsets.all(5.0),
+  //             child: Text("ID: ${transaction[transaction.length -
+  //                 index - 1].txnID}", style: TextStyle(fontSize: 20.0),
+  //             ),
+  //           ),
+  //           Padding(padding: EdgeInsets.only(top: 20.0)),
+  //           FlatButton(onPressed: (){
+  //             Navigator.of(context).pop();
+  //           },
+  //               child: Text('Back', style: TextStyle(color: Colors.red, fontSize: 18.0),))
+  //         ],
+  //       ),
+  //     ),
+  //   );
 
-    if(transaction[transaction.length - index - 1].mode == "send") {
-      showDialog(context: context, builder: (BuildContext context) => transacDialog);
-    }
-  }
+  //   if(transaction[transaction.length - index - 1].mode == "send") {
+  //     showDialog(context: context, builder: (BuildContext context) => transacDialog);
+  //   }
+  // }
 
-  Icon _getModeIcon(String mode) {
-    Icon icon;
-    if (mode == 'receive') {
-      icon = Icon(
-        Icons.add,
-        size: 30.0,
-        color: Colors.green,
-      );
-    }
-    if (mode == 'send') {
-      icon = Icon(
-        Icons.remove,
-        size: 30.0,
-        color: Colors.red,
-      );
-    }
-    return icon;
-  }
+  // Icon _getModeIcon(String mode) {
+  //   Icon icon;
+  //   if (mode == 'receive') {
+  //     icon = Icon(
+  //       Icons.add,
+  //       size: 30.0,
+  //       color: Colors.green,
+  //     );
+  //   }
+  //   if (mode == 'send') {
+  //     icon = Icon(
+  //       Icons.remove,
+  //       size: 30.0,
+  //       color: Colors.red,
+  //     );
+  //   }
+  //   return icon;
+  // }
 
   @override
   void dispose() {
@@ -440,6 +437,7 @@ class HomeComponentState extends State<HomeComponent> with SingleTickerProviderS
                           break;
                         }
                     }
+                    return null;
                   }
                 )
               );
@@ -534,6 +532,7 @@ class HomeComponentState extends State<HomeComponent> with SingleTickerProviderS
                           break;
                         }
                     }
+                    return null;
                   }
                 )
               );

@@ -14,7 +14,6 @@ class BusinessToolsComponent extends StatefulWidget {
 class BusinessToolsComponentState extends State<BusinessToolsComponent> {
   bool _loading = true;
   bool online = globals.online;
-  StreamSubscription _connectionChangeStream;
   bool isOffline = false;
 
   Future<String> getReferences() async {
@@ -30,7 +29,7 @@ class BusinessToolsComponentState extends State<BusinessToolsComponent> {
     super.initState();
     this.getReferences();
     ConnectionStatusSingleton connectionStatus = ConnectionStatusSingleton.getInstance();
-    _connectionChangeStream = connectionStatus.connectionChange.listen(connectionChanged);
+    connectionStatus.connectionChange.listen(connectionChanged);
   /*  globals.checkConnection().then((status){
       setState(() {
         if (status == false) {

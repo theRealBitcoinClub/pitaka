@@ -38,7 +38,6 @@ class ContactListComponentState extends State<ContactListComponent> {
   var contactDetails = new Map();
   final _formKey = GlobalKey<FormState>();
   static List data = List(); //edited line
-  StreamSubscription _connectionChangeStream;
   
   // Initialize a controller for TextFormField.
   // This is used to clear the contents of TextFormField at onPressed 
@@ -71,7 +70,7 @@ class ContactListComponentState extends State<ContactListComponent> {
     // Subscribe to Notifier Stream from ConnectionStatusSingleton class in globals.dart
     // Fires whenever connectivity state changes
     ConnectionStatusSingleton connectionStatus = ConnectionStatusSingleton.getInstance();
-    _connectionChangeStream = connectionStatus.connectionChange.listen(connectionChanged);
+    connectionStatus.connectionChange.listen(connectionChanged);
 
     // Check if there is/are save contacts
     Future future = Future(() => getContacts());

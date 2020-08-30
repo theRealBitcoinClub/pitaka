@@ -27,7 +27,6 @@ class SendContactComponent extends StatefulWidget {
 
 class SendContactComponentState extends State<SendContactComponent> {
   DatabaseHelper databaseHelper = DatabaseHelper();
-  StreamSubscription _connectionChangeStream;
   static bool _errorFound = false;
   static String _errorMessage;
   static double sendAmount;
@@ -98,7 +97,7 @@ class SendContactComponentState extends State<SendContactComponent> {
     // Subscribe to Notifier Stream from ConnectionStatusSingleton class in globals.dart
     // Fires whenever connectivity state changes
     ConnectionStatusSingleton connectionStatus = ConnectionStatusSingleton.getInstance();
-    _connectionChangeStream = connectionStatus.connectionChange.listen(connectionChanged);
+    connectionStatus.connectionChange.listen(connectionChanged);
 
     // Run getAccounts() function upon widget build
     SchedulerBinding.instance.addPostFrameCallback((_) {
@@ -154,11 +153,10 @@ class SendContactComponentState extends State<SendContactComponent> {
   }
 
   // Timer for maximum offline timeout
-  Timer _timer;
   int _start = 0;
   void startTimer() {
     const oneSec = const Duration(seconds: 1);
-    _timer = new Timer.periodic(
+    new Timer.periodic(
         oneSec,
         (Timer timer) => setState(() {
           if (globals.online == true) {

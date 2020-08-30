@@ -1,15 +1,8 @@
-import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:permission_handler/permission_handler.dart';
-import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
 import '../views/app.dart';
-import '../api/endpoints.dart';
-import '../utils/helpers.dart';
 import '../utils/globals.dart';
-import '../utils/dialogs.dart';
 import '../utils/database_helper.dart';
 import '../utils/globals.dart' as globals;
-import 'dart:math';
 
 
 class VerificationLevelsComponent extends StatefulWidget {
@@ -18,12 +11,10 @@ class VerificationLevelsComponent extends StatefulWidget {
 }
 
 class VerificationLevelsComponentState extends State<VerificationLevelsComponent> {
-  StreamSubscription _connectionChangeStream;
   DatabaseHelper databaseHelper = DatabaseHelper();
   static bool _errorFound = false;
   static String _errorMessage;
   final _formKey = GlobalKey<FormState>();
-  final TextEditingController _accountController = new TextEditingController();
   String newVal;
   String sessionKey = '';
   bool isOffline = false;
@@ -39,7 +30,7 @@ class VerificationLevelsComponentState extends State<VerificationLevelsComponent
   void initState() {
     super.initState();
     ConnectionStatusSingleton connectionStatus = ConnectionStatusSingleton.getInstance();
-    _connectionChangeStream = connectionStatus.connectionChange.listen(connectionChanged);
+    connectionStatus.connectionChange.listen(connectionChanged);
   }
 
   void connectionChanged(dynamic hasConnection) {

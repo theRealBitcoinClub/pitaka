@@ -11,7 +11,6 @@ import 'package:flutter_udid/flutter_udid.dart';
 import 'package:flutter_sodium/flutter_sodium.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
-import '../views/app.dart';
 import '../api/endpoints.dart';
 import '../components/drawer.dart';
 import '../components/bottomNavigation.dart';
@@ -26,7 +25,6 @@ class ReceiveComponent extends StatefulWidget {
 }
 
 class ReceiveComponentState extends State<ReceiveComponent> {
-  StreamSubscription _connectionChangeStream;
   final _formKey = GlobalKey<FormState>();
   static List data = List();
   String path = "/receive";
@@ -42,7 +40,7 @@ class ReceiveComponentState extends State<ReceiveComponent> {
     // Subscribe to Notifier Stream from ConnectionStatusSingleton class in globals.dart
     // Fires whenever connectivity state changes
     ConnectionStatusSingleton connectionStatus = ConnectionStatusSingleton.getInstance();
-    _connectionChangeStream = connectionStatus.connectionChange.listen(connectionChanged);
+    connectionStatus.connectionChange.listen(connectionChanged);
 
     // Run getAccounts() function upon widget build
     SchedulerBinding.instance.addPostFrameCallback((_) {
@@ -74,7 +72,7 @@ class ReceiveComponentState extends State<ReceiveComponent> {
 
   // Scan QRcode from Payment Proof after Send
   void scanQrcode() async {
-    String qrcode = await FlutterBarcodeScanner.scanBarcode("#ff6666","Cancel", true, ScanMode.DEFAULT); 
+    String qrcode = await FlutterBarcodeScanner.scanBarcode("#ff6666","Cancel", true); 
 
     // Decode and split the QRcode data
     var baseDecoded = base64.decode(qrcode);

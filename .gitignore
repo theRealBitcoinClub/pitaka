@@ -72,3 +72,4 @@ build/
 
 *.keystore
 *.keystore.*
+.flutter-plugins-dependencies

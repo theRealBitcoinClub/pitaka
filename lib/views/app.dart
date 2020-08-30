@@ -90,11 +90,10 @@ class AppComponentState extends State<AppComponent>
   }
 
   // Timer for maximum offline timeoutTimer
-  Timer _timer;
   int _start = 0;
   void startTimer() {
     const oneSec = const Duration(seconds: 1);
-    _timer = new Timer.periodic(
+    new Timer.periodic(
         oneSec,
         (Timer timer) => setState(() {
               if (globals.online == true) {

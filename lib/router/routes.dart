@@ -37,8 +37,10 @@ class Routes {
   static void configureRoutes(Router router) {
     router.notFoundHandler = new Handler(
       handlerFunc: (BuildContext context, Map<String, dynamic> params) {
-      print("ROUTE WAS NOT FOUND!");
-    });
+        print("ROUTE WAS NOT FOUND!");
+        return null;
+      }
+    );
 
     router.define(
       root,

@@ -28,7 +28,6 @@ class SendComponent extends StatefulWidget {
 
 class SendComponentState extends State<SendComponent> {
   DatabaseHelper databaseHelper = DatabaseHelper();
-  StreamSubscription _connectionChangeStream;
   static bool _errorFound = false;
   static String _errorMessage;
   static double sendAmount;
@@ -66,7 +65,7 @@ class SendComponentState extends State<SendComponent> {
     // Subscribe to Notifier Stream from ConnectionStatusSingleton class in globals.dart
     // Fires whenever connectivity state changes
     ConnectionStatusSingleton connectionStatus = ConnectionStatusSingleton.getInstance();
-    _connectionChangeStream = connectionStatus.connectionChange.listen(connectionChanged);
+    connectionStatus.connectionChange.listen(connectionChanged);
 
     // Run getAccounts() function upon widget build
     SchedulerBinding.instance.addPostFrameCallback((_) {
@@ -163,11 +162,10 @@ class SendComponentState extends State<SendComponent> {
   }
 
   // Timer for maximum offline timeout
-  Timer _timer;
   int _start = 0;
   void startTimer() {
     const oneSec = const Duration(seconds: 1);
-    _timer = new Timer.periodic(
+    new Timer.periodic(
       oneSec,
       (Timer timer) => setState(() {
         if (globals.online == true) {
@@ -319,7 +317,7 @@ class SendComponentState extends State<SendComponent> {
     _isScanningQr = true;
     _showForm = true;
     allowCamera();
-    String barcode = await FlutterBarcodeScanner.scanBarcode("#ff6666", "Cancel", true, ScanMode.DEFAULT);
+    String barcode = await FlutterBarcodeScanner.scanBarcode("#ff6666", "Cancel", true);
     setState(() {
       if (barcode.length > 0) {
         _barcodeString = barcode;

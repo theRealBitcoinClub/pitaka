@@ -1,10 +1,7 @@
-import 'dart:convert';
 import 'package:intl/intl.dart';
-import 'package:archive/archive.dart';
 import 'package:flutter/material.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../views/app.dart';
 
 
 class ProofOfPaymentComponent extends StatefulWidget {
@@ -16,10 +13,6 @@ class ProofOfPaymentComponentState extends State<ProofOfPaymentComponent> {
 
   Future<Map> getVal() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    var code = prefs.getString("_txnQrCode");
-    List<int> stringBytes = utf8.encode(code);
-    List<int> gzipBytes = new GZipEncoder().encode(stringBytes);
-    String compressedString = base64.encode(gzipBytes);
     return {
       'code': prefs.getString("_txnProofCode"),
       'datetime': prefs.getString("_txnDateTime"),
