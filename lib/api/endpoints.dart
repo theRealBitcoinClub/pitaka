@@ -591,7 +591,7 @@ Future<PlainSuccessResponse> receiveAsset(Map payload) async {
 
 
 Future<PlainSuccessResponse> requestOtpCode(payload) async {
-  final String url = globals.baseUrl + '/api/otp/request';
+  final String url = globals.baseUrl + '/api/otp/mobile-number/request';
   Response response;
   try {
     response = await sendPostRequest(url, payload);
@@ -604,7 +604,7 @@ Future<PlainSuccessResponse> requestOtpCode(payload) async {
 
 
 Future<OtpVerificationResponse> verifyOtpCode(payload) async {
-  final String url = globals.baseUrl + '/api/otp/verify';
+  final String url = globals.baseUrl + '/api/otp/mobile-number/verify';
   Response response;
   try {
     response = await sendPostRequest(url, payload);
@@ -651,7 +651,7 @@ Future<RequestOTPAccountRestoreResponse> requestOTPAccountRestore(payload) async
 Future<GenericCreateResponse> requestOTPRetry(payload) async {
   print("The value of payload in requestOTPRetry() in endpoints.dart is: $payload");
   try {
-    final String url = globals.baseUrl + '/api/otp/resend';
+    final String url = globals.baseUrl + '/api/otp/mobile-number/resend';
     final response = await sendPostRequest(url, payload);
     return GenericCreateResponse.fromResponse(response);
   } catch (e){

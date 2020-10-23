@@ -13,6 +13,7 @@ String generateTransactionHash(Map txn) {
     kvPairs.add(kvPair);
   }
   String txnConcat = kvPairs.join(";");
+  print(txnConcat);
   List<int> bytes = utf8.encode(txnConcat);
   String txnHash = sha256.convert(bytes).toString();
   return txnHash;

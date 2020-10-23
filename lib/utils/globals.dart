@@ -7,9 +7,9 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../utils/database_helper.dart';
 
 
-// For dev server
-const String baseUrl = 'https://lantaka-dev.paytaca.com';
-const String phpAssetId = '3A8F594F-D736-4673-945C-5465E0209AF0';
+// For staging server
+const String baseUrl = 'https://lantaka-staging.paytaca.com';
+const String phpAssetId = '31015CDE-8330-417C-BA15-28CF138C423E';
 
 // //For local server, testing/debugging
 // const String baseUrl = 'https://db93d84f.ngrok.io';

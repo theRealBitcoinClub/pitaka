@@ -180,6 +180,7 @@ class RegisterComponentState extends State<RegisterComponent> {
             "lastname": newUser.lastName,
             "birthday": "2006-01-02",
             "mobile_number": mobileNumber,
+            "device_id": udid
           };
 
           String txnHash = generateTransactionHash(userPayload);
@@ -189,7 +190,6 @@ class RegisterComponentState extends State<RegisterComponent> {
           userPayload["public_key"] = publicKey;
           userPayload["txn_hash"] = txnHash;
           userPayload["signature"] = signature;
-          userPayload["device_id"] = udid;
           userPayload["firebase_token"] = token;
 
           var user = await createUser(userPayload);
