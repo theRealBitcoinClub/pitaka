@@ -178,7 +178,7 @@ class RegisterComponentState extends State<RegisterComponent> {
           var userPayload = {
             "firstname": newUser.firstName,
             "lastname": newUser.lastName,
-            "birthday": "2006-01-02",
+            "birthday": "1984-04-16", // newUser.birthDate,
             "mobile_number": mobileNumber,
             "device_id": udid
           };
