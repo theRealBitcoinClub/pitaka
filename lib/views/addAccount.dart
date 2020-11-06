@@ -79,13 +79,17 @@ class AddAccountComponentState extends State<AddAccountComponent> {
         address = await bch_slp.generateBchAddress();
       }
 
+      if (_accountCurrency == 'SPICE') {
+        address = await bch_slp.generateSpiceAddress();
+      }
+
       var accountPayload = {
         "creator": userId,
         "currency": _accountCurrency,
         "name": newAccount.name,
         "public_key": publicKey,
         "address": address,
-        "txn_hash": "helloworld",
+        "txn_hash": "helloworld",  // todo: Change this later
         "type": _accountType,
         "signature": signature,
       };
