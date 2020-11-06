@@ -27,6 +27,7 @@ class AddAccountComponent extends StatefulWidget {
 
 class AddAccountComponentState extends State<AddAccountComponent> {
   AddAccount newAccount = AddAccount();
+  String _accountCurrency;
   AddBusiness newBusiness = AddBusiness();
   final _formKey = GlobalKey<FormState>();
   String _accountType;
@@ -74,6 +75,7 @@ class AddAccountComponentState extends State<AddAccountComponent> {
 
       var accountPayload = {
         "creator": userId,
+        "currency": _accountCurrency,
         "name": newAccount.name,
         "public_key": publicKey,
         "txn_hash": "helloworld",
@@ -95,6 +97,12 @@ class AddAccountComponentState extends State<AddAccountComponent> {
           _submitting = false;
         });
         await globals.storage.write(key: "defaultAccount", value: response.id);
+        if (_accountCurrency == 'BCH') {
+          await globals.storage.write(key: "bchAddress", value: response.address);
+        }
+        if (_accountCurrency == 'SPICE') {
+          await globals.storage.write(key: "spiceAddress", value: response.address);
+        }
         Application.router.navigateTo(context, "/home");
       }
     }
@@ -154,6 +162,7 @@ class AddAccountComponentState extends State<AddAccountComponent> {
         
         var accountPayload = {
           "creator": userId,
+          "currency": _accountCurrency,
           "name": newBusiness.name,
           "public_key": publicKey,
           "txn_hash": "helloworld",
@@ -207,6 +216,50 @@ class AddAccountComponentState extends State<AddAccountComponent> {
         child: ListView(
           padding: const EdgeInsets.symmetric(horizontal: 16.0),
           children: <Widget>[
+            Padding(
+              padding: EdgeInsets.only(top: 30.0, left: 8.0, right: 8.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  Text(
+                    "Account Currency",
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16.0,
+                    ),
+                  ),
+                  SizedBox(height: .0,),
+                  DropdownButton(
+                    hint: Text('Select Account Currency'),
+                    iconEnabledColor: Colors.red,
+                    value: _accountCurrency,
+                    isExpanded: true,
+                    isDense: true,
+                    iconSize: 30.0,
+                    items: [
+                      "PHP", 
+                      "BCH",
+                      "SPICE"
+                    ].map(
+                      (val) {
+                        return DropdownMenuItem<String>(
+                          value: val,
+                          child: Text(val),
+                        );
+                      },
+                    ).toList(),
+                    onChanged: (val) {
+                      setState(
+                        () {
+                          _accountCurrency = val;
+                        },
+                      );
+                    },
+                  ),
+                ]
+              ),
+            ),
+            SizedBox(height: 10.0,),
             Padding(
               padding: EdgeInsets.only(top: 30.0, left: 8.0, right: 8.0),
               child: Column(
