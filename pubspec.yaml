@@ -64,6 +64,11 @@ dependencies:
       url: git@github.com:paytaca/bip39.git
       ref: master
 
+  bitbox:
+    git:
+      url: git@github.com:paytaca/bitbox-flutter.git
+      ref: master
+
   flutter:
     sdk: flutter
 

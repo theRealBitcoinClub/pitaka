@@ -278,13 +278,13 @@ Future<GenericCreateResponse> linkBusinessToAccount(payload) async {
   }
 }
 
-Future<CreateAccountResponse> createAccount(payload) async {
+Future<GenericCreateResponse> createAccount(payload) async {
   // For debug print
   print("The value of payload in createPersonalAccount() in endpoints.dart is: $payload");
   try {
     final String url = globals.baseUrl + '/api/accounts/create';
     final response = await sendPostRequest(url, payload);
-    return CreateAccountResponse.fromResponse(response);
+    return GenericCreateResponse.fromResponse(response);
   } catch (e) {
     throw Exception(e);
   }

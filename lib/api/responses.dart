@@ -43,25 +43,6 @@ class PlainSuccessResponse {
   }
 }
 
-
-class CreateAccountResponse {
-  final bool success;
-  final String id;
-  final String address;
-  final String error; // Added to catch error in duplicate email address
-
-  CreateAccountResponse({this.success, this.id, this.address, this.error});
-
-  factory CreateAccountResponse.fromResponse(Response response) {
-    return CreateAccountResponse(
-      success: response.data['success'],
-      id: response.data['id'],
-      address: response.data['address'],
-      error: response.data['error'], // Added to catch error in duplicate email address
-    );
-  }
-}
-
 class User {
   String id;
   String firstName;

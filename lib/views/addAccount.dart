@@ -7,6 +7,7 @@ import '../utils/helpers.dart';
 import '../utils/globals.dart';
 import '../utils/dialogs.dart';
 import '../utils/globals.dart' as globals;
+import '../utils/bch_slp.dart' as bch_slp;
 
 
 class AddAccount {
@@ -72,16 +73,23 @@ class AddAccountComponentState extends State<AddAccountComponent> {
       String publicKey = await globals.storage.read(key: "publicKey");
       String privateKey = await globals.storage.read(key: "privateKey");
       String signature = await signTransaction("helloworld", privateKey);
+      String address = '';
+
+      if (_accountCurrency == 'BCH') {
+        address = await bch_slp.generateBchAddress();
+      }
 
       var accountPayload = {
         "creator": userId,
         "currency": _accountCurrency,
         "name": newAccount.name,
         "public_key": publicKey,
+        "address": address,
         "txn_hash": "helloworld",
         "type": _accountType,
         "signature": signature,
       };
+      
       setState(() {
         _submitting = true;
       });
@@ -97,12 +105,6 @@ class AddAccountComponentState extends State<AddAccountComponent> {
           _submitting = false;
         });
         await globals.storage.write(key: "defaultAccount", value: response.id);
-        if (_accountCurrency == 'BCH') {
-          await globals.storage.write(key: "bchAddress", value: response.address);
-        }
-        if (_accountCurrency == 'SPICE') {
-          await globals.storage.write(key: "spiceAddress", value: response.address);
-        }
         Application.router.navigateTo(context, "/home");
       }
     }
