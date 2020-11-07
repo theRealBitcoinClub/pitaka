@@ -415,7 +415,7 @@ Future<BalancesResponse> getOnlineBalances() async {
       var balanceObj = new Balance();
       var timestamp = response.data['timestamp'].toString();
       String acct = "${bal['AccountName']} | ${bal['AccountID']} | "
-      "${bal['Balance']} | ${bal['Signature']} | $timestamp";
+      "${bal['Balance']} | ${bal['Signature']} | $timestamp | ${bal['Currency']} | ${bal['Address']}";
       _accounts.add(acct);
       balanceObj.accountName = bal['AccountName'];
       double balance = bal['Balance'].toDouble();
@@ -423,6 +423,8 @@ Future<BalancesResponse> getOnlineBalances() async {
       balanceObj.accountId = bal['AccountID'];
       balanceObj.timestamp = timestamp;
       balanceObj.signature = bal['Signature'];
+      balanceObj.currency = bal['Currency'];
+      balanceObj.address = bal['Address'];
       _balances.add(balanceObj);
     }
     // Update balances only if response is success

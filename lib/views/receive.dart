@@ -29,6 +29,7 @@ class ReceiveComponentState extends State<ReceiveComponent> {
   static List data = List();
   String path = "/receive";
   String _selectedPaytacaAccount;
+  String _selectedAccountAddress;
   bool online = globals.online;
   bool isOffline = false;
   bool _loading = false;
@@ -219,10 +220,13 @@ class ReceiveComponentState extends State<ReceiveComponent> {
       var _prefAccounts = prefs.get("accounts");
       List<Map> _accounts = [];
       for (final acct in _prefAccounts) {
+        print(acct);
         String accountId = acct.split(' | ')[1];
         var acctObj = new Map();
         acctObj['accountName'] = acct.split(' | ')[0];
         acctObj['accountId'] = accountId;
+        acctObj['currency'] = acct.split(' | ')[5];
+        acctObj['address'] = acct.split(' | ')[6];
         _accounts.add(acctObj);
       }
       data = _accounts;
@@ -296,7 +300,7 @@ class ReceiveComponentState extends State<ReceiveComponent> {
                     hint: Text('Select Account'),
                     items: data.map((item) {
                       return DropdownMenuItem(
-                        value: item['accountId'],
+                        value: "${item['accountName']} | ${item['accountId']} | ${item['currency']} | ${item['address']}",
                         child: new Text("${item['accountName']}"),
                       );
                     }).toList(),
@@ -305,7 +309,17 @@ class ReceiveComponentState extends State<ReceiveComponent> {
                     isDense: true,
                     onChanged: (newVal) {
                         setState(() {
-                          _selectedPaytacaAccount = newVal;
+                          String accountID = newVal.split(' | ')[1];
+                          String currency = newVal.split(' | ')[2];
+                          String address = newVal.split(' | ')[3];
+                          if (currency == 'BCH') {
+                            _selectedAccountAddress = address;
+                          } else if (currency == 'SPICE') {
+                            _selectedAccountAddress = address;
+                          } else {
+                            _selectedAccountAddress = "::paytaca::$accountID::paytaca::";
+                          }
+                          //_selectedPaytacaAccount = newVal.split(' | ')[0];
                           state.didChange(newVal);
                         });
                     },
@@ -322,9 +336,9 @@ class ReceiveComponentState extends State<ReceiveComponent> {
           new Stack(
             children: <Widget>[
               Visibility(
-                visible: _selectedPaytacaAccount != null ? true: false,
+                visible: _selectedAccountAddress != null ? true: false,
                 child: QrImage(
-                  data: _selectedPaytacaAccount != null ? "::paytaca::$_selectedPaytacaAccount::paytaca::": ""
+                  data: _selectedAccountAddress
                 ),
               ),
               new Positioned(
@@ -344,6 +358,10 @@ class ReceiveComponentState extends State<ReceiveComponent> {
           new SizedBox(
             height: 20.0,
           ),
+          _selectedAccountAddress != null ? new Text(
+            _selectedAccountAddress.replaceAll('::', '').replaceAll('paytaca', ''),
+            style: TextStyle(fontSize: 18),
+          ) : new Text(''),
           buildButton(),
         ],
       )

@@ -7,6 +7,12 @@ import '../utils/globals.dart' as globals;
 
 ScrollController _scrollController = ScrollController();
 final formatCurrency = new NumberFormat.currency(symbol: 'PHP ');
+
+String displayBalance(currency, amount) {
+  final formatter = new NumberFormat.currency(symbol: currency + ' ');
+  return formatter.format(amount);
+}
+
 var balanceObj = Balance();
 bool syncing = globals.syncing;
 
@@ -36,7 +42,7 @@ ListView buildBalancesList(balances) {
                   padding:
                       const EdgeInsets.fromLTRB(15.0, 10.0, 12.0, 12.0),
                   child: Text(
-                    "${formatCurrency.format(balances[index].balance)}",
+                    "${displayBalance(balances[index].currency, balances[index].balance)}",
                     style: TextStyle(fontSize: 25.0),
                   ),
                 ),

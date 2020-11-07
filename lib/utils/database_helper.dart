@@ -48,7 +48,9 @@ class DatabaseHelper {
       "balance DOUBLE(40,2),"
       "timestamp TEXT,"
       "signature TEXT,"
-      "datetime TEXT"
+      "datetime TEXT,"
+      "currency TEXT,"
+      "address TEXT"
       ")");
     print('Balance table done!');
 
@@ -148,7 +150,9 @@ class DatabaseHelper {
         'accountId': balance.accountId,
         'timestamp': balance.timestamp,
         'signature': balance.signature,
-        'datetime': dateOfLastBalance
+        'datetime': dateOfLastBalance,
+        'currency': balance.currency,
+        'address': balance.address,
       };
       var idCheck = await db.query(
         'Balance',
@@ -260,7 +264,9 @@ class DatabaseHelper {
         'accountName': account['accountName'],
         'accountId': accountId,
         'signature': account['signature'],
-        'datetime': account['datetime']
+        'datetime': account['datetime'],
+        'currency': account['currency'],
+        'address': account['address'],
       };
       if (result.indexOf(info) == -1) {
         result.add(info);

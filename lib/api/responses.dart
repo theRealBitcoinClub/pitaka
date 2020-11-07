@@ -134,6 +134,8 @@ class Balance {
   String signature;
   double balance;
   String date;
+  String currency;
+  String address;
 }
 
 class BalancesResponse {
@@ -154,6 +156,8 @@ class BalancesResponse {
         balanceObj.accountId = bal['AccountID'];
         balanceObj.timestamp = response.data['timestamp'].toString();
         balanceObj.signature = bal['Signature'];
+        balanceObj.currency = bal['Currency'];
+        balanceObj.address = bal['Address'];
         _balances.add(balanceObj);
       }
     }
